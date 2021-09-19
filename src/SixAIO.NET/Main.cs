@@ -1,9 +1,11 @@
 ﻿using Oasys.Common.GameObject.Clients;
 using Oasys.SDK;
 using Oasys.SDK.Events;
+using SharpDX;
 using SixAIO.Models;
 using SixAIO.Utilities;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace SixAIO
@@ -143,6 +145,26 @@ namespace SixAIO
 
         private static void CoreEvents_OnCoreRender()
         {
+            //foreach (var missile in UnitManager.AllObjects
+            //                        .Where(x =>
+            //                                !x.IsAlive &&
+            //                                 x.IsObject(Oasys.Common.Enums.GameEnums.ObjectTypeFlag.AIMissileClient) &&
+            //                                !x.IsObject(Oasys.Common.Enums.GameEnums.ObjectTypeFlag.AIMinionClient))
+            //                        .Select(x => x.As<AIMissileClient>()))
+            //{
+            //    if (missile.Position != missile.EndPosition)
+            //    {
+            //        try
+            //        {
+            //            Oasys.SDK.Rendering.RenderFactory.DrawText(missile.Name, 12, missile.W2S, Color.Blue);
+            //        }
+            //        catch (Exception)
+            //        {
+            //        }
+            //        Oasys.SDK.Rendering.RenderFactory.DrawNativeCircle(missile.Position, 60, Color.AliceBlue, 5);
+            //    }
+            //}
+
             _currentChampion?.OnCoreRender();
         }
     }
