@@ -49,10 +49,12 @@ namespace SixAIO.Champions
                         return champTarget;
                     }
 
-                    return UnitManager.Enemies
-                                     .Where(x => x.IsAlive && TargetSelector.IsAttackable(x) && x.Distance <= 700)
-                                     .OrderBy(x => x.Health)
-                                     .FirstOrDefault();
+                    return Orbwalker.TargetChampionsOnly
+                                    ? null
+                                    : UnitManager.Enemies.Where(x => !x.IsObject(ObjectTypeFlag.BuildingProps) && !x.IsObject(ObjectTypeFlag.AITurretClient))
+                                                         .Where(x => x.IsAlive && TargetSelector.IsAttackable(x) && x.Distance <= 700)
+                                                         .OrderBy(x => x.Health)
+                                                         .FirstOrDefault();
                 }
             };
         }
@@ -76,6 +78,14 @@ namespace SixAIO.Champions
         internal override void OnCoreMainInput()
         {
             if (SpellE.ExecuteCastSpell() || SpellQ.ExecuteCastSpell())
+            {
+                return;
+            }
+        }
+
+        internal override void OnCoreLaneClearInput()
+        {
+            if (SpellE.ExecuteCastSpell())
             {
                 return;
             }
