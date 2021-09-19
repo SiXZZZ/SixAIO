@@ -1,0 +1,38 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+  </PropertyGroup>
+
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="copy /Y &quot;$(TargetDir)$(ProjectName).dll&quot; &quot;C:\GIT\Oasys.Core\Oasys.Core\OasysDebug_Build\net5.0-windows7.0\Modules\$(ProjectName).omod&quot;" />
+  </Target>
+
+  <ItemGroup>
+    <Reference Include="Oasys.Common">
+      <HintPath>..\..\..\Oasys.Core\Oasys.Core\OasysDebug_Build\net5.0-windows7.0\Oasys.Common.dll</HintPath>
+    </Reference>
+    <Reference Include="Oasys.SDK">
+      <HintPath>..\..\..\Oasys.Core\Oasys.Core\OasysDebug_Build\net5.0-windows7.0\Oasys.SDK.dll</HintPath>
+    </Reference>
+    <Reference Include="SharpDX">
+      <HintPath>..\..\..\Oasys.Core\Oasys.Core\OasysDebug_Build\net5.0-windows7.0\SharpDX.dll</HintPath>
+    </Reference>
+    <Reference Include="SharpDX.Desktop">
+      <HintPath>..\..\..\Oasys.Core\Oasys.Core\OasysDebug_Build\net5.0-windows7.0\SharpDX.Desktop.dll</HintPath>
+    </Reference>
+    <Reference Include="SharpDX.Direct3D9">
+      <HintPath>..\..\..\Oasys.Core\Oasys.Core\OasysDebug_Build\net5.0-windows7.0\SharpDX.Direct3D9.dll</HintPath>
+    </Reference>
+    <Reference Include="SharpDX.DirectInput">
+      <HintPath>..\..\..\Oasys.Core\Oasys.Core\OasysDebug_Build\net5.0-windows7.0\SharpDX.DirectInput.dll</HintPath>
+    </Reference>
+    <Reference Include="SharpDX.DXGI">
+      <HintPath>..\..\..\Oasys.Core\Oasys.Core\OasysDebug_Build\net5.0-windows7.0\SharpDX.DXGI.dll</HintPath>
+    </Reference>
+    <Reference Include="SharpDX.Mathematics">
+      <HintPath>..\..\..\Oasys.Core\Oasys.Core\OasysDebug_Build\net5.0-windows7.0\SharpDX.Mathematics.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+</Project>
