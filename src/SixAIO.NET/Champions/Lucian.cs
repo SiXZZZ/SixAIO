@@ -60,6 +60,14 @@ namespace SixAIO.Champions
             }
         }
 
+        internal override void OnCoreHarassInput()
+        {
+            if (SpellQ.ExecuteCastSpell())
+            {
+                return;
+            }
+        }
+
         internal override void InitializeMenu()
         {
             MenuManager.AddTab(new Tab($"SIXAIO - {nameof(Lucian)}"));

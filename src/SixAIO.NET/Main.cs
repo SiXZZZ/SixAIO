@@ -55,6 +55,7 @@ namespace SixAIO
             CoreEvents.OnCoreRender += CoreEvents_OnCoreRender;
             CoreEvents.OnCoreMainTick += CoreEvents_OnCoreMainTick;
             CoreEvents.OnCoreMainInputAsync += CoreEvents_OnCoreMainInputAsync;
+            CoreEvents.OnCoreHarassInputAsync += CoreEvents_OnCoreHarassInputAsync;
             CoreEvents.OnCoreLaneclearInputAsync += CoreEvents_OnCoreLaneclearInputAsync;
             CoreEvents.OnCoreLasthitInputAsync += CoreEvents_OnCoreLasthitInputAsync;
             CoreEvents.OnCoreMainTick += AutoSmite.OnCoreMainTick;
@@ -118,6 +119,19 @@ namespace SixAIO
             try
             {
                 _currentChampion?.OnCoreMainInput();
+            }
+            catch (Exception)
+            {
+            }
+
+            return Task.CompletedTask;
+        }
+
+        private static Task CoreEvents_OnCoreHarassInputAsync()
+        {
+            try
+            {
+                _currentChampion?.OnCoreHarassInput();
             }
             catch (Exception)
             {

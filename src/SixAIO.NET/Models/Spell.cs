@@ -86,7 +86,7 @@ namespace SixAIO.Models
 
         public float Cooldown()
         {
-            return SpellClass.CooldownExpire - GameEngine.GameTime;
+            return (float)SpellClass.CooldownExpire - GameEngine.GameTime;
         }
 
         public CastSlot CastSlot { get; set; }

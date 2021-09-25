@@ -45,6 +45,8 @@ namespace SixAIO.Models
 
         internal virtual void OnCoreMainInput() { }
 
+        internal virtual void OnCoreHarassInput() { }
+
         internal virtual void OnCoreMainTick() { }
 
         internal virtual void OnCoreMainInputRelease() { }
