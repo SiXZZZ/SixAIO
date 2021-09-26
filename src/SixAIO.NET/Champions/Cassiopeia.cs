@@ -1,4 +1,5 @@
 ﻿using Oasys.Common.Enums.GameEnums;
+using Oasys.Common.Extensions;
 using Oasys.Common.GameObject;
 using Oasys.Common.Menu;
 using Oasys.Common.Menu.ItemComponents;
@@ -17,7 +18,7 @@ namespace SixAIO.Champions
         {
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
-                CastTime = 0.5f,
+                CastTime = 0.3f,
                 ShouldCast = (target, spellClass, damage) =>
                             UseQ &&
                             spellClass.IsSpellReady &&
@@ -32,7 +33,7 @@ namespace SixAIO.Champions
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
-                CastTime = 0.5f,
+                CastTime = 0.3f,
                 ShouldCast = (target, spellClass, damage) =>
                             UseE &&
                             spellClass.IsSpellReady &&
@@ -41,7 +42,7 @@ namespace SixAIO.Champions
                 TargetSelect = () =>
                 {
                     var champTarget = UnitManager.EnemyChampions
-                                     .Where(x => x.IsAlive && TargetSelector.IsAttackable(x) && x.Distance <= 700)
+                                     .Where(x => x.IsAlive && TargetSelector.IsAttackable(x) && x.Distance <= 680)
                                      .OrderBy(x => x.Health)
                                      .FirstOrDefault();
                     if (champTarget != null)
@@ -57,6 +58,20 @@ namespace SixAIO.Champions
                                                          .FirstOrDefault();
                 }
             };
+            SpellR = new Spell(CastSlot.R, SpellSlot.R)
+            {
+                CastTime = 0.3f,
+                ShouldCast = (target, spellClass, damage) =>
+                            UseR &&
+                            spellClass.IsSpellReady &&
+                            UnitManager.MyChampion.Mana > 100 &&
+                            target != null,
+                TargetSelect = () =>
+                                UnitManager.EnemyChampions
+                                .Where(x => x.IsAlive && TargetSelector.IsAttackable(x) && x.Distance <= 750)
+                                .Where(x => x.IsFacing(UnitManager.MyChampion))
+                                .FirstOrDefault()
+            };
         }
 
         internal static float GetEDamage(GameObjectBase enemy)
@@ -66,18 +81,18 @@ namespace SixAIO.Champions
             var magicDamage = 48 + 4 * UnitManager.MyChampion.Level +
                               UnitManager.MyChampion.UnitStats.TotalAbilityPower * 0.1f;
 
-            var cassEBuff = enemy.BuffManager.GetBuffByName("findout", false, true);
-            if (cassEBuff != null && cassEBuff.IsActive)
-            {
-                //add bonus dmg
-            }
+            //var cassEBuff = enemy.BuffManager.GetBuffByName("findout", false, true);
+            //if (cassEBuff != null && cassEBuff.IsActive)
+            //{
+            //    //add bonus dmg
+            //}
 
             return (float)magicResistMod * magicDamage;
         }
 
         internal override void OnCoreMainInput()
         {
-            if (SpellE.ExecuteCastSpell() || SpellQ.ExecuteCastSpell())
+            if (SpellE.ExecuteCastSpell() || SpellQ.ExecuteCastSpell() || SpellR.ExecuteCastSpell())
             {
                 return;
             }
@@ -97,7 +112,7 @@ namespace SixAIO.Champions
             MenuTab.AddItem(new Switch() { Title = "Use Q", IsOn = true });
             //MenuTab.AddItem(new Switch() { Title = "Use W", IsOn = true });
             MenuTab.AddItem(new Switch() { Title = "Use E", IsOn = true });
-            //MenuTab.AddItem(new Switch() { Title = "Use R", IsOn = true });
+            MenuTab.AddItem(new Switch() { Title = "Use R", IsOn = true });
         }
     }
 }

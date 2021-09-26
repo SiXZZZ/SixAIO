@@ -107,33 +107,36 @@ namespace SixAIO.Models
         {
             try
             {
-                var target = TargetSelect();
-                var spellClass = UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot);
-                if (target == default && CastTime == default)
+                if (UnitManager.MyChampion.IsAlive)
                 {
-                    return ShouldCast(target, spellClass, Damage(target, spellClass)) && CastSpell(CastSlot);
-                }
-                else if (target == default)
-                {
-                    return ShouldCast(target, spellClass, Damage(target, spellClass)) && CastSpellWithCastTime(CastSlot, CastTime);
-                }
-                else
-                {
-                    var pos = CastPosition();
-                    if (pos != default)
+                    var target = TargetSelect();
+                    var spellClass = UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot);
+                    if (target == default && CastTime == default)
                     {
-                        return ShouldCast(target, spellClass, Damage(target, spellClass)) && CastSpellAtPos(CastSlot, pos, CastTime);
+                        return ShouldCast(target, spellClass, Damage(target, spellClass)) && CastSpell(CastSlot);
+                    }
+                    else if (target == default)
+                    {
+                        return ShouldCast(target, spellClass, Damage(target, spellClass)) && CastSpellWithCastTime(CastSlot, CastTime);
                     }
                     else
                     {
-                        return ShouldCast(target, spellClass, Damage(target, spellClass)) && CastSpellAtPos(CastSlot, target.W2S, CastTime);
+                        var pos = CastPosition();
+                        if (pos != default)
+                        {
+                            return ShouldCast(target, spellClass, Damage(target, spellClass)) && CastSpellAtPos(CastSlot, pos, CastTime);
+                        }
+                        else
+                        {
+                            return ShouldCast(target, spellClass, Damage(target, spellClass)) && CastSpellAtPos(CastSlot, target.W2S, CastTime);
+                        }
                     }
                 }
             }
             catch (Exception)
             {
-                return false;
             }
+            return false;
         }
 
         public Func<CastSlot, Vector2, float, bool> CastSpellAtPos = (castSlot, pos, castTime) => SpellCastProvider.CastSpell(castSlot, pos, castTime);

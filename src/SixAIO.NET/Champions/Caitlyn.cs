@@ -18,13 +18,13 @@ namespace SixAIO.Champions
             {
                 CastTime = 1f,
                 Damage = (target, spellClass) =>
-                            UseQ &&
                             target != null
                             ? Helpers.DamageCalculator.GetArmorMod(UnitManager.MyChampion, target) *
                             ((10 + spellClass.Level * 40) +
                             (UnitManager.MyChampion.UnitStats.TotalAttackDamage * (1.15f + 0.15f * spellClass.Level)))
                             : 0,
                 ShouldCast = (target, spellClass, damage) =>
+                            UseQ &&
                             spellClass.IsSpellReady &&
                             UnitManager.MyChampion.Mana > 90 &&
                             target != null,
@@ -62,7 +62,7 @@ namespace SixAIO.Champions
                 TargetSelect = () =>
                             UnitManager.EnemyChampions
                             .Where(x => TargetSelector.IsAttackable(x))
-                            .Where(x => x.Distance <= 700 && x.IsAlive)
+                            .Where(x => x.Distance <= 600 && x.IsAlive)
                             .FirstOrDefault()
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
