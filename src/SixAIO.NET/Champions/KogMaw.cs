@@ -28,12 +28,28 @@ namespace SixAIO.Champions
                             UseQ &&
                             spellClass.IsSpellReady &&
                             UnitManager.MyChampion.Mana > 90 &&
+                            UnitManager.EnemyChampions.All(x => x.Distance > UnitManager.MyChampion.AttackRange - 150) &&
                             target != null,
                 TargetSelect = () =>
                             UnitManager.EnemyChampions
                             .Where(x => TargetSelector.IsAttackable(x) && x.Distance <= 1000 && x.IsAlive)
                             .OrderBy(x => x.Health)
                             .FirstOrDefault()
+            };
+            SpellW = new Spell(CastSlot.W, SpellSlot.W)
+            {
+                CastTime = 0.3f,
+                ShouldCast = (target, spellClass, damage) =>
+                            UseW &&
+                            spellClass.IsSpellReady &&
+                            UnitManager.MyChampion.Mana > 90 &&
+                            UnitManager.EnemyChampions.Any(x => x.Distance < UnitManager.MyChampion.AttackRange) &&
+                            target != null,
+                TargetSelect = () =>
+                {
+                    var target = Orbwalker.TargetHero;
+                    return TargetSelector.IsAttackable(target) && TargetSelector.IsInRange(target) ? target : null;
+                }
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
@@ -42,6 +58,7 @@ namespace SixAIO.Champions
                             UseE &&
                             spellClass.IsSpellReady &&
                             UnitManager.MyChampion.Mana > 75 &&
+                            UnitManager.EnemyChampions.All(x => x.Distance > UnitManager.MyChampion.AttackRange - 150) &&
                             target != null,
                 TargetSelect = () =>
                             UnitManager.EnemyChampions
@@ -63,6 +80,7 @@ namespace SixAIO.Champions
                             UseR &&
                             spellClass.IsSpellReady &&
                             UnitManager.MyChampion.Mana > 100 &&
+                            UnitManager.EnemyChampions.Any(x => x.Distance > UnitManager.MyChampion.AttackRange) &&
                             target != null &&
                             target.Health < damage,
                 TargetSelect = () =>
@@ -76,7 +94,7 @@ namespace SixAIO.Champions
 
         internal override void OnCoreMainInput()
         {
-            if (SpellE.ExecuteCastSpell() || SpellQ.ExecuteCastSpell() || SpellR.ExecuteCastSpell())
+            if (SpellW.ExecuteCastSpell() || SpellE.ExecuteCastSpell() || SpellQ.ExecuteCastSpell() || SpellR.ExecuteCastSpell())
             {
                 return;
             }

@@ -7,6 +7,7 @@ using Oasys.Common.Menu.ItemComponents;
 using Oasys.SDK;
 using Oasys.SDK.Menu;
 using Oasys.SDK.SpellCasting;
+using Oasys.SDK.Tools;
 using System.Threading.Tasks;
 
 namespace SixAIO.Utilities
@@ -105,21 +106,21 @@ namespace SixAIO.Utilities
         internal static Task GameEvents_OnGameLoadComplete()
         {
             var spellBook = UnitManager.MyChampion.GetSpellBook();
-            if (spellBook.GetSpellClass(SpellSlot.Summoner1).SpellData.CastRange == 500.0)
+            if (SummonerSpellsProvider.IHaveSpellOnSlot(SummonerSpellsEnum.Smite, SummonerSpellSlot.First))
             {
                 SmiteKey = spellBook.GetSpellClass(SpellSlot.Summoner1);
                 SmiteSlot = CastSlot.Summoner1;
             }
-            else if (spellBook.GetSpellClass(SpellSlot.Summoner2).SpellData.CastRange == 500.0)
+            else if (SummonerSpellsProvider.IHaveSpellOnSlot(SummonerSpellsEnum.Smite, SummonerSpellSlot.Second))
             {
                 SmiteKey = spellBook.GetSpellClass((SpellSlot)5);
                 SmiteSlot = CastSlot.Summoner2;
             }
             else
             {
-                CoreEvents.OnCoreMainTick -= InputHandler;
-                CoreEvents.OnCoreLaneclearInputAsync -= InputHandler;
-                CoreEvents.OnCoreLasthitInputAsync -= InputHandler;
+                CoreEvents.OnCoreMainTick -= OnCoreMainTick;
+                CoreEvents.OnCoreLaneclearInputAsync -= OnCoreLaneclearInputAsync;
+                CoreEvents.OnCoreLasthitInputAsync -= OnCoreLasthitInputAsync;
                 return Task.CompletedTask;
             }
 

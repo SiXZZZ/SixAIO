@@ -27,7 +27,7 @@ namespace SixAIO.Champions
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
                 Damage = (target, spellClass) => -45 + (65 * spellClass.Level) + UnitManager.MyChampion.UnitStats.TotalAttackDamage,
-                ShouldCast = (target, spellClass, damage) => UseQ && spellClass.IsSpellReady && UnitManager.MyChampion.Mana > 70,
+                ShouldCast = (target, spellClass, damage) => UseQ && spellClass.IsSpellReady && UnitManager.MyChampion.Mana > 70 && target != null,
                 TargetSelect = () => UnitManager.EnemyChampions
                                     .Where(x => TargetSelector.IsAttackable(x) && x.Distance <= 1100 && x.IsAlive)
                                     .OrderBy(x => x.Health)
@@ -138,7 +138,7 @@ namespace SixAIO.Champions
         internal override void OnCoreMainInput()
         {
             _mode = Mode.Champs;
-            if (SpellE.ExecuteCastSpell())
+            if (SpellE.ExecuteCastSpell() || SpellQ.ExecuteCastSpell())
             {
                 return;
             }
