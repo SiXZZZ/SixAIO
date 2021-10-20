@@ -1,11 +1,10 @@
 ﻿using Oasys.Common.GameObject.Clients;
 using Oasys.SDK;
 using Oasys.SDK.Events;
-using SharpDX;
 using SixAIO.Models;
 using SixAIO.Utilities;
 using System;
-using System.Linq;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace SixAIO
@@ -25,11 +24,11 @@ namespace SixAIO
             Oasys.Common.EventsProvider.GameEvents.OnDeleteObject += GameEvents_OnDeleteObject;
         }
 
-        private static Task GameEvents_OnDeleteObject(AIBaseClient obj)
+        private static Task GameEvents_OnDeleteObject(List<AIBaseClient> callbackObjectList, AIBaseClient callbackObject, float callbackGameTime)
         {
             try
             {
-                _currentChampion?.OnDeleteObject(obj);
+                _currentChampion?.OnDeleteObject(callbackObject);
             }
             catch (Exception)
             {
@@ -37,11 +36,11 @@ namespace SixAIO
             return Task.CompletedTask;
         }
 
-        private static Task GameEvents_OnCreateObject(AIBaseClient obj)
+        private static Task GameEvents_OnCreateObject(List<AIBaseClient> callbackObjectList, AIBaseClient callbackObject, float callbackGameTime)
         {
             try
             {
-                _currentChampion?.OnCreateObject(obj);
+                _currentChampion?.OnCreateObject(callbackObject);
             }
             catch (Exception)
             {

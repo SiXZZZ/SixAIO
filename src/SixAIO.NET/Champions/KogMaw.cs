@@ -43,7 +43,7 @@ namespace SixAIO.Champions
                             UseW &&
                             spellClass.IsSpellReady &&
                             UnitManager.MyChampion.Mana > 90 &&
-                            UnitManager.EnemyChampions.Any(x => x.Distance < UnitManager.MyChampion.AttackRange) &&
+                            UnitManager.EnemyChampions.Any(x => x.Distance < UnitManager.MyChampion.AttackRange + 100) &&
                             target != null,
                 TargetSelect = () =>
                 {
@@ -53,7 +53,7 @@ namespace SixAIO.Champions
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
-                CastTime = 1f,
+                CastTime = 0.3f,
                 ShouldCast = (target, spellClass, damage) =>
                             UseE &&
                             spellClass.IsSpellReady &&
@@ -68,7 +68,7 @@ namespace SixAIO.Champions
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
-                CastTime = 1f,
+                CastTime = 0.3f,
                 Damage = (target, spellClass) =>
                             target != null
                             ? Helpers.DamageCalculator.GetMagicResistMod(UnitManager.MyChampion, target) *
@@ -80,7 +80,7 @@ namespace SixAIO.Champions
                             UseR &&
                             spellClass.IsSpellReady &&
                             UnitManager.MyChampion.Mana > 100 &&
-                            UnitManager.EnemyChampions.Any(x => x.Distance > UnitManager.MyChampion.AttackRange) &&
+                            UnitManager.EnemyChampions.All(x => x.Distance > UnitManager.MyChampion.AttackRange) &&
                             target != null &&
                             target.Health < damage,
                 TargetSelect = () =>

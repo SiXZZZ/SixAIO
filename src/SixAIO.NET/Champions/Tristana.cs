@@ -9,6 +9,7 @@ using Oasys.SDK.SpellCasting;
 using SixAIO.Enums;
 using SixAIO.Models;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace SixAIO.Champions
@@ -24,9 +25,18 @@ namespace SixAIO.Champions
 
         public Tristana()
         {
+            SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
+            {
+                CastTime = 0.3f,
+                ShouldCast = (target, spellClass, damage) =>
+                            spellClass.IsSpellReady &&
+                            UseQ &&
+                            target != null,
+                TargetSelect = () => GetETarget(UnitManager.EnemyChampions)
+            };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
-                CastTime = 1f,
+                CastTime = 0.3f,
                 ShouldCast = (target, spellClass, damage) =>
                             spellClass.IsSpellReady &&
                             UnitManager.MyChampion.Mana > 90 &&
@@ -36,7 +46,7 @@ namespace SixAIO.Champions
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
-                CastTime = 1f,
+                CastTime = 0.3f,
                 Damage = (target, spellClass) =>
                             target != null
                             ? GetRDamage(target)
@@ -81,6 +91,19 @@ namespace SixAIO.Champions
             }
         }
 
+        internal override void OnCoreLaneClearInput()
+        {
+            Orbwalker.SelectedTarget = GetETarget(UnitManager.Enemies);
+        }
+
+        private static GameObjectBase GetETarget<T>(List<T> enemies) where T : GameObjectBase
+        {
+            var availableTargets = enemies.Where(x => TargetSelector.IsAttackable(x) && x.Distance <= UnitManager.MyChampion.TrueAttackRange && !x.IsObject(ObjectTypeFlag.BuildingProps)).OrderBy(x => x.Health);
+            return availableTargets.Any(x => x.BuffManager.HasBuff("tristanaecharge"))
+                ? availableTargets.FirstOrDefault(x => x.BuffManager.HasBuff("tristanaecharge"))
+                : null;
+        }
+
         private bool UsePushAway
         {
             get => MenuTab.GetItem<Switch>("Use Push Away").IsOn;
@@ -102,6 +125,8 @@ namespace SixAIO.Champions
         internal override void InitializeMenu()
         {
             MenuManager.AddTab(new Tab($"SIXAIO - {nameof(Tristana)}"));
+            MenuTab.AddItem(new InfoDisplay() { Title = "---Q Settings---" });
+            MenuTab.AddItem(new Switch() { Title = "Use Q", IsOn = true });
             MenuTab.AddItem(new InfoDisplay() { Title = "---E Settings---" });
             MenuTab.AddItem(new Switch() { Title = "Use E", IsOn = true });
             MenuTab.AddItem(new InfoDisplay() { Title = "---R Settings---" });
