@@ -93,7 +93,7 @@ namespace SixAIO.Models
 
         public SpellSlot SpellSlot { get; set; }
 
-        public float CastTime { get; set; }
+        public float CastTime { get; set; } = 0.3f;
 
         public Func<GameObjectBase, SpellClass, float, bool> ShouldCast = (target, spellClass, damage) => false;
 

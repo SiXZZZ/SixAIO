@@ -6,8 +6,6 @@ using Oasys.Common.Menu.ItemComponents;
 using Oasys.SDK;
 using Oasys.SDK.Menu;
 using Oasys.SDK.SpellCasting;
-using Oasys.SDK.Tools;
-using System;
 using System.Threading.Tasks;
 
 namespace SixAIO.Utilities
@@ -37,6 +35,12 @@ namespace SixAIO.Utilities
             set => _menuTab.GetItem<Switch>("Heal On Tick").IsOn = value;
         }
 
+        private static int HealBelowPercent
+        {
+            get => _menuTab.GetItem<Counter>("Heal Below Percent").Value;
+            set => _menuTab.GetItem<Counter>("Heal Below Percent").Value = value;
+        }
+
         internal static Task GameEvents_OnGameLoadComplete()
         {
             var spellBook = UnitManager.MyChampion.GetSpellBook();
@@ -60,6 +64,9 @@ namespace SixAIO.Utilities
 
             MenuManager.AddTab(new Tab($"SIXAIO - Auto Heal"));
             _menuTab.AddItem(new Switch() { Title = "Use Heal", IsOn = true });
+            _menuTab.AddItem(new Counter() { Title = "Heal Below Percent", Value = 10, MinValue = 0, MaxValue = 100, ValueFrequency = 1 });
+            _menuTab.AddItem(new Switch() { Title = "Heal On Combo", IsOn = false });
+            _menuTab.AddItem(new Switch() { Title = "Heal On Tick", IsOn = false });
 
             return Task.CompletedTask;
         }
@@ -96,7 +103,7 @@ namespace SixAIO.Utilities
 
         private static bool ShouldUseHeal()
         {
-            return false;
+            return (UnitManager.MyChampion.Health / UnitManager.MyChampion.MaxHealth * 100) < HealBelowPercent;
         }
     }
 }

@@ -107,8 +107,8 @@ namespace SixAIO.Helpers
                         continue;
                     }
 
-                    if (!Collision.MinionCollision(prediction, spell.Range, spell.Width) &&
-                        !Collision.MinionCollision(enemyChampion.Position, spell.Range, spell.Width))
+                    if (!Collision.MinionCollision(prediction, spell.Width) &&
+                        !Collision.MinionCollision(enemyChampion.Position, spell.Width))
                     {
                         return enemyChampion;
                     }

@@ -2,11 +2,30 @@
 using Oasys.Common.Extensions;
 using Oasys.SDK;
 using SharpDX;
+using System.Linq;
 
 namespace SixAIO.Helpers
 {
     public static class Collision
     {
+        public static bool MinionCollision(Vector2 targetPosition, int width)
+        {
+            foreach (var minion in UnitManager.EnemyMinions.Where(x => x.IsAlive && !x.W2S.IsZero))
+            {
+                if (IsLineCollision(minion.W2S, new Vector2[] { UnitManager.MyChampion.W2S, targetPosition }, width) && minion.W2S.Distance(targetPosition) < UnitManager.MyChampion.W2S.Distance(targetPosition))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        public static bool IsLineCollision(Vector2 pos1, Vector2[] line, int spellWidth)
+        {
+            return Geometry.DistanceFromPointToLine(pos1, line) <= spellWidth;
+        }
+
         public static bool IsLineCollision(Vector3 positionToTest, Vector3 targetPosition, float targetRadius, float spellWidth)
         {
             positionToTest = (Vector3)LeagueNativeRendererManager.WorldToScreen(positionToTest);
@@ -65,7 +84,7 @@ namespace SixAIO.Helpers
             return source.X * other.X + source.Y * other.Y + source.Z * other.Z;
         }
 
-        public static bool MinionCollision(Vector3 targetPosition, float dist, float width)
+        public static bool MinionCollision(Vector3 targetPosition, float width)
         {
             foreach (var enemyMinion in UnitManager.EnemyMinions)
             {
@@ -74,8 +93,7 @@ namespace SixAIO.Helpers
                     continue;
                 }
 
-                if (IsLineCollision(enemyMinion.Position, targetPosition,
-                    enemyMinion.UnitComponentInfo.UnitBoundingRadius, width))
+                if (IsLineCollision(enemyMinion.Position, targetPosition, enemyMinion.UnitComponentInfo.UnitBoundingRadius, width))
                 {
                     return true;
                 }

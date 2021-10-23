@@ -15,7 +15,6 @@ namespace SixAIO.Champions
         {
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
-                CastTime = 0.3f,
                 Damage = (target, spellClass) =>
                             target != null
                             ? Helpers.DamageCalculator.GetArmorMod(UnitManager.MyChampion, target) *
@@ -36,7 +35,6 @@ namespace SixAIO.Champions
             };
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
             {
-                CastTime = 0.3f,
                 ShouldCast = (target, spellClass, damage) =>
                             UseW &&
                             spellClass.IsSpellReady &&

@@ -9,14 +9,12 @@ using System.Linq;
 
 namespace SixAIO.Champions
 {
-
     internal class Lucian : Champion
     {
         public Lucian()
         {
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
-                CastTime = 0.1f,
                 ShouldCast = (target, spellClass, damage) =>
                             UseQ &&
                             spellClass.IsSpellReady &&
@@ -24,13 +22,10 @@ namespace SixAIO.Champions
                             target != null,
                 TargetSelect = () =>
                             UnitManager.EnemyChampions
-                            .Where(x => x.Distance <= 500 && x.IsAlive)
-                            .Where(x => TargetSelector.IsAttackable(x))
-                            .FirstOrDefault()
+                            .FirstOrDefault(x => x.Distance <= 500 && x.IsAlive && TargetSelector.IsAttackable(x))
             };
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
             {
-                CastTime = 0.1f,
                 ShouldCast = (target, spellClass, damage) =>
                             UseW &&
                             spellClass.IsSpellReady &&
@@ -38,9 +33,7 @@ namespace SixAIO.Champions
                             target != null,
                 TargetSelect = () =>
                             UnitManager.EnemyChampions
-                            .Where(x => x.Distance <= 900 && x.IsAlive)
-                            .Where(x => TargetSelector.IsAttackable(x))
-                            .FirstOrDefault()
+                            .FirstOrDefault(x => x.Distance <= 900 && x.IsAlive && TargetSelector.IsAttackable(x))
             };
         }
 

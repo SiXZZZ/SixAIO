@@ -16,7 +16,6 @@ namespace SixAIO.Champions
 {
     internal class Tristana : Champion
     {
-
         private static float GetRDamage(GameObjectBase target)
         {
             return Helpers.DamageCalculator.GetMagicResistMod(UnitManager.MyChampion, target) *
@@ -27,7 +26,6 @@ namespace SixAIO.Champions
         {
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
-                CastTime = 0.3f,
                 ShouldCast = (target, spellClass, damage) =>
                             spellClass.IsSpellReady &&
                             UseQ &&
@@ -36,7 +34,6 @@ namespace SixAIO.Champions
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
-                CastTime = 0.3f,
                 ShouldCast = (target, spellClass, damage) =>
                             spellClass.IsSpellReady &&
                             UnitManager.MyChampion.Mana > 90 &&
@@ -46,7 +43,6 @@ namespace SixAIO.Champions
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
-                CastTime = 0.3f,
                 Damage = (target, spellClass) =>
                             target != null
                             ? GetRDamage(target)
@@ -85,7 +81,7 @@ namespace SixAIO.Champions
 
         internal override void OnCoreMainInput()
         {
-            if (SpellE.ExecuteCastSpell() || SpellR.ExecuteCastSpell())
+            if (SpellQ.ExecuteCastSpell() || SpellE.ExecuteCastSpell() || SpellR.ExecuteCastSpell())
             {
                 return;
             }
@@ -94,14 +90,12 @@ namespace SixAIO.Champions
         internal override void OnCoreLaneClearInput()
         {
             Orbwalker.SelectedTarget = GetETarget(UnitManager.Enemies);
+            SpellQ.ExecuteCastSpell();
         }
 
         private static GameObjectBase GetETarget<T>(List<T> enemies) where T : GameObjectBase
         {
-            var availableTargets = enemies.Where(x => TargetSelector.IsAttackable(x) && x.Distance <= UnitManager.MyChampion.TrueAttackRange && !x.IsObject(ObjectTypeFlag.BuildingProps)).OrderBy(x => x.Health);
-            return availableTargets.Any(x => x.BuffManager.HasBuff("tristanaecharge"))
-                ? availableTargets.FirstOrDefault(x => x.BuffManager.HasBuff("tristanaecharge"))
-                : null;
+            return enemies.FirstOrDefault(x => TargetSelector.IsAttackable(x) && x.Distance <= UnitManager.MyChampion.TrueAttackRange && !x.IsObject(ObjectTypeFlag.BuildingProps) && x.BuffManager.HasBuff("tristanaecharge"));
         }
 
         private bool UsePushAway

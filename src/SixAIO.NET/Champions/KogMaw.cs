@@ -16,7 +16,6 @@ namespace SixAIO.Champions
         {
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
-                CastTime = 0.3f,
                 Damage = (target, spellClass) =>
                             target != null
                             ? Helpers.DamageCalculator.GetArmorMod(UnitManager.MyChampion, target) *
@@ -27,9 +26,10 @@ namespace SixAIO.Champions
                 ShouldCast = (target, spellClass, damage) =>
                             UseQ &&
                             spellClass.IsSpellReady &&
-                            UnitManager.MyChampion.Mana > 90 &&
-                            UnitManager.EnemyChampions.All(x => x.Distance > UnitManager.MyChampion.AttackRange - 150) &&
-                            target != null,
+                            UnitManager.MyChampion.Mana > 40 &&
+                            UnitManager.MyChampion.Mana > QMinMana &&
+                            target != null &&
+                            !Collision.MinionCollision(target.W2S, 100),
                 TargetSelect = () =>
                             UnitManager.EnemyChampions
                             .Where(x => TargetSelector.IsAttackable(x) && x.Distance <= 1000 && x.IsAlive)
@@ -38,37 +38,26 @@ namespace SixAIO.Champions
             };
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
             {
-                CastTime = 0.3f,
                 ShouldCast = (target, spellClass, damage) =>
                             UseW &&
                             spellClass.IsSpellReady &&
-                            UnitManager.MyChampion.Mana > 90 &&
-                            UnitManager.EnemyChampions.Any(x => x.Distance < UnitManager.MyChampion.AttackRange + 100) &&
-                            target != null,
-                TargetSelect = () =>
-                {
-                    var target = Orbwalker.TargetHero;
-                    return TargetSelector.IsAttackable(target) && TargetSelector.IsInRange(target) ? target : null;
-                }
+                            UnitManager.MyChampion.Mana > 40 &&
+                            UnitManager.MyChampion.Mana > WMinMana &&
+                            UnitManager.EnemyChampions.Any(x => x.Distance < UnitManager.MyChampion.TrueAttackRange + 110 + (20 * UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot.W).Level))
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
-                CastTime = 0.3f,
                 ShouldCast = (target, spellClass, damage) =>
                             UseE &&
                             spellClass.IsSpellReady &&
-                            UnitManager.MyChampion.Mana > 75 &&
-                            UnitManager.EnemyChampions.All(x => x.Distance > UnitManager.MyChampion.AttackRange - 150) &&
+                            UnitManager.MyChampion.Mana > 100 &&
+                            UnitManager.MyChampion.Mana > EMinMana &&
                             target != null,
                 TargetSelect = () =>
-                            UnitManager.EnemyChampions
-                            .Where(x => TargetSelector.IsAttackable(x))
-                            .Where(x => x.Distance <= 800 && x.IsAlive)
-                            .FirstOrDefault()
+                            UnitManager.EnemyChampions.FirstOrDefault(x => TargetSelector.IsAttackable(x) && x.Distance <= 800 && x.IsAlive)
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
-                CastTime = 0.3f,
                 Damage = (target, spellClass) =>
                             target != null
                             ? Helpers.DamageCalculator.GetMagicResistMod(UnitManager.MyChampion, target) *
@@ -79,17 +68,15 @@ namespace SixAIO.Champions
                 ShouldCast = (target, spellClass, damage) =>
                             UseR &&
                             spellClass.IsSpellReady &&
-                            UnitManager.MyChampion.Mana > 100 &&
+                            UnitManager.MyChampion.Mana > 40 &&
+                            UnitManager.MyChampion.Mana > RMinMana &&
                             UnitManager.EnemyChampions.All(x => x.Distance > UnitManager.MyChampion.AttackRange) &&
                             target != null &&
                             target.Health < damage,
                 TargetSelect = () =>
                             UnitManager.EnemyChampions
-                            .Where(x => TargetSelector.IsAttackable(x))
-                            .Where(x => x.BuffManager.GetBuffList().Any(buff => buff.IsActive && buff.EntryType == BuffType.Slow || BuffChecker.IsCrowdControlled(buff)))
-                            .FirstOrDefault()
+                            .FirstOrDefault(x => TargetSelector.IsAttackable(x) && x.BuffManager.GetBuffList().Any(buff => buff.IsActive && buff.EntryType == BuffType.Slow || BuffChecker.IsCrowdControlled(buff)))
             };
-
         }
 
         internal override void OnCoreMainInput()
@@ -100,13 +87,45 @@ namespace SixAIO.Champions
             }
         }
 
+        private int QMinMana
+        {
+            get => MenuTab.GetItem<Counter>("Q Min Mana").Value;
+            set => MenuTab.GetItem<Counter>("Q Min Mana").Value = value;
+        }
+
+        private int WMinMana
+        {
+            get => MenuTab.GetItem<Counter>("W Min Mana").Value;
+            set => MenuTab.GetItem<Counter>("W Min Mana").Value = value;
+        }
+
+        private int EMinMana
+        {
+            get => MenuTab.GetItem<Counter>("E Min Mana").Value;
+            set => MenuTab.GetItem<Counter>("E Min Mana").Value = value;
+        }
+
+        private int RMinMana
+        {
+            get => MenuTab.GetItem<Counter>("R Min Mana").Value;
+            set => MenuTab.GetItem<Counter>("R Min Mana").Value = value;
+        }
+
         internal override void InitializeMenu()
         {
             MenuManager.AddTab(new Tab($"SIXAIO - {nameof(KogMaw)}"));
+            MenuTab.AddItem(new InfoDisplay() { Title = "---Q Settings---" });
             MenuTab.AddItem(new Switch() { Title = "Use Q", IsOn = false });
-            MenuTab.AddItem(new Switch() { Title = "Use W", IsOn = false });
+            MenuTab.AddItem(new Counter() { Title = "Q Min Mana", MinValue = 0, MaxValue = 500, Value = 150, ValueFrequency = 10 });
+            MenuTab.AddItem(new InfoDisplay() { Title = "---W Settings---" });
+            MenuTab.AddItem(new Switch() { Title = "Use W", IsOn = true });
+            MenuTab.AddItem(new Counter() { Title = "Q Min Mana", MinValue = 0, MaxValue = 500, Value = 0, ValueFrequency = 10 });
+            MenuTab.AddItem(new InfoDisplay() { Title = "---E Settings---" });
             MenuTab.AddItem(new Switch() { Title = "Use E", IsOn = false });
+            MenuTab.AddItem(new Counter() { Title = "Q Min Mana", MinValue = 0, MaxValue = 500, Value = 150, ValueFrequency = 10 });
+            MenuTab.AddItem(new InfoDisplay() { Title = "---R Settings---" });
             MenuTab.AddItem(new Switch() { Title = "Use R", IsOn = false });
+            MenuTab.AddItem(new Counter() { Title = "Q Min Mana", MinValue = 0, MaxValue = 500, Value = 150, ValueFrequency = 10 });
         }
     }
 }

@@ -26,7 +26,6 @@ namespace SixAIO.Champions
         {
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
-                CastTime = 0.3f,
                 ShouldCast = (target, spellClass, damage) => ShouldCastE(spellClass),
             };
         }

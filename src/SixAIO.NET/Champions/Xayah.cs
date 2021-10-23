@@ -32,7 +32,6 @@ namespace SixAIO.Champions
         {
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
-                CastTime = 0.3f,
                 Damage = (target, spellClass) =>
                             target != null
                             ? Helpers.DamageCalculator.GetArmorMod(UnitManager.MyChampion, target) *
@@ -97,7 +96,7 @@ namespace SixAIO.Champions
         private int GetFeathersBetweenMeAndEnemy(AIBaseClient enemy)
         {
             return _feathers.Count(feather =>
-                    Geometry.DistanceFromPointToLine(enemy.W2S, new Vector2[] { UnitManager.MyChampion.W2S, feather.W2S }) <= enemy.UnitComponentInfo.UnitBoundingRadius);
+                    Geometry.DistanceFromPointToLine(enemy.W2S, new Vector2[] { UnitManager.MyChampion.W2S, feather.W2S }) <= enemy.UnitComponentInfo.UnitBoundingRadius && feather.Distance > enemy.Distance);
         }
 
         internal override void OnCoreMainInput()
@@ -114,7 +113,7 @@ namespace SixAIO.Champions
         {
             if (GameEngine.GameTime > _lastTick + 0.1)
             {
-                _feathers = UnitManager.AllObjects.Where(obj => obj.IsAlive && obj.OnMyTeam && obj.Name.Contains("Feather"));
+                _feathers = UnitManager.AllNativeObjects.Where(obj => obj.IsAlive && obj.OnMyTeam && obj.Name.Contains("Feather"));
                 _lastTick = GameEngine.GameTime;
             }
         }
