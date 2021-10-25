@@ -119,13 +119,13 @@ namespace SixAIO.Champions
             MenuTab.AddItem(new Counter() { Title = "Q Min Mana", MinValue = 0, MaxValue = 500, Value = 150, ValueFrequency = 10 });
             MenuTab.AddItem(new InfoDisplay() { Title = "---W Settings---" });
             MenuTab.AddItem(new Switch() { Title = "Use W", IsOn = true });
-            MenuTab.AddItem(new Counter() { Title = "Q Min Mana", MinValue = 0, MaxValue = 500, Value = 0, ValueFrequency = 10 });
+            MenuTab.AddItem(new Counter() { Title = "W Min Mana", MinValue = 0, MaxValue = 500, Value = 0, ValueFrequency = 10 });
             MenuTab.AddItem(new InfoDisplay() { Title = "---E Settings---" });
             MenuTab.AddItem(new Switch() { Title = "Use E", IsOn = false });
-            MenuTab.AddItem(new Counter() { Title = "Q Min Mana", MinValue = 0, MaxValue = 500, Value = 150, ValueFrequency = 10 });
+            MenuTab.AddItem(new Counter() { Title = "E Min Mana", MinValue = 0, MaxValue = 500, Value = 150, ValueFrequency = 10 });
             MenuTab.AddItem(new InfoDisplay() { Title = "---R Settings---" });
             MenuTab.AddItem(new Switch() { Title = "Use R", IsOn = false });
-            MenuTab.AddItem(new Counter() { Title = "Q Min Mana", MinValue = 0, MaxValue = 500, Value = 150, ValueFrequency = 10 });
+            MenuTab.AddItem(new Counter() { Title = "R Min Mana", MinValue = 0, MaxValue = 500, Value = 150, ValueFrequency = 10 });
         }
     }
 }
