@@ -1,11 +1,13 @@
 ﻿using Oasys.Common.Enums.GameEnums;
 using Oasys.Common.Extensions;
 using Oasys.Common.GameObject;
+using Oasys.Common.GameObject.Clients.ExtendedInstances.Spells;
 using Oasys.Common.Menu;
 using Oasys.Common.Menu.ItemComponents;
 using Oasys.SDK;
 using Oasys.SDK.Menu;
 using Oasys.SDK.SpellCasting;
+using Oasys.SDK.Tools;
 using SixAIO.Helpers;
 using SixAIO.Models;
 using System.Linq;
@@ -25,13 +27,13 @@ namespace SixAIO.Champions
                             target != null,
                 TargetSelect = () =>
                             UnitManager.EnemyChampions
-                            .Where(x => x.IsAlive && TargetSelector.IsAttackable(x) && x.Distance <= 850)
-                            .Where(x => x.BuffManager.GetBuffList().Any(buff => buff.IsActive && buff.EntryType == BuffType.Slow || BuffChecker.IsCrowdControlled(buff)))
+                            .Where(x => x.IsAlive && x.Distance <= 850 && TargetSelector.IsAttackable(x) && x.BuffManager.GetBuffList().Any(buff => buff.IsActive && buff.EntryType == BuffType.Slow || BuffChecker.IsCrowdControlled(buff)))
                             .OrderBy(x => x.Health)
                             .FirstOrDefault()
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
+                Damage = (target, spellClass) => GetEDamage(target, spellClass),
                 ShouldCast = (target, spellClass, damage) =>
                             UseE &&
                             spellClass.IsSpellReady &&
@@ -50,8 +52,7 @@ namespace SixAIO.Champions
 
                     return Orbwalker.TargetChampionsOnly
                                     ? null
-                                    : UnitManager.Enemies.Where(x => !x.IsObject(ObjectTypeFlag.BuildingProps) && !x.IsObject(ObjectTypeFlag.AITurretClient))
-                                                         .Where(x => x.IsAlive && TargetSelector.IsAttackable(x) && x.Distance <= 700)
+                                    : UnitManager.Enemies.Where(x => x.IsAlive && x.Distance <= 680 && !x.IsObject(ObjectTypeFlag.BuildingProps) && !x.IsObject(ObjectTypeFlag.AITurretClient) && TargetSelector.IsAttackable(x))
                                                          .OrderBy(x => x.Health)
                                                          .FirstOrDefault();
                 }
@@ -65,30 +66,54 @@ namespace SixAIO.Champions
                             target != null,
                 TargetSelect = () =>
                                 UnitManager.EnemyChampions
-                                .Where(x => x.IsAlive && TargetSelector.IsAttackable(x) && x.Distance <= 750)
-                                .Where(x => x.IsFacing(UnitManager.MyChampion))
-                                .FirstOrDefault()
+                                .FirstOrDefault(x => x.IsAlive &&
+                                                     TargetSelector.IsAttackable(x) &&
+                                                     x.Distance <= 750 &&
+                                                     x.IsFacing(UnitManager.MyChampion) &&
+                                                     !TargetSelector.IsInvulnerable(x, Oasys.Common.Logic.DamageType.Physical, false))
             };
         }
 
-        internal static float GetEDamage(GameObjectBase enemy)
+        internal static float GetEDamage(GameObjectBase enemy, SpellClass spellClass)
         {
+            if (enemy == null || spellClass == null)
+            {
+                return 0;
+            }
+
             var magicResistMod = Helpers.DamageCalculator.GetMagicResistMod(UnitManager.MyChampion, enemy);
 
             var magicDamage = 48 + 4 * UnitManager.MyChampion.Level +
                               UnitManager.MyChampion.UnitStats.TotalAbilityPower * 0.1f;
 
-            //var cassEBuff = enemy.BuffManager.GetBuffByName("findout", false, true);
-            //if (cassEBuff != null && cassEBuff.IsActive)
-            //{
-            //    //add bonus dmg
-            //}
+            if (IsPoisoned(enemy))
+            {
+                magicDamage += (20 * spellClass.Level) +
+                                UnitManager.MyChampion.UnitStats.TotalAbilityPower * 0.6f;
+            }
 
             return (float)magicResistMod * magicDamage;
         }
 
+        private static bool IsPoisoned(GameObjectBase target)
+        {
+            return target.BuffManager.GetBuffList().Any(buff => buff != null && buff.IsActive && buff.OwnerObjectIndex == UnitManager.MyChampion.Index && buff.Stacks >= 1 &&
+                    (buff.Name.Contains("cassiopeiaqdebuff", System.StringComparison.OrdinalIgnoreCase) || buff.Name.Contains("cassiopeiawpoison", System.StringComparison.OrdinalIgnoreCase)));
+        }
+
         internal override void OnCoreMainInput()
         {
+            //var something = (float)(UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot.E).FinalCooldownExpire / UnitManager.MyChampion.GetAttackCastDelay());
+            //Logger.Log("Someething : " + something + "  cd: " + UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot.E).FinalCooldownExpire);
+            //if (!Orbwalker.AllowAttacking && /*UnitManager.MyChampion.Mana / UnitManager.MyChampion.MaxMana * 100) < 10 || */  something > 2.4f)
+            //{
+            //    Orbwalker.AllowAttacking = true;
+            //}
+            //else
+            //{
+            //    Orbwalker.AllowAttacking = false;
+            //}
+
             if (SpellE.ExecuteCastSpell() || SpellQ.ExecuteCastSpell() || SpellR.ExecuteCastSpell())
             {
                 return;
@@ -97,6 +122,17 @@ namespace SixAIO.Champions
 
         internal override void OnCoreLaneClearInput()
         {
+            //var something = (float)(UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot.E).FinalCooldownExpire / UnitManager.MyChampion.GetAttackCastDelay());
+            //Logger.Log("Someething : " + something + "  cd: " + UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot.E).FinalCooldownExpire);
+            //if (!Orbwalker.AllowAttacking && /*UnitManager.MyChampion.Mana / UnitManager.MyChampion.MaxMana * 100) < 10 || */  something > 2.4f)
+            //{
+            //    Orbwalker.AllowAttacking = true;
+            //}
+            //else
+            //{
+            //    Orbwalker.AllowAttacking = false;
+            //}
+
             if (SpellE.ExecuteCastSpell())
             {
                 return;

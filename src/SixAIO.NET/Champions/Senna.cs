@@ -23,18 +23,15 @@ namespace SixAIO.Champions
                             target != null,
                 TargetSelect = () =>
                             UnitManager.EnemyChampions
-                            .Where(x => x.Distance <= UnitManager.MyChampion.TrueAttackRange + 5 && x.IsAlive)
-                            .Where(x => TargetSelector.IsAttackable(x))
-                            .FirstOrDefault()
+                            .FirstOrDefault(x => x.Distance <= UnitManager.MyChampion.TrueAttackRange && x.IsAlive &&
+                                        TargetSelector.IsAttackable(x) &&
+                                        !TargetSelector.IsInvulnerable(x, Oasys.Common.Logic.DamageType.Physical, false))
             };
         }
 
         private static void TargetSoulsWithOrbwalker()
         {
-            var soul = UnitManager.EnemyJungleMobs
-                                  .Where(x => x.ModelName == "SennaSoul" && TargetSelector.IsInRange(x))
-                                  .OrderBy(x => x.Distance)
-                                  .FirstOrDefault();
+            var soul = UnitManager.EnemyJungleMobs.FirstOrDefault(x => x.ModelName == "SennaSoul" && TargetSelector.IsInRange(x));
             Orbwalker.SelectedTarget = soul;
         }
 

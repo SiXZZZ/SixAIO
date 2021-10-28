@@ -4,6 +4,7 @@ using Oasys.Common.Menu.ItemComponents;
 using Oasys.SDK;
 using Oasys.SDK.Menu;
 using Oasys.SDK.SpellCasting;
+using SixAIO.Helpers;
 using SixAIO.Models;
 using System.Linq;
 
@@ -29,7 +30,7 @@ namespace SixAIO.Champions
                             target != null,
                 TargetSelect = () =>
                             UnitManager.EnemyChampions
-                            .Where(x => TargetSelector.IsAttackable(x) && x.Distance <= 1000 && x.IsAlive)
+                            .Where(x => TargetSelector.IsAttackable(x) && x.Distance <= 1000 && x.IsAlive && !Collision.MinionCollision(x.Position, 140))
                             .OrderBy(x => x.Health)
                             .FirstOrDefault()
             };

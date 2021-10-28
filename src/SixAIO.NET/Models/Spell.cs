@@ -103,7 +103,7 @@ namespace SixAIO.Models
 
         public Func<Vector2> CastPosition = () => default;
 
-        public bool ExecuteCastSpell()
+        public bool ExecuteCastSpell(bool turnTargetChampionsOnlyOff = false)
         {
             try
             {
@@ -111,6 +111,10 @@ namespace SixAIO.Models
                 {
                     var target = TargetSelect();
                     var spellClass = UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot);
+                    if (turnTargetChampionsOnlyOff)
+                    {
+                        Orbwalker.TargetChampionsOnly = false;
+                    }
                     if (target == default && CastTime == default)
                     {
                         return ShouldCast(target, spellClass, Damage(target, spellClass)) && CastSpell(CastSlot);

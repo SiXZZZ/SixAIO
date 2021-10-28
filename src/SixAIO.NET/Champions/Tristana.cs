@@ -39,7 +39,21 @@ namespace SixAIO.Champions
                             UnitManager.MyChampion.Mana > 90 &&
                             UseE &&
                             target != null,
-                TargetSelect = () => TargetSelector.GetBestChampionTarget(Orbwalker.SelectedHero)
+                TargetSelect = () =>
+                {
+                    var bestTarget = TargetSelector.GetBestChampionTarget(Orbwalker.SelectedHero);
+                    if (bestTarget != null && MenuTab.GetItem<Switch>("E - " + bestTarget.ModelName).IsOn)
+                    {
+                        return bestTarget;
+                    }
+
+                    var targets = UnitManager.EnemyChampions.Where(x => x.Distance <= UnitManager.MyChampion.TrueAttackRange &&
+                                                                     TargetSelector.IsAttackable(x) &&
+                                                                     !TargetSelector.IsInvulnerable(x, Oasys.Common.Logic.DamageType.Physical, false) &&
+                                                                     MenuTab.GetItem<Switch>("E - " + x.ModelName).IsOn)
+                                                         .OrderBy(x => x.Health);
+                    return targets.FirstOrDefault();
+                }
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
@@ -58,8 +72,13 @@ namespace SixAIO.Champions
 
         private Hero TargetSelectR()
         {
-            var targets = UnitManager.EnemyChampions.Where(x => TargetSelector.IsAttackable(x) && x.Distance <= UnitManager.MyChampion.TrueAttackRange).OrderBy(x => x.Health);
-            var target = targets.FirstOrDefault(x => DamageCalculator.GetTargetHealthAfterBasicAttack(UnitManager.MyChampion, x) + 100 < GetRDamage(x));
+            var targets = UnitManager.EnemyChampions.Where(x => x.Distance <= UnitManager.MyChampion.TrueAttackRange &&
+                                                                TargetSelector.IsAttackable(x) &&
+                                                                !TargetSelector.IsInvulnerable(x, Oasys.Common.Logic.DamageType.Magical, false) &&
+                                                                MenuTab.GetItem<Switch>("R - " + x.ModelName).IsOn)
+                                                    .OrderBy(x => x.Health);
+
+            var target = targets.FirstOrDefault(x => DamageCalculator.GetTargetHealthAfterBasicAttack(UnitManager.MyChampion, x) + x.NeutralShield + x.MagicalShield + 100 < GetRDamage(x));
             if (target != null)
             {
                 return target;
@@ -123,8 +142,18 @@ namespace SixAIO.Champions
             MenuTab.AddItem(new Switch() { Title = "Use Q", IsOn = true });
             MenuTab.AddItem(new InfoDisplay() { Title = "---E Settings---" });
             MenuTab.AddItem(new Switch() { Title = "Use E", IsOn = true });
+            foreach (var enemy in UnitManager.EnemyChampions)
+            {
+                MenuTab.AddItem(new Switch() { Title = "E - " + enemy.ModelName, IsOn = true });
+            }
+
             MenuTab.AddItem(new InfoDisplay() { Title = "---R Settings---" });
             MenuTab.AddItem(new Switch() { Title = "Use R", IsOn = true });
+            foreach (var enemy in UnitManager.EnemyChampions)
+            {
+                MenuTab.AddItem(new Switch() { Title = "R - " + enemy.ModelName, IsOn = true });
+            }
+
             MenuTab.AddItem(new Switch() { Title = "Use Push Away", IsOn = false });
             MenuTab.AddItem(new Counter() { Title = "Push Away Range", MinValue = 50, MaxValue = 500, Value = 150, ValueFrequency = 50 });
             MenuTab.AddItem(new ModeDisplay() { Title = "Push Away Mode", ModeNames = PushAwayHelper.ConstructPushAwayModeTable(), SelectedModeName = "Melee" });

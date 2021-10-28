@@ -22,7 +22,9 @@ namespace SixAIO.Champions
                             target != null,
                 TargetSelect = () =>
                             UnitManager.EnemyChampions
-                            .FirstOrDefault(x => x.Distance <= UnitManager.MyChampion.TrueAttackRange && x.IsAlive && TargetSelector.IsAttackable(x))
+                            .FirstOrDefault(x => x.Distance <= UnitManager.MyChampion.TrueAttackRange && x.IsAlive &&
+                                                 TargetSelector.IsAttackable(x) &&
+                                                 !TargetSelector.IsInvulnerable(x, Oasys.Common.Logic.DamageType.Physical, false))
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {

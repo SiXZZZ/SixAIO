@@ -72,11 +72,15 @@ namespace SixAIO.Champions
                     switch (_mode)
                     {
                         case Mode.Champs:
-                            return UnitManager.EnemyChampions.Where(x => TargetSelector.IsAttackable(x)).Any(x => GetFeathersBetweenMeAndEnemy(x) >= FeathersToHitChampions);
+                            return UnitManager.EnemyChampions.Where(x => TargetSelector.IsAttackable(x) &&
+                                                                         !TargetSelector.IsInvulnerable(x, Oasys.Common.Logic.DamageType.Physical, false))
+                                                             .Any(x => GetFeathersBetweenMeAndEnemy(x) >= FeathersToHitChampions);
                         case Mode.Jungle:
                             return UnitManager.EnemyJungleMobs.Where(x => TargetSelector.IsAttackable(x)).Any(x => GetFeathersBetweenMeAndEnemy(x) >= FeathersToHitTargets);
                         case Mode.Everything:
-                            return UnitManager.EnemyChampions.Where(x => TargetSelector.IsAttackable(x)).Any(x => GetFeathersBetweenMeAndEnemy(x) >= FeathersToHitChampions) ||
+                            return UnitManager.EnemyChampions.Where(x => TargetSelector.IsAttackable(x) &&
+                                                                         !TargetSelector.IsInvulnerable(x, Oasys.Common.Logic.DamageType.Physical, false))
+                                                             .Any(x => GetFeathersBetweenMeAndEnemy(x) >= FeathersToHitChampions) ||
                                    UnitManager.EnemyJungleMobs.Where(x => x.UnitComponentInfo.SkinName.ToLower().Contains("dragon") ||
                                                                           x.UnitComponentInfo.SkinName.ToLower().Contains("baron") ||
                                                                           x.UnitComponentInfo.SkinName.ToLower().Contains("herald"))
@@ -84,8 +88,6 @@ namespace SixAIO.Champions
                                                               .Any(x => GetFeathersBetweenMeAndEnemy(x) >= FeathersToHitEpicMonster) ||
                                    UnitManager.EnemyJungleMobs.Where(x => TargetSelector.IsAttackable(x)).Any(x => GetFeathersBetweenMeAndEnemy(x) >= FeathersToHitTargets) ||
                                    UnitManager.EnemyMinions.Where(x => TargetSelector.IsAttackable(x)).Any(x => GetFeathersBetweenMeAndEnemy(x) >= FeathersToHitTargets);
-                        default:
-                            break;
                     }
                 }
             }

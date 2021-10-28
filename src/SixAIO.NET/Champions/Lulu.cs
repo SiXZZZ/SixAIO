@@ -45,7 +45,8 @@ namespace SixAIO.Champions
                                 .OrderBy(x => x.Health)
                                 // and some enemy is casting a spell/attack with targetindex == ally.index
                                 .FirstOrDefault(enemy => enemy.IsAlive && enemy.Distance <= 650 && TargetSelector.IsAttackable(enemy) &&
-                                                enemy.IsCastingSpell);
+                                                         !TargetSelector.IsInvulnerable(enemy, Oasys.Common.Logic.DamageType.Magical, false) &&
+                                                         enemy.IsCastingSpell);
                     }
 
                     if (target == null && WBuffAlly)

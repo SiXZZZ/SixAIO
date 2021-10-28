@@ -48,44 +48,42 @@ namespace SixAIO.Champions
                     case Mode.Champs:
                         {
                             return UnitManager.EnemyChampions
-                                .Where(x => TargetSelector.IsAttackable(x))
-                                .Where(x => x.Distance <= UnitManager.MyChampion.TrueAttackRange && x.IsAlive)
-                                .Where(x => x.Health < GetEDamage(x))
-                                .Count() >= 1;
+                                .Count(x => x.Distance <= UnitManager.MyChampion.TrueAttackRange && x.IsAlive &&
+                                            TargetSelector.IsAttackable(x) && x.Health < GetEDamage(x) &&
+                                                                !TargetSelector.IsInvulnerable(x, Oasys.Common.Logic.DamageType.Physical, false) &&
+                                                                MenuTab.GetItem<Switch>("E - " + x.ModelName).IsOn)
+                                 >= 1;
                         }
                     case Mode.Jungle:
                         {
-                            return
-                                (UnitManager.EnemyJungleMobs.Where(x => TargetSelector.IsAttackable(x))
-                                .Where(x => x.Distance <= 1200 && x.IsAlive)
-                                .Where(x => x.Health < GetEDamage(x))
-                                .Where(x => x.UnitComponentInfo.SkinName.ToLower().Contains("dragon") || x.UnitComponentInfo.SkinName.ToLower().Contains("baron") || x.UnitComponentInfo.SkinName.ToLower().Contains("herald"))
-                                .Count() >= 1) ||
-                               (UnitManager.EnemyJungleMobs
-                                .Where(x => TargetSelector.IsAttackable(x))
-                                .Where(x => x.Distance <= UnitManager.MyChampion.TrueAttackRange && x.IsAlive)
-                                .Where(x => x.Health < GetEDamage(x))
-                                .Count() >= 3);
+                            return (UnitManager.EnemyJungleMobs.Count(x => x.Distance <= UnitManager.MyChampion.TrueAttackRange && x.IsAlive &&
+                                           TargetSelector.IsAttackable(x) && x.Health < GetEDamage(x) &&
+                                           (x.UnitComponentInfo.SkinName.ToLower().Contains("dragon") ||
+                                           x.UnitComponentInfo.SkinName.ToLower().Contains("baron") ||
+                                           x.UnitComponentInfo.SkinName.ToLower().Contains("herald")))
+                                >= 1) ||
+                              (UnitManager.EnemyJungleMobs.Count(x => x.Distance <= UnitManager.MyChampion.TrueAttackRange && x.IsAlive &&
+                                                                          TargetSelector.IsAttackable(x) && x.Health < GetEDamage(x))
+                                 >= 3);
                         }
                     case Mode.Everything:
                         {
-                            return (UnitManager.EnemyChampions.Where(x => TargetSelector.IsAttackable(x))
-                                .Where(x => x.Distance <= UnitManager.MyChampion.TrueAttackRange && x.IsAlive)
-                                .Where(x => x.Health < GetEDamage(x))
-                                .Count() >= 1) ||
-                                (UnitManager.EnemyJungleMobs.Where(x => TargetSelector.IsAttackable(x))
-                                .Where(x => x.Distance <= 1200 && x.IsAlive)
-                                .Where(x => x.Health < GetEDamage(x))
-                                .Where(x => x.UnitComponentInfo.SkinName.ToLower().Contains("dragon") || x.UnitComponentInfo.SkinName.ToLower().Contains("baron") || x.UnitComponentInfo.SkinName.ToLower().Contains("herald"))
-                                .Count() >= 1) ||
-                                (UnitManager.EnemyJungleMobs.Where(x => TargetSelector.IsAttackable(x))
-                                .Where(x => x.Distance <= UnitManager.MyChampion.TrueAttackRange && x.IsAlive)
-                                .Where(x => x.Health < GetEDamage(x))
-                                .Count() >= 3) ||
-                                (UnitManager.EnemyMinions.Where(x => TargetSelector.IsAttackable(x))
-                                .Where(x => x.Distance <= UnitManager.MyChampion.TrueAttackRange && x.IsAlive)
-                                .Where(x => x.Health < GetEDamage(x))
-                                .Count() >= 3);
+                            return (UnitManager.EnemyChampions.Count(x => x.Distance <= UnitManager.MyChampion.TrueAttackRange && x.IsAlive &&
+                                                                          TargetSelector.IsAttackable(x) && x.Health < GetEDamage(x) &&
+                                                                          !TargetSelector.IsInvulnerable(x, Oasys.Common.Logic.DamageType.Physical, false) &&
+                                                                          MenuTab.GetItem<Switch>("E - " + x.ModelName).IsOn) >= 1) ||
+                                (UnitManager.EnemyJungleMobs.Count(x => x.Distance <= UnitManager.MyChampion.TrueAttackRange && x.IsAlive &&
+                                                                          TargetSelector.IsAttackable(x) && x.Health < GetEDamage(x) &&
+                                                                          (x.UnitComponentInfo.SkinName.ToLower().Contains("dragon") ||
+                                                                          x.UnitComponentInfo.SkinName.ToLower().Contains("baron") ||
+                                                                          x.UnitComponentInfo.SkinName.ToLower().Contains("herald")))
+                                >= 1) ||
+                                (UnitManager.EnemyJungleMobs.Count(x => x.Distance <= UnitManager.MyChampion.TrueAttackRange && x.IsAlive &&
+                                                                          TargetSelector.IsAttackable(x) && x.Health < GetEDamage(x))
+                                 >= 3) ||
+                                (UnitManager.EnemyMinions.Count(x => x.Distance <= UnitManager.MyChampion.TrueAttackRange && x.IsAlive &&
+                                                                          TargetSelector.IsAttackable(x) && x.Health < GetEDamage(x))
+                                >= 3);
                         }
                 }
             }
@@ -113,7 +111,7 @@ namespace SixAIO.Champions
                 physicalDamage *= 0.5;
             }
             physicalDamage *= armorMod;
-            return (float)(physicalDamage);
+            return (float)(physicalDamage - enemy.NeutralShield - enemy.PhysicalShield);
         }
 
         internal static float GetAdditionalSpearLevelAttackDamageMod()
@@ -160,6 +158,10 @@ namespace SixAIO.Champions
             MenuTab.AddItem(new Switch() { Title = "Use Q", IsOn = true });
             MenuTab.AddItem(new InfoDisplay() { Title = "---E Settings---" });
             MenuTab.AddItem(new Switch() { Title = "Use E", IsOn = true });
+            foreach (var enemy in UnitManager.EnemyChampions)
+            {
+                MenuTab.AddItem(new Switch() { Title = "E - " + enemy.ModelName, IsOn = true });
+            }
 
         }
     }

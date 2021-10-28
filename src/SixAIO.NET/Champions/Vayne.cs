@@ -30,7 +30,10 @@ namespace SixAIO.Champions
 
         private GameObjectBase TargetSelectE()
         {
-            var targets = UnitManager.EnemyChampions.Where(x => TargetSelector.IsAttackable(x) && x.Distance <= 550 && x.IsAlive).OrderBy(x => x.Health);
+            var targets = UnitManager.EnemyChampions.Where(x => x.IsAlive && x.Distance <= 550 && 
+                                                                TargetSelector.IsAttackable(x) && 
+                                                                !TargetSelector.IsInvulnerable(x, Oasys.Common.Logic.DamageType.Physical, false))
+                                                    .OrderBy(x => x.Health);
             var target = targets.FirstOrDefault(x => CanStun(x));
             if (target != null)
             {

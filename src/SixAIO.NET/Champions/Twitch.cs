@@ -39,38 +39,45 @@ namespace SixAIO.Champions
                     case Mode.Champs:
                         {
                             return UnitManager.EnemyChampions
-                                .Where(x => TargetSelector.IsAttackable(x))
-                                .Where(x => x.Distance <= 1200 && x.IsAlive)
-                                .Where(x => x.Health < GetEDamage(x))
-                                .Count() >= 1;
+                                .Count(x => x.Distance <= 1200 && x.IsAlive &&
+                                            TargetSelector.IsAttackable(x) &&
+                                            x.Health < GetEDamage(x) &&
+                                            !TargetSelector.IsInvulnerable(x, Oasys.Common.Logic.DamageType.Physical, false) &&
+                                            MenuTab.GetItem<Switch>("E - " + x.ModelName).IsOn)
+                                >= 1;
                         }
                     case Mode.Jungle:
                         {
                             return UnitManager.EnemyJungleMobs
-                                .Where(x => TargetSelector.IsAttackable(x))
-                                .Where(x => x.Distance <= 1200 && x.IsAlive)
-                                .Where(x => x.Health < GetEDamage(x))
-                                .Count() >= 1;
+                                .Count(x => x.Distance <= 1200 && x.IsAlive &&
+                                            TargetSelector.IsAttackable(x) &&
+                                            x.Health < GetEDamage(x))
+                                 >= 1;
                         }
                     case Mode.Everything:
                         {
-                            return (UnitManager.EnemyChampions.Where(x => TargetSelector.IsAttackable(x))
-                                .Where(x => x.Distance <= 1200 && x.IsAlive)
-                                .Where(x => x.Health < GetEDamage(x))
-                                .Count() >= 1) ||
-                                (UnitManager.EnemyJungleMobs.Where(x => TargetSelector.IsAttackable(x))
-                                .Where(x => x.Distance <= 1200 && x.IsAlive)
-                                .Where(x => x.Health < GetEDamage(x))
-                                .Where(x => x.UnitComponentInfo.SkinName.ToLower().Contains("dragon") || x.UnitComponentInfo.SkinName.ToLower().Contains("baron") || x.UnitComponentInfo.SkinName.ToLower().Contains("herald"))
-                                .Count() >= 1) ||
-                                (UnitManager.EnemyJungleMobs.Where(x => TargetSelector.IsAttackable(x))
-                                .Where(x => x.Distance <= 1200 && x.IsAlive)
-                                .Where(x => x.Health < GetEDamage(x))
-                                .Count() >= 3) ||
-                                (UnitManager.EnemyMinions.Where(x => TargetSelector.IsAttackable(x))
-                                .Where(x => x.Distance <= 1200 && x.IsAlive)
-                                .Where(x => x.Health < GetEDamage(x))
-                                .Count() >= 6);
+                            return (UnitManager.EnemyChampions.Count(x => x.Distance <= 1200 && x.IsAlive &&
+                                                                         TargetSelector.IsAttackable(x) &&
+                                                                         x.Health < GetEDamage(x) &&
+                                                                         !TargetSelector.IsInvulnerable(x, Oasys.Common.Logic.DamageType.Physical, false) &&
+                                                                         MenuTab.GetItem<Switch>("E - " + x.ModelName).IsOn)
+
+                                >= 1) ||
+                                (UnitManager.EnemyJungleMobs.Count(x => x.Distance <= 1200 && x.IsAlive &&
+                                            TargetSelector.IsAttackable(x) &&
+                                            x.Health < GetEDamage(x) &&
+                                            (x.UnitComponentInfo.SkinName.ToLower().Contains("dragon") ||
+                                            x.UnitComponentInfo.SkinName.ToLower().Contains("baron") ||
+                                            x.UnitComponentInfo.SkinName.ToLower().Contains("herald")))
+                                >= 1) ||
+                                (UnitManager.EnemyJungleMobs.Count(x => x.Distance <= 1200 && x.IsAlive &&
+                                            TargetSelector.IsAttackable(x) &&
+                                            x.Health < GetEDamage(x))
+                                 >= 3) ||
+                                (UnitManager.EnemyMinions.Count(x => x.Distance <= 1200 && x.IsAlive &&
+                                            TargetSelector.IsAttackable(x) &&
+                                            x.Health < GetEDamage(x))
+                                >= 6);
                         }
                 }
             }
@@ -109,7 +116,7 @@ namespace SixAIO.Champions
                                             ((UnitManager.MyChampion.UnitStats.BonusAttackDamage * 0.35 + (10 + UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot.E).Level * 5)) *
                                             twitchEBuff.Stacks));
             var magicDamage = magicResistMod * ((0.333 * UnitManager.MyChampion.UnitStats.TotalAbilityPower) * twitchEBuff.Stacks);
-            return (float)(physicalDamage + magicDamage);
+            return (float)(((physicalDamage - enemy.PhysicalShield) + (magicDamage - enemy.MagicalShield)) - enemy.NeutralShield);
         }
 
         internal override void InitializeMenu()
@@ -117,7 +124,12 @@ namespace SixAIO.Champions
             MenuManager.AddTab(new Tab($"SIXAIO - {nameof(Twitch)}"));
             //MenuTab.AddItem(new Switch() { Title = "Use Q", IsOn = true });
             //MenuTab.AddItem(new Switch() { Title = "Use W", IsOn = true });
+            MenuTab.AddItem(new InfoDisplay() { Title = "---E Settings---" });
             MenuTab.AddItem(new Switch() { Title = "Use E", IsOn = true });
+            foreach (var enemy in UnitManager.EnemyChampions)
+            {
+                MenuTab.AddItem(new Switch() { Title = "E - " + enemy.ModelName, IsOn = true });
+            }
             //MenuTab.AddItem(new Switch() { Title = "Use R", IsOn = true });
         }
     }

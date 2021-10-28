@@ -1,6 +1,4 @@
-﻿using Oasys.Common.Enums.GameEnums;
-using Oasys.Common.EventsProvider;
-using Oasys.Common.GameObject.Clients.ExtendedInstances.Spells;
+﻿using Oasys.Common.EventsProvider;
 using Oasys.Common.Menu;
 using Oasys.Common.Menu.ItemComponents;
 using Oasys.SDK;
@@ -12,7 +10,6 @@ namespace SixAIO.Utilities
 {
     internal class AutoHeal
     {
-        public static SpellClass SmiteKey;
         public static CastSlot HealSlot;
 
         private static Tab _menuTab => MenuManagerProvider.GetTab($"SIXAIO - Auto Heal");
@@ -46,12 +43,10 @@ namespace SixAIO.Utilities
             var spellBook = UnitManager.MyChampion.GetSpellBook();
             if (SummonerSpellsProvider.IHaveSpellOnSlot(SummonerSpellsEnum.Heal, SummonerSpellSlot.First))
             {
-                SmiteKey = spellBook.GetSpellClass(SpellSlot.Summoner1);
                 HealSlot = CastSlot.Summoner1;
             }
             else if (SummonerSpellsProvider.IHaveSpellOnSlot(SummonerSpellsEnum.Heal, SummonerSpellSlot.Second))
             {
-                SmiteKey = spellBook.GetSpellClass((SpellSlot)5);
                 HealSlot = CastSlot.Summoner2;
             }
             else
@@ -103,7 +98,7 @@ namespace SixAIO.Utilities
 
         private static bool ShouldUseHeal()
         {
-            return (UnitManager.MyChampion.Health / UnitManager.MyChampion.MaxHealth * 100) < HealBelowPercent;
+            return UnitManager.MyChampion.IsAlive && TargetSelector.IsAttackable(UnitManager.MyChampion, false) && (UnitManager.MyChampion.Health / UnitManager.MyChampion.MaxHealth * 100) < HealBelowPercent;
         }
     }
 }
