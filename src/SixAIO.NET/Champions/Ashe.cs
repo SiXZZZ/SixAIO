@@ -38,7 +38,7 @@ namespace SixAIO.Champions
                             target != null,
                 TargetSelect = () =>
                             UnitManager.EnemyChampions
-                            .FirstOrDefault(x => x.Distance <= 1150 && x.IsAlive && TargetSelector.IsAttackable(x) && !Collision.MinionCollision(x.Position, 400))
+                            .FirstOrDefault(x => x.Distance <= 1000 && x.IsAlive && TargetSelector.IsAttackable(x) && !Collision.MinionCollision(x.Position, 400))
             };
         }
 

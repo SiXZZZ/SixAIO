@@ -134,7 +134,7 @@ namespace SixAIO.Champions
             if (UnitManager.MyChampion.IsAlive && DrawFeathers && DrawThickness > 0 && UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot.E).Charges >= 1 && !UnitManager.MyChampion.W2S.IsZero)
             {
                 var color = ColorConverter.GetColor(DrawColor);
-                foreach (var feather in _feathers.Where(x => !x.W2S.IsZero && x.IsAlive))
+                foreach (var feather in _feathers.Where(x => x.IsAlive))
                 {
                     Oasys.SDK.Rendering.RenderFactory.DrawLine(UnitManager.MyChampion.W2S.X, UnitManager.MyChampion.W2S.Y, feather.W2S.X, feather.W2S.Y, DrawThickness, color);
                 }

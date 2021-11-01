@@ -1,9 +1,11 @@
-﻿using Oasys.Common.Enums.GameEnums;
+﻿using Oasys.Common;
+using Oasys.Common.Enums.GameEnums;
 using Oasys.Common.GameObject;
 using Oasys.Common.GameObject.Clients.ExtendedInstances.Spells;
 using Oasys.SDK;
 using Oasys.SDK.SpellCasting;
 using SharpDX;
+using SixAIO.Helpers;
 using System;
 
 namespace SixAIO.Models
@@ -16,7 +18,6 @@ namespace SixAIO.Models
             SpellSlot = spellSlot;
         }
 
-        public float Delay { get; set; }
         public float Range { get; set; }
         public float Speed { get; set; }
         public float Width { get; set; }
@@ -27,67 +28,6 @@ namespace SixAIO.Models
         public SpellSlot Slot { get; set; }
 
         public SpellClass SpellClass { get; set; }
-
-        public Spell(SpellSlot slot, float[] mana, float range)
-        {
-            Mana = mana;
-            Slot = slot;
-            SpellClass = UnitManager.MyChampion.GetSpellBook().GetSpellClass(slot);
-            Range = range;
-        }
-
-        public Spell SetSkillshot(float delay, float width, float speed, bool collision)
-        {
-            Delay = delay;
-            Width = width;
-            Speed = speed;
-            Collision = collision;
-            return this;
-        }
-
-        public bool IsReady()
-        {
-            if (SpellClass.Level == 0)
-            {
-                return false;
-            }
-
-            switch (Slot)
-            {
-                case SpellSlot.Q:
-                    //if (MenuManage.MenuQOnState.IsOn == false) return false;
-                    break;
-                case SpellSlot.W:
-                    //if (MenuManage.MenuWOnState.IsOn == false) return false;
-                    break;
-                case SpellSlot.E:
-                    //if (MenuManage.MenuROnState.IsOn == false) return false;
-                    break;
-                case SpellSlot.R:
-                    //if (MenuManage.MenuROnState.IsOn == false) return false;
-                    break;
-
-            }
-            return (Mana[SpellClass.Level - 1] < UnitManager.MyChampion.Mana - 10 &&
-                   SpellClass.IsSpellReady &&
-                   UnitManager.MyChampion.IsAlive);
-        }
-
-        public bool ManaReady()
-        {
-            if (SpellClass.Level == 0)
-            {
-                return false;
-            }
-
-            return Mana[SpellClass.Level - 1] < UnitManager.MyChampion.Mana &&
-                   UnitManager.MyChampion.IsAlive;
-        }
-
-        public float Cooldown()
-        {
-            return (float)SpellClass.CooldownExpire - GameEngine.GameTime;
-        }
 
         public CastSlot CastSlot { get; set; }
 
@@ -100,8 +40,6 @@ namespace SixAIO.Models
         public Func<GameObjectBase> TargetSelect = () => null;
 
         public Func<GameObjectBase, SpellClass, float> Damage = (target, spellClass) => 0f;
-
-        public Func<Vector2> CastPosition = () => default;
 
         public bool ExecuteCastSpell(bool turnTargetChampionsOnlyOff = false)
         {
@@ -125,7 +63,10 @@ namespace SixAIO.Models
                     }
                     else
                     {
-                        var pos = CastPosition();
+
+                        var pos = target != null && Speed != default && CastTime != default
+                            ? LeagueNativeRendererManager.WorldToScreen(Prediction.LinePrediction(target, 1, CastTime, Speed))
+                            : target.W2S;
                         if (pos != default)
                         {
                             return ShouldCast(target, spellClass, Damage(target, spellClass)) && CastSpellAtPos(CastSlot, pos, CastTime);

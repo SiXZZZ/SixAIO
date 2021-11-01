@@ -16,6 +16,7 @@ namespace SixAIO.Champions
         {
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
+                Speed = 2200,
                 CastTime = 1f,
                 Damage = (target, spellClass) =>
                             target != null
@@ -30,14 +31,10 @@ namespace SixAIO.Champions
                             target != null,
                 TargetSelect = () =>
                             UnitManager.EnemyChampions
-                            .Where(x => TargetSelector.IsAttackable(x))
-                            .Where(x => x.Distance <= 1250 && x.IsAlive)
-                            .Where(x => x.BuffManager.GetBuffList().Any(BuffChecker.IsCrowdControlled))
-                            .FirstOrDefault()
+                            .FirstOrDefault(x => x.Distance <= 1250 && x.IsAlive&& TargetSelector.IsAttackable(x)&& x.BuffManager.GetBuffList().Any(BuffChecker.IsCrowdControlled))
             };
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
             {
-                CastTime = 1f,
                 ShouldCast = (target, spellClass, damage) =>
                             UseW &&
                             spellClass.IsSpellReady &&
@@ -46,14 +43,11 @@ namespace SixAIO.Champions
                             target != null,
                 TargetSelect = () =>
                             UnitManager.EnemyChampions
-                            .Where(x => TargetSelector.IsAttackable(x))
-                            .Where(x => x.Distance <= 780 && x.IsAlive)
-                            .Where(x => x.BuffManager.GetBuffList().Any(BuffChecker.IsCrowdControlled))
-                            .FirstOrDefault()
+                            .FirstOrDefault(x => x.Distance <= 780 && x.IsAlive && TargetSelector.IsAttackable(x) && x.BuffManager.GetBuffList().Any(BuffChecker.IsCrowdControlled))
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
-                CastTime = 1f,
+                Speed = 1600,
                 ShouldCast = (target, spellClass, damage) =>
                             UseE &&
                             spellClass.IsSpellReady &&
@@ -61,9 +55,7 @@ namespace SixAIO.Champions
                             target != null,
                 TargetSelect = () =>
                             UnitManager.EnemyChampions
-                            .Where(x => TargetSelector.IsAttackable(x))
-                            .Where(x => x.Distance <= 600 && x.IsAlive)
-                            .FirstOrDefault()
+                            .FirstOrDefault(x => x.Distance <= 500 && x.IsAlive && TargetSelector.IsAttackable(x) && !Collision.MinionCollision(x.W2S, 140))
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
@@ -83,11 +75,8 @@ namespace SixAIO.Champions
                             target.Health < damage,
                 TargetSelect = () =>
                             UnitManager.EnemyChampions
-                            .Where(x => TargetSelector.IsAttackable(x))
-                            .Where(x => x.Distance <= 3500 && x.IsAlive)
-                            .FirstOrDefault()
+                            .FirstOrDefault(x => x.Distance <= 3500 && x.IsAlive && TargetSelector.IsAttackable(x))
             };
-
         }
 
         internal override void OnCoreMainInput()
