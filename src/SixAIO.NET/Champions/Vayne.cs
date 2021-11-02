@@ -7,6 +7,7 @@ using Oasys.Common.Menu.ItemComponents;
 using Oasys.SDK;
 using Oasys.SDK.Menu;
 using Oasys.SDK.SpellCasting;
+using SharpDX;
 using SixAIO.Enums;
 using SixAIO.Helpers;
 using SixAIO.Models;
@@ -30,8 +31,9 @@ namespace SixAIO.Champions
 
         private GameObjectBase TargetSelectE()
         {
-            var targets = UnitManager.EnemyChampions.Where(x => x.IsAlive && x.Distance <= 550 && 
-                                                                TargetSelector.IsAttackable(x) && 
+            var targets = UnitManager.EnemyChampions.Where(x => x.IsAlive &&
+                                                                x.Distance <= 550 + x.UnitComponentInfo.UnitBoundingRadius + UnitManager.MyChampion.UnitComponentInfo.UnitBoundingRadius &&
+                                                                TargetSelector.IsAttackable(x) &&
                                                                 !TargetSelector.IsInvulnerable(x, Oasys.Common.Logic.DamageType.Physical, false))
                                                     .OrderBy(x => x.Health);
             var target = targets.FirstOrDefault(x => CanStun(x));
@@ -97,7 +99,10 @@ namespace SixAIO.Champions
 
         internal override void OnCoreRender()
         {
-            //foreach (var target in UnitManager.EnemyChampions.Where(x => TargetSelector.IsAttackable(x) && x.Distance <= 550 && x.IsAlive && CanStun(x)))
+            //foreach (var target in UnitManager.EnemyChampions.Where(x => TargetSelector.IsAttackable(x) &&
+            //                                                             x.Distance <= 550 + x.UnitComponentInfo.UnitBoundingRadius + UnitManager.MyChampion.UnitComponentInfo.UnitBoundingRadius &&
+            //                                                             x.IsAlive &&
+            //                                                             CanStun(x)))
             //{
             //    var myPoint = UnitManager.MyChampion.W2S;
             //    var targetPoint = UnitManager.MyChampion.W2S.Extend(target.W2S, target.Distance + DistanceToWall(target));
