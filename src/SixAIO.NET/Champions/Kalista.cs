@@ -99,7 +99,7 @@ namespace SixAIO.Champions
                 return 0;
             }
             var armorMod = DamageCalculator.GetArmorMod(UnitManager.MyChampion, enemy);
-            var firstSpearDaamage = 10 + (UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot.E).Level * 10) + UnitManager.MyChampion.UnitStats.TotalAttackDamage * 0.6;
+            var firstSpearDaamage = 10 + (UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot.E).Level * 10) + UnitManager.MyChampion.UnitStats.TotalAttackDamage * 0.7;
 
             var additionalSpearDamage = 4 + UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot.E).Level * 6 + UnitManager.MyChampion.UnitStats.TotalAttackDamage * GetAdditionalSpearLevelAttackDamageMod();
             var physicalDamage = firstSpearDaamage + additionalSpearDamage * (kalistaE.Stacks - 1);
@@ -116,21 +116,15 @@ namespace SixAIO.Champions
 
         internal static float GetAdditionalSpearLevelAttackDamageMod()
         {
-            switch (UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot.E).Level)
+            return UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot.E).Level switch
             {
-                case 1:
-                    return 0.198f;
-                case 2:
-                    return 0.23748f;
-                case 3:
-                    return 0.27498f;
-                case 4:
-                    return 0.31248f;
-                case 5:
-                    return 0.34988f;
-                default:
-                    return 0;
-            }
+                1 => 0.232f,
+                2 => 0.275f,
+                3 => 0.319f,
+                4 => 0.363f,
+                5 => 0.406f,
+                _ => 0,
+            };
         }
 
         internal override void OnCoreMainInput()
