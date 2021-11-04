@@ -98,7 +98,7 @@ namespace SixAIO.Champions
             {
                 return 0;
             }
-            var armorMod = Helpers.DamageCalculator.GetArmorMod(UnitManager.MyChampion, enemy);
+            var armorMod = DamageCalculator.GetArmorMod(UnitManager.MyChampion, enemy);
             var firstSpearDaamage = 10 + (UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot.E).Level * 10) + UnitManager.MyChampion.UnitStats.TotalAttackDamage * 0.6;
 
             var additionalSpearDamage = 4 + UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot.E).Level * 6 + UnitManager.MyChampion.UnitStats.TotalAttackDamage * GetAdditionalSpearLevelAttackDamageMod();

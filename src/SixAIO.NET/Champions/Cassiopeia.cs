@@ -81,7 +81,7 @@ namespace SixAIO.Champions
                 return 0;
             }
 
-            var magicResistMod = Helpers.DamageCalculator.GetMagicResistMod(UnitManager.MyChampion, enemy);
+            var magicResistMod = DamageCalculator.GetMagicResistMod(UnitManager.MyChampion, enemy);
 
             var magicDamage = 48 + 4 * UnitManager.MyChampion.Level +
                               UnitManager.MyChampion.UnitStats.TotalAbilityPower * 0.1f;

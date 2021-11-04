@@ -34,7 +34,7 @@ namespace SixAIO.Champions
             {
                 Damage = (target, spellClass) =>
                             target != null
-                            ? Helpers.DamageCalculator.GetArmorMod(UnitManager.MyChampion, target) *
+                            ? DamageCalculator.GetArmorMod(UnitManager.MyChampion, target) *
                             (25 + spellClass.Level * 25 +
                             (UnitManager.MyChampion.UnitStats.BonusAttackDamage * 0.5f))
                             : 0,
@@ -144,7 +144,7 @@ namespace SixAIO.Champions
         internal float GetEDamage(AIBaseClient enemy)
         {
             var feathers = GetFeathersBetweenMeAndEnemy(enemy);
-            var armorMod = Helpers.DamageCalculator.GetArmorMod(UnitManager.MyChampion, enemy);
+            var armorMod = DamageCalculator.GetArmorMod(UnitManager.MyChampion, enemy);
             var physicalDamage = armorMod * ((45 + UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot.E).Level * 10 + UnitManager.MyChampion.UnitStats.BonusAttackDamage * 0.60f) * feathers);
             if (!enemy.IsObject(ObjectTypeFlag.AIHeroClient))
             {

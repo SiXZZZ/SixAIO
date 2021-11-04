@@ -18,7 +18,7 @@ namespace SixAIO.Champions
     {
         private static float GetRDamage(GameObjectBase target)
         {
-            return Helpers.DamageCalculator.GetMagicResistMod(UnitManager.MyChampion, target) *
+            return DamageCalculator.GetMagicResistMod(UnitManager.MyChampion, target) *
                    (UnitManager.MyChampion.UnitStats.TotalAbilityPower + 200 + 100 * UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot.R).Level);
         }
 

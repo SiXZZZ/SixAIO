@@ -32,9 +32,9 @@ namespace SixAIO.Champions
                                                 .Where(x => x.IsAlive && x.Distance <= 1000 &&
                                                             TargetSelector.IsAttackable(x) &&
                                                             !TargetSelector.IsInvulnerable(x, Oasys.Common.Logic.DamageType.Physical, false));
-                    if (targets.Any(x => x.Distance <= 500))
+                    if (targets.Any(x => x.Distance <= 550))
                     {
-                        return targets.FirstOrDefault(x => x.Distance <= 500);
+                        return targets.FirstOrDefault(x => x.Distance <= 550);
                     }
                     if (!Orbwalker.TargetChampionsOnly)
                     {
@@ -48,7 +48,7 @@ namespace SixAIO.Champions
                         }
                     }
 
-                    return targets.FirstOrDefault(x => x.Distance <= 500);
+                    return targets.FirstOrDefault(x => x.Distance <= 550);
                 }
             };
             SpellW = new Spell(CastSlot.W, SpellSlot.W)

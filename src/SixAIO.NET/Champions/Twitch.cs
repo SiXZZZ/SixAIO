@@ -110,8 +110,8 @@ namespace SixAIO.Champions
             {
                 return 0;
             }
-            var armorMod = Helpers.DamageCalculator.GetArmorMod(UnitManager.MyChampion, enemy);
-            var magicResistMod = Helpers.DamageCalculator.GetMagicResistMod(UnitManager.MyChampion, enemy);
+            var armorMod = DamageCalculator.GetArmorMod(UnitManager.MyChampion, enemy);
+            var magicResistMod = DamageCalculator.GetMagicResistMod(UnitManager.MyChampion, enemy);
             var physicalDamage = armorMod * ((10 + UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot.E).Level * 10) +
                                             ((UnitManager.MyChampion.UnitStats.BonusAttackDamage * 0.35 + (10 + UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot.E).Level * 5)) *
                                             twitchEBuff.Stacks));

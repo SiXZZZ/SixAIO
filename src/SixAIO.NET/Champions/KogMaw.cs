@@ -20,7 +20,7 @@ namespace SixAIO.Champions
                 Speed = 1650,
                 Damage = (target, spellClass) =>
                             target != null
-                            ? Helpers.DamageCalculator.GetArmorMod(UnitManager.MyChampion, target) *
+                            ? DamageCalculator.GetArmorMod(UnitManager.MyChampion, target) *
                             ((-5 + spellClass.Level * 25) +
                             (UnitManager.MyChampion.UnitStats.TotalAttackDamage * 1.3f) +
                             (UnitManager.MyChampion.UnitStats.TotalAbilityPower * 0.15f))
@@ -66,7 +66,7 @@ namespace SixAIO.Champions
                 Speed = -1,
                 Damage = (target, spellClass) =>
                             target != null
-                            ? Helpers.DamageCalculator.GetMagicResistMod(UnitManager.MyChampion, target) *
+                            ? DamageCalculator.GetMagicResistMod(UnitManager.MyChampion, target) *
                                         ((200 + spellClass.Level * 150) +
                                         (UnitManager.MyChampion.UnitStats.BonusAttackDamage) +
                                         (UnitManager.MyChampion.UnitStats.TotalAbilityPower))

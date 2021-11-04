@@ -20,7 +20,7 @@ namespace SixAIO.Champions
                 CastTime = 1f,
                 Damage = (target, spellClass) =>
                             target != null
-                            ? Helpers.DamageCalculator.GetArmorMod(UnitManager.MyChampion, target) *
+                            ? DamageCalculator.GetArmorMod(UnitManager.MyChampion, target) *
                             ((10 + spellClass.Level * 40) +
                             (UnitManager.MyChampion.UnitStats.TotalAttackDamage * (1.15f + 0.15f * spellClass.Level)))
                             : 0,
@@ -62,7 +62,7 @@ namespace SixAIO.Champions
                 CastTime = 1f,
                 Damage = (target, spellClass) =>
                             target != null
-                            ? Helpers.DamageCalculator.GetArmorMod(UnitManager.MyChampion, target) *
+                            ? DamageCalculator.GetArmorMod(UnitManager.MyChampion, target) *
                             ((75 + spellClass.Level * 225) +
                             (UnitManager.MyChampion.UnitStats.BonusAttackDamage * 2f))
                             : 0,
