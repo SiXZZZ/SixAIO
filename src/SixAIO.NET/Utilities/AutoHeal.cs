@@ -59,7 +59,7 @@ namespace SixAIO.Utilities
 
             MenuManager.AddTab(new Tab($"SIXAIO - Auto Heal"));
             _menuTab.AddItem(new Switch() { Title = "Use Heal", IsOn = true });
-            _menuTab.AddItem(new Counter() { Title = "Heal Below Percent", Value = 10, MinValue = 0, MaxValue = 100, ValueFrequency = 1 });
+            _menuTab.AddItem(new Counter() { Title = "Heal Below Percent", Value = 20, MinValue = 0, MaxValue = 100, ValueFrequency = 1 });
             _menuTab.AddItem(new Switch() { Title = "Heal On Combo", IsOn = false });
             _menuTab.AddItem(new Switch() { Title = "Heal On Tick", IsOn = false });
 

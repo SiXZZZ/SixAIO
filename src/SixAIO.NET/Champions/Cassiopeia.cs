@@ -27,7 +27,7 @@ namespace SixAIO.Champions
                             target != null,
                 TargetSelect = () =>
                             UnitManager.EnemyChampions
-                            .Where(x => x.IsAlive && x.Distance <= 850 && TargetSelector.IsAttackable(x) && x.BuffManager.GetBuffList().Any(buff => buff.IsActive && buff.EntryType == BuffType.Slow || BuffChecker.IsCrowdControlled(buff)))
+                            .Where(x => x.IsAlive && x.Distance <= 850 && TargetSelector.IsAttackable(x) && x.BuffManager.GetBuffList().Any(BuffChecker.IsCrowdControlledOrSlowed))
                             .OrderBy(x => x.Health)
                             .FirstOrDefault()
             };
@@ -59,6 +59,8 @@ namespace SixAIO.Champions
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
+                Width = 400,
+                CastTime = 0.5f,
                 ShouldCast = (target, spellClass, damage) =>
                             UseR &&
                             spellClass.IsSpellReady &&

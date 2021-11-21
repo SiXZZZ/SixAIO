@@ -17,6 +17,7 @@ namespace SixAIO.Champions
         {
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
+                Width = 140,
                 Speed = 1650,
                 Damage = (target, spellClass) =>
                             target != null
@@ -30,11 +31,10 @@ namespace SixAIO.Champions
                             spellClass.IsSpellReady &&
                             UnitManager.MyChampion.Mana > 40 &&
                             UnitManager.MyChampion.Mana > QMinMana &&
-                            target != null &&
-                            !Collision.MinionCollision(target.W2S, 100),
+                            target != null,
                 TargetSelect = () =>
                             UnitManager.EnemyChampions
-                            .Where(x => TargetSelector.IsAttackable(x) && x.Distance <= 1000 && x.IsAlive && !Collision.MinionCollision(x.W2S, 140))
+                            .Where(x => TargetSelector.IsAttackable(x) && x.Distance <= 1100 && x.IsAlive && !Collision.MinionCollision(x.W2S, 140))
                             .OrderBy(x => x.Health)
                             .FirstOrDefault()
             };
@@ -51,6 +51,7 @@ namespace SixAIO.Champions
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
+                Width = 240,
                 Speed = 1400,
                 ShouldCast = (target, spellClass, damage) =>
                             UseE &&
@@ -59,10 +60,11 @@ namespace SixAIO.Champions
                             UnitManager.MyChampion.Mana > EMinMana &&
                             target != null,
                 TargetSelect = () =>
-                            UnitManager.EnemyChampions.FirstOrDefault(x => TargetSelector.IsAttackable(x) && x.Distance <= 1100 && x.IsAlive)
+                            UnitManager.EnemyChampions.FirstOrDefault(x => TargetSelector.IsAttackable(x) && x.Distance <= 1200 && x.IsAlive)
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
+                Width = 240,
                 Speed = -1,
                 Damage = (target, spellClass) =>
                             target != null

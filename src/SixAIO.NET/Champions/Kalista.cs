@@ -26,6 +26,8 @@ namespace SixAIO.Champions
         {
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
+                Width = 80,
+                Speed = 2400,
                 Damage = (target, spellClass) => -45 + (65 * spellClass.Level) + UnitManager.MyChampion.UnitStats.TotalAttackDamage,
                 ShouldCast = (target, spellClass, damage) => UseQ && spellClass.IsSpellReady && UnitManager.MyChampion.Mana > 70 && target != null,
                 TargetSelect = () => UnitManager.EnemyChampions
@@ -48,7 +50,7 @@ namespace SixAIO.Champions
                     case Mode.Champs:
                         {
                             return UnitManager.EnemyChampions
-                                .Count(x => x.Distance <= UnitManager.MyChampion.TrueAttackRange && x.IsAlive &&
+                                .Count(x => x.Distance <= 1100 && x.IsAlive &&
                                             TargetSelector.IsAttackable(x) && x.Health < GetEDamage(x) &&
                                                                 !TargetSelector.IsInvulnerable(x, Oasys.Common.Logic.DamageType.Physical, false) &&
                                                                 MenuTab.GetItem<Switch>("E - " + x.ModelName).IsOn)
@@ -56,32 +58,32 @@ namespace SixAIO.Champions
                         }
                     case Mode.Jungle:
                         {
-                            return (UnitManager.EnemyJungleMobs.Count(x => x.Distance <= UnitManager.MyChampion.TrueAttackRange && x.IsAlive &&
+                            return (UnitManager.EnemyJungleMobs.Count(x => x.Distance <= 1100 && x.IsAlive &&
                                            TargetSelector.IsAttackable(x) && x.Health < GetEDamage(x) &&
                                            (x.UnitComponentInfo.SkinName.ToLower().Contains("dragon") ||
                                            x.UnitComponentInfo.SkinName.ToLower().Contains("baron") ||
                                            x.UnitComponentInfo.SkinName.ToLower().Contains("herald")))
                                 >= 1) ||
-                              (UnitManager.EnemyJungleMobs.Count(x => x.Distance <= UnitManager.MyChampion.TrueAttackRange && x.IsAlive &&
+                              (UnitManager.EnemyJungleMobs.Count(x => x.Distance <= 1100 && x.IsAlive &&
                                                                           TargetSelector.IsAttackable(x) && x.Health < GetEDamage(x))
                                  >= 3);
                         }
                     case Mode.Everything:
                         {
-                            return (UnitManager.EnemyChampions.Count(x => x.Distance <= UnitManager.MyChampion.TrueAttackRange && x.IsAlive &&
+                            return (UnitManager.EnemyChampions.Count(x => x.Distance <= 1100 && x.IsAlive &&
                                                                           TargetSelector.IsAttackable(x) && x.Health < GetEDamage(x) &&
                                                                           !TargetSelector.IsInvulnerable(x, Oasys.Common.Logic.DamageType.Physical, false) &&
                                                                           MenuTab.GetItem<Switch>("E - " + x.ModelName).IsOn) >= 1) ||
-                                (UnitManager.EnemyJungleMobs.Count(x => x.Distance <= UnitManager.MyChampion.TrueAttackRange && x.IsAlive &&
+                                (UnitManager.EnemyJungleMobs.Count(x => x.Distance <= 1100 && x.IsAlive &&
                                                                           TargetSelector.IsAttackable(x) && x.Health < GetEDamage(x) &&
                                                                           (x.UnitComponentInfo.SkinName.ToLower().Contains("dragon") ||
                                                                           x.UnitComponentInfo.SkinName.ToLower().Contains("baron") ||
                                                                           x.UnitComponentInfo.SkinName.ToLower().Contains("herald")))
                                 >= 1) ||
-                                (UnitManager.EnemyJungleMobs.Count(x => x.Distance <= UnitManager.MyChampion.TrueAttackRange && x.IsAlive &&
+                                (UnitManager.EnemyJungleMobs.Count(x => x.Distance <= 1100 && x.IsAlive &&
                                                                           TargetSelector.IsAttackable(x) && x.Health < GetEDamage(x))
                                  >= 3) ||
-                                (UnitManager.EnemyMinions.Count(x => x.Distance <= UnitManager.MyChampion.TrueAttackRange && x.IsAlive &&
+                                (UnitManager.EnemyMinions.Count(x => x.Distance <= 1100 && x.IsAlive &&
                                                                           TargetSelector.IsAttackable(x) && x.Health < GetEDamage(x))
                                 >= 3);
                         }

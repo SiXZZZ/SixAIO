@@ -16,8 +16,9 @@ namespace SixAIO.Champions
         {
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
+                Width = 120,
                 Speed = 2200,
-                CastTime = 1f,
+                CastTime = 0.8f,
                 Damage = (target, spellClass) =>
                             target != null
                             ? DamageCalculator.GetArmorMod(UnitManager.MyChampion, target) *
@@ -31,7 +32,7 @@ namespace SixAIO.Champions
                             target != null,
                 TargetSelect = () =>
                             UnitManager.EnemyChampions
-                            .FirstOrDefault(x => x.Distance <= 1250 && x.IsAlive&& TargetSelector.IsAttackable(x)&& x.BuffManager.GetBuffList().Any(BuffChecker.IsCrowdControlled))
+                            .FirstOrDefault(x => x.Distance <= 1250 && x.IsAlive && TargetSelector.IsAttackable(x) && x.BuffManager.GetBuffList().Any(BuffChecker.IsCrowdControlled))
             };
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
             {
@@ -47,6 +48,7 @@ namespace SixAIO.Champions
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
+                Width = 140,
                 Speed = 1600,
                 ShouldCast = (target, spellClass, damage) =>
                             UseE &&
