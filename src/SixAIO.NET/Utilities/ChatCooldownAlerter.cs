@@ -74,14 +74,14 @@ namespace SixAIO.Utilities
             _menuTab.AddItem(new KeyBinding() { Title = "Key binding", SelectedKey = Keys.M });
 
             _menuTab.AddItem(new InfoDisplay() { Title = "-Only alert enabled summoners-" });
-            foreach (var enemy in UnitManager.EnemyChampions)
+            foreach (var enemy in UnitManager.EnemyChampions.Where(x => !x.UnitComponentInfo.SkinName.Contains("TargetDummy", StringComparison.OrdinalIgnoreCase)))
             {
                 var spellBook = enemy.GetSpellBook();
                 var summoner1 = spellBook.GetSpellClass(Oasys.Common.Enums.GameEnums.SpellSlot.Summoner1);
                 var summoner2 = spellBook.GetSpellClass(Oasys.Common.Enums.GameEnums.SpellSlot.Summoner2);
 
-                var sum1 = GetSummonerText(summoner1.SpellData.SpellName);
-                var sum2 = GetSummonerText(summoner2.SpellData.SpellName);
+                var sum1 = enemy.ModelName + " " + GetSummonerText(summoner1.SpellData.SpellName);
+                var sum2 = enemy.ModelName + " " + GetSummonerText(summoner2.SpellData.SpellName);
                 _menuTab.AddItem(new InfoDisplay() { Title = $"-{enemy.ModelName}-" });
                 if (!string.IsNullOrEmpty(sum1))
                 {
@@ -106,17 +106,17 @@ namespace SixAIO.Utilities
                 _lastMessage + 10 < GameEngine.GameTime)
             {
                 var message = "";
-                foreach (var enemy in UnitManager.EnemyChampions)
+                foreach (var enemy in UnitManager.EnemyChampions.Where(x => !x.UnitComponentInfo.SkinName.Contains("TargetDummy", StringComparison.OrdinalIgnoreCase)))
                 {
                     var spellBook = enemy.GetSpellBook();
                     var summoner1 = spellBook.GetSpellClass(Oasys.Common.Enums.GameEnums.SpellSlot.Summoner1);
                     var summoner2 = spellBook.GetSpellClass(Oasys.Common.Enums.GameEnums.SpellSlot.Summoner2);
 
-                    if (ShouldSend(summoner1))
+                    if (ShouldSend(enemy, summoner1))
                     {
                         message += GetMessage(enemy, summoner1);
                     }
-                    if (ShouldSend(summoner2))
+                    if (ShouldSend(enemy, summoner2))
                     {
                         message += GetMessage(enemy, summoner2);
                     }
@@ -175,9 +175,9 @@ namespace SixAIO.Utilities
             return $"{hero.ModelName.ToLowerInvariant()} {GetSummonerText(spellClass.SpellData.SpellName)} {expire} ";
         }
 
-        private static bool ShouldSend(Oasys.Common.GameObject.Clients.ExtendedInstances.Spells.SpellClass spellClass)
+        private static bool ShouldSend(Hero hero, Oasys.Common.GameObject.Clients.ExtendedInstances.Spells.SpellClass spellClass)
         {
-            return !spellClass.IsSpellReady && _menuTab.GetItem<Switch>(GetSummonerText(spellClass.SpellData.SpellName)).IsOn;
+            return !spellClass.IsSpellReady && _menuTab.GetItem<Switch>(hero.ModelName + " " + GetSummonerText(spellClass.SpellData.SpellName)).IsOn;
         }
 
         private static void Send(string message)
