@@ -113,7 +113,7 @@ namespace SixAIO.Utilities
             }
             else if (SummonerSpellsProvider.IHaveSpellOnSlot(SummonerSpellsEnum.Smite, SummonerSpellSlot.Second))
             {
-                SmiteKey = spellBook.GetSpellClass((SpellSlot)5);
+                SmiteKey = spellBook.GetSpellClass(SpellSlot.Summoner2);
                 SmiteSlot = CastSlot.Summoner2;
             }
             else
