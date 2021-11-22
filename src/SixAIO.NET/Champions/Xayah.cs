@@ -1,4 +1,5 @@
-﻿using Oasys.Common.Enums.GameEnums;
+﻿using Oasys.Common;
+using Oasys.Common.Enums.GameEnums;
 using Oasys.Common.GameObject.Clients;
 using Oasys.Common.GameObject.Clients.ExtendedInstances.Spells;
 using Oasys.Common.Menu;
@@ -138,7 +139,9 @@ namespace SixAIO.Champions
                 var color = ColorConverter.GetColor(DrawColor);
                 foreach (var feather in _feathers.Where(x => x.IsAlive))
                 {
-                    Oasys.SDK.Rendering.RenderFactory.DrawLine(UnitManager.MyChampion.W2S.X, UnitManager.MyChampion.W2S.Y, feather.W2S.X, feather.W2S.Y, DrawThickness, color);
+                    var w2s = LeagueNativeRendererManager.WorldToScreenSpell(UnitManager.MyChampion.Position);
+                    var featherW2s = LeagueNativeRendererManager.WorldToScreenSpell(feather.Position);
+                    Oasys.SDK.Rendering.RenderFactory.DrawLine(w2s.X, w2s.Y, featherW2s.X, featherW2s.Y, DrawThickness, color);
                 }
             }
         }
