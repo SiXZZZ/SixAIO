@@ -52,6 +52,19 @@ namespace SixAIO.Champions
                             .Where(x => TargetSelector.IsAttackable(x) && x.Distance <= 1050 && x.IsAlive)
                             .OrderBy(x => x.Health)
                             .FirstOrDefault()
+            }; 
+            SpellW = new Spell(CastSlot.W, SpellSlot.W)
+            {
+                ShouldCast = (target, spellClass, damage) =>
+                            UseW &&
+                            spellClass.IsSpellReady &&
+                            UnitManager.MyChampion.Mana > 60 &&
+                            target != null,
+                TargetSelect = () =>
+                {
+                    var target = Orbwalker.TargetHero;
+                    return TargetSelector.IsAttackable(target) && TargetSelector.IsInRange(target) ? target : null;
+                }
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
@@ -107,7 +120,7 @@ namespace SixAIO.Champions
         internal override void OnCoreMainInput()
         {
             _mode = Mode.Champs;
-            if (SpellE.ExecuteCastSpell() || SpellQ.ExecuteCastSpell())
+            if (SpellE.ExecuteCastSpell() || SpellW.ExecuteCastSpell() || SpellQ.ExecuteCastSpell())
             {
                 return;
             }
@@ -126,7 +139,7 @@ namespace SixAIO.Champions
         internal override void OnCoreLaneClearInput()
         {
             _mode = Mode.Everything;
-            if (SpellE.ExecuteCastSpell() || SpellQ.ExecuteCastSpell())
+            if (SpellE.ExecuteCastSpell() || SpellW.ExecuteCastSpell() || SpellQ.ExecuteCastSpell())
             {
                 return;
             }
@@ -235,6 +248,8 @@ namespace SixAIO.Champions
             MenuTab.AddItem(new ModeDisplay() { Title = "Draw Color", ModeNames = ColorConverter.GetColors(), SelectedModeName = "Blue" });
             MenuTab.AddItem(new InfoDisplay() { Title = "---Q Settings---" });
             MenuTab.AddItem(new Switch() { Title = "Use Q", IsOn = true });
+            MenuTab.AddItem(new InfoDisplay() { Title = "---W Settings---" });
+            MenuTab.AddItem(new Switch() { Title = "Use W", IsOn = true });
             MenuTab.AddItem(new InfoDisplay() { Title = "---E Settings---" });
             MenuTab.AddItem(new Switch() { Title = "Use E", IsOn = true });
             MenuTab.AddItem(new ModeDisplay() { Title = "Champion Mode", ModeNames = ConstructFeatherModeTable(), SelectedModeName = "Stacks" });
