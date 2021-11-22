@@ -18,16 +18,8 @@ namespace SixAIO.Models
             SpellSlot = spellSlot;
         }
 
-        public float Range { get; set; }
         public float Speed { get; set; }
         public float Width { get; set; }
-
-        public float[] Mana { get; set; }
-        public bool Collision { get; set; }
-
-        public SpellSlot Slot { get; set; }
-
-        public SpellClass SpellClass { get; set; }
 
         public CastSlot CastSlot { get; set; }
 
@@ -52,6 +44,11 @@ namespace SixAIO.Models
                     if (turnTargetChampionsOnlyOff)
                     {
                         Orbwalker.TargetChampionsOnly = false;
+                    }
+                    if (AlertSpellUsage != default)
+                    {
+                        AlertSpellUsage?.Invoke(CastSlot);
+                        return true;
                     }
                     if (target == default && CastTime == default)
                     {
@@ -87,6 +84,7 @@ namespace SixAIO.Models
         public Func<CastSlot, Vector2, float, bool> CastSpellAtPos = (castSlot, pos, castTime) => SpellCastProvider.CastSpell(castSlot, pos, castTime);
         public Func<CastSlot, float, bool> CastSpellWithCastTime = (castSlot, castTime) => SpellCastProvider.CastSpell(castSlot, castTime);
         public Func<CastSlot, bool> CastSpell = (castSlot) => SpellCastProvider.CastSpell(castSlot);
+        public Action<CastSlot> AlertSpellUsage { get; set; }
 
     }
 }

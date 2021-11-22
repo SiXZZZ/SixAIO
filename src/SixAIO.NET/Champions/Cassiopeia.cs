@@ -72,7 +72,7 @@ namespace SixAIO.Champions
                                                      TargetSelector.IsAttackable(x) &&
                                                      x.Distance <= 750 &&
                                                      x.IsFacing(UnitManager.MyChampion) &&
-                                                     !TargetSelector.IsInvulnerable(x, Oasys.Common.Logic.DamageType.Physical, false))
+                                                     !TargetSelector.IsInvulnerable(x, Oasys.Common.Logic.DamageType.Magical, false))
             };
         }
 
