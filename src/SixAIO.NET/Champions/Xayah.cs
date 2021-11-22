@@ -114,7 +114,8 @@ namespace SixAIO.Champions
         private int GetFeathersBetweenMeAndEnemy(AIBaseClient enemy)
         {
             return _feathers.Count(feather =>
-                    Geometry.DistanceFromPointToLine(enemy.W2S, new Vector2[] { UnitManager.MyChampion.W2S, feather.W2S }) <= 160 && feather.Distance > enemy.Distance);
+                    Geometry.DistanceFromPointToLine(enemy.W2S, new Vector2[] { UnitManager.MyChampion.W2S, feather.W2S }) <= 160 && 
+                    feather.DistanceTo(enemy.Position) > enemy.Distance); 
         }
 
         internal override void OnCoreMainInput()
