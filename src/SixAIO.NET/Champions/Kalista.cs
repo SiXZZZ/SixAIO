@@ -6,6 +6,7 @@ using Oasys.Common.Menu.ItemComponents;
 using Oasys.SDK;
 using Oasys.SDK.Menu;
 using Oasys.SDK.SpellCasting;
+using Oasys.SDK.Tools;
 using SixAIO.Models;
 using System.Linq;
 
@@ -38,6 +39,19 @@ namespace SixAIO.Champions
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
                 ShouldCast = (target, spellClass, damage) => ShouldCastE(spellClass),
+            };
+            SpellR = new Spell(CastSlot.R, SpellSlot.R)
+            {
+                CastTime = 0f,
+                ShouldCast = (target, spellClass, damage) =>
+                            UseR &&
+                            spellClass.IsSpellReady &&
+                            UnitManager.MyChampion.Mana > 100 &&
+                            target != null,
+                TargetSelect = () => UnitManager.AllyChampions.FirstOrDefault(ally => ally.IsAlive && ally.Distance <= 1100 &&
+                                                                    ally.BuffManager.GetBuffList().Any(x => x.Name.Contains("kalistacoopstrikeally", System.StringComparison.OrdinalIgnoreCase)) &&
+                                                                    MenuTab.GetItem<Switch>("Ult Ally - " + ally.ModelName).IsOn &&
+                                                                    (ally.Health / ally.MaxHealth * 100) < RHealthPercent)
             };
         }
 
@@ -132,7 +146,7 @@ namespace SixAIO.Champions
         internal override void OnCoreMainInput()
         {
             _mode = Mode.Champs;
-            if (SpellE.ExecuteCastSpell() || SpellQ.ExecuteCastSpell())
+            if (SpellE.ExecuteCastSpell() || SpellQ.ExecuteCastSpell() || SpellR.ExecuteCastSpell())
             {
                 return;
             }
@@ -147,16 +161,33 @@ namespace SixAIO.Champions
             }
         }
 
+        private int RHealthPercent
+        {
+            get => MenuTab.GetItem<Counter>("R Health Percent").Value;
+            set => MenuTab.GetItem<Counter>("R Health Percent").Value = value;
+        }
+
         internal override void InitializeMenu()
         {
             MenuManager.AddTab(new Tab($"SIXAIO - {nameof(Kalista)}"));
+
             MenuTab.AddItem(new InfoDisplay() { Title = "---Q Settings---" });
             MenuTab.AddItem(new Switch() { Title = "Use Q", IsOn = true });
+
             MenuTab.AddItem(new InfoDisplay() { Title = "---E Settings---" });
             MenuTab.AddItem(new Switch() { Title = "Use E", IsOn = true });
             foreach (var enemy in UnitManager.EnemyChampions)
             {
                 MenuTab.AddItem(new Switch() { Title = "E - " + enemy.ModelName, IsOn = true });
+            }
+
+            MenuTab.AddItem(new InfoDisplay() { Title = "---R Settings---" });
+            MenuTab.AddItem(new Switch() { Title = "Use R", IsOn = true });
+            MenuTab.AddItem(new Counter() { Title = "R Health Percent", MinValue = 0, MaxValue = 100, Value = 20, ValueFrequency = 5 });
+            MenuTab.AddItem(new InfoDisplay() { Title = "---Allies to Ult---" });
+            foreach (var allyChampion in UnitManager.AllyChampions)
+            {
+                MenuTab.AddItem(new Switch() { Title = "Ult Ally - " + allyChampion.ModelName, IsOn = true });
             }
 
         }
