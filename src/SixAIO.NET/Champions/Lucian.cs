@@ -9,8 +9,10 @@ using Oasys.SDK;
 using Oasys.SDK.Menu;
 using Oasys.SDK.SpellCasting;
 using SharpDX;
+using SixAIO.Enums;
 using SixAIO.Helpers;
 using SixAIO.Models;
+using System;
 using System.Linq;
 
 namespace SixAIO.Champions
@@ -64,6 +66,16 @@ namespace SixAIO.Champions
                             UnitManager.EnemyChampions
                             .FirstOrDefault(x => x.Distance <= 900 && x.IsAlive && TargetSelector.IsAttackable(x))
             };
+            SpellE = new Spell(CastSlot.E, SpellSlot.E)
+            {
+                ShouldCast = (target, spellClass, damage) =>
+                            UseE &&
+                            spellClass.IsSpellReady &&
+                            UnitManager.MyChampion.Mana > 40 &&
+                            DashModeSelected == DashMode.ToMouse &&
+                            TargetSelector.IsAttackable(Orbwalker.TargetHero) &&
+                            TargetSelector.IsInRange(Orbwalker.TargetHero),
+            };
         }
 
         private GameObjectBase GetMinionBetweenMeAndEnemy(Hero enemy, int width)
@@ -75,7 +87,7 @@ namespace SixAIO.Champions
 
         internal override void OnCoreMainInput()
         {
-            if (SpellQ.ExecuteCastSpell() || SpellW.ExecuteCastSpell())
+            if (SpellQ.ExecuteCastSpell() || SpellE.ExecuteCastSpell() || SpellW.ExecuteCastSpell())
             {
                 return;
             }
@@ -97,12 +109,22 @@ namespace SixAIO.Champions
             }
         }
 
+        private DashMode DashModeSelected
+        {
+            get => (DashMode)Enum.Parse(typeof(DashMode), MenuTab.GetItem<ModeDisplay>("Dash Mode").SelectedModeName);
+            set => MenuTab.GetItem<ModeDisplay>("Dash Mode").SelectedModeName = value.ToString();
+        }
+
         internal override void InitializeMenu()
         {
             MenuManager.AddTab(new Tab($"SIXAIO - {nameof(Lucian)}"));
+            MenuTab.AddItem(new InfoDisplay() { Title = "---Q Settings---" });
             MenuTab.AddItem(new Switch() { Title = "Use Q", IsOn = true });
+            MenuTab.AddItem(new InfoDisplay() { Title = "---W Settings---" });
             MenuTab.AddItem(new Switch() { Title = "Use W", IsOn = true });
-            //MenuTab.AddItem(new Switch() { Title = "Use E", IsOn = true });
+            MenuTab.AddItem(new InfoDisplay() { Title = "---E Settings---" });
+            MenuTab.AddItem(new Switch() { Title = "Use E", IsOn = false });
+            MenuTab.AddItem(new ModeDisplay() { Title = "Dash Mode", ModeNames = DashHelper.ConstructDashModeTable(), SelectedModeName = "ToMouse" });
             //MenuTab.AddItem(new Switch() { Title = "Use R", IsOn = true });
         }
     }

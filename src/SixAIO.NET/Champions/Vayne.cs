@@ -22,6 +22,16 @@ namespace SixAIO.Champions
 
         public Vayne()
         {
+            SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
+            {
+                ShouldCast = (target, spellClass, damage) =>
+                            UseQ &&
+                            spellClass.IsSpellReady &&
+                            UnitManager.MyChampion.Mana > 30 &&
+                            DashModeSelected == DashMode.ToMouse &&
+                            TargetSelector.IsAttackable(Orbwalker.TargetHero) && 
+                            TargetSelector.IsInRange(Orbwalker.TargetHero),
+            };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
                 ShouldCast = ShouldCastE,
@@ -83,7 +93,7 @@ namespace SixAIO.Champions
 
         internal override void OnCoreMainInput()
         {
-            if (SpellE.ExecuteCastSpell())
+            if (SpellE.ExecuteCastSpell() || SpellQ.ExecuteCastSpell())
             {
                 return;
             }
@@ -109,6 +119,12 @@ namespace SixAIO.Champions
             //    Oasys.SDK.Rendering.RenderFactory.DrawText("Can stun " + target.UnitComponentInfo.SkinName, 12, target.W2S, Color.Blue);
             //    Oasys.SDK.Rendering.RenderFactory.DrawLine(myPoint.X, myPoint.Y, targetPoint.X, targetPoint.Y, 5, Color.Black);
             //}
+        }
+
+        private DashMode DashModeSelected
+        {
+            get => (DashMode)Enum.Parse(typeof(DashMode), MenuTab.GetItem<ModeDisplay>("Dash Mode").SelectedModeName);
+            set => MenuTab.GetItem<ModeDisplay>("Dash Mode").SelectedModeName = value.ToString();
         }
 
         private bool UsePushAway
@@ -138,6 +154,10 @@ namespace SixAIO.Champions
         internal override void InitializeMenu()
         {
             MenuManager.AddTab(new Tab($"SIXAIO - {nameof(Vayne)}"));
+            MenuTab.AddItem(new InfoDisplay() { Title = "---Q Settings---" });
+            MenuTab.AddItem(new Switch() { Title = "Use Q", IsOn = false });
+            MenuTab.AddItem(new ModeDisplay() { Title = "Dash Mode", ModeNames = DashHelper.ConstructDashModeTable(), SelectedModeName = "ToMouse" });
+
             MenuTab.AddItem(new InfoDisplay() { Title = "---E Settings---" });
             MenuTab.AddItem(new Switch() { Title = "Use E", IsOn = true });
             MenuTab.AddItem(new Counter() { Title = "Condemn Range", MinValue = 50, MaxValue = 475, Value = 450, ValueFrequency = 5 });
