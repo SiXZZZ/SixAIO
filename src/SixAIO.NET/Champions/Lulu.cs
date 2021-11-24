@@ -57,7 +57,8 @@ namespace SixAIO.Champions
                         .Where(ally => MenuTab.GetItem<Counter>("Buff Ally - " + ally.ModelName).Value > 0)
                         .OrderByDescending(ally => MenuTab.GetItem<Counter>("Buff Ally - " + ally.ModelName).Value)
                                 .FirstOrDefault(ally => ally.IsAlive && ally.Distance <= 650 && TargetSelector.IsAttackable(ally, false) &&
-                                                ally.IsCastingSpell && ally.GetCurrentCastingSpell().IsBasicAttack );
+                                                ally.IsCastingSpell && ally.GetCurrentCastingSpell().IsBasicAttack &&
+                                                UnitManager.EnemyChampions.Any(enemy => enemy.DistanceTo(ally.Position) <= ally.TrueAttackRange));
                     }
 
                     return target;
@@ -81,7 +82,8 @@ namespace SixAIO.Champions
                         .Where(ally => MenuTab.GetItem<Counter>("Buff Ally - " + ally.ModelName).Value > 0)
                         .OrderByDescending(ally => MenuTab.GetItem<Counter>("Buff Ally - " + ally.ModelName).Value)
                                 .FirstOrDefault(ally => ally.IsAlive && ally.Distance <= 650 && TargetSelector.IsAttackable(ally, false) &&
-                                                ally.IsCastingSpell && ally.GetCurrentCastingSpell().IsBasicAttack);
+                                                ally.IsCastingSpell && ally.GetCurrentCastingSpell().IsBasicAttack &&
+                                                UnitManager.EnemyChampions.Any(enemy => enemy.DistanceTo(ally.Position) <= ally.TrueAttackRange));
                     }
 
                     if (target == null && EShieldAlly)
