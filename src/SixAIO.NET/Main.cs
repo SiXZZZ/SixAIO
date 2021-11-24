@@ -68,7 +68,6 @@ namespace SixAIO
             CoreEvents.OnCoreMainTick += AutoCleanse.OnCoreMainTick;
             CoreEvents.OnCoreMainInputAsync += AutoCleanse.OnCoreMainInputAsync;
             CoreEvents.OnCoreMainInputRelease += CoreEvents_OnCoreMainInputRelease;
-            CoreEvents.OnCoreMainTick += ChatCooldownAlerter.OnCoreMainTick;
 
             return Task.CompletedTask;
         }

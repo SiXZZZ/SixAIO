@@ -46,9 +46,39 @@ namespace SixAIO.Champions
                             UnitManager.MyChampion.Mana > 30 &&
                             target != null,
                 TargetSelect = () =>
-                            UnitManager.EnemyChampions
-                            .FirstOrDefault(x => x.Distance <= 1000 && x.IsAlive && TargetSelector.IsAttackable(x) &&
-                                            (!WTargetshouldbeslowed || !WTargetshouldbecced || x.BuffManager.GetBuffList().Any(buff => buff.IsActive && (WTargetshouldbeslowed && buff.EntryType == BuffType.Slow) || (WTargetshouldbecced && BuffChecker.IsCrowdControlled(buff)))))
+                {
+                    var range = 1000;
+                    if (WTargetshouldbecced || WTargetshouldbeslowed)
+                    {
+                        if (WTargetshouldbecced)
+                        {
+                            var target = UnitManager.EnemyChampions.FirstOrDefault(x => x.Distance <= range && x.IsAlive && TargetSelector.IsAttackable(x) &&
+                                                                        (x.Health / x.MaxHealth * 100) < RTargetMaxHPPercent &&
+                                                                        x.BuffManager.GetBuffList().Any(BuffChecker.IsCrowdControlled));
+                            if (target != null)
+                            {
+                                return target;
+                            }
+                        }
+                        if (WTargetshouldbeslowed)
+                        {
+                            var target = UnitManager.EnemyChampions.FirstOrDefault(x => x.Distance <= range && x.IsAlive && TargetSelector.IsAttackable(x) &&
+                                                                        (x.Health / x.MaxHealth * 100) < RTargetMaxHPPercent &&
+                                                                        x.BuffManager.GetBuffList().Any(BuffChecker.IsCrowdControlledOrSlowed));
+                            if (target != null)
+                            {
+                                return target;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        return UnitManager.EnemyChampions.FirstOrDefault(x => x.Distance <= range && x.IsAlive && TargetSelector.IsAttackable(x) &&
+                                                                        (x.Health / x.MaxHealth * 100) < RTargetMaxHPPercent);
+                    }
+
+                    return null;
+                }
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
@@ -83,10 +113,39 @@ namespace SixAIO.Champions
                             target != null &&
                             target.Health < damage,
                 TargetSelect = () =>
-                            UnitManager.EnemyChampions
-                            .FirstOrDefault(x => x.Distance <= 30000 && x.IsAlive && TargetSelector.IsAttackable(x) &&
-                                            (x.Health / x.MaxHealth * 100) < RTargetMaxHPPercent &&
-                                            (!RTargetshouldbeslowed || !RTargetshouldbecced || x.BuffManager.GetBuffList().Any(buff => buff.IsActive && (RTargetshouldbeslowed && buff.EntryType == BuffType.Slow) || (RTargetshouldbecced && BuffChecker.IsCrowdControlled(buff)))))
+                {
+                    var range = 30000;
+                    if (RTargetshouldbecced || RTargetshouldbeslowed)
+                    {
+                        if (RTargetshouldbecced)
+                        {
+                            var target = UnitManager.EnemyChampions.FirstOrDefault(x => x.Distance <= range && x.IsAlive && TargetSelector.IsAttackable(x) &&
+                                                                        (x.Health / x.MaxHealth * 100) < RTargetMaxHPPercent &&
+                                                                        x.BuffManager.GetBuffList().Any(BuffChecker.IsCrowdControlled));
+                            if (target != null)
+                            {
+                                return target;
+                            }
+                        }
+                        if (RTargetshouldbeslowed)
+                        {
+                            var target = UnitManager.EnemyChampions.FirstOrDefault(x => x.Distance <= range && x.IsAlive && TargetSelector.IsAttackable(x) &&
+                                                                        (x.Health / x.MaxHealth * 100) < RTargetMaxHPPercent &&
+                                                                        x.BuffManager.GetBuffList().Any(BuffChecker.IsCrowdControlledOrSlowed));
+                            if (target != null)
+                            {
+                                return target;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        return UnitManager.EnemyChampions.FirstOrDefault(x => x.Distance <= range && x.IsAlive && TargetSelector.IsAttackable(x) &&
+                                                                        (x.Health / x.MaxHealth * 100) < RTargetMaxHPPercent);
+                    }
+
+                    return null;
+                }
             };
         }
 

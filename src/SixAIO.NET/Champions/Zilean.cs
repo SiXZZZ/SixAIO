@@ -17,6 +17,8 @@ namespace SixAIO.Champions
         {
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
+                Speed = 5000,
+                Width = 140,
                 ShouldCast = (target, spellClass, damage) =>
                             UseQ &&
                             spellClass.IsSpellReady &&
@@ -30,7 +32,12 @@ namespace SixAIO.Champions
                         return bombTarget;
                     }
 
-                    return UnitManager.EnemyChampions.FirstOrDefault(x => x.Distance <= 900 && x.IsAlive && x.BuffManager.GetBuffList().Any(BuffChecker.IsCrowdControlled));
+                    var ccTarget = UnitManager.EnemyChampions.FirstOrDefault(x => x.Distance <= 900 && x.IsAlive && x.BuffManager.GetBuffList().Any(BuffChecker.IsCrowdControlled));
+                    if (ccTarget != null)
+                    {
+                        return ccTarget;
+                    }
+                    return UnitManager.EnemyChampions.FirstOrDefault(x => x.Distance <= 900 && x.IsAlive);
                 }
             };
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
@@ -40,7 +47,8 @@ namespace SixAIO.Champions
                             spellClass.IsSpellReady &&
                             UnitManager.MyChampion.Mana > 40 &&
                             !UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot.Q).IsSpellReady &&
-                            !UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot.E).IsSpellReady
+                            (!UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot.E).IsSpellReady ||
+                              UnitManager.EnemyChampions.FirstOrDefault(x => x.Distance <= 900 && x.IsAlive && x.BuffManager.HasBuff("ZileanQ")) != null)
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
@@ -60,8 +68,10 @@ namespace SixAIO.Champions
                             UnitManager.MyChampion.Mana > 175 &&
                             target != null,
                 TargetSelect = () =>
-                UnitManager.AllyChampions.FirstOrDefault(ally => ally.IsAlive && ally.Distance <= 900 && TargetSelector.IsAttackable(ally, false) &&
-                                                                 MenuTab.GetItem<Switch>("Ult Ally - " + ally.ModelName).IsOn &&
+                UnitManager.AllyChampions
+                        .Where(ally => MenuTab.GetItem<Counter>("Ult Ally - " + ally.ModelName).Value > 0)
+                        .OrderByDescending(ally => MenuTab.GetItem<Counter>("Ult Ally - " + ally.ModelName).Value)
+                        .FirstOrDefault(ally => ally.IsAlive && ally.Distance <= 900 && TargetSelector.IsAttackable(ally, false) &&
                                                                  (ally.Health / ally.MaxHealth * 100) < RBuffHealthPercent)
             };
         }
@@ -95,7 +105,7 @@ namespace SixAIO.Champions
             MenuTab.AddItem(new InfoDisplay() { Title = "---Allies to Ult---" });
             foreach (var allyChampion in UnitManager.AllyChampions)
             {
-                MenuTab.AddItem(new Switch() { Title = "Ult Ally - " + allyChampion.ModelName, IsOn = true });
+                MenuTab.AddItem(new Counter() { Title = "Ult Ally - " + allyChampion.ModelName, MinValue = 0, MaxValue = 5, Value = 0 });
             }
         }
     }

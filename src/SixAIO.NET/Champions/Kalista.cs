@@ -48,9 +48,11 @@ namespace SixAIO.Champions
                             spellClass.IsSpellReady &&
                             UnitManager.MyChampion.Mana > 100 &&
                             target != null,
-                TargetSelect = () => UnitManager.AllyChampions.FirstOrDefault(ally => ally.IsAlive && ally.Distance <= 1100 &&
-                                                                    ally.BuffManager.GetBuffList().Any(x => x.Name.Contains("kalistacoopstrikeally", System.StringComparison.OrdinalIgnoreCase)) &&
-                                                                    MenuTab.GetItem<Switch>("Ult Ally - " + ally.ModelName).IsOn &&
+                TargetSelect = () => UnitManager.AllyChampions
+                        .Where(ally => MenuTab.GetItem<Counter>("Ult Ally - " + ally.ModelName).Value > 0)
+                        .OrderByDescending(ally => MenuTab.GetItem<Counter>("Ult Ally - " + ally.ModelName).Value)
+                        .FirstOrDefault(ally => ally.IsAlive && ally.Distance <= 1100 &&
+                                                                    ally.BuffManager.GetBuffList().Any(x => x.Name.Contains("kalistacoopstrikeally", System.StringComparison.OrdinalIgnoreCase)) &&                                                                  
                                                                     (ally.Health / ally.MaxHealth * 100) < RHealthPercent)
             };
         }
@@ -187,7 +189,7 @@ namespace SixAIO.Champions
             MenuTab.AddItem(new InfoDisplay() { Title = "---Allies to Ult---" });
             foreach (var allyChampion in UnitManager.AllyChampions)
             {
-                MenuTab.AddItem(new Switch() { Title = "Ult Ally - " + allyChampion.ModelName, IsOn = true });
+                MenuTab.AddItem(new Counter() { Title = "Ult Ally - " + allyChampion.ModelName, MinValue = 0, MaxValue = 5, Value = 0 });
             }
 
         }

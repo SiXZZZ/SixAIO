@@ -1,16 +1,13 @@
-﻿using Oasys.Common.EventsProvider;
-using Oasys.Common.GameObject.ObjectClass;
+﻿using Oasys.Common.GameObject.ObjectClass;
 using Oasys.Common.Menu;
 using Oasys.Common.Menu.ItemComponents;
 using Oasys.Common.Tools.Devices;
 using Oasys.SDK;
 using Oasys.SDK.Menu;
-using Oasys.SDK.SpellCasting;
+using Oasys.SDK.Tools;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -18,6 +15,11 @@ namespace SixAIO.Utilities
 {
     internal class ChatCooldownAlerter
     {
+        static ChatCooldownAlerter()
+        {
+            Keyboard.OnKeyPress += Keyboard_OnKeyPress;
+        }
+
         [DllImport("user32.dll")]
         internal static extern IntPtr GetForegroundWindow();
 
@@ -58,7 +60,7 @@ namespace SixAIO.Utilities
 
         private static bool Use
         {
-            get => _menuTab.GetItem<Switch>("Use").IsOn;
+            get => _menuTab?.GetItem<Switch>("Use")?.IsOn ?? false;
             set => _menuTab.GetItem<Switch>("Use").IsOn = value;
         }
 
@@ -96,15 +98,22 @@ namespace SixAIO.Utilities
         }
 
         private static float _lastMessage = 0f;
-        internal static Task OnCoreMainTick()
+
+        private static void Keyboard_OnKeyPress(Keys keyBeingPressed, Keyboard.KeyPressState pressState)
         {
+            if (keyBeingPressed == Keys.None)
+            {
+                return;
+            }
+            Logger.Log($"{keyBeingPressed} {pressState}");
             if (Use &&
                 !AnyKeysPressed() &&
                 !GameEngine.ChatBox.IsChatBoxOpen &&
                 GetForegroundWindow() == System.Diagnostics.Process.GetProcessesByName("League of Legends").FirstOrDefault().MainWindowHandle &&
-                Keyboard.IsKeyPressed(GetKeybinding()) &&
+                Keyboard.IsPressed(GetKeybinding()) &&
                 _lastMessage + 10 < GameEngine.GameTime)
             {
+                _lastMessage = GameEngine.GameTime;
                 var message = "";
                 foreach (var enemy in UnitManager.EnemyChampions.Where(x => !x.UnitComponentInfo.SkinName.Contains("TargetDummy", StringComparison.OrdinalIgnoreCase)))
                 {
@@ -123,25 +132,25 @@ namespace SixAIO.Utilities
                 }
 
                 Send(message.ToLowerInvariant());
-                _lastMessage = GameEngine.GameTime;
-                Keyboard.SendKeyUp(Keyboard.GetKeyBoardScanCode(GetKeybinding()));
+                if (Keyboard.IsPressed(GetKeybinding()))
+                {
+                    Keyboard.SendKeyUp(Keyboard.GetKeyBoardScanCode(GetKeybinding()));
+                }
             }
             else
             {
-                Keyboard.SendKeyUp(Keyboard.GetKeyBoardScanCode(GetKeybinding()));
+                if (Keyboard.IsPressed(GetKeybinding()))
+                {
+                    Keyboard.SendKeyUp(Keyboard.GetKeyBoardScanCode(GetKeybinding()));
+                }
             }
-
-            return Task.CompletedTask;
         }
 
-        private static bool AnyKeysPressed()
-        {
-            return Keyboard.IsKeyPressed(GetOverrideKey()) ||
-                   Keyboard.IsKeyPressed(GetComboKey()) ||
-                   Keyboard.IsKeyPressed(GetHarassKey()) ||
-                   Keyboard.IsKeyPressed(GetLaneclearKey()) ||
-                   Keyboard.IsKeyPressed(GetLasthitKey());
-        }
+        private static bool AnyKeysPressed() => Keyboard.IsPressed(GetOverrideKey()) ||
+                                                Keyboard.IsPressed(GetComboKey()) ||
+                                                Keyboard.IsPressed(GetHarassKey()) ||
+                                                Keyboard.IsPressed(GetLaneclearKey()) ||
+                                                Keyboard.IsPressed(GetLasthitKey());
 
         private static string GetSummonerText(string summoner)
         {
@@ -186,7 +195,6 @@ namespace SixAIO.Utilities
             {
                 Oasys.SDK.InputProviders.KeyboardProvider.PressKey(Oasys.SDK.InputProviders.KeyboardProvider.KeyBoardScanCodes.KEY_ENTER);
                 SendKeys.SendWait(message + "{ENTER}");
-                SendKeys.Flush();
             }
         }
     }
