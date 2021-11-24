@@ -105,7 +105,7 @@ namespace SixAIO.Utilities
             {
                 return;
             }
-            Logger.Log($"{keyBeingPressed} {pressState}");
+            //Logger.Log($"{keyBeingPressed} {pressState}");
             if (Use &&
                 !AnyKeysPressed() &&
                 !GameEngine.ChatBox.IsChatBoxOpen &&
@@ -156,6 +156,10 @@ namespace SixAIO.Utilities
         {
             try
             {
+                if (summoner.ToLowerInvariant().Contains("smite"))
+                {
+                    return "smite";
+                }
                 return summoner.ToLowerInvariant() switch
                 {
                     "summonerflash" => "flash",
@@ -194,7 +198,7 @@ namespace SixAIO.Utilities
             if (!string.IsNullOrEmpty(message))
             {
                 Oasys.SDK.InputProviders.KeyboardProvider.PressKey(Oasys.SDK.InputProviders.KeyboardProvider.KeyBoardScanCodes.KEY_ENTER);
-                SendKeys.SendWait(message + "{ENTER}");
+                SendKeys.SendWait(" " + message + "{ENTER}");
             }
         }
     }
