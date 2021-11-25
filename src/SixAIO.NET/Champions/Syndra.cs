@@ -19,7 +19,7 @@ namespace SixAIO.Champions
             {
                 CastTime = 0f,
                 Range = 800,
-                Speed = 5000,
+                Speed = 1000,
                 Width = 180,
                 ShouldCast = (target, spellClass, damage) =>
                             UseQ &&
@@ -28,7 +28,7 @@ namespace SixAIO.Champions
                             target != null,
                 TargetSelect = () =>
                 {
-                    var ccTarget = UnitManager.EnemyChampions.FirstOrDefault(x => x.Distance <= 800 && x.IsAlive && x.BuffManager.GetBuffList().Any(BuffChecker.IsCrowdControlled));
+                    var ccTarget = UnitManager.EnemyChampions.FirstOrDefault(x => x.Distance <= 800 && x.IsAlive && x.BuffManager.GetBuffList().Any(BuffChecker.IsCrowdControlledOrSlowed));
                     if (ccTarget != null)
                     {
                         return ccTarget;
@@ -92,7 +92,7 @@ namespace SixAIO.Champions
 
         internal override void OnCoreMainInput()
         {
-            if (SpellR.ExecuteCastSpell() || SpellE.ExecuteCastSpell() || /*SpellW.ExecuteCastSpell() ||*/ SpellQ.ExecuteCastSpell())
+            if (SpellR.ExecuteCastSpell())//|| SpellE.ExecuteCastSpell() || /*SpellW.ExecuteCastSpell() ||*/ SpellQ.ExecuteCastSpell())
             {
                 return;
             }
@@ -101,9 +101,9 @@ namespace SixAIO.Champions
         internal override void InitializeMenu()
         {
             MenuManager.AddTab(new Tab($"SIXAIO - {nameof(Syndra)}"));
-            MenuTab.AddItem(new Switch() { Title = "Use Q", IsOn = true });
-            MenuTab.AddItem(new Switch() { Title = "Use W", IsOn = true });
-            MenuTab.AddItem(new Switch() { Title = "Use E", IsOn = true });
+            //MenuTab.AddItem(new Switch() { Title = "Use Q", IsOn = true });
+            //MenuTab.AddItem(new Switch() { Title = "Use W", IsOn = true });
+            //MenuTab.AddItem(new Switch() { Title = "Use E", IsOn = true });
             MenuTab.AddItem(new Switch() { Title = "Use R", IsOn = true });
         }
     }

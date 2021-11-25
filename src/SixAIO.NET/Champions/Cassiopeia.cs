@@ -29,10 +29,14 @@ namespace SixAIO.Champions
                             UnitManager.MyChampion.Mana > 90 &&
                             target != null,
                 TargetSelect = () =>
-                            UnitManager.EnemyChampions
-                            .Where(x => x.IsAlive && x.Distance <= 850 && TargetSelector.IsAttackable(x) && x.BuffManager.GetBuffList().Any(BuffChecker.IsCrowdControlledOrSlowed))
-                            .OrderBy(x => x.Health)
-                            .FirstOrDefault()
+                {
+                    var ccTarget = UnitManager.EnemyChampions.FirstOrDefault(x => x.Distance <= 850 && x.IsAlive && x.BuffManager.GetBuffList().Any(BuffChecker.IsCrowdControlledOrSlowed));
+                    if (ccTarget != null)
+                    {
+                        return ccTarget;
+                    }
+                    return UnitManager.EnemyChampions.FirstOrDefault(x => x.Distance <= 850 && x.IsAlive);
+                }
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
@@ -62,7 +66,7 @@ namespace SixAIO.Champions
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
-                Range = 850,
+                Range = 750,
                 Speed = 10000,
                 Width = 400,
                 CastTime = 0.5f,

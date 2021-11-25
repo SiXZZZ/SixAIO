@@ -7,9 +7,9 @@ namespace SixAIO.Helpers
     {
         internal static bool IsCrowdControlled(BuffEntry buff)
         {
-            return buff.IsActive &&
+            return buff.IsActive && buff.EntryType != BuffType.Slow &&
                    (buff.EntryType == BuffType.Knockup || buff.EntryType == BuffType.Suppression ||
-                   (buff.EntryType != BuffType.Slow && IsCrowdControlledButCanCleanse(buff)));
+                   IsCrowdControlledButCanCleanse(buff));
         }
 
         internal static bool IsCrowdControlledButCanCleanse(BuffEntry buff)
