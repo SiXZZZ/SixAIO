@@ -17,6 +17,7 @@ namespace SixAIO.Champions
         {
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
+                Range = 1100,
                 Width = 120,
                 Speed = 1600,
                 ShouldCast = (target, spellClass, damage) =>
@@ -33,6 +34,7 @@ namespace SixAIO.Champions
             };
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
             {
+                Range = 900,
                 Speed = 5000,
                 Width = 260,
                 ShouldCast = (target, spellClass, damage) =>

@@ -28,6 +28,7 @@ namespace SixAIO.Champions
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
+                Range = 1000,
                 Speed = 5000,
                 Width = 200,
                 ShouldCast = (target, spellClass, damage) =>

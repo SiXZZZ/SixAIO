@@ -33,6 +33,7 @@ namespace SixAIO.Champions
         {
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
+                Range = 1100,
                 Width = 150,
                 Speed = 4000,
                 Damage = (target, spellClass) =>
@@ -52,7 +53,7 @@ namespace SixAIO.Champions
                             .Where(x => TargetSelector.IsAttackable(x) && x.Distance <= 1050 && x.IsAlive)
                             .OrderBy(x => x.Health)
                             .FirstOrDefault()
-            }; 
+            };
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
             {
                 ShouldCast = (target, spellClass, damage) =>
@@ -114,8 +115,8 @@ namespace SixAIO.Champions
         private int GetFeathersBetweenMeAndEnemy(AIBaseClient enemy)
         {
             return _feathers.Count(feather =>
-                    Geometry.DistanceFromPointToLine(enemy.W2S, new Vector2[] { UnitManager.MyChampion.W2S, feather.W2S }) <= 160 && 
-                    feather.DistanceTo(enemy.Position) > enemy.Distance); 
+                    Geometry.DistanceFromPointToLine(enemy.W2S, new Vector2[] { UnitManager.MyChampion.W2S, feather.W2S }) <= 160 &&
+                    feather.DistanceTo(enemy.Position) > enemy.Distance);
         }
 
         internal override void OnCoreMainInput()

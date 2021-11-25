@@ -18,6 +18,7 @@ namespace SixAIO.Models
             SpellSlot = spellSlot;
         }
 
+        public float Range { get; set; }
         public float Speed { get; set; }
         public float Width { get; set; }
 
@@ -60,18 +61,19 @@ namespace SixAIO.Models
                     }
                     else
                     {
+                        if (Range > 0)
+                        {
+                            var pos = target != null && Speed != default && CastTime != default
+                            ? Prediction.LinePrediction(target, 1, CastTime, Speed)
+                            : target.Position;
+                            var w2s = LeagueNativeRendererManager.WorldToScreen(pos);
+                            if (w2s != default && UnitManager.MyChampion.DistanceTo(pos) <= Range)
+                            {
+                                return ShouldCast(target, spellClass, Damage(target, spellClass)) && CastSpellAtPos(CastSlot, w2s, CastTime);
+                            }
+                        }
 
-                        var pos = target != null && Speed != default && CastTime != default
-                            ? LeagueNativeRendererManager.WorldToScreen(Prediction.LinePrediction(target, 1, CastTime, Speed))
-                            : target.W2S;
-                        if (pos != default)
-                        {
-                            return ShouldCast(target, spellClass, Damage(target, spellClass)) && CastSpellAtPos(CastSlot, pos, CastTime);
-                        }
-                        else
-                        {
-                            return ShouldCast(target, spellClass, Damage(target, spellClass)) && CastSpellAtPos(CastSlot, target.W2S, CastTime);
-                        }
+                        return ShouldCast(target, spellClass, Damage(target, spellClass)) && CastSpellAtPos(CastSlot, target.W2S, CastTime);
                     }
                 }
             }

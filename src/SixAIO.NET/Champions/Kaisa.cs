@@ -32,6 +32,7 @@ namespace SixAIO.Champions
             };
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
             {
+                Range = 3000,
                 Width = 200,
                 Speed = 1750,
                 CastTime = 0.4f,
