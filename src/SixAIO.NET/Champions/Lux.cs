@@ -34,16 +34,22 @@ namespace SixAIO.Champions
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
                 Range = 1100,
-                Speed = 1200,
+                Speed = 5000,
                 Width = 310,
                 ShouldCast = (target, spellClass, damage) =>
                             UseE &&
                             spellClass.IsSpellReady &&
                             UnitManager.MyChampion.Mana > 110 &&
                             target != null,
-                TargetSelect = () => UnitManager.EnemyChampions.FirstOrDefault(x => x.Distance <= 1000 && x.IsAlive &&
-                                                                                    x.BuffManager.GetBuffList().Any(BuffChecker.IsCrowdControlledOrSlowed) &&
-                                                                                    !TargetSelector.IsInvulnerable(x, Oasys.Common.Logic.DamageType.Magical, false))
+                TargetSelect = () =>
+                {
+                    var ccTarget = UnitManager.EnemyChampions.FirstOrDefault(x => x.Distance <= 1000 && x.IsAlive && x.BuffManager.GetBuffList().Any(BuffChecker.IsCrowdControlledOrSlowed));
+                    if (ccTarget != null)
+                    {
+                        return ccTarget;
+                    }
+                    return UnitManager.EnemyChampions.FirstOrDefault(x => x.Distance <= 1000 && x.IsAlive);
+                }
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
