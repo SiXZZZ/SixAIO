@@ -21,13 +21,8 @@ namespace SixAIO.Champions
                             UseQ &&
                             spellClass.IsSpellReady &&
                             UnitManager.MyChampion.Mana > 50 &&
-                            target != null &&
+                            TargetSelector.IsAttackable(Orbwalker.TargetHero) && TargetSelector.IsInRange(Orbwalker.TargetHero) &&
                             UnitManager.MyChampion.BuffManager.GetBuffList().FirstOrDefault(x => x.IsActive && x.Stacks >= 4 && x.Name == "asheqcastready") != null,
-                TargetSelect = () =>
-                {
-                    var target = Orbwalker.TargetHero;
-                    return TargetSelector.IsAttackable(target) && TargetSelector.IsInRange(target) ? target : null;
-                }
             };
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
             {
