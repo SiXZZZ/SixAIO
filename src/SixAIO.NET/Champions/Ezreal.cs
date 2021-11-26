@@ -29,7 +29,7 @@ namespace SixAIO.Champions
                 ShouldCast = (target, spellClass, damage) =>
                             UseQ &&
                             spellClass.IsSpellReady &&
-                            UnitManager.MyChampion.Mana > 90 &&
+                            UnitManager.MyChampion.Mana > 40 &&
                             target != null,
                 TargetSelect = () =>
                             UnitManager.EnemyChampions
@@ -45,7 +45,7 @@ namespace SixAIO.Champions
                 ShouldCast = (target, spellClass, damage) =>
                             UseW &&
                             spellClass.IsSpellReady &&
-                            UnitManager.MyChampion.Mana > 30 &&
+                            UnitManager.MyChampion.Mana > 50 &&
                             target != null,
                 TargetSelect = () =>
                 {
@@ -88,7 +88,7 @@ namespace SixAIO.Champions
                 ShouldCast = (target, spellClass, damage) =>
                             UseE &&
                             spellClass.IsSpellReady &&
-                            UnitManager.MyChampion.Mana > 75 &&
+                            UnitManager.MyChampion.Mana > 90 &&
                             target != null,
                 TargetSelect = () =>
                             UnitManager.EnemyChampions
@@ -220,14 +220,17 @@ namespace SixAIO.Champions
             MenuTab.AddItem(new InfoDisplay() { Title = "---Q Settings---" });
             MenuTab.AddItem(new Switch() { Title = "Use Q", IsOn = true });
             MenuTab.AddItem(new Counter() { Title = "Q Min Mana", MinValue = 0, MaxValue = 500, Value = 150, ValueFrequency = 10 });
+
             MenuTab.AddItem(new InfoDisplay() { Title = "---W Settings---" });
             MenuTab.AddItem(new Switch() { Title = "Use W", IsOn = true });
             MenuTab.AddItem(new Counter() { Title = "W Min Mana", MinValue = 0, MaxValue = 500, Value = 0, ValueFrequency = 10 });
             MenuTab.AddItem(new Switch() { Title = "W Target should be slowed", IsOn = true });
             MenuTab.AddItem(new Switch() { Title = "W Target should be cc'ed", IsOn = true });
+
             MenuTab.AddItem(new InfoDisplay() { Title = "---E Settings---" });
             MenuTab.AddItem(new Switch() { Title = "Use E", IsOn = false });
             MenuTab.AddItem(new Counter() { Title = "E Min Mana", MinValue = 0, MaxValue = 500, Value = 150, ValueFrequency = 10 });
+
             MenuTab.AddItem(new InfoDisplay() { Title = "---R Settings---" });
             MenuTab.AddItem(new Switch() { Title = "Use R", IsOn = true });
             MenuTab.AddItem(new Counter() { Title = "R Min Mana", MinValue = 0, MaxValue = 500, Value = 150, ValueFrequency = 10 });

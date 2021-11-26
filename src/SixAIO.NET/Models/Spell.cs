@@ -38,7 +38,7 @@ namespace SixAIO.Models
         {
             try
             {
-                if (UnitManager.MyChampion.IsAlive)
+                if (UnitManager.MyChampion.IsAlive && !UnitManager.MyChampion.IsCastingSpell)
                 {
                     var target = TargetSelect();
                     var spellClass = UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot);
