@@ -132,17 +132,11 @@ namespace SixAIO.Utilities
                 }
 
                 Send(message.ToLowerInvariant());
-                if (Keyboard.IsPressed(GetKeybinding()))
-                {
-                    Keyboard.SendKeyUp(Keyboard.GetKeyBoardScanCode(GetKeybinding()));
-                }
+                Keyboard.SendKeyUp(Keyboard.GetKeyBoardScanCode(GetKeybinding()));
             }
             else
             {
-                if (Keyboard.IsPressed(GetKeybinding()))
-                {
-                    Keyboard.SendKeyUp(Keyboard.GetKeyBoardScanCode(GetKeybinding()));
-                }
+                Keyboard.SendKeyUp(Keyboard.GetKeyBoardScanCode(GetKeybinding()));
             }
         }
 
