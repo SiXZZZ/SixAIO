@@ -12,6 +12,8 @@ namespace SixAIO.Models
 {
     public class Spell
     {
+        public static event Action<Spell> OnSpellCast;
+
         public Spell(CastSlot castSlot, SpellSlot spellSlot)
         {
             CastSlot = castSlot;
@@ -49,15 +51,26 @@ namespace SixAIO.Models
                     if (AlertSpellUsage != default)
                     {
                         AlertSpellUsage?.Invoke(CastSlot);
+                        OnSpellCast?.Invoke(this);
                         return true;
                     }
                     if (target == default && CastTime == default)
                     {
-                        return ShouldCast(target, spellClass, Damage(target, spellClass)) && CastSpell(CastSlot);
+                        var result = ShouldCast(target, spellClass, Damage(target, spellClass)) && CastSpell(CastSlot);
+                        if (result)
+                        {
+                            OnSpellCast?.Invoke(this);
+                        }
+                        return result;
                     }
                     else if (target == default)
                     {
-                        return ShouldCast(target, spellClass, Damage(target, spellClass)) && CastSpellWithCastTime(CastSlot, CastTime);
+                        var result = ShouldCast(target, spellClass, Damage(target, spellClass)) && CastSpellWithCastTime(CastSlot, CastTime);
+                        if (result)
+                        {
+                            OnSpellCast?.Invoke(this);
+                        }
+                        return result;
                     }
                     else
                     {
@@ -69,11 +82,21 @@ namespace SixAIO.Models
                             var w2s = LeagueNativeRendererManager.WorldToScreen(pos);
                             if (w2s != default && UnitManager.MyChampion.DistanceTo(pos) <= Range)
                             {
-                                return ShouldCast(target, spellClass, Damage(target, spellClass)) && CastSpellAtPos(CastSlot, w2s, CastTime);
+                                var result = ShouldCast(target, spellClass, Damage(target, spellClass)) && CastSpellAtPos(CastSlot, w2s, CastTime);
+                                if (result)
+                                {
+                                    OnSpellCast?.Invoke(this);
+                                }
+                                return result;
                             }
                         }
 
-                        return ShouldCast(target, spellClass, Damage(target, spellClass)) && CastSpellAtPos(CastSlot, target.W2S, CastTime);
+                        var res = ShouldCast(target, spellClass, Damage(target, spellClass)) && CastSpellAtPos(CastSlot, target.W2S, CastTime);
+                        if (res)
+                        {
+                            OnSpellCast?.Invoke(this);
+                        }
+                        return res;
                     }
                 }
             }
