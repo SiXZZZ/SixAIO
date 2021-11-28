@@ -7,6 +7,7 @@ using Oasys.SDK;
 using Oasys.SDK.Menu;
 using Oasys.SDK.SpellCasting;
 using Oasys.SDK.Tools;
+using SharpDX;
 using SixAIO.Helpers;
 using SixAIO.Models;
 using System;
@@ -109,17 +110,22 @@ namespace SixAIO.Champions
             //    var axes = Axes();
             //    if (axes.Any())
             //    {
-            //        var catchAxe = axes.FirstOrDefault(x => (QCatchMode == CatchMode.Mouse && x.DistanceTo(GameEngine.WorldMousePosition) <= QCatchRange) ||
-            //                                                (QCatchMode == CatchMode.Self && x.Distance <= QCatchRange));
+            //        var catchAxe = axes.Where(x => (QCatchMode == CatchMode.Mouse && x.DistanceTo(GameEngine.WorldMousePosition) <= QCatchRange) ||
+            //                                       (QCatchMode == CatchMode.Self && x.Distance <= QCatchRange))
+            //                           .OrderBy(x => x.DistanceTo(GameEngine.WorldMousePosition))
+            //                           .FirstOrDefault();
             //        if (catchAxe != null)
             //        {
-            //            Orbwalker.AllowMoving = false;
-            //            Mouse.ClickAndBounce((int)catchAxe.Position.X, (int)catchAxe.Position.Y);
+            //            Orbwalker.ForceMovePosition = catchAxe.W2S;
+            //        }
+            //        else
+            //        {
+            //            Orbwalker.ForceMovePosition = Vector2.Zero;
             //        }
             //    }
             //    else
             //    {
-            //        Orbwalker.AllowMoving = true;
+            //        Orbwalker.ForceMovePosition = Vector2.Zero;
             //    }
             //}
 
@@ -127,6 +133,11 @@ namespace SixAIO.Champions
             {
                 return;
             }
+        }
+
+        internal override void OnCoreMainInputRelease()
+        {
+            Orbwalker.ForceMovePosition = Vector2.Zero;
         }
 
         internal override void OnCoreLaneClearInput()
