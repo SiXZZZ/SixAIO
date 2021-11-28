@@ -128,6 +128,7 @@ namespace SixAIO.Champions
             //        Orbwalker.ForceMovePosition = Vector2.Zero;
             //    }
             //}
+            //try something with if w is ready =/= axe is catched and store the current axe to catch to filter it out from the rest
 
             if (SpellQ.ExecuteCastSpell() || SpellE.ExecuteCastSpell() || SpellW.ExecuteCastSpell() || SpellR.ExecuteCastSpell())
             {
