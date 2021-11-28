@@ -27,10 +27,7 @@ namespace SixAIO.Champions
                     : 0;
         }
 
-        private static BuffEntry GetUltBuff()
-        {
-            return UnitManager.MyChampion.BuffManager.GetBuffByName("rivenwindslashready", false, true);
-        }
+        private static BuffEntry GetUltBuff() => UnitManager.MyChampion.BuffManager.GetBuffByName("rivenwindslashready", false, true);
 
         private static bool IsUltActive()
         {
@@ -41,10 +38,6 @@ namespace SixAIO.Champions
         private static bool IsWindSlashReady()
         {
             var buff = GetUltBuff();
-            if (buff != null)
-            {
-                Logger.Log(buff.Name + " " + buff.Stacks + " " + buff.StartTime + " " + buff.EndTime);
-            }
             return buff != null && buff.IsActive && buff.Stacks > 0;
         }
 
