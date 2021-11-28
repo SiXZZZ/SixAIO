@@ -23,6 +23,8 @@ namespace SixAIO.Champions
 
         private static Mode _mode = Mode.Everything;
 
+        public Oasys.Common.GameObject.ObjectClass.Hero BindedAlly { get; private set; }
+
         public Kalista()
         {
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
@@ -49,12 +51,10 @@ namespace SixAIO.Champions
                             spellClass.IsSpellReady &&
                             UnitManager.MyChampion.Mana > 100 &&
                             target != null,
-                TargetSelect = () => UnitManager.AllyChampions
-                        .Where(ally => MenuTab.GetItem<Counter>("Ult Ally - " + ally.ModelName).Value > 0)
-                        .OrderByDescending(ally => MenuTab.GetItem<Counter>("Ult Ally - " + ally.ModelName).Value)
-                        .FirstOrDefault(ally => ally.IsAlive && ally.Distance <= 1100 &&
-                                                                    ally.BuffManager.GetBuffList().Any(x => x.Name.Contains("kalistacoopstrikeally", System.StringComparison.OrdinalIgnoreCase)) &&                                                                  
-                                                                    (ally.Health / ally.MaxHealth * 100) < RHealthPercent)
+                TargetSelect = () =>
+                            BindedAlly != null && BindedAlly.IsAlive && BindedAlly.Distance <= 1100 && (BindedAlly.Health / BindedAlly.MaxHealth * 100) < RHealthPercent
+                                        ? BindedAlly
+                                        : null
             };
         }
 
@@ -164,6 +164,14 @@ namespace SixAIO.Champions
             }
         }
 
+        internal override void OnCoreMainTick()
+        {
+            if (BindedAlly == null)
+            {
+                BindedAlly = UnitManager.AllyChampions.FirstOrDefault(ally => ally.BuffManager.GetBuffList().Any(x => x.Name.Contains("kalistacoopstrikeally", System.StringComparison.OrdinalIgnoreCase)));
+            }
+        }
+
         private int RHealthPercent
         {
             get => MenuTab.GetItem<Counter>("R Health Percent").Value;
@@ -187,12 +195,6 @@ namespace SixAIO.Champions
             MenuTab.AddItem(new InfoDisplay() { Title = "---R Settings---" });
             MenuTab.AddItem(new Switch() { Title = "Use R", IsOn = true });
             MenuTab.AddItem(new Counter() { Title = "R Health Percent", MinValue = 0, MaxValue = 100, Value = 20, ValueFrequency = 5 });
-            MenuTab.AddItem(new InfoDisplay() { Title = "---Allies to Ult---" });
-            foreach (var allyChampion in UnitManager.AllyChampions)
-            {
-                MenuTab.AddItem(new Counter() { Title = "Ult Ally - " + allyChampion.ModelName, MinValue = 0, MaxValue = 5, Value = 0 });
-            }
-
         }
     }
 }
