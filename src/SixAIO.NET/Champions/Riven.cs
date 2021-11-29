@@ -35,10 +35,24 @@ namespace SixAIO.Champions
             return buff != null && buff.IsActive;
         }
 
+        private static float UltTimeLeft()
+        {
+            var buff = GetUltBuff();
+            return buff != null && buff.IsActive ? buff.EndTime - GameEngine.GameTime : 0;
+        }
+
         private static bool IsWindSlashReady()
         {
             var buff = GetUltBuff();
             return buff != null && buff.IsActive && buff.Stacks > 0;
+        }
+
+        private static bool AllSpellsOnCooldown()
+        {
+            var q = UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot.Q);
+            var w = UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot.W);
+            var e = UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot.E);
+            return !q.IsSpellReady && !w.IsSpellReady && !e.IsSpellReady;
         }
 
         private float _lastAATime = 0f;
@@ -55,7 +69,7 @@ namespace SixAIO.Champions
                             spellClass.IsSpellReady &&
                             _lastAATime > _lastQTime &&
                             target != null,
-                TargetSelect = () => UnitManager.EnemyChampions.FirstOrDefault(x => x.Distance <= 400 && TargetSelector.IsAttackable(x))
+                TargetSelect = () => UnitManager.EnemyChampions.FirstOrDefault(x => x.Distance <= UnitManager.MyChampion.TrueAttackRange + (IsUltActive() ? 250 : 150) && TargetSelector.IsAttackable(x))
             };
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
             {
@@ -63,7 +77,8 @@ namespace SixAIO.Champions
                             UseW &&
                             spellClass.IsSpellReady &&
                             target != null,
-                TargetSelect = () => UnitManager.EnemyChampions.FirstOrDefault(x => x.Distance <= 250 && TargetSelector.IsAttackable(x))
+                TargetSelect = () => UnitManager.EnemyChampions.FirstOrDefault(x => x.Distance <= x.UnitComponentInfo.UnitBoundingRadius + (IsUltActive() ? 300 : 250) &&
+                                                                                    TargetSelector.IsAttackable(x))
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
@@ -72,7 +87,7 @@ namespace SixAIO.Champions
                             UseE &&
                             spellClass.IsSpellReady &&
                             target != null,
-                TargetSelect = () => UnitManager.EnemyChampions.FirstOrDefault(x => x.Distance <= 400 && TargetSelector.IsAttackable(x))
+                TargetSelect = () => UnitManager.EnemyChampions.FirstOrDefault(x => x.Distance <= (IsUltActive() ? 450 : 400) && TargetSelector.IsAttackable(x))
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
@@ -85,10 +100,19 @@ namespace SixAIO.Champions
                             spellClass.IsSpellReady &&
                             IsWindSlashReady() &&
                             target != null &&
-                            target.Health < GetRDamage(target, spellClass),
+                            (target.Health < GetRDamage(target, spellClass) ||
+                            (UltTimeLeft() > 0 && UltTimeLeft() < 1f) ||
+                            (AllSpellsOnCooldown() && PassiveStacks() <= 2) ||
+                            (GetMissingHealthPercent(target) < 75.0f)),
                 TargetSelect = () => UnitManager.EnemyChampions.FirstOrDefault(x => x.Distance <= 800 && TargetSelector.IsAttackable(x) &&
                                                                                     x.Health < GetRDamage(x, UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot.R)))
             };
+        }
+
+        private float GetMissingHealthPercent(GameObjectBase target)
+        {
+            var missingHealthPercent = 100f - (target.Health / target.MaxHealth * 100f);
+            return missingHealthPercent;
         }
 
         private float GetRDamage(GameObjectBase target, SpellClass spellClass)
@@ -97,8 +121,7 @@ namespace SixAIO.Champions
             {
                 return 0;
             }
-            var missingHealthPercent = 100f - (target.Health / target.MaxHealth * 100f);
-            var extraDamagePercent = missingHealthPercent * 2.667f;
+            var extraDamagePercent = GetMissingHealthPercent(target) * 2.667f;
             if (extraDamagePercent > 200f)
             {
                 extraDamagePercent = 200f;
