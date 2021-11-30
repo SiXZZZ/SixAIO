@@ -18,18 +18,23 @@ namespace SixAIO.Champions
 {
     internal class Vayne : Champion
     {
+        private float _lastAATime = 0f;
+        private float _lastQTime = 0f;
         private static GameObjectBase _eTarget;
 
         public Vayne()
         {
+            Orbwalker.OnOrbwalkerAfterBasicAttack += Orbwalker_OnOrbwalkerAfterBasicAttack;
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
                 ShouldCast = (target, spellClass, damage) =>
                             UseQ &&
                             spellClass.IsSpellReady &&
                             UnitManager.MyChampion.Mana > 30 &&
+                            _lastAATime > _lastQTime &&
                             DashModeSelected == DashMode.ToMouse &&
-                            TargetSelector.IsAttackable(Orbwalker.TargetHero) && 
+                            !Orbwalker.CanBasicAttack &&
+                            TargetSelector.IsAttackable(Orbwalker.TargetHero) &&
                             TargetSelector.IsInRange(Orbwalker.TargetHero),
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
@@ -89,6 +94,15 @@ namespace SixAIO.Champions
         {
             var distance = DistanceToWall(target);
             return distance < int.MaxValue && distance > 0;
+        }
+
+        private void Orbwalker_OnOrbwalkerAfterBasicAttack(float gameTime, GameObjectBase target)
+        {
+            _lastAATime = gameTime;
+            if (target != null)
+            {
+                SpellQ.ExecuteCastSpell();
+            }
         }
 
         internal override void OnCoreMainInput()
