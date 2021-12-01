@@ -26,7 +26,7 @@ namespace SixAIO.Champions
                     ? (int)buff.Stacks
                     : 0;
         }
-
+        //RivenTriCleave = q passive 
         private static BuffEntry GetUltBuff() => UnitManager.MyChampion.BuffManager.GetBuffByName("rivenwindslashready", false, true);
 
         private static bool IsUltActive()
@@ -55,8 +55,11 @@ namespace SixAIO.Champions
             return !q.IsSpellReady && !w.IsSpellReady && !e.IsSpellReady;
         }
 
+        private int _lastQCharge = -1;
+        private float _lastQChargeTime = 0;
         private float _lastAATime = 0f;
         private float _lastQTime = 0f;
+
         public Riven()
         {
             Spell.OnSpellCast += Spell_OnSpellCast;
@@ -67,18 +70,19 @@ namespace SixAIO.Champions
                 ShouldCast = (target, spellClass, damage) =>
                             UseQ &&
                             spellClass.IsSpellReady &&
-                            _lastAATime > _lastQTime &&
+                            _lastAATime > _lastQTime + 0.333f &&
+                            _lastAATime > _lastQChargeTime + 0.333f &&
                             target != null,
-                TargetSelect = () => UnitManager.EnemyChampions.FirstOrDefault(x => x.Distance <= UnitManager.MyChampion.TrueAttackRange + (IsUltActive() ? 250 : 150) && TargetSelector.IsAttackable(x))
+                TargetSelect = () => UnitManager.EnemyChampions.FirstOrDefault(x => x.Distance <= UnitManager.MyChampion.TrueAttackRange + (IsUltActive() ? 250 : 150) &&
+                                                                                    TargetSelector.IsAttackable(x))
             };
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
             {
                 ShouldCast = (target, spellClass, damage) =>
                             UseW &&
                             spellClass.IsSpellReady &&
-                            target != null,
-                TargetSelect = () => UnitManager.EnemyChampions.FirstOrDefault(x => x.Distance <= x.UnitComponentInfo.UnitBoundingRadius + (IsUltActive() ? 300 : 250) &&
-                                                                                    TargetSelector.IsAttackable(x))
+                            UnitManager.EnemyChampions.Any(x => x.Distance <= x.UnitComponentInfo.UnitBoundingRadius + (IsUltActive() ? 300 : 250) &&
+                                                                                    TargetSelector.IsAttackable(x)),
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
@@ -140,6 +144,20 @@ namespace SixAIO.Champions
             if (spell.SpellSlot == SpellSlot.E)
             {
                 SpellW.ExecuteCastSpell();
+                SpellQ.ExecuteCastSpell();
+                SpellR.ExecuteCastSpell();
+            }
+
+            if (spell.SpellSlot == SpellSlot.W)
+            {
+                SpellQ.ExecuteCastSpell();
+                SpellR.ExecuteCastSpell();
+            }
+
+            if (spell.SpellSlot == SpellSlot.Q)
+            {
+                SpellR.ExecuteCastSpell();
+                SpellW.ExecuteCastSpell();
             }
         }
 
@@ -157,6 +175,23 @@ namespace SixAIO.Champions
             if (SpellR.ExecuteCastSpell() || SpellQ.ExecuteCastSpell() || SpellW.ExecuteCastSpell() || SpellE.ExecuteCastSpell())
             {
                 return;
+            }
+        }
+
+        internal override void OnCoreLaneClearInput()
+        {
+            if (SpellR.ExecuteCastSpell() || SpellQ.ExecuteCastSpell() || SpellW.ExecuteCastSpell() || SpellE.ExecuteCastSpell())
+            {
+                return;
+            }
+        }
+
+        internal override void OnCoreMainTick()
+        {
+            if (_lastQCharge != UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot.Q).Charges)
+            {
+                _lastQCharge = UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot.Q).Charges;
+                _lastQChargeTime = GameEngine.GameTime;
             }
         }
 
