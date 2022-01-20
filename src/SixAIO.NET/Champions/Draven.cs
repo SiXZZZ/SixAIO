@@ -52,7 +52,7 @@ namespace SixAIO.Champions
         {
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
-                CastTime = 0f,
+                CastTime = () => 0f,
                 ShouldCast = (target, spellClass, damage) =>
                             UseQ &&
                             spellClass.IsSpellReady &&
@@ -63,7 +63,7 @@ namespace SixAIO.Champions
             };
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
             {
-                CastTime = 0f,
+                CastTime = () => 0f,
                 ShouldCast = (target, spellClass, damage) =>
                             UseW &&
                             spellClass.IsSpellReady &&
@@ -74,28 +74,28 @@ namespace SixAIO.Champions
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
-                Range = 1100,
-                Width = 260,
-                Speed = 1400,
+                Range = () => 1100,
+                Width = () => 260,
+                Speed = () => 1400,
                 ShouldCast = (target, spellClass, damage) =>
                             UseE &&
                             spellClass.IsSpellReady &&
                             UnitManager.MyChampion.Mana > 70 &&
                             target != null,
-                TargetSelect = () => UnitManager.EnemyChampions.FirstOrDefault(x => x.Distance <= 800 && x.IsAlive && TargetSelector.IsAttackable(x))
+                TargetSelect = (mode) => UnitManager.EnemyChampions.FirstOrDefault(x => x.Distance <= 800 && x.IsAlive && TargetSelector.IsAttackable(x))
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
-                CastTime = 0.5f,
-                Range = 30000,
-                Width = 320,
-                Speed = 2000,
+                CastTime = () => 0.5f,
+                Range = () => 30000,
+                Width = () => 320,
+                Speed = () => 2000,
                 ShouldCast = (target, spellClass, damage) =>
                             UseR &&
                             spellClass.IsSpellReady &&
                             UnitManager.MyChampion.Mana > 100 &&
                             target != null,
-                TargetSelect = () =>
+                TargetSelect = (mode) => 
                             UnitManager.EnemyChampions
                             .FirstOrDefault(x => !x.W2S.IsZero && x.IsAlive && TargetSelector.IsAttackable(x) &&
                                             x.Health < GetRDamage(x) &&

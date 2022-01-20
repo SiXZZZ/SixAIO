@@ -23,16 +23,16 @@ namespace SixAIO.Champions
         {
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
-                CastTime = 0f,
-                Range = 800,
-                Speed = 1000,
-                Width = 180,
+                CastTime = () => 0f,
+                Range = () => 800,
+                Speed = () => 1000,
+                Width = () => 180,
                 ShouldCast = (target, spellClass, damage) =>
                             UseQ &&
                             spellClass.IsSpellReady &&
                             UnitManager.MyChampion.Mana > 80 &&
                             target != null,
-                TargetSelect = () =>
+                TargetSelect = (mode) => 
                 {
                     var ccTarget = UnitManager.EnemyChampions.FirstOrDefault(x => x.Distance <= 800 && x.IsAlive && x.BuffManager.GetBuffList().Any(BuffChecker.IsCrowdControlledOrSlowed));
                     if (ccTarget != null)
@@ -44,15 +44,15 @@ namespace SixAIO.Champions
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
-                Range = 800,
-                Width = 140,
-                Speed = 2500,
+                Range = () => 800,
+                Width = () => 140,
+                Speed = () => 2500,
                 ShouldCast = (target, spellClass, damage) =>
                             UseE &&
                             spellClass.IsSpellReady &&
                             UnitManager.MyChampion.Mana > 50 &&
                             target != null,
-                TargetSelect = () =>
+                TargetSelect = (mode) => 
                 {
                     var targets = UnitManager.EnemyChampions
                                                 .Where(x => x.IsAlive && x.Distance <= 1000 &&
@@ -77,13 +77,13 @@ namespace SixAIO.Champions
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
-                CastTime = 0f,
+                CastTime = () => 0f,
                 ShouldCast = (target, spellClass, damage) =>
                             UseR &&
                             spellClass.IsSpellReady &&
                             UnitManager.MyChampion.Mana > 100 &&
                             target != null,
-                TargetSelect = () => UnitManager.EnemyChampions.Where(x => x.Distance <= (UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot.R).Level >= 3 ? 750 : 675) &&
+                TargetSelect = (mode) => UnitManager.EnemyChampions.Where(x => x.Distance <= (UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot.R).Level >= 3 ? 750 : 675) &&
                                             TargetSelector.IsAttackable(x) &&
                                             !TargetSelector.IsInvulnerable(x, Oasys.Common.Logic.DamageType.Magical, false))
                                             .FirstOrDefault(RCanKill)

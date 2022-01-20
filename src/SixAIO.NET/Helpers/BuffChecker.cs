@@ -12,10 +12,16 @@ namespace SixAIO.Helpers
                    IsCrowdControlledButCanCleanse(buff));
         }
 
+        internal static bool IsCrowdControlledButCanQss(BuffEntry buff)
+        {
+            return buff.IsActive && (buff.EntryType == BuffType.Suppression || IsCrowdControlledButCanCleanse(buff));
+        }
+
         internal static bool IsCrowdControlledButCanCleanse(BuffEntry buff)
         {
             return buff.IsActive &&
-                   (buff.EntryType == BuffType.Stun || buff.EntryType == BuffType.Taunt ||
+                   (buff.EntryType == BuffType.Slow ||
+                   buff.EntryType == BuffType.Stun || buff.EntryType == BuffType.Taunt ||
                    buff.EntryType == BuffType.Snare || buff.EntryType == BuffType.Charm ||
                    buff.EntryType == BuffType.Silence || buff.EntryType == BuffType.Blind ||
                    buff.EntryType == BuffType.Fear || buff.EntryType == BuffType.Polymorph ||

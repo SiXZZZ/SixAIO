@@ -20,7 +20,7 @@ namespace SixAIO.Champions
                             spellClass.IsSpellReady &&
                             UnitManager.MyChampion.Mana > 60 &&
                             target != null,
-                TargetSelect = () =>
+                TargetSelect = (mode) => 
                             UnitManager.EnemyChampions
                             .FirstOrDefault(x => x.Distance <= UnitManager.MyChampion.TrueAttackRange && x.IsAlive &&
                                                  TargetSelector.IsAttackable(x) &&
@@ -28,15 +28,15 @@ namespace SixAIO.Champions
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
-                Range = 1000,
-                Speed = 5000,
-                Width = 200,
+                Range = () => 1000,
+                Speed = () => 5000,
+                Width = () => 200,
                 ShouldCast = (target, spellClass, damage) =>
                             UseE &&
                             spellClass.IsSpellReady &&
                             UnitManager.MyChampion.Mana > 80 &&
                             target != null,
-                TargetSelect = () =>
+                TargetSelect = (mode) => 
                             UnitManager.EnemyChampions
                             .FirstOrDefault(x => x.Distance <= 1000 && x.IsAlive && TargetSelector.IsAttackable(x))
             };

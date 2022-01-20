@@ -28,7 +28,7 @@ namespace SixAIO.Champions
                             spellClass.IsSpellReady &&
                             UnitManager.MyChampion.Mana > 90 &&
                             target != null,
-                TargetSelect = () =>
+                TargetSelect = (mode) => 
                 {
                     var targets = UnitManager.EnemyChampions
                                                 .Where(x => x.IsAlive && x.Distance <= 1000 &&
@@ -55,15 +55,15 @@ namespace SixAIO.Champions
             };
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
             {
-                Range = 900,
-                Width = 110,
-                Speed = 1600,
+                Range = () => 900,
+                Width = () => 110,
+                Speed = () => 1600,
                 ShouldCast = (target, spellClass, damage) =>
                             UseW &&
                             spellClass.IsSpellReady &&
                             UnitManager.MyChampion.Mana > 60 &&
                             target != null,
-                TargetSelect = () =>
+                TargetSelect = (mode) => 
                             UnitManager.EnemyChampions
                             .FirstOrDefault(x => x.Distance <= 900 && x.IsAlive && TargetSelector.IsAttackable(x))
             };
@@ -81,7 +81,7 @@ namespace SixAIO.Champions
 
         private GameObjectBase GetMinionBetweenMeAndEnemy(Hero enemy, int width)
         {
-            return UnitManager.EnemyMinions.FirstOrDefault(minion => minion.IsAlive & minion.Distance <= 500 && TargetSelector.IsAttackable(minion) &&
+            return UnitManager.EnemyMinions.FirstOrDefault(minion => minion.IsAlive && minion.Distance <= 500 && TargetSelector.IsAttackable(minion) &&
                         Geometry.DistanceFromPointToLine(enemy.W2S, new Vector2[] { UnitManager.MyChampion.W2S, minion.W2S }) <= width &&
                         minion.W2S.Distance(enemy.W2S) < UnitManager.MyChampion.W2S.Distance(enemy.W2S));
         }

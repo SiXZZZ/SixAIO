@@ -13,6 +13,7 @@ using SixAIO.Helpers;
 using SixAIO.Models;
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace SixAIO.Champions
 {
@@ -40,7 +41,7 @@ namespace SixAIO.Champions
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
                 ShouldCast = ShouldCastE,
-                TargetSelect = () => _eTarget
+                TargetSelect = (mode) => _eTarget
             };
         }
 
@@ -115,7 +116,7 @@ namespace SixAIO.Champions
 
         internal override void OnCoreMainTick()
         {
-            if (UseE)
+            if (UseE && SpellE.SpellClass.IsSpellReady && UnitManager.MyChampion.Mana > 90)
             {
                 _eTarget = TargetSelectE();
             }

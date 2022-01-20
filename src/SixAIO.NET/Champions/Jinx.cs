@@ -28,11 +28,11 @@ namespace SixAIO.Champions
                     if (UseQ && spellClass.IsSpellReady && UnitManager.MyChampion.Mana > 40)
                     {
                         var usingRockets = IsQActive();
-                        var extraRange = 75 + (25 * UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot.Q).Level);
+                        var extraRange =  75 + (25 * UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot.Q).Level);
                         var minigunRange = usingRockets
                                             ? UnitManager.MyChampion.TrueAttackRange - extraRange
                                             : UnitManager.MyChampion.TrueAttackRange;
-                        var rocketRange = usingRockets
+                        var rocketRange =  usingRockets
                                             ? UnitManager.MyChampion.TrueAttackRange
                                             : UnitManager.MyChampion.TrueAttackRange + extraRange;
 
@@ -55,10 +55,10 @@ namespace SixAIO.Champions
             };
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
             {
-                Range = 1500,
-                Width = 120,
-                Speed = 3300,
-                CastTime = 0.6f,
+                Range = () => 1500,
+                Width = () => 120,
+                Speed = () => 3300,
+                CastTime = () => 0.6f,
                 //Damage = (target, spellClass) =>
                 //            target != null
                 //            ? DamageCalculator.GetArmorMod(UnitManager.MyChampion, target) *
@@ -70,7 +70,7 @@ namespace SixAIO.Champions
                             spellClass.IsSpellReady &&
                             UnitManager.MyChampion.Mana > 90 &&
                             target != null,
-                TargetSelect = () =>
+                TargetSelect = (mode) => 
                             UnitManager.EnemyChampions
                             .FirstOrDefault(x => x.Distance <= 1450 && x.IsAlive &&
                                                 TargetSelector.IsAttackable(x) &&
@@ -84,16 +84,16 @@ namespace SixAIO.Champions
                             spellClass.IsSpellReady &&
                             UnitManager.MyChampion.Mana > 90 &&
                             target != null,
-                TargetSelect = () =>
+                TargetSelect = (mode) => 
                             UnitManager.EnemyChampions
                             .FirstOrDefault(x => x.Distance <= 850 && x.IsAlive && x.BuffManager.GetBuffList().Any(BuffChecker.IsCrowdControlled))
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
-                Range = 30000,
-                Width = 280,
-                Speed = 2000,
-                CastTime = 1f,
+                Range = () => 30000,
+                Width = () => 280,
+                Speed = () => 2000,
+                CastTime = () => 1f,
                 //Damage = (target, spellClass) =>
                 //            target != null
                 //            ? DamageCalculator.GetMagicResistMod(UnitManager.MyChampion, target) *
@@ -106,11 +106,11 @@ namespace SixAIO.Champions
                             spellClass.IsSpellReady &&
                             UnitManager.MyChampion.Mana > 100 &&
                             target != null,
-                TargetSelect = () =>
+                TargetSelect = (mode) => 
                             UnitManager.EnemyChampions
                             .FirstOrDefault(x => x.Distance <= 30000 && x.IsAlive && TargetSelector.IsAttackable(x) &&
                                             (x.Health / x.MaxHealth * 100) < 50 &&
-                                            x.BuffManager.GetBuffList().Any(buff => buff.IsActive && BuffChecker.IsCrowdControlled(buff)))
+                                            x.BuffManager.GetBuffList().Any(BuffChecker.IsCrowdControlled))
             };
         }
 

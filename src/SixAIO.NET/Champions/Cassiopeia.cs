@@ -20,15 +20,15 @@ namespace SixAIO.Champions
         {
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
-                Range = 850,
-                Speed = 5000,
-                Width = 200,
+                Range = () => 850,
+                Speed = () => 5000,
+                Width = () => 200,
                 ShouldCast = (target, spellClass, damage) =>
                             UseQ &&
                             spellClass.IsSpellReady &&
                             UnitManager.MyChampion.Mana > 90 &&
                             target != null,
-                TargetSelect = () =>
+                TargetSelect = (mode) => 
                 {
                     var ccTarget = UnitManager.EnemyChampions.FirstOrDefault(x => x.Distance <= 850 && x.IsAlive && x.BuffManager.GetBuffList().Any(BuffChecker.IsCrowdControlledOrSlowed));
                     if (ccTarget != null)
@@ -46,7 +46,7 @@ namespace SixAIO.Champions
                             spellClass.IsSpellReady &&
                             UnitManager.MyChampion.Mana > 50 &&
                             target != null,
-                TargetSelect = () =>
+                TargetSelect = (mode) => 
                 {
                     var champTarget = UnitManager.EnemyChampions
                                      .Where(x => x.IsAlive && TargetSelector.IsAttackable(x) && x.Distance <= 680)
@@ -66,16 +66,16 @@ namespace SixAIO.Champions
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
-                Range = 750,
-                Speed = 10000,
-                Width = 400,
-                CastTime = 0.5f,
+                Range = () => 750,
+                Speed = () => 10000,
+                Width = () => 400,
+                CastTime = () => 0.5f,
                 ShouldCast = (target, spellClass, damage) =>
                             UseR &&
                             spellClass.IsSpellReady &&
                             UnitManager.MyChampion.Mana > 100 &&
                             target != null,
-                TargetSelect = () =>
+                TargetSelect = (mode) => 
                                 UnitManager.EnemyChampions
                                 .FirstOrDefault(x => x.IsAlive &&
                                                      TargetSelector.IsAttackable(x) &&

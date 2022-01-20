@@ -19,15 +19,15 @@ namespace SixAIO.Champions
         {
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
-                Range = 900,
-                Width = 200,
-                Speed = 1550,
+                Range = () => 900,
+                Width = () => 200,
+                Speed = () => 1550,
                 ShouldCast = (target, spellClass, damage) =>
                             UseQ &&
                             spellClass.IsSpellReady &&
                             UnitManager.MyChampion.Mana > 85 &&
                             target != null,
-                TargetSelect = () =>
+                TargetSelect = (mode) => 
                             UnitManager.EnemyChampions
                             .FirstOrDefault(x => x.Distance <= 1000 && x.IsAlive &&
                                                  TargetSelector.IsAttackable(x) && x.BuffManager.GetBuffList().Any(BuffChecker.IsCrowdControlledOrSlowed) && 
@@ -43,15 +43,15 @@ namespace SixAIO.Champions
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
-                Range = 1000,
-                Speed = 1550,
-                Width = 120,
+                Range = () => 1000,
+                Speed = () => 1550,
+                Width = () => 120,
                 ShouldCast = (target, spellClass, damage) =>
                             UseE &&
                             spellClass.IsSpellReady &&
                             UnitManager.MyChampion.Mana > 70 &&
                             target != null,
-                TargetSelect = () =>
+                TargetSelect = (mode) => 
                             UnitManager.EnemyChampions
                             .FirstOrDefault(x => x.Distance <= 850 && x.IsAlive &&
                                                  TargetSelector.IsAttackable(x) && !Collision.MinionCollision(x.W2S, 140) &&
@@ -59,7 +59,7 @@ namespace SixAIO.Champions
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
-                CastTime = 0f,
+                CastTime = () => 0f,
                 ShouldCast = (target, spellClass, damage) =>
                             UseR &&
                             spellClass.IsSpellReady &&

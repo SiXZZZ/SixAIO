@@ -17,15 +17,15 @@ namespace SixAIO.Champions
         {
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
-                Range = 900,
-                Speed = 5000,
-                Width = 140,
+                Range = () => 900,
+                Speed = () => 5000,
+                Width = () => 140,
                 ShouldCast = (target, spellClass, damage) =>
                             UseQ &&
                             spellClass.IsSpellReady &&
                             UnitManager.MyChampion.Mana > 80 &&
                             target != null,
-                TargetSelect = () =>
+                TargetSelect = (mode) => 
                 {
                     var bombTarget = UnitManager.EnemyChampions.FirstOrDefault(x => x.Distance <= 900 && x.IsAlive && x.BuffManager.HasBuff("ZileanQ"));
                     if (bombTarget != null)
@@ -58,17 +58,17 @@ namespace SixAIO.Champions
                             spellClass.IsSpellReady &&
                             UnitManager.MyChampion.Mana > 50 &&
                             target != null,
-                TargetSelect = () => UnitManager.EnemyChampions.FirstOrDefault(x => x.Distance <= 550 && x.IsAlive && TargetSelector.IsAttackable(x))
+                TargetSelect = (mode) => UnitManager.EnemyChampions.FirstOrDefault(x => x.Distance <= 550 && x.IsAlive && TargetSelector.IsAttackable(x))
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
-                CastTime = 0f,
+                CastTime = () => 0f,
                 ShouldCast = (target, spellClass, damage) =>
                             UseR &&
                             spellClass.IsSpellReady &&
                             UnitManager.MyChampion.Mana > 175 &&
                             target != null,
-                TargetSelect = () =>
+                TargetSelect = (mode) => 
                 UnitManager.AllyChampions
                         .Where(ally => MenuTab.GetItem<Counter>("Ult Ally - " + ally.ModelName).Value > 0)
                         .OrderByDescending(ally => MenuTab.GetItem<Counter>("Ult Ally - " + ally.ModelName).Value)

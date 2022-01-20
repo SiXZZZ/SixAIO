@@ -3,7 +3,7 @@
     //internal static class Xerath
     //{
     //    private static float _castTimeQ = 0.5f;
-    //    private static float _castTime = 0.1f;
+    //    private static float _CastTime = () => 0.1f;
     //    private static float _lastQTime = 0;
     //    private static float _lastWTime = 0;
     //    private static float _lastETime = 0;

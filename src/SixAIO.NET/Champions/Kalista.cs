@@ -29,12 +29,12 @@ namespace SixAIO.Champions
         {
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
-                Range = 1200,
-                Width = 80,
-                Speed = 2400,
+                Range = () => 1200,
+                Width = () => 80,
+                Speed = () => 2400,
                 Damage = (target, spellClass) => -45 + (65 * spellClass.Level) + UnitManager.MyChampion.UnitStats.TotalAttackDamage,
                 ShouldCast = (target, spellClass, damage) => UseQ && spellClass.IsSpellReady && UnitManager.MyChampion.Mana > 70 && target != null,
-                TargetSelect = () => UnitManager.EnemyChampions
+                TargetSelect = (mode) => UnitManager.EnemyChampions
                                     .Where(x => TargetSelector.IsAttackable(x) && x.Distance <= 1100 && x.IsAlive)
                                     .OrderBy(x => x.Health)
                                     .FirstOrDefault()
@@ -45,13 +45,13 @@ namespace SixAIO.Champions
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
-                CastTime = 0f,
+                CastTime = () => 0f,
                 ShouldCast = (target, spellClass, damage) =>
                             UseR &&
                             spellClass.IsSpellReady &&
                             UnitManager.MyChampion.Mana > 100 &&
                             target != null,
-                TargetSelect = () =>
+                TargetSelect = (mode) =>
                             BindedAlly != null && BindedAlly.IsAlive && BindedAlly.Distance <= 1100 && (BindedAlly.Health / BindedAlly.MaxHealth * 100) < RHealthPercent
                                         ? BindedAlly
                                         : null
@@ -164,9 +164,11 @@ namespace SixAIO.Champions
             }
         }
 
+        private int _cycles = 0;
         internal override void OnCoreMainTick()
         {
-            if (BindedAlly == null)
+            _cycles++;
+            if (BindedAlly is null && _cycles % 10 == 0 && UnitManager.MyChampion.Level >= 6)
             {
                 BindedAlly = UnitManager.AllyChampions.FirstOrDefault(ally => ally.BuffManager.GetBuffList().Any(x => x.Name.Contains("kalistacoopstrikeally", System.StringComparison.OrdinalIgnoreCase)));
             }

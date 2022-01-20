@@ -17,16 +17,16 @@ namespace SixAIO.Champions
         {
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
-                Range = 950,
-                Width = 120,
-                Speed = 1450,
+                Range = () => 950,
+                Width = () => 120,
+                Speed = () => 1450,
                 ShouldCast = (target, spellClass, damage) =>
                             UseQ &&
                             spellClass.IsSpellReady &&
                             UnitManager.MyChampion.Mana > 70 &&
                             UnitManager.MyChampion.Mana > QMinMana &&
                             target != null,
-                TargetSelect = () => UnitManager.EnemyChampions
+                TargetSelect = (mode) => UnitManager.EnemyChampions
                                     .OrderBy(x => x.Health)
                                     .FirstOrDefault(enemy => enemy.IsAlive && enemy.Distance <= 850 && TargetSelector.IsAttackable(enemy))
             };
@@ -38,7 +38,7 @@ namespace SixAIO.Champions
                             UnitManager.MyChampion.Mana > 65 &&
                             UnitManager.MyChampion.Mana > WMinMana &&
                             target != null,
-                TargetSelect = () =>
+                TargetSelect = (mode) => 
                 {
                     Hero target = null;
 
@@ -55,8 +55,8 @@ namespace SixAIO.Champions
                     if (target == null && WBuffAlly)
                     {
                         target = UnitManager.AllyChampions
-                        .Where(ally => MenuTab.GetItem<Counter>("Buff Ally - " + ally.ModelName).Value > 0)
-                        .OrderByDescending(ally => MenuTab.GetItem<Counter>("Buff Ally - " + ally.ModelName).Value)
+                        .Where(ally => MenuTab.GetItem<Counter>("Buff Ally Prio- " + ally.ModelName).Value > 0)
+                        .OrderByDescending(ally => MenuTab.GetItem<Counter>("Buff Ally Prio- " + ally.ModelName).Value)
                                 .FirstOrDefault(ally => ally.IsAlive && ally.Distance <= 650 && TargetSelector.IsAttackable(ally, false) &&
                                                 ally.IsCastingSpell && ally.GetCurrentCastingSpell().IsBasicAttack &&
                                                 UnitManager.EnemyChampions.Any(enemy => enemy.DistanceTo(ally.Position) <= ally.TrueAttackRange));
@@ -73,15 +73,15 @@ namespace SixAIO.Champions
                             UnitManager.MyChampion.Mana > 80 &&
                             UnitManager.MyChampion.Mana > EMinMana &&
                             target != null,
-                TargetSelect = () =>
+                TargetSelect = (mode) => 
                 {
                     Hero target = null;
 
                     if (target == null && EBuffAlly)
                     {
                         target = UnitManager.AllyChampions
-                        .Where(ally => MenuTab.GetItem<Counter>("Buff Ally - " + ally.ModelName).Value > 0)
-                        .OrderByDescending(ally => MenuTab.GetItem<Counter>("Buff Ally - " + ally.ModelName).Value)
+                        .Where(ally => MenuTab.GetItem<Counter>("Buff Ally Prio- " + ally.ModelName).Value > 0)
+                        .OrderByDescending(ally => MenuTab.GetItem<Counter>("Buff Ally Prio- " + ally.ModelName).Value)
                                 .FirstOrDefault(ally => ally.IsAlive && ally.Distance <= 650 && TargetSelector.IsAttackable(ally, false) &&
                                                 ally.IsCastingSpell && ally.GetCurrentCastingSpell().IsBasicAttack &&
                                                 UnitManager.EnemyChampions.Any(enemy => enemy.DistanceTo(ally.Position) <= ally.TrueAttackRange));
@@ -90,8 +90,8 @@ namespace SixAIO.Champions
                     if (target == null && EShieldAlly)
                     {
                         target = UnitManager.AllyChampions
-                        .Where(ally => MenuTab.GetItem<Counter>("Buff Ally - " + ally.ModelName).Value > 0)
-                        .OrderByDescending(ally => MenuTab.GetItem<Counter>("Buff Ally - " + ally.ModelName).Value)
+                        .Where(ally => MenuTab.GetItem<Counter>("Buff Ally Prio- " + ally.ModelName).Value > 0)
+                        .OrderByDescending(ally => MenuTab.GetItem<Counter>("Buff Ally Prio- " + ally.ModelName).Value)
                         .FirstOrDefault(ally => ally.IsAlive && ally.Distance <= 650 && TargetSelector.IsAttackable(ally, false) &&
                                         // and some enemy is casting a spell/attack with targetindex == ally.index
                                         (ally.Health / ally.MaxHealth * 100) < EShieldHealthPercent);
@@ -115,7 +115,7 @@ namespace SixAIO.Champions
                             UnitManager.MyChampion.Mana > 100 &&
                             UnitManager.MyChampion.Mana > RMinMana &&
                             target != null,
-                TargetSelect = () =>
+                TargetSelect = (mode) => 
                 {
                     Hero target = null;
                     if (target == null && RKnockupEnemies)
@@ -128,8 +128,8 @@ namespace SixAIO.Champions
                     if (target == null && RBuffAlly)
                     {
                         target = UnitManager.AllyChampions
-                        .Where(ally => MenuTab.GetItem<Counter>("Buff Ally - " + ally.ModelName).Value > 0)
-                        .OrderByDescending(ally => MenuTab.GetItem<Counter>("Buff Ally - " + ally.ModelName).Value)
+                        .Where(ally => MenuTab.GetItem<Counter>("Buff Ally Prio- " + ally.ModelName).Value > 0)
+                        .OrderByDescending(ally => MenuTab.GetItem<Counter>("Buff Ally Prio- " + ally.ModelName).Value)
                         .FirstOrDefault(ally => ally.IsAlive && ally.Distance <= 900 && TargetSelector.IsAttackable(ally, false) &&
                                                 (ally.Health / ally.MaxHealth * 100) < RBuffHealthPercent);
                     }
@@ -229,10 +229,10 @@ namespace SixAIO.Champions
         {
             MenuManager.AddTab(new Tab($"SIXAIO - {nameof(Lulu)}"));
 
-            MenuTab.AddItem(new InfoDisplay() { Title = "---Allies to buff---" });
+            MenuTab.AddItem(new InfoDisplay() { Title = "---Allies to buff - 0 to disable---" });
             foreach (var allyChampion in UnitManager.AllyChampions)
             {
-                MenuTab.AddItem(new Counter() { Title = "Buff Ally - " + allyChampion.ModelName, MinValue = 0, MaxValue = 5, Value = 0 });
+                MenuTab.AddItem(new Counter() { Title = "Buff Ally Prio- " + allyChampion.ModelName, MinValue = 0, MaxValue = 5, Value = 0 });
             }
 
             MenuTab.AddItem(new InfoDisplay() { Title = "---Q Settings---" });

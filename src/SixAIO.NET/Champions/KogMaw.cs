@@ -17,9 +17,9 @@ namespace SixAIO.Champions
         {
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
-                Range = 1200,
-                Width = 140,
-                Speed = 1650,
+                Range = () => 1200,
+                Width = () => 140,
+                Speed = () => 1650,
                 Damage = (target, spellClass) =>
                             target != null
                             ? DamageCalculator.GetArmorMod(UnitManager.MyChampion, target) *
@@ -33,7 +33,7 @@ namespace SixAIO.Champions
                             UnitManager.MyChampion.Mana > 40 &&
                             UnitManager.MyChampion.Mana > QMinMana &&
                             target != null,
-                TargetSelect = () =>
+                TargetSelect = (mode) => 
                             UnitManager.EnemyChampions
                             .Where(x => TargetSelector.IsAttackable(x) && x.Distance <= 1100 && x.IsAlive && !Collision.MinionCollision(x.W2S, 140))
                             .OrderBy(x => x.Health)
@@ -52,23 +52,23 @@ namespace SixAIO.Champions
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
-                Range = 1360,
-                Width = 240,
-                Speed = 1400,
+                Range = () => 1360,
+                Width = () => 240,
+                Speed = () => 1400,
                 ShouldCast = (target, spellClass, damage) =>
                             UseE &&
                             spellClass.IsSpellReady &&
                             UnitManager.MyChampion.Mana > 100 &&
                             UnitManager.MyChampion.Mana > EMinMana &&
                             target != null,
-                TargetSelect = () =>
+                TargetSelect = (mode) => 
                             UnitManager.EnemyChampions.FirstOrDefault(x => TargetSelector.IsAttackable(x) && x.Distance <= 1200 && x.IsAlive)
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
-                Range = UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot.R).Level * 250 + 1050,
-                Width = 240,
-                Speed = 1200,
+                Range = () => UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot.R).Level * 250 + 1050,
+                Width = () => 240,
+                Speed = () => 1200,
                 Damage = (target, spellClass) =>
                             target != null
                             ? DamageCalculator.GetMagicResistMod(UnitManager.MyChampion, target) *
@@ -82,14 +82,13 @@ namespace SixAIO.Champions
                             UnitManager.MyChampion.Mana > 40 &&
                             UnitManager.MyChampion.Mana > RMinMana &&
                             target != null,
-                TargetSelect = () =>
+                TargetSelect = (mode) => 
                 {
-                    var range = UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot.R).Level * 250 + 1050;
                     if (RTargetshouldbecced || RTargetshouldbeslowed)
                     {
                         if (RTargetshouldbecced)
                         {
-                            var target = UnitManager.EnemyChampions.FirstOrDefault(x => x.Distance <= range && x.IsAlive && TargetSelector.IsAttackable(x) &&
+                            var target = UnitManager.EnemyChampions.FirstOrDefault(x => x.Distance <= SpellR.Range() && x.IsAlive && TargetSelector.IsAttackable(x) &&
                                                                         (x.Health / x.MaxHealth * 100) < RTargetMaxHPPercent &&
                                                                         x.BuffManager.GetBuffList().Any(BuffChecker.IsCrowdControlled));
                             if (target != null)
@@ -99,7 +98,7 @@ namespace SixAIO.Champions
                         }
                         if (RTargetshouldbeslowed)
                         {
-                            var target = UnitManager.EnemyChampions.FirstOrDefault(x => x.Distance <= range && x.IsAlive && TargetSelector.IsAttackable(x) &&
+                            var target = UnitManager.EnemyChampions.FirstOrDefault(x => x.Distance <= SpellR.Range() && x.IsAlive && TargetSelector.IsAttackable(x) &&
                                                                         (x.Health / x.MaxHealth * 100) < RTargetMaxHPPercent &&
                                                                         x.BuffManager.GetBuffList().Any(BuffChecker.IsCrowdControlledOrSlowed));
                             if (target != null)
@@ -110,7 +109,7 @@ namespace SixAIO.Champions
                     }
                     else
                     {
-                        return UnitManager.EnemyChampions.FirstOrDefault(x => x.Distance <= range && x.IsAlive && TargetSelector.IsAttackable(x) &&
+                        return UnitManager.EnemyChampions.FirstOrDefault(x => x.Distance <= SpellR.Range() && x.IsAlive && TargetSelector.IsAttackable(x) &&
                                                                         (x.Health / x.MaxHealth * 100) < RTargetMaxHPPercent);
                     }
 
@@ -121,7 +120,7 @@ namespace SixAIO.Champions
 
         internal override void OnCoreMainInput()
         {
-            if (SpellW.ExecuteCastSpell() || SpellE.ExecuteCastSpell() || SpellQ.ExecuteCastSpell() || SpellR.ExecuteCastSpell())
+            if (SpellW.ExecuteCastSpell() || SpellQ.ExecuteCastSpell() || SpellR.ExecuteCastSpell() || SpellE.ExecuteCastSpell())
             {
                 return;
             }

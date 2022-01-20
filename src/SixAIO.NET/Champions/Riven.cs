@@ -12,6 +12,7 @@ using SixAIO.Helpers;
 using SixAIO.Models;
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace SixAIO.Champions
 {
@@ -66,14 +67,14 @@ namespace SixAIO.Champions
             Orbwalker.OnOrbwalkerAfterBasicAttack += Orbwalker_OnOrbwalkerAfterBasicAttack;
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
-                CastTime = 0f,
+                CastTime = () => 0f,
                 ShouldCast = (target, spellClass, damage) =>
                             UseQ &&
                             spellClass.IsSpellReady &&
                             _lastAATime > _lastQTime + 0.333f &&
                             _lastAATime > _lastQChargeTime + 0.333f &&
                             target != null,
-                TargetSelect = () => UnitManager.EnemyChampions.FirstOrDefault(x => x.Distance <= UnitManager.MyChampion.TrueAttackRange + (IsUltActive() ? 250 : 150) &&
+                TargetSelect = (mode) => UnitManager.EnemyChampions.FirstOrDefault(x => x.Distance <= UnitManager.MyChampion.TrueAttackRange + (IsUltActive() ? 250 : 150) &&
                                                                                     TargetSelector.IsAttackable(x))
             };
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
@@ -86,18 +87,18 @@ namespace SixAIO.Champions
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
-                CastTime = 0f,
+                CastTime = () => 0f,
                 ShouldCast = (target, spellClass, damage) =>
                             UseE &&
                             spellClass.IsSpellReady &&
                             target != null,
-                TargetSelect = () => UnitManager.EnemyChampions.FirstOrDefault(x => x.Distance <= (IsUltActive() ? 450 : 400) && TargetSelector.IsAttackable(x))
+                TargetSelect = (mode) => UnitManager.EnemyChampions.FirstOrDefault(x => x.Distance <= (IsUltActive() ? 450 : 400) && TargetSelector.IsAttackable(x))
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
-                Range = 1100f,
-                Speed = 1600f,
-                Width = 200,
+                Range = () => 1100f,
+                Speed = () => 1600f,
+                Width = () => 200,
                 Damage = GetRDamage,
                 ShouldCast = (target, spellClass, damage) =>
                             UseR &&
@@ -108,7 +109,7 @@ namespace SixAIO.Champions
                             (UltTimeLeft() > 0 && UltTimeLeft() < 1f) ||
                             (AllSpellsOnCooldown() && PassiveStacks() <= 2) ||
                             (GetMissingHealthPercent(target) < 75.0f)),
-                TargetSelect = () => UnitManager.EnemyChampions.FirstOrDefault(x => x.Distance <= 800 && TargetSelector.IsAttackable(x) &&
+                TargetSelect = (mode) => UnitManager.EnemyChampions.FirstOrDefault(x => x.Distance <= 800 && TargetSelector.IsAttackable(x) &&
                                                                                     x.Health < GetRDamage(x, UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot.R)))
             };
         }
@@ -134,7 +135,7 @@ namespace SixAIO.Champions
                    ((UnitManager.MyChampion.UnitStats.BonusAttackDamage * 0.60f) + 50 + 50 * spellClass.Level));
         }
 
-        private void Spell_OnSpellCast(Spell spell)
+        private void Spell_OnSpellCast(Spell spell, GameObjectBase target)
         {
             if (spell.SpellSlot == SpellSlot.Q)
             {
@@ -171,14 +172,6 @@ namespace SixAIO.Champions
         }
 
         internal override void OnCoreMainInput()
-        {
-            if (SpellR.ExecuteCastSpell() || SpellQ.ExecuteCastSpell() || SpellW.ExecuteCastSpell() || SpellE.ExecuteCastSpell())
-            {
-                return;
-            }
-        }
-
-        internal override void OnCoreLaneClearInput()
         {
             if (SpellR.ExecuteCastSpell() || SpellQ.ExecuteCastSpell() || SpellW.ExecuteCastSpell() || SpellE.ExecuteCastSpell())
             {

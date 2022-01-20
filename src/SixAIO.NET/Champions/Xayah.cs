@@ -14,28 +14,21 @@ using SixAIO.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace SixAIO.Champions
 {
     internal class Xayah : Champion
     {
-        private enum Mode
-        {
-            Champs,
-            Jungle,
-            Everything,
-        }
-
-        private Mode _mode = Mode.Everything;
-        private IEnumerable<AIBaseClient> _feathers = new List<AIBaseClient>();
+        private List<AIBaseClient> _feathers = new List<AIBaseClient>();
 
         public Xayah()
         {
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
-                Range = 1100,
-                Width = 150,
-                Speed = 4000,
+                Range = () => 1100,
+                Width = () => 150,
+                Speed = () => 4000,
                 Damage = (target, spellClass) =>
                             target != null
                             ? DamageCalculator.GetArmorMod(UnitManager.MyChampion, target) *
@@ -44,11 +37,10 @@ namespace SixAIO.Champions
                             : 0,
                 ShouldCast = (target, spellClass, damage) =>
                             UseQ &&
-                            _mode == Mode.Champs &&
                             spellClass.IsSpellReady &&
                             UnitManager.MyChampion.Mana > 50 &&
                             target != null,
-                TargetSelect = () =>
+                TargetSelect = (mode) =>
                             UnitManager.EnemyChampions
                             .Where(x => TargetSelector.IsAttackable(x) && x.Distance <= 1050 && x.IsAlive)
                             .OrderBy(x => x.Health)
@@ -60,12 +52,8 @@ namespace SixAIO.Champions
                             UseW &&
                             spellClass.IsSpellReady &&
                             UnitManager.MyChampion.Mana > 60 &&
-                            target != null,
-                TargetSelect = () =>
-                {
-                    var target = Orbwalker.TargetHero;
-                    return TargetSelector.IsAttackable(target) && TargetSelector.IsInRange(target) ? target : null;
-                }
+                            TargetSelector.IsAttackable(Orbwalker.TargetHero) &&
+                            TargetSelector.IsInRange(Orbwalker.TargetHero),
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
@@ -75,38 +63,11 @@ namespace SixAIO.Champions
 
         private bool ShouldCastE(SpellClass spellClass)
         {
-            if (!UseE)
+            if (UseE && spellClass.IsSpellReady && spellClass.Charges >= 1 && UnitManager.MyChampion.Mana > 30)
             {
-                return false;
-            }
-
-            if (spellClass.IsSpellReady && spellClass.Charges >= 1 && UnitManager.MyChampion.Mana > 30)
-            {
-                if (spellClass.Charges >= FeathersToHitChampions ||
-                   spellClass.Charges >= FeathersToHitTargets ||
-                    spellClass.Charges >= FeathersToHitEpicMonster)
-                {
-                    switch (_mode)
-                    {
-                        case Mode.Champs:
-                            return UnitManager.EnemyChampions.Where(x => TargetSelector.IsAttackable(x) &&
-                                                                         !TargetSelector.IsInvulnerable(x, Oasys.Common.Logic.DamageType.Physical, false))
-                                                             .Any(x => GetFeathersBetweenMeAndEnemy(x) >= FeathersToHitChampions);
-                        case Mode.Jungle:
-                            return UnitManager.EnemyJungleMobs.Where(x => TargetSelector.IsAttackable(x)).Any(x => GetFeathersBetweenMeAndEnemy(x) >= FeathersToHitTargets);
-                        case Mode.Everything:
-                            return UnitManager.EnemyChampions.Where(x => TargetSelector.IsAttackable(x) &&
-                                                                         !TargetSelector.IsInvulnerable(x, Oasys.Common.Logic.DamageType.Physical, false))
-                                                             .Any(x => GetFeathersBetweenMeAndEnemy(x) >= FeathersToHitChampions) ||
-                                   UnitManager.EnemyJungleMobs.Where(x => x.UnitComponentInfo.SkinName.ToLower().Contains("dragon") ||
-                                                                          x.UnitComponentInfo.SkinName.ToLower().Contains("baron") ||
-                                                                          x.UnitComponentInfo.SkinName.ToLower().Contains("herald"))
-                                                              .Where(x => TargetSelector.IsAttackable(x))
-                                                              .Any(x => GetFeathersBetweenMeAndEnemy(x) >= FeathersToHitEpicMonster) ||
-                                   UnitManager.EnemyJungleMobs.Where(x => TargetSelector.IsAttackable(x)).Any(x => GetFeathersBetweenMeAndEnemy(x) >= FeathersToHitTargets) ||
-                                   UnitManager.EnemyMinions.Where(x => TargetSelector.IsAttackable(x)).Any(x => GetFeathersBetweenMeAndEnemy(x) >= FeathersToHitTargets);
-                    }
-                }
+                return UnitManager.EnemyChampions.Where(x => TargetSelector.IsAttackable(x) &&
+                                                             !TargetSelector.IsInvulnerable(x, Oasys.Common.Logic.DamageType.Physical, false))
+                                                 .Any(x => GetFeathersBetweenMeAndEnemy(x) >= FeathersToHitChampions);
             }
 
             return false;
@@ -114,33 +75,45 @@ namespace SixAIO.Champions
 
         private int GetFeathersBetweenMeAndEnemy(AIBaseClient enemy)
         {
-            return _feathers.Count(feather =>
-                    Geometry.DistanceFromPointToLine(enemy.W2S, new Vector2[] { UnitManager.MyChampion.W2S, feather.W2S }) <= 160 &&
-                    feather.DistanceTo(enemy.Position) > enemy.Distance);
+            return _feathers.ToList().Count(feather =>
+                    Geometry.DistanceFromPointToLine(enemy.W2S, new Vector2[] { UnitManager.MyChampion.W2S, feather.W2S }) <= 160 + enemy.UnitComponentInfo.UnitBoundingRadius &&
+                    feather.Distance > enemy.Distance);
         }
 
         internal override void OnCoreMainInput()
         {
-            _mode = Mode.Champs;
             if (SpellE.ExecuteCastSpell() || SpellW.ExecuteCastSpell() || SpellQ.ExecuteCastSpell())
             {
                 return;
             }
         }
 
-        private float _lastTick = 0;
-        internal override void OnCoreMainTick()
+        internal override void OnCreateObject(AIBaseClient obj)
         {
-            if (GameEngine.GameTime > _lastTick + 0.1)
+            if (IsFeather(obj))
             {
-                _feathers = UnitManager.AllNativeObjects.Where(obj => obj.IsAlive && obj.OnMyTeam && obj.Name.Contains("Feather"));
-                _lastTick = GameEngine.GameTime;
+                _feathers.Add(obj);
+            }
+        }
+
+        private static bool IsFeather(AIBaseClient obj)
+        {
+            return obj.IsAlive && obj.Health == 100 && obj.Mana == 500 && obj.OnMyTeam &&
+                (obj.Name.Contains("Feather", StringComparison.OrdinalIgnoreCase) ||
+                 obj.UnitComponentInfo.SkinName.Contains("testcuberender", StringComparison.OrdinalIgnoreCase) ||
+                 obj.ModelName.Contains("testcuberender", StringComparison.OrdinalIgnoreCase));
+        }
+
+        internal override void OnDeleteObject(AIBaseClient obj)
+        {
+            if (!IsFeather(obj))
+            {
+                _feathers.Remove(obj);
             }
         }
 
         internal override void OnCoreLaneClearInput()
         {
-            _mode = Mode.Everything;
             if (SpellE.ExecuteCastSpell() || SpellW.ExecuteCastSpell() || SpellQ.ExecuteCastSpell())
             {
                 return;
@@ -149,16 +122,25 @@ namespace SixAIO.Champions
 
         internal override void OnCoreRender()
         {
-            if (UnitManager.MyChampion.IsAlive && DrawFeathers && DrawThickness > 0 && UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot.E).Charges >= 1 && !UnitManager.MyChampion.W2S.IsZero)
+            if (DrawFeathers && DrawThickness > 0 && UnitManager.MyChampion.IsAlive && UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot.E).Charges >= 1 && !UnitManager.MyChampion.W2S.IsZero)
             {
-                var color = ColorConverter.GetColor(DrawColor);
-                foreach (var feather in _feathers.Where(x => x.IsAlive))
+                var w2s = LeagueNativeRendererManager.WorldToScreenSpell(UnitManager.MyChampion.Position);
+                var color = Oasys.Common.Tools.ColorConverter.GetColor(DrawColor);
+
+                foreach (var feather in _feathers.ToList().Where(IsFeather))
                 {
-                    var w2s = LeagueNativeRendererManager.WorldToScreenSpell(UnitManager.MyChampion.Position);
                     var featherW2s = LeagueNativeRendererManager.WorldToScreenSpell(feather.Position);
-                    Oasys.SDK.Rendering.RenderFactory.DrawLine(w2s.X, w2s.Y, featherW2s.X, featherW2s.Y, DrawThickness, color);
+                    if (!featherW2s.IsZero)
+                    {
+                        Oasys.SDK.Rendering.RenderFactory.DrawLine(w2s.X, w2s.Y, featherW2s.X, featherW2s.Y, DrawThickness, color);
+                    }
                 }
             }
+
+            //foreach (var obj in UnitManager.AllNativeObjects.Where(x => x.Distance <= 1500 && IsFeather(x)))
+            //{
+            //    Oasys.SDK.Rendering.RenderFactory.DrawText(obj.Health + " " + obj.Mana + " " + obj.UnitComponentInfo.SkinName + " " + obj.Name + " " + obj.ModelName, 12, obj.W2S, Color.Blue);
+            //}
         }
 
         internal float GetEDamage(AIBaseClient enemy)
@@ -217,37 +199,37 @@ namespace SixAIO.Champions
             set => MenuTab.GetItem<Counter>("Feathers To Hit Champions").Value = value;
         }
 
-        private FeatherMode EpicMonsterMode
-        {
-            get => (FeatherMode)Enum.Parse(typeof(FeatherMode), MenuTab.GetItem<ModeDisplay>("Champions Mode").SelectedModeName);
-            set => MenuTab.GetItem<ModeDisplay>("Champions Mode").SelectedModeName = value.ToString();
-        }
+        //private FeatherMode EpicMonsterMode
+        //{
+        //    get => (FeatherMode)Enum.Parse(typeof(FeatherMode), MenuTab.GetItem<ModeDisplay>("Epic Monster Mode").SelectedModeName);
+        //    set => MenuTab.GetItem<ModeDisplay>("Champions Mode").SelectedModeName = value.ToString();
+        //}
 
-        private int FeathersToHitEpicMonster
-        {
-            get => MenuTab.GetItem<Counter>("Feathers To Hit Champions").Value;
-            set => MenuTab.GetItem<Counter>("Feathers To Hit Champions").Value = value;
-        }
+        //private int FeathersToHitEpicMonster
+        //{
+        //    get => MenuTab.GetItem<Counter>("Feathers To Hit Epic Monster").Value;
+        //    set => MenuTab.GetItem<Counter>("Feathers To Hit Epic Monster").Value = value;
+        //}
 
-        private FeatherMode TargetsMode
-        {
-            get => (FeatherMode)Enum.Parse(typeof(FeatherMode), MenuTab.GetItem<ModeDisplay>("Targets Mode").SelectedModeName);
-            set => MenuTab.GetItem<ModeDisplay>("Targets Mode").SelectedModeName = value.ToString();
-        }
+        //private FeatherMode TargetsMode
+        //{
+        //    get => (FeatherMode)Enum.Parse(typeof(FeatherMode), MenuTab.GetItem<ModeDisplay>("Targets Mode").SelectedModeName);
+        //    set => MenuTab.GetItem<ModeDisplay>("Targets Mode").SelectedModeName = value.ToString();
+        //}
 
-        private int FeathersToHitTargets
-        {
-            get => MenuTab.GetItem<Counter>("Feathers To Hit Targets").Value;
-            set => MenuTab.GetItem<Counter>("Feathers To Hit Targets").Value = value;
-        }
+        //private int FeathersToHitTargets
+        //{
+        //    get => MenuTab.GetItem<Counter>("Feathers To Hit Targets").Value;
+        //    set => MenuTab.GetItem<Counter>("Feathers To Hit Targets").Value = value;
+        //}
 
         internal override void InitializeMenu()
         {
             MenuManager.AddTab(new Tab($"SIXAIO - {nameof(Xayah)}"));
             MenuTab.AddItem(new InfoDisplay() { Title = "---Draw Settings---" });
             MenuTab.AddItem(new Switch() { Title = "Draw Feathers", IsOn = true });
-            MenuTab.AddItem(new Counter() { Title = "Draw Thickness", MinValue = 0, MaxValue = 250, Value = 5, ValueFrequency = 5 });
-            MenuTab.AddItem(new ModeDisplay() { Title = "Draw Color", ModeNames = ColorConverter.GetColors(), SelectedModeName = "Blue" });
+            MenuTab.AddItem(new Counter() { Title = "Draw Thickness", MinValue = 0, MaxValue = 250, Value = 5, ValueFrequency = 1 });
+            MenuTab.AddItem(new ModeDisplay() { Title = "Draw Color", ModeNames = Oasys.Common.Tools.ColorConverter.GetColors(), SelectedModeName = "Blue" });
             MenuTab.AddItem(new InfoDisplay() { Title = "---Q Settings---" });
             MenuTab.AddItem(new Switch() { Title = "Use Q", IsOn = true });
             MenuTab.AddItem(new InfoDisplay() { Title = "---W Settings---" });
@@ -256,10 +238,10 @@ namespace SixAIO.Champions
             MenuTab.AddItem(new Switch() { Title = "Use E", IsOn = true });
             MenuTab.AddItem(new ModeDisplay() { Title = "Champion Mode", ModeNames = ConstructFeatherModeTable(), SelectedModeName = "Stacks" });
             MenuTab.AddItem(new Counter() { Title = "Feathers To Hit Champions", MinValue = 1, MaxValue = 25, Value = 3, ValueFrequency = 1 });
-            MenuTab.AddItem(new ModeDisplay() { Title = "Epic Monster Mode", ModeNames = ConstructFeatherModeTable(), SelectedModeName = "Stacks" });
-            MenuTab.AddItem(new Counter() { Title = "Feathers To Hit Epic Monster", MinValue = 1, MaxValue = 25, Value = 10, ValueFrequency = 1 });
-            MenuTab.AddItem(new ModeDisplay() { Title = "Targets Mode", ModeNames = ConstructFeatherModeTable(), SelectedModeName = "Stacks" });
-            MenuTab.AddItem(new Counter() { Title = "Feathers To Hit Targets", MinValue = 1, MaxValue = 25, Value = 10, ValueFrequency = 1 });
+            //MenuTab.AddItem(new ModeDisplay() { Title = "Epic Monster Mode", ModeNames = ConstructFeatherModeTable(), SelectedModeName = "Stacks" });
+            //MenuTab.AddItem(new Counter() { Title = "Feathers To Hit Epic Monster", MinValue = 1, MaxValue = 25, Value = 10, ValueFrequency = 1 });
+            //MenuTab.AddItem(new ModeDisplay() { Title = "Targets Mode", ModeNames = ConstructFeatherModeTable(), SelectedModeName = "Stacks" });
+            //MenuTab.AddItem(new Counter() { Title = "Feathers To Hit Targets", MinValue = 1, MaxValue = 25, Value = 10, ValueFrequency = 1 });
 
         }
     }

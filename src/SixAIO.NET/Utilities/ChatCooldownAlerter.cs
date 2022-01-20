@@ -114,25 +114,27 @@ namespace SixAIO.Utilities
                 _lastMessage + 10 < GameEngine.GameTime)
             {
                 _lastMessage = GameEngine.GameTime;
-                var message = "";
                 foreach (var enemy in UnitManager.EnemyChampions.Where(x => !x.UnitComponentInfo.SkinName.Contains("TargetDummy", StringComparison.OrdinalIgnoreCase)))
                 {
                     var spellBook = enemy.GetSpellBook();
                     var summoner1 = spellBook.GetSpellClass(Oasys.Common.Enums.GameEnums.SpellSlot.Summoner1);
                     var summoner2 = spellBook.GetSpellClass(Oasys.Common.Enums.GameEnums.SpellSlot.Summoner2);
 
+                    var message = $"{enemy.ModelName.ToLowerInvariant()} ";
                     if (ShouldSend(enemy, summoner1))
                     {
-                        message += GetMessage(enemy, summoner1);
+                        message += GetMessage(enemy, summoner1).ToLowerInvariant();
                     }
                     if (ShouldSend(enemy, summoner2))
                     {
-                        message += GetMessage(enemy, summoner2);
+                        message += GetMessage(enemy, summoner2).ToLowerInvariant();
+                    }
+                    if (message != $"{enemy.ModelName.ToLowerInvariant()} ")
+                    {
+                        Send(message.ToLowerInvariant());
+                        Keyboard.SendKeyUp(Keyboard.GetKeyBoardScanCode(GetKeybinding()));
                     }
                 }
-
-                Send(message.ToLowerInvariant());
-                Keyboard.SendKeyUp(Keyboard.GetKeyBoardScanCode(GetKeybinding()));
             }
             else
             {
@@ -158,6 +160,7 @@ namespace SixAIO.Utilities
                 {
                     "summonerflash" => "flash",
                     "summonerteleport" => "tp",
+                    "summonerteleportupgrade" => "tp",
                     "summonerboost" => "cleanse",
                     "summonersmite" => "smite",
                     "summonerbarrier" => "barrier",
@@ -179,7 +182,7 @@ namespace SixAIO.Utilities
         {
             var expire = new TimeSpan(0, 0, (int)spellClass.CooldownExpire).ToString("mmss");
 
-            return $"{hero.ModelName.ToLowerInvariant()} {GetSummonerText(spellClass.SpellData.SpellName)} {expire} ";
+            return $"{GetSummonerText(spellClass.SpellData.SpellName)} {expire} ";
         }
 
         private static bool ShouldSend(Hero hero, Oasys.Common.GameObject.Clients.ExtendedInstances.Spells.SpellClass spellClass)

@@ -57,11 +57,12 @@ namespace SixAIO.Champions
             };
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
             {
-                CastTime = 0f,
+                CastTime = () => 0f,
                 ShouldCast = (target, spellClass, damage) =>
                             UseW &&
                             spellClass.IsSpellReady &&
                             UnitManager.MyChampion.Mana > 40 &&
+                            !HasWBuff() &&
                             UnitManager.EnemyChampions.Any(x => x.IsAlive && x.Distance <= 1000 && TargetSelector.IsAttackable(x)),
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
@@ -71,7 +72,7 @@ namespace SixAIO.Champions
                             spellClass.IsSpellReady &&
                             UnitManager.MyChampion.Mana > 50 &&
                             target != null,
-                TargetSelect = () => TargetSelector.IsAttackable(Orbwalker.TargetHero) && Orbwalker.TargetHero.Distance <= ERange()
+                TargetSelect = (mode) => TargetSelector.IsAttackable(Orbwalker.TargetHero) && Orbwalker.TargetHero.Distance <= ERange()
                             ? Orbwalker.TargetHero
                             : UnitManager.EnemyChampions.FirstOrDefault(x => x.IsAlive && x.Distance <= ERange() && TargetSelector.IsAttackable(x) && !TargetSelector.IsInvulnerable(x, Oasys.Common.Logic.DamageType.Physical, false))
             };
@@ -79,7 +80,7 @@ namespace SixAIO.Champions
 
         private bool ShouldQ() => Qonlyifhaswbuff ? HasWBuff() : true;
 
-        private void Spell_OnSpellCast(Spell spell)
+        private void Spell_OnSpellCast(Spell spell, GameObjectBase target)
         {
             if (spell != null)
             {

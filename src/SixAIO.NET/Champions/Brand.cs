@@ -17,15 +17,15 @@ namespace SixAIO.Champions
         {
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
-                Range = 1100,
-                Width = 120,
-                Speed = 1600,
+                Range = () => 1100,
+                Width = () => 120,
+                Speed = () => 1600,
                 ShouldCast = (target, spellClass, damage) =>
                             UseQ &&
                             spellClass.IsSpellReady &&
                             UnitManager.MyChampion.Mana > 50 &&
                             target != null,
-                TargetSelect = () =>
+                TargetSelect = (mode) => 
                             UnitManager.EnemyChampions
                             .FirstOrDefault(x => x.Distance <= 1000 && x.IsAlive &&
                                                  x.BuffManager.HasBuff("BrandAblaze", false, true) &&
@@ -34,22 +34,18 @@ namespace SixAIO.Champions
             };
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
             {
-                Range = 900,
-                Speed = 5000,
-                Width = 260,
+                Range = () => 900,
+                Speed = () => 5000,
+                Width = () => 260,
                 ShouldCast = (target, spellClass, damage) =>
                             UseW &&
                             spellClass.IsSpellReady &&
                             UnitManager.MyChampion.Mana > 100 &&
                             target != null,
-                TargetSelect = () =>
+                TargetSelect = (mode) => 
                 {
-                    var ccTarget = UnitManager.EnemyChampions.FirstOrDefault(x => x.Distance <= 900 && x.IsAlive && x.BuffManager.GetBuffList().Any(BuffChecker.IsCrowdControlledOrSlowed));
-                    if (ccTarget != null)
-                    {
-                        return ccTarget;
-                    }
-                    return UnitManager.EnemyChampions.FirstOrDefault(x => x.Distance <= 900 && x.IsAlive);
+                    return UnitManager.EnemyChampions.FirstOrDefault(x => x.Distance <= 900 && x.IsAlive && x.BuffManager.GetBuffList().Any(BuffChecker.IsCrowdControlledOrSlowed));
+                    
                 }
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
@@ -59,7 +55,7 @@ namespace SixAIO.Champions
                             spellClass.IsSpellReady &&
                             UnitManager.MyChampion.Mana > 90 &&
                             target != null,
-                TargetSelect = () =>
+                TargetSelect = (mode) => 
                             UnitManager.EnemyChampions
                             .FirstOrDefault(x => x.Distance <= 675 && x.IsAlive &&
                                                  TargetSelector.IsAttackable(x) &&
@@ -73,7 +69,7 @@ namespace SixAIO.Champions
                             UnitManager.MyChampion.Mana > 100 &&
                             target != null &&
                             (UnitManager.Enemies.Count(x => x.Position.Distance(target.Position) < 500) >= 2 || target.Distance < 500),
-                TargetSelect = () =>
+                TargetSelect = (mode) => 
                             UnitManager.EnemyChampions
                             .FirstOrDefault(x => x.Distance <= 750 && x.IsAlive &&
                                                  TargetSelector.IsAttackable(x) &&

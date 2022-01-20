@@ -26,7 +26,7 @@ namespace SixAIO.Champions
                             spellClass.IsSpellReady &&
                             UnitManager.MyChampion.Mana > 90 &&
                             target != null,
-                TargetSelect = () => UnitManager.EnemyChampions
+                TargetSelect = (mode) => UnitManager.EnemyChampions
                                                 .FirstOrDefault(x => x.IsAlive && x.Distance <= 680 &&
                                                                      TargetSelector.IsAttackable(x) &&
                                                                      !TargetSelector.IsInvulnerable(x, Oasys.Common.Logic.DamageType.Physical, false))

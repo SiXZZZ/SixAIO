@@ -33,17 +33,17 @@ namespace SixAIO.Champions
         {
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
-                CastTime = 0f,
-                Range = 800,
-                Speed = 1400,
-                Width = 160,
+                CastTime = () => 0f,
+                Range = () => 800,
+                Speed = () => 1400,
+                Width = () => 160,
                 ShouldCast = (target, spellClass, damage) =>
                             UseQ &&
                             spellClass.IsSpellReady &&
                             UnitManager.MyChampion.Mana > 50 &&
                             UnitManager.MyChampion.Mana > QMinMana &&
                             target != null,
-                TargetSelect = () =>
+                TargetSelect = (mode) => 
                 {
                     var ccTarget = UnitManager.EnemyChampions.FirstOrDefault(x => x.Distance <= 800 && x.IsAlive && x.BuffManager.GetBuffList().Any(BuffChecker.IsCrowdControlledOrSlowed));
                     if (ccTarget != null)
@@ -55,7 +55,7 @@ namespace SixAIO.Champions
             };
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
             {
-                CastTime = 0f,
+                CastTime = () => 0f,
                 ShouldCast = (target, spellClass, damage) =>
                             UseW &&
                             spellClass.IsSpellReady &&
@@ -66,22 +66,22 @@ namespace SixAIO.Champions
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
-                CastTime = 0f,
+                CastTime = () => 0f,
                 ShouldCast = (target, spellClass, damage) =>
                             UseE &&
                             spellClass.IsSpellReady &&
                             UnitManager.MyChampion.Mana > 60 &&
                             UnitManager.MyChampion.Mana > EMinMana &&
                             target != null,
-                TargetSelect = () =>
+                TargetSelect = (mode) => 
                 {
                     Hero target = null;
 
                     if (target == null && EShieldAlly)
                     {
                         target = UnitManager.AllyChampions
-                        .Where(ally => MenuTab.GetItem<Counter>("Buff Ally - " + ally.ModelName).Value > 0)
-                        .OrderByDescending(ally => MenuTab.GetItem<Counter>("Buff Ally - " + ally.ModelName).Value)
+                        .Where(ally => MenuTab.GetItem<Counter>("Buff Ally Prio- " + ally.ModelName).Value > 0)
+                        .OrderByDescending(ally => MenuTab.GetItem<Counter>("Buff Ally Prio- " + ally.ModelName).Value)
                         .FirstOrDefault(ally => ally.IsAlive && ally.Distance <= 1100 && TargetSelector.IsAttackable(ally, false) &&
                                         (ally.Health / ally.MaxHealth * 100) < EShieldHealthPercent);
                     }
@@ -99,7 +99,7 @@ namespace SixAIO.Champions
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
-                CastTime = 0.5f,
+                CastTime = () => 0.5f,
                 ShouldCast = (target, spellClass, damage) =>
                             UseR &&
                             spellClass.IsSpellReady &&
@@ -201,10 +201,10 @@ namespace SixAIO.Champions
         {
             MenuManager.AddTab(new Tab($"SIXAIO - {nameof(Orianna)}"));
 
-            MenuTab.AddItem(new InfoDisplay() { Title = "---Allies to buff---" });
+            MenuTab.AddItem(new InfoDisplay() { Title = "---Allies to buff - 0 to disable---" });
             foreach (var allyChampion in UnitManager.AllyChampions)
             {
-                MenuTab.AddItem(new Counter() { Title = "Buff Ally - " + allyChampion.ModelName, MinValue = 0, MaxValue = 5, Value = 0 });
+                MenuTab.AddItem(new Counter() { Title = "Buff Ally Prio- " + allyChampion.ModelName, MinValue = 0, MaxValue = 5, Value = 0 });
             }
 
             MenuTab.AddItem(new InfoDisplay() { Title = "---Q Settings---" });

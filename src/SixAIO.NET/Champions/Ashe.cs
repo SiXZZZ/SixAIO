@@ -26,15 +26,15 @@ namespace SixAIO.Champions
             };
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
             {
-                Range = 1200,
-                Width = 400,
-                Speed = 2000,
+                Range = () => 1200,
+                Width = () => 400,
+                Speed = () => 2000,
                 ShouldCast = (target, spellClass, damage) =>
                             UseW &&
                             spellClass.IsSpellReady &&
                             UnitManager.MyChampion.Mana > 70 &&
                             target != null,
-                TargetSelect = () =>
+                TargetSelect = (mode) => 
                             UnitManager.EnemyChampions
                             .FirstOrDefault(x => x.Distance <= 1000 && x.IsAlive && TargetSelector.IsAttackable(x) && !Collision.MinionCollision(x.Position, 400))
             };

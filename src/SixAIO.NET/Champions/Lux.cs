@@ -17,15 +17,15 @@ namespace SixAIO.Champions
         {
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
-                Range = 1300,
-                Width = 140,
-                Speed = 1200,
+                Range = () => 1300,
+                Width = () => 140,
+                Speed = () => 1200,
                 ShouldCast = (target, spellClass, damage) =>
                             UseQ &&
                             spellClass.IsSpellReady &&
                             UnitManager.MyChampion.Mana > 50 &&
                             target != null,
-                TargetSelect = () =>
+                TargetSelect = (mode) => 
                             UnitManager.EnemyChampions
                             .FirstOrDefault(x => x.Distance <= 1200 && x.IsAlive &&
                                                  TargetSelector.IsAttackable(x) && !Collision.MinionCollision(x.W2S, 140) &&
@@ -33,15 +33,15 @@ namespace SixAIO.Champions
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
-                Range = 1100,
-                Speed = 5000,
-                Width = 310,
+                Range = () => 1100,
+                Speed = () => 5000,
+                Width = () => 310,
                 ShouldCast = (target, spellClass, damage) =>
                             UseE &&
                             spellClass.IsSpellReady &&
                             UnitManager.MyChampion.Mana > 110 &&
                             target != null,
-                TargetSelect = () =>
+                TargetSelect = (mode) => 
                 {
                     var ccTarget = UnitManager.EnemyChampions.FirstOrDefault(x => x.Distance <= 1000 && x.IsAlive && x.BuffManager.GetBuffList().Any(BuffChecker.IsCrowdControlledOrSlowed));
                     if (ccTarget != null)
@@ -53,16 +53,16 @@ namespace SixAIO.Champions
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
-                Range = 3400,
-                Width = 200,
-                Speed = 1000,
-                CastTime = 1f,
+                Range = () => 3400,
+                Width = () => 200,
+                Speed = () => 1000,
+                CastTime = () => 1f,
                 ShouldCast = (target, spellClass, damage) =>
                             UseR &&
                             spellClass.IsSpellReady &&
                             UnitManager.MyChampion.Mana > 100 &&
                             target != null,
-                TargetSelect = () =>
+                TargetSelect = (mode) => 
                             UnitManager.EnemyChampions
                             .FirstOrDefault(x => x.Distance <= 3400 && x.IsAlive &&
                                                  TargetSelector.IsAttackable(x) &&

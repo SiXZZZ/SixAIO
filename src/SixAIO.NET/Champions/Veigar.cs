@@ -26,7 +26,7 @@ namespace SixAIO.Champions
                             spellClass.IsSpellReady &&
                             UnitManager.MyChampion.Mana > 100 &&
                             target != null,
-                TargetSelect = () => UnitManager.EnemyChampions.Where(x => x.Distance <= 650 && 
+                TargetSelect = (mode) => UnitManager.EnemyChampions.Where(x => x.Distance <= 650 && 
                                             TargetSelector.IsAttackable(x) &&
                                             !TargetSelector.IsInvulnerable(x, Oasys.Common.Logic.DamageType.Magical, false))
                                             .FirstOrDefault(RCanKill)

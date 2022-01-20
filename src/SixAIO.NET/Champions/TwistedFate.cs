@@ -33,15 +33,15 @@ namespace SixAIO.Champions
         {
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
-                Range = 1450,
-                Width = 100,
-                Speed = 1000,
+                Range = () => 1450,
+                Width = () => 100,
+                Speed = () => 1000,
                 ShouldCast = (target, spellClass, damage) =>
                             UseQ &&
                             spellClass.IsSpellReady &&
                             UnitManager.MyChampion.Mana > 100 &&
                             target != null,
-                TargetSelect = () =>
+                TargetSelect = (mode) => 
                             UnitManager.EnemyChampions
                             .FirstOrDefault(x => x.Distance <= 1350 && x.IsAlive &&
                                                 TargetSelector.IsAttackable(x) &&

@@ -13,102 +13,72 @@ using System.Linq;
 
 namespace SixAIO.Champions
 {
-    internal class Kayle : Champion
+    internal class Amumu : Champion
     {
-        public Kayle()
+        private static bool IsWActive()
+        {
+            var buff = UnitManager.MyChampion.BuffManager.GetBuffByName("AuraofDespair", false, true);
+            return buff != null && buff.Stacks >= 1;
+        }
+
+        public Amumu()
         {
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
-                Range = () => 900,
-                Width = () => 150,
-                Speed = () => 1600,
+                Range = () => 1100,
+                Width = () => 160,
+                Speed = () => 2000,
                 ShouldCast = (target, spellClass, damage) =>
                             UseQ &&
                             spellClass.IsSpellReady &&
-                            UnitManager.MyChampion.Mana > 90 &&
+                            UnitManager.MyChampion.Mana > 70 &&
                             UnitManager.MyChampion.Mana > QMinMana &&
+                            spellClass.Charges > 0 &&
                             target != null,
-                TargetSelect = (mode) => 
+                TargetSelect = (mode) =>
                             UnitManager.EnemyChampions
-                            .Where(x => TargetSelector.IsAttackable(x) && x.Distance <= 780 && x.IsAlive && !Collision.MinionCollision(x.W2S, 150))
+                            .Where(x => TargetSelector.IsAttackable(x) && x.Distance <= SpellQ.Range() && x.IsAlive && !Collision.MinionCollision(x.W2S, (int)SpellQ.Width()))
                             .OrderBy(x => x.Health)
                             .FirstOrDefault()
             };
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
             {
                 ShouldCast = (target, spellClass, damage) =>
-                            UseW &&
+                {
+                    return IsWActive()
+                        ? UseW &&
                             spellClass.IsSpellReady &&
-                            UnitManager.MyChampion.Mana > 130 &&
+                            UnitManager.MyChampion.Mana > 8 &&
                             UnitManager.MyChampion.Mana > WMinMana &&
-                            (UnitManager.MyChampion.Health / UnitManager.MyChampion.MaxHealth * 100) < WHealBelowPercent,
+                            !UnitManager.EnemyChampions.Any(x => TargetSelector.IsAttackable(x) && x.Distance <= 350 && x.IsAlive)
+                        : UseW &&
+                            spellClass.IsSpellReady &&
+                            UnitManager.MyChampion.Mana > 8 &&
+                            UnitManager.MyChampion.Mana > WMinMana &&
+                            UnitManager.EnemyChampions.Any(x => TargetSelector.IsAttackable(x) && x.Distance <= 350 && x.IsAlive);
+                },
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
                 ShouldCast = (target, spellClass, damage) =>
                 {
-                    if (UseE && spellClass.IsSpellReady && UnitManager.MyChampion.Mana > 40)
-                    {
-                        if (EOnlyExecute)
-                        {
-                            var executeTarget = UnitManager.EnemyChampions
-                                .Where(x => TargetSelector.IsAttackable(x) &&
-                                            ((UnitManager.MyChampion.Level < 6 && x.Distance < 525 + UnitManager.MyChampion.UnitComponentInfo.UnitBoundingRadius) ||
-                                             TargetSelector.IsInRange(x)) &&
-                                             EDamage(x) > x.Health)
-                                .OrderBy(EDamage)
-                                .FirstOrDefault();
-                            if (executeTarget != null)
-                            {
-                                Orbwalker.SelectedTarget = executeTarget;
-                                return true;
-                            }
-                        }
-                        else
-                        {
-                            if (UnitManager.MyChampion.Level < 6)
-                            {
-                                return UnitManager.EnemyChampions.Any(x =>
-                                                                    x.Distance < 525 + UnitManager.MyChampion.UnitComponentInfo.UnitBoundingRadius &&
-                                                                    TargetSelector.IsAttackable(x));
-                            }
-                            else
-                            {
-                                return TargetSelector.IsAttackable(Orbwalker.TargetHero) && TargetSelector.IsInRange(Orbwalker.TargetHero);
-                            }
-                        }
-                    }
-                    return false;
-                }
+                    return UseE &&
+                            spellClass.IsSpellReady &&
+                            UnitManager.MyChampion.Mana > 35 &&
+                            UnitManager.EnemyChampions.Any(x => TargetSelector.IsAttackable(x) && x.Distance <= 350 && x.IsAlive);
+                },
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
-                TargetSelect = (mode) => UnitManager.MyChampion,
                 ShouldCast = (target, spellClass, damage) =>
                 {
                     return (UseR &&
                             spellClass.IsSpellReady &&
                             UnitManager.MyChampion.Mana > 100 &&
                             UnitManager.MyChampion.Mana > RMinMana &&
-                            (UnitManager.MyChampion.Health / UnitManager.MyChampion.MaxHealth * 100) < RBelowHealthPercent &&
                             UnitManager.EnemyChampions.Count(x => TargetSelector.IsAttackable(x) && x.Distance < REnemiesCloserThan) > RIfMoreThanEnemiesNear);
                 },
             };
-        }
-
-        internal static float EDamage(GameObjectBase target)
-        {
-            if (target == null)
-            {
-                return 0;
-            }
-
-            var missingHealth = target.MaxHealth - target.Health;
-            var percentMissingHealthDamage = 7 + (UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot.E).Level) + UnitManager.MyChampion.UnitStats.TotalAbilityPower * 0.02;
-            var dmg = missingHealth / percentMissingHealthDamage;
-            var result = (float)dmg * DamageCalculator.GetMagicResistMod(UnitManager.MyChampion, target);
-            result += DamageCalculator.GetNextBasicAttackDamage(UnitManager.MyChampion, target);
-            return result;
         }
 
         internal override void OnCoreMainInput()
@@ -131,28 +101,10 @@ namespace SixAIO.Champions
             set => MenuTab.GetItem<Counter>("W Min Mana").Value = value;
         }
 
-        private int WHealBelowPercent
-        {
-            get => MenuTab.GetItem<Counter>("W Heal Below Percent").Value;
-            set => MenuTab.GetItem<Counter>("W Heal Below Percent").Value = value;
-        }
-
-        private bool EOnlyExecute
-        {
-            get => MenuTab.GetItem<Switch>("E Only Execute").IsOn;
-            set => MenuTab.GetItem<Switch>("E Only Execute").IsOn = value;
-        }
-
         private int RMinMana
         {
             get => MenuTab.GetItem<Counter>("R Min Mana").Value;
             set => MenuTab.GetItem<Counter>("R Min Mana").Value = value;
-        }
-
-        private int RBelowHealthPercent
-        {
-            get => MenuTab.GetItem<Counter>("R Below Health Percent").Value;
-            set => MenuTab.GetItem<Counter>("R Below Health Percent").Value = value;
         }
 
         private int RIfMoreThanEnemiesNear
@@ -169,21 +121,18 @@ namespace SixAIO.Champions
 
         internal override void InitializeMenu()
         {
-            MenuManager.AddTab(new Tab($"SIXAIO - {nameof(Kayle)}"));
+            MenuManager.AddTab(new Tab($"SIXAIO - {nameof(Amumu)}"));
             MenuTab.AddItem(new InfoDisplay() { Title = "---Q Settings---" });
             MenuTab.AddItem(new Switch() { Title = "Use Q", IsOn = true });
             MenuTab.AddItem(new Counter() { Title = "Q Min Mana", MinValue = 0, MaxValue = 500, Value = 150, ValueFrequency = 10 });
             MenuTab.AddItem(new InfoDisplay() { Title = "---W Settings---" });
             MenuTab.AddItem(new Switch() { Title = "Use W", IsOn = true });
             MenuTab.AddItem(new Counter() { Title = "W Min Mana", MinValue = 0, MaxValue = 500, Value = 150, ValueFrequency = 10 });
-            MenuTab.AddItem(new Counter() { Title = "W Heal Below Percent", Value = 30, MinValue = 0, MaxValue = 100, ValueFrequency = 5 });
             MenuTab.AddItem(new InfoDisplay() { Title = "---E Settings---" });
             MenuTab.AddItem(new Switch() { Title = "Use E", IsOn = true });
-            MenuTab.AddItem(new Switch() { Title = "E Only Execute", IsOn = false });
             MenuTab.AddItem(new InfoDisplay() { Title = "---R Settings---" });
             MenuTab.AddItem(new Switch() { Title = "Use R", IsOn = true });
             MenuTab.AddItem(new Counter() { Title = "R Min Mana", MinValue = 0, MaxValue = 500, Value = 150, ValueFrequency = 10 });
-            MenuTab.AddItem(new Counter() { Title = "R Below Health Percent", Value = 20, MinValue = 0, MaxValue = 100, ValueFrequency = 5 });
             MenuTab.AddItem(new Counter() { Title = "R If More Than Enemies Near", MinValue = 0, MaxValue = 5, Value = 2, ValueFrequency = 1 });
             MenuTab.AddItem(new Counter() { Title = "R Enemies Closer Than", MinValue = 50, MaxValue = 600, Value = 350, ValueFrequency = 50 });
         }

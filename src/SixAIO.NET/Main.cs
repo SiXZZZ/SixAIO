@@ -1,10 +1,15 @@
-﻿using Oasys.Common.GameObject.Clients;
+﻿using Oasys.Common;
+using Oasys.Common.GameObject;
+using Oasys.Common.GameObject.Clients;
 using Oasys.SDK;
 using Oasys.SDK.Events;
+using Oasys.SDK.Tools;
+using SharpDX;
 using SixAIO.Models;
 using SixAIO.Utilities;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace SixAIO
@@ -13,7 +18,7 @@ namespace SixAIO
     {
         private static Champion _currentChampion;
 
-        [OasysModuleEntryPoint]
+        [Oasys.SDK.OasysModuleEntryPoint]
         public static void Execute()
         {
             GameEvents.OnGameLoadComplete += GameEvents_OnGameLoadComplete;
@@ -25,12 +30,16 @@ namespace SixAIO
             Oasys.Common.EventsProvider.GameEvents.OnCreateObject += GameEvents_OnCreateObject;
             Oasys.Common.EventsProvider.GameEvents.OnDeleteObject += GameEvents_OnDeleteObject;
         }
-
+        //private static GameObjectBase _threshQ = null;
         private static Task GameEvents_OnDeleteObject(List<AIBaseClient> callbackObjectList, AIBaseClient callbackObject, float callbackGameTime)
         {
             try
             {
                 _currentChampion?.OnDeleteObject(callbackObject);
+                //if (callbackObject.Name.Contains("ThreshQMissile", StringComparison.OrdinalIgnoreCase))
+                //{
+                //    _threshQ = null;
+                //}
             }
             catch (Exception)
             {
@@ -43,6 +52,10 @@ namespace SixAIO
             try
             {
                 _currentChampion?.OnCreateObject(callbackObject);
+                //if (callbackObject.Name.Contains("ThreshQMissile", StringComparison.OrdinalIgnoreCase))
+                //{
+                //    _threshQ = callbackObject;
+                //}
             }
             catch (Exception)
             {
@@ -65,8 +78,6 @@ namespace SixAIO
             CoreEvents.OnCoreLasthitInputAsync += AutoSmite.OnCoreLasthitInputAsync;
             CoreEvents.OnCoreMainTick += AutoHeal.OnCoreMainTick;
             CoreEvents.OnCoreMainInputAsync += AutoHeal.OnCoreMainInputAsync;
-            CoreEvents.OnCoreMainTick += AutoCleanse.OnCoreMainTick;
-            CoreEvents.OnCoreMainInputAsync += AutoCleanse.OnCoreMainInputAsync;
             CoreEvents.OnCoreMainInputRelease += CoreEvents_OnCoreMainInputRelease;
 
             return Task.CompletedTask;
@@ -165,7 +176,7 @@ namespace SixAIO
 
         private static void CoreEvents_OnCoreRender()
         {
-            //foreach (var missile in UnitManager.AllObjects
+            //foreach (var missile in UnitManager.AllNativeObjects
             //                        .Where(x =>
             //                                !x.IsAlive &&
             //                                 x.IsObject(Oasys.Common.Enums.GameEnums.ObjectTypeFlag.AIMissileClient) &&
@@ -182,6 +193,25 @@ namespace SixAIO
             //        {
             //        }
             //        Oasys.SDK.Rendering.RenderFactory.DrawNativeCircle(missile.Position, 60, Color.AliceBlue, 5);
+            //    }
+            //}
+
+            //if (_threshQ is not null && _threshQ.IsAlive)
+            //{
+            //    var missile = _threshQ.As<AIMissileClient>();
+            //    //try
+            //    //{
+            //    //    Oasys.SDK.Rendering.RenderFactory.DrawText(missile.Name, 12, _threshQ.W2S, Color.Blue);
+            //    //}
+            //    //catch (Exception)
+            //    //{
+            //    //}
+            //    var w2s = LeagueNativeRendererManager.WorldToScreenSpell(missile.StartPosition);
+            //    Oasys.SDK.Rendering.RenderFactory.DrawNativeCircle(missile.Position, 60, Color.AliceBlue, 5);
+            //    var missilew2s = LeagueNativeRendererManager.WorldToScreenSpell(missile.EndPosition);
+            //    if (!missilew2s.IsZero)
+            //    {
+            //        Oasys.SDK.Rendering.RenderFactory.DrawLine(w2s.X, w2s.Y, missilew2s.X, missilew2s.Y, 60, Color.AliceBlue);
             //    }
             //}
 

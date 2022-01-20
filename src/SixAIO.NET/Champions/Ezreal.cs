@@ -16,9 +16,9 @@ namespace SixAIO.Champions
         {
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
-                Range = 1100,
-                Width = 120,
-                Speed = 2000,
+                Range = () => 1100,
+                Width = () => 120,
+                Speed = () => 2000,
                 Damage = (target, spellClass) =>
                             target != null
                             ? DamageCalculator.GetArmorMod(UnitManager.MyChampion, target) *
@@ -31,7 +31,7 @@ namespace SixAIO.Champions
                             spellClass.IsSpellReady &&
                             UnitManager.MyChampion.Mana > 40 &&
                             target != null,
-                TargetSelect = () =>
+                TargetSelect = (mode) => 
                             UnitManager.EnemyChampions
                             .Where(x => TargetSelector.IsAttackable(x) && x.Distance <= 1000 && x.IsAlive && !Collision.MinionCollision(x.Position, 120))
                             .OrderBy(x => x.Health)
@@ -39,15 +39,15 @@ namespace SixAIO.Champions
             };
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
             {
-                Range = 1000,
-                Width = 160,
-                Speed = 1700,
+                Range = () => 1000,
+                Width = () => 160,
+                Speed = () => 1700,
                 ShouldCast = (target, spellClass, damage) =>
                             UseW &&
                             spellClass.IsSpellReady &&
                             UnitManager.MyChampion.Mana > 50 &&
                             target != null,
-                TargetSelect = () =>
+                TargetSelect = (mode) => 
                 {
                     var range = 1000;
                     if (WTargetshouldbecced || WTargetshouldbeslowed)
@@ -84,13 +84,13 @@ namespace SixAIO.Champions
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
-                CastTime = 1f,
+                CastTime = () => 1f,
                 ShouldCast = (target, spellClass, damage) =>
                             UseE &&
                             spellClass.IsSpellReady &&
                             UnitManager.MyChampion.Mana > 90 &&
                             target != null,
-                TargetSelect = () =>
+                TargetSelect = (mode) => 
                             UnitManager.EnemyChampions
                             .Where(x => TargetSelector.IsAttackable(x))
                             .Where(x => x.Distance <= 800 && x.IsAlive)
@@ -98,10 +98,10 @@ namespace SixAIO.Champions
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
-                Range = 30000,
-                Width = 320,
-                Speed = 2000,
-                CastTime = 1f,
+                Range = () => 30000,
+                Width = () => 320,
+                Speed = () => 2000,
+                CastTime = () => 1f,
                 Damage = (target, spellClass) =>
                             target != null
                             ? DamageCalculator.GetMagicResistMod(UnitManager.MyChampion, target) *
@@ -115,7 +115,7 @@ namespace SixAIO.Champions
                             UnitManager.MyChampion.Mana > 100 &&
                             target != null &&
                             target.Health < damage,
-                TargetSelect = () =>
+                TargetSelect = (mode) => 
                 {
                     var range = 30000;
                     if (RTargetshouldbecced || RTargetshouldbeslowed)

@@ -17,15 +17,15 @@ namespace SixAIO.Champions
         {
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
-                Range = 825,
-                Speed = 1000,
-                Width = 250,
+                Range = () => 825,
+                Speed = () => 1000,
+                Width = () => 250,
                 ShouldCast = (target, spellClass, damage) =>
                             UseQ &&
                             spellClass.IsSpellReady &&
                             UnitManager.MyChampion.Mana > 100 &&
                             target != null,
-                TargetSelect = () =>
+                TargetSelect = (mode) => 
                 {
                     var ccTarget = UnitManager.EnemyChampions.FirstOrDefault(x => x.Distance <= 825 && x.IsAlive && x.BuffManager.GetBuffList().Any(BuffChecker.IsCrowdControlledOrSlowed));
                     if (ccTarget != null)
@@ -45,17 +45,17 @@ namespace SixAIO.Champions
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
-                Range = 1300,
-                Speed = 2000,
-                Width = 80,
-                CastTime = 0.2f,
+                Range = () => 1300,
+                Speed = () => 2000,
+                Width = () => 80,
+                CastTime = () => 0.2f,
                 ShouldCast = (target, spellClass, damage) =>
                             UseR &&
                             spellClass.IsSpellReady &&
                             UnitManager.MyChampion.Mana > 20 &&
                             spellClass.Charges >= 1 &&
                             target != null,
-                TargetSelect = () => UnitManager.EnemyChampions.FirstOrDefault(x => x.Distance <= 1150 && x.IsAlive &&
+                TargetSelect = (mode) => UnitManager.EnemyChampions.FirstOrDefault(x => x.Distance <= 1150 && x.IsAlive &&
                                                                                     TargetSelector.IsAttackable(x) &&
                                                                                     !TargetSelector.IsInvulnerable(x, Oasys.Common.Logic.DamageType.Physical, false) &&
                                                                                     x.BuffManager.GetBuffList().Any(BuffChecker.IsCrowdControlledOrSlowed))

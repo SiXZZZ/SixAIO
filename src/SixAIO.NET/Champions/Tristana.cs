@@ -30,7 +30,7 @@ namespace SixAIO.Champions
                             spellClass.IsSpellReady &&
                             UseQ &&
                             target != null,
-                TargetSelect = () => GetETarget(UnitManager.EnemyChampions)
+                TargetSelect = (mode) => GetETarget(UnitManager.EnemyChampions)
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
@@ -39,7 +39,7 @@ namespace SixAIO.Champions
                             UnitManager.MyChampion.Mana > 90 &&
                             UseE &&
                             target != null,
-                TargetSelect = () =>
+                TargetSelect = (mode) => 
                 {
                     var bestTarget = TargetSelector.GetBestChampionTarget(Orbwalker.SelectedHero);
                     if (bestTarget != null && MenuTab.GetItem<Switch>("E - " + bestTarget.ModelName).IsOn)
@@ -66,7 +66,7 @@ namespace SixAIO.Champions
                             UnitManager.MyChampion.Mana > 100 &&
                             UseR &&
                             target != null,
-                TargetSelect = () => TargetSelectR()
+                TargetSelect = (mode) => TargetSelectR()
             };
         }
 
@@ -88,7 +88,7 @@ namespace SixAIO.Champions
                 return PushAwayModeSelected switch
                 {
                     PushAwayMode.Melee => targets.FirstOrDefault(x => x.CombatType == CombatTypes.Melee && x.Distance < PushAwayRange),
-                    PushAwayMode.LowerThanMyRange => targets.FirstOrDefault(x => x.AttackRange < UnitManager.MyChampion.AttackRange && x.Distance < PushAwayRange),
+                    PushAwayMode.LowerThanMyRange=> targets.FirstOrDefault(x => x.AttackRange < UnitManager.MyChampion.AttackRange && x.Distance < PushAwayRange),
                     PushAwayMode.DashNearMe => targets.FirstOrDefault(x => x.AIManager.IsDashing && UnitManager.MyChampion.DistanceTo(x.AIManager.NavEndPosition) < 300 && x.Distance < PushAwayRange),
                     PushAwayMode.Everything => targets.FirstOrDefault(x => x.Distance < PushAwayRange),
                     _ => null,
