@@ -3,9 +3,10 @@
 	<PropertyGroup>
 		<TargetFramework>net6.0-windows7</TargetFramework>
 		<UseWindowsForms>true</UseWindowsForms>
-		<AssemblyVersion>1.4.0.0</AssemblyVersion>
-		<FileVersion>1.4.0.0</FileVersion>
-	</PropertyGroup>
+		<AssemblyVersion>1.4.0.1</AssemblyVersion>
+		<FileVersion>1.4.0.1</FileVersion>
+	
+</PropertyGroup>
 
 	<Target Name="PostBuild" AfterTargets="PostBuildEvent">
 		<Exec Command="copy /Y &quot;$(TargetDir)$(ProjectName).dll&quot; &quot;C:\Code\GIT\Oasys.Core\Oasys.Core\OasysDebug_Build\net6.0-windows7.0\Modules\$(ProjectName).omod&quot;" />
