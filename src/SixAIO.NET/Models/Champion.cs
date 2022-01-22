@@ -62,5 +62,7 @@ namespace SixAIO.Models
         internal virtual void OnDeleteObject(AIBaseClient obj) { }
 
         internal virtual void InitializeMenu() { }
+
+        internal virtual void OnGameMatchComplete() { }
     }
 }

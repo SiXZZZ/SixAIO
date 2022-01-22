@@ -171,6 +171,13 @@ namespace SixAIO
 
         private static Task GameEvents_OnGameMatchComplete()
         {
+            try
+            {
+                _currentChampion?.OnGameMatchComplete();
+            }
+            catch (Exception)
+            {
+            }
             return Task.CompletedTask;
         }
 

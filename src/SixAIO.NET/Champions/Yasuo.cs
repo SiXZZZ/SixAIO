@@ -22,6 +22,8 @@ namespace SixAIO.Champions
 {
     internal class Yasuo : Champion
     {
+        private bool _originalTargetChampsOnlySetting;
+
         private static int GetQState() => UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot.Q).SpellData.SpellName switch
         {
             "YasuoQ1Wrapper" => 1,
@@ -233,13 +235,54 @@ namespace SixAIO.Champions
 
         internal override void InitializeMenu()
         {
+            TabItem.OnTabItemChange += TabItem_OnTabItemChange;
             MenuManager.AddTab(new Tab($"SIXAIO - {nameof(Yasuo)}"));
             MenuTab.AddItem(new Switch() { Title = "Use Q", IsOn = true });
             //MenuTab.AddItem(new Switch() { Title = "Use W", IsOn = true });
             MenuTab.AddItem(new Switch() { Title = "Use E", IsOn = true });
             MenuTab.AddItem(new Switch() { Title = "Use R", IsOn = true });
+            SetTargetChampsOnly();
+        }
 
-            Orbwalker.TargetChampionsOnly = false;
+        private void SetTargetChampsOnly()
+        {
+            try
+            {
+                var orbTab = MenuManagerProvider.GetTab("Orbwalker Input");
+                _originalTargetChampsOnlySetting = orbTab.GetItem<Switch>("Hold Target Champs Only").IsOn;
+                orbTab.GetItem<Switch>("Hold Target Champs Only").IsOn = false;
+            }
+            catch (Exception ex)
+            {
+                //Logger.Log(ex.Message);
+            }
+        }
+
+        private void TabItem_OnTabItemChange(string tabName, TabItem tabItem)
+        {
+            if (tabItem.TabName == "Orbwalker Input" && 
+                tabItem.Title == "Hold Target Champs Only" &&
+                tabItem is Switch itemSwitch && 
+                itemSwitch.IsOn)
+            {
+                SetTargetChampsOnly();
+            }
+        }
+
+        internal override void OnGameMatchComplete()
+        {
+            try
+            {
+                TabItem.OnTabItemChange -= TabItem_OnTabItemChange;
+                MenuManagerProvider
+                    .GetTab("Orbwalker Input")
+                    .GetItem<Switch>("Hold Target Champs Only")
+                    .IsOn = _originalTargetChampsOnlySetting;
+            }
+            catch (Exception ex)
+            {
+                //Logger.Log(ex.Message);
+            }
         }
     }
 }

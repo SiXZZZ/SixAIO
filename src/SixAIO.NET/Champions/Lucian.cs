@@ -19,6 +19,8 @@ namespace SixAIO.Champions
 {
     internal class Lucian : Champion
     {
+        private bool _originalTargetChampsOnlySetting;
+
         public Lucian()
         {
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
@@ -28,7 +30,7 @@ namespace SixAIO.Champions
                             spellClass.IsSpellReady &&
                             UnitManager.MyChampion.Mana > 90 &&
                             target != null,
-                TargetSelect = (mode) => 
+                TargetSelect = (mode) =>
                 {
                     var targets = UnitManager.EnemyChampions
                                                 .Where(x => x.IsAlive && x.Distance <= 1000 &&
@@ -63,7 +65,7 @@ namespace SixAIO.Champions
                             spellClass.IsSpellReady &&
                             UnitManager.MyChampion.Mana > 60 &&
                             target != null,
-                TargetSelect = (mode) => 
+                TargetSelect = (mode) =>
                             UnitManager.EnemyChampions
                             .FirstOrDefault(x => x.Distance <= 900 && x.IsAlive && TargetSelector.IsAttackable(x))
             };
@@ -118,6 +120,7 @@ namespace SixAIO.Champions
 
         internal override void InitializeMenu()
         {
+            TabItem.OnTabItemChange += TabItem_OnTabItemChange;
             MenuManager.AddTab(new Tab($"SIXAIO - {nameof(Lucian)}"));
             MenuTab.AddItem(new InfoDisplay() { Title = "---Q Settings---" });
             MenuTab.AddItem(new Switch() { Title = "Use Q", IsOn = true });
@@ -127,6 +130,48 @@ namespace SixAIO.Champions
             MenuTab.AddItem(new Switch() { Title = "Use E", IsOn = false });
             MenuTab.AddItem(new ModeDisplay() { Title = "Dash Mode", ModeNames = DashHelper.ConstructDashModeTable(), SelectedModeName = "ToMouse" });
             //MenuTab.AddItem(new Switch() { Title = "Use R", IsOn = true });
+            SetTargetChampsOnly();
+        }
+
+        private void SetTargetChampsOnly()
+        {
+            try
+            {
+                var orbTab = MenuManagerProvider.GetTab("Orbwalker Input");
+                _originalTargetChampsOnlySetting = orbTab.GetItem<Switch>("Hold Target Champs Only").IsOn;
+                orbTab.GetItem<Switch>("Hold Target Champs Only").IsOn = false;
+            }
+            catch (Exception ex)
+            {
+                //Logger.Log(ex.Message);
+            }
+        }
+
+        private void TabItem_OnTabItemChange(string tabName, TabItem tabItem)
+        {
+            if (tabItem.TabName == "Orbwalker Input" &&
+                tabItem.Title == "Hold Target Champs Only" &&
+                tabItem is Switch itemSwitch &&
+                itemSwitch.IsOn)
+            {
+                SetTargetChampsOnly();
+            }
+        }
+
+        internal override void OnGameMatchComplete()
+        {
+            try
+            {
+                TabItem.OnTabItemChange -= TabItem_OnTabItemChange;
+                MenuManagerProvider
+                    .GetTab("Orbwalker Input")
+                    .GetItem<Switch>("Hold Target Champs Only")
+                    .IsOn = _originalTargetChampsOnlySetting;
+            }
+            catch (Exception ex)
+            {
+                //Logger.Log(ex.Message);
+            }
         }
     }
 }
