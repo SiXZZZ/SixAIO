@@ -51,7 +51,7 @@ namespace SixAIO.Models
         {
             try
             {
-                if (UnitManager.MyChampion.IsAlive && !UnitManager.MyChampion.IsCastingSpell)
+                if (UnitManager.MyChampion.IsAlive /*&& !UnitManager.MyChampion.IsCastingSpell*/)
                 {
                     var target = TargetSelect(mode);
                     if (turnTargetChampionsOnlyOff)
