@@ -12,34 +12,35 @@ namespace SixAIO.Helpers
 
         public static Vector3 LinePrediction(GameObjectBase target, int offset, float delay, float speed = -1f)
         {
-            //if (target.IsCastingSpell && !target.IsMelee())
-            //{
-            //    if (target.GetCurrentCastingSpell().IsBasicAttack)
-            //    {
-            //        if (lastEnemyAA == 0 || target.GetCurrentCastingSpell().IsBasicAttack)
-            //        {
-            //            lastEnemyAA = Environment.TickCount;
-            //        }
-            //        if (Environment.TickCount < lastEnemyAA)
-            //        {
-            //            return Vector3.Zero;
-            //        }
-            //    }
-            //}
-            //if (lastEnemyAA == 0)
-            //{
-            //    lastEnemyAA = Environment.TickCount;
-            //}
-            //if (Environment.TickCount < lastEnemyAA + 20)
-            //{
-            //    return Vector3.Zero;
-            //}
+            if (target.IsCastingSpell && !target.IsMelee())
+            {
+                if (target.GetCurrentCastingSpell().IsBasicAttack)
+                {
+                    if (lastEnemyAA == 0 || target.GetCurrentCastingSpell().IsBasicAttack)
+                    {
+                        lastEnemyAA = Environment.TickCount;
+                    }
+                    if (Environment.TickCount < lastEnemyAA)
+                    {
+                        return Vector3.Zero;
+                    }
+                }
+            }
+            if (lastEnemyAA == 0)
+            {
+                lastEnemyAA = Environment.TickCount;
+            }
+            if (Environment.TickCount < lastEnemyAA + 20)
+            {
+                return Vector3.Zero;
+            }
             var t = ((target.Position - UnitManager.MyChampion.Position).Length() / speed) + delay;
 
             var velocity = target.AIManager.Velocity;
             velocity.Y = 0f;
 
-            var orientation = velocity; orientation.Normalize();
+            var orientation = velocity;
+            orientation.Normalize();
 
             var waypoint = Vector3.Zero;
 
@@ -53,7 +54,8 @@ namespace SixAIO.Helpers
             }
 
 
-            if (velocity.X == 0f && velocity.Y == 0f)
+            if (velocity.X == 0f &&
+                velocity.Y == 0f)
             {
                 return target.Position;
             }
