@@ -16,7 +16,7 @@ namespace SixAIO.Champions
         private static bool IsQActive()
         {
             var jinxQBuff = UnitManager.MyChampion.BuffManager.GetBuffByName("JinxQ", false, true);
-            return jinxQBuff != null && jinxQBuff.Stacks >= 1;
+            return jinxQBuff != null && jinxQBuff.IsActive && jinxQBuff.Stacks >= 1;
         }
 
         public Jinx()
@@ -28,11 +28,11 @@ namespace SixAIO.Champions
                     if (UseQ && spellClass.IsSpellReady && UnitManager.MyChampion.Mana > 40)
                     {
                         var usingRockets = IsQActive();
-                        var extraRange =  75 + (25 * UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot.Q).Level);
+                        var extraRange = 75 + (25 * UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot.Q).Level);
                         var minigunRange = usingRockets
                                             ? UnitManager.MyChampion.TrueAttackRange - extraRange
                                             : UnitManager.MyChampion.TrueAttackRange;
-                        var rocketRange =  usingRockets
+                        var rocketRange = usingRockets
                                             ? UnitManager.MyChampion.TrueAttackRange
                                             : UnitManager.MyChampion.TrueAttackRange + extraRange;
 
@@ -44,7 +44,7 @@ namespace SixAIO.Champions
                         {
                             return usingRockets;
                         }
-                        if (Orbwalker.TargetHero == null)
+                        if (!usingRockets && Orbwalker.TargetHero == null)
                         {
                             return UnitManager.EnemyChampions.Any(x => x.Distance < rocketRange && TargetSelector.IsAttackable(x));
                         }
@@ -70,7 +70,7 @@ namespace SixAIO.Champions
                             spellClass.IsSpellReady &&
                             UnitManager.MyChampion.Mana > 90 &&
                             target != null,
-                TargetSelect = (mode) => 
+                TargetSelect = (mode) =>
                             UnitManager.EnemyChampions
                             .FirstOrDefault(x => x.Distance <= 1450 && x.IsAlive &&
                                                 TargetSelector.IsAttackable(x) &&
@@ -84,7 +84,7 @@ namespace SixAIO.Champions
                             spellClass.IsSpellReady &&
                             UnitManager.MyChampion.Mana > 90 &&
                             target != null,
-                TargetSelect = (mode) => 
+                TargetSelect = (mode) =>
                             UnitManager.EnemyChampions
                             .FirstOrDefault(x => x.Distance <= 850 && x.IsAlive && x.BuffManager.GetBuffList().Any(BuffChecker.IsCrowdControlled))
             };
@@ -106,7 +106,7 @@ namespace SixAIO.Champions
                             spellClass.IsSpellReady &&
                             UnitManager.MyChampion.Mana > 100 &&
                             target != null,
-                TargetSelect = (mode) => 
+                TargetSelect = (mode) =>
                             UnitManager.EnemyChampions
                             .FirstOrDefault(x => x.Distance <= 30000 && x.IsAlive && TargetSelector.IsAttackable(x) &&
                                             (x.Health / x.MaxHealth * 100) < 50 &&
