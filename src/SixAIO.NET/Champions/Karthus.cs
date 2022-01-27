@@ -20,8 +20,47 @@ namespace SixAIO.Champions
     internal class Karthus : Champion
     {
         private static string _killMessage;
+
+        private static bool IsEActive()
+        {
+            var buff = UnitManager.MyChampion.BuffManager.GetBuffByName("KarthusDefile", false, true);
+            return buff != null && buff.IsActive && buff.Stacks >= 1;
+        }
+
         public Karthus()
         {
+            SpellE = new Spell(CastSlot.E, SpellSlot.E)
+            {
+                Range = () => 550f,
+                CastTime = () => 0f,
+                ShouldCast = (target, spellClass, damage) =>
+                {
+                    if (UseE && spellClass.IsSpellReady && UnitManager.MyChampion.Mana > 40)
+                    {
+                        var usingDefile = IsEActive();
+                        var targetInRange = UnitManager.EnemyChampions.Any(x => x.Distance < SpellE.Range() && TargetSelector.IsAttackable(x));
+
+                        if (usingDefile && targetInRange)
+                        {
+                            return false;
+                        }
+                        else if (!usingDefile && targetInRange)
+                        {
+                            return true;
+                        }
+                        else if (usingDefile && !targetInRange)
+                        {
+                            return true;
+                        }
+                        else
+                        {
+                            return false;
+                        }
+                    }
+
+                    return false;
+                }
+            };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
                 ShouldCast = (target, spellClass, damage) =>
@@ -65,6 +104,14 @@ namespace SixAIO.Champions
             return DamageCalculator.GetMagicResistMod(UnitManager.MyChampion, target) * dmg;
         }
 
+        internal override void OnCoreMainInput()
+        {
+            if (SpellE.ExecuteCastSpell())
+            {
+                return;
+            }
+        }
+
         internal override void OnCoreMainTick()
         {
             if (SpellR.ExecuteCastSpell())
@@ -87,7 +134,7 @@ namespace SixAIO.Champions
             MenuManager.AddTab(new Tab($"SIXAIO - {nameof(Karthus)}"));
             //MenuTab.AddItem(new Switch() { Title = "Use Q", IsOn = true });
             //MenuTab.AddItem(new Switch() { Title = "Use W", IsOn = true });
-            //MenuTab.AddItem(new Switch() { Title = "Use E", IsOn = true });
+            MenuTab.AddItem(new Switch() { Title = "Use E", IsOn = true });
             MenuTab.AddItem(new Switch() { Title = "Use R", IsOn = true });
         }
     }
