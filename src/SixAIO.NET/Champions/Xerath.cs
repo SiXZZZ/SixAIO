@@ -1,123 +1,193 @@
-﻿namespace SixAIO.Champions
+﻿using Oasys.Common.Enums.GameEnums;
+using Oasys.Common.Extensions;
+using Oasys.Common.GameObject;
+using Oasys.Common.Menu;
+using Oasys.Common.Menu.ItemComponents;
+using Oasys.SDK;
+using Oasys.SDK.Menu;
+using Oasys.SDK.SpellCasting;
+using Oasys.SDK.Tools;
+using SixAIO.Helpers;
+using SixAIO.Models;
+using System;
+using System.Linq;
+
+namespace SixAIO.Champions
 {
-    //internal static class Xerath
-    //{
-    //    private static float _castTimeQ = 0.5f;
-    //    private static float _CastTime = () => 0.1f;
-    //    private static float _lastQTime = 0;
-    //    private static float _lastWTime = 0;
-    //    private static float _lastETime = 0;
-    //    private static GameObjectBase _cachedQTarget;
-    //    private static Vector3 _previousPosition;
-    //    private static float _cacheTime;
+    internal class Xerath : Champion
+    {
+        private static bool _isChargingQ;
+        private static System.Diagnostics.Stopwatch _stopwatch = new();
 
-    //    internal static void OnCoreMainInput()
-    //    {
-    //        var mySpellBook = UnitManager.MyChampion.GetSpellBook();
+        public Xerath()
+        {
+            SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
+            {
+                CastSpellAtPos = (castSlot, pos, castTime) =>
+                {
+                    if (_isChargingQ)
+                    {
+                        var released = SpellCastProvider.ReleaseChargeSpell(SpellCastSlot.Q, pos, castTime);
+                        if (released)
+                        {
+                            _stopwatch.Stop();
+                            _isChargingQ = false;
+                        }
+                        return released;
+                    }
+                    else
+                    {
+                        _isChargingQ = true;
+                        _stopwatch.Restart();
+                        return SpellCastProvider.StartChargeSpell(SpellCastSlot.Q);
+                    }
+                },
+                Range = () => UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot.Q).IsSpellReady
+                        ? 735 + _stopwatch.ElapsedMilliseconds / 1000 / 0.25f * 102f
+                        : 0,
+                Width = () => 140,
+                Speed = () => 1900,
+                ShouldCast = (target, spellClass, damage) =>
+                            UseQ &&
+                            spellClass.IsSpellReady &&
+                            UnitManager.MyChampion.Mana > 120 &&
+                            target != null &&
+                            (_isChargingQ ? target.Distance < SpellQ.Range() : target.Distance < 1450),
+                TargetSelect = (mode) =>
+                {
+                    if (QTargetshouldbecced || QTargetshouldbeslowed)
+                    {
+                        if (QTargetshouldbecced)
+                        {
+                            var target = UnitManager.EnemyChampions.FirstOrDefault(x => (_isChargingQ ? x.Distance < SpellQ.Range() : x.Distance < 1450) &&
+                                                                        x.IsAlive && TargetSelector.IsAttackable(x) &&
+                                                                        x.BuffManager.GetBuffList().Any(BuffChecker.IsCrowdControlled));
+                            if (target != null)
+                            {
+                                return target;
+                            }
+                        }
+                        if (QTargetshouldbeslowed)
+                        {
+                            var target = UnitManager.EnemyChampions.FirstOrDefault(x => (_isChargingQ ? x.Distance < SpellQ.Range() : x.Distance < 1450) &&
+                                                                        x.IsAlive && TargetSelector.IsAttackable(x) &&
+                                                                        x.BuffManager.GetBuffList().Any(BuffChecker.IsCrowdControlledOrSlowed));
+                            if (target != null)
+                            {
+                                return target;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        return UnitManager.EnemyChampions.FirstOrDefault(x => (_isChargingQ ? x.Distance < SpellQ.Range() : x.Distance < 1450) &&
+                                                                             x.IsAlive && TargetSelector.IsAttackable(x));
+                    }
 
-    //        var enemies = UnitManager.EnemyChampions
-    //            .Where(x => IsInRange(x, 2000) && TargetSelector.IsAttackable(x))
-    //            .OrderBy(x => x.Distance)
-    //            .AsEnumerable<GameObjectBase>();
+                    return null;
+                }
+            };
+            SpellW = new Spell(CastSlot.W, SpellSlot.W)
+            {
+                Range = () => 1000,
+                Width = () => 250,
+                Speed = () => -1,
+                ShouldCast = (target, spellClass, damage) =>
+                            UseW &&
+                            spellClass.IsSpellReady &&
+                            UnitManager.MyChampion.Mana > 110 &&
+                            target != null,
+                TargetSelect = (mode) =>
+                            UnitManager.EnemyChampions
+                            .FirstOrDefault(x => x.Distance <= SpellW.Range() && x.IsAlive && TargetSelector.IsAttackable(x))
+            };
+            SpellE = new Spell(CastSlot.E, SpellSlot.E)
+            {
+                Range = () => 1125,
+                Width = () => 120,
+                Speed = () => 1400,
+                ShouldCast = (target, spellClass, damage) =>
+                            UseE &&
+                            spellClass.IsSpellReady &&
+                            UnitManager.MyChampion.Mana > 80 &&
+                            target != null,
+                TargetSelect = (mode) =>
+                            UnitManager.EnemyChampions
+                            .FirstOrDefault(x => x.Distance <= SpellE.Range() && x.IsAlive && TargetSelector.IsAttackable(x))
+            };
+            SpellR = new Spell(CastSlot.R, SpellSlot.R)
+            {
+                Range = () => 5000,
+                Width = () => 200,
+                Speed = () => 1500,
+                CastTime = () => 0f,
+                ShouldCast = (target, spellClass, damage) =>
+                            UseR &&
+                            spellClass.IsSpellReady &&
+                            UnitManager.MyChampion.Mana > 100 &&
+                            target != null,
+                TargetSelect = (mode) =>
+                {
+                    return UnitManager.EnemyChampions.FirstOrDefault(x => x.Distance <= SpellR.Range() && x.IsAlive && TargetSelector.IsAttackable(x));
+                }
+            };
+        }
 
-    //        if (enemies != null)
-    //        {
-    //            //CastE(mySpellBook, enemies);
-    //            CastW(mySpellBook, enemies);
-    //            CastQ(mySpellBook, enemies);
-    //        }
-    //    }
+        internal override void OnCoreMainInput()
+        {
+            if (SpellW.ExecuteCastSpell() || SpellE.ExecuteCastSpell() || SpellQ.ExecuteCastSpell() /*|| SpellR.ExecuteCastSpell()*/)
+            {
+                return;
+            }
+        }
 
-    //    private static void CastQ(SpellBook mySpellBook, IEnumerable<GameObjectBase> enemies)
-    //    {
-    //        var qTarget = enemies.Where(x => IsInRange(x, 1500)).FirstOrDefault();
-    //        if (mySpellBook.GetSpellClass(SpellSlot.Q).IsSpellReady &&
-    //            UnitManager.MyChampion.Mana > 120 &&
-    //            qTarget != null &&
-    //            GameEngine.GameTime > _lastQTime + _castTimeQ)
-    //        {
-    //            if (_lastQTime == 0)
-    //            {
-    //                _cachedQTarget = qTarget;
-    //                SpellCastProvider.StartChargeSpell(SpellCastSlot.Q);
-    //                Orbwalker.OrbwalkingMode = Oasys.Common.Logic.OrbwalkingMode.Move;
-    //                _lastQTime = GameEngine.GameTime;
-    //            }
-    //            if (GameEngine.GameTime >= _lastQTime + CalculateQExtendableTime(_cachedQTarget.Distance))
-    //            {
-    //                ReleaseQ(_cachedQTarget);
-    //                _lastQTime = 0;
-    //            }
-    //        }
-    //    }
+        private bool QTargetshouldbeslowed
+        {
+            get => MenuTab.GetItem<Switch>("Q Target should be slowed").IsOn;
+            set => MenuTab.GetItem<Switch>("Q Target should be slowed").IsOn = value;
+        }
 
-    //    private static void CastW(SpellBook mySpellBook, IEnumerable<GameObjectBase> enemies)
-    //    {
-    //        var wTarget = enemies.Where(x => IsInRange(x, mySpellBook.GetSpellClass(SpellSlot.W).SpellData.CastRange)).FirstOrDefault();
-    //        if (mySpellBook.GetSpellClass(SpellSlot.W).IsSpellReady &&
-    //            UnitManager.MyChampion.Mana > 110 &&
-    //            wTarget != null &&
-    //            GameEngine.GameTime > _lastWTime + _castTime)
-    //        {
-    //            SpellCastProvider.CastSpell(CastSlot.W, wTarget.Position, _castTime);
-    //            _lastWTime = GameEngine.GameTime;
-    //        }
-    //    }
+        private bool QTargetshouldbecced
+        {
+            get => MenuTab.GetItem<Switch>("Q Target should be cc'ed").IsOn;
+            set => MenuTab.GetItem<Switch>("Q Target should be cc'ed").IsOn = value;
+        }
 
-    //    private static void CastE(SpellBook mySpellBook, IEnumerable<GameObjectBase> enemies)
-    //    {
-    //        var eTarget = enemies.Where(x => IsInRange(x, mySpellBook.GetSpellClass(SpellSlot.E).SpellData.CastRange)).FirstOrDefault();
-    //        if (mySpellBook.GetSpellClass(SpellSlot.E).IsSpellReady &&
-    //            UnitManager.MyChampion.Mana > 80 &&
-    //            eTarget != null &&
-    //            GameEngine.GameTime > _lastETime + _castTime)
-    //        {
-    //            SpellCastProvider.CastSpell(CastSlot.E, eTarget.Position, _castTime);
-    //            _lastETime = GameEngine.GameTime;
-    //        }
-    //    }
+        //private int UseOnlyRIfXLTEHPPercent
+        //{
+        //    get => MenuTab.GetItem<Counter>("Use only R if x <= HP percent").Value;
+        //    set => MenuTab.GetItem<Counter>("Use only R if x <= HP percent").Value = value;
+        //}
 
-    //    private static void ReleaseQ(GameObjectBase qTarget)
-    //    {
-    //        var predictPos = GetPrediction(qTarget);
-    //        SpellCastProvider.ReleaseChargeSpell(SpellCastSlot.Q, predictPos, _castTimeQ);
-    //        Orbwalker.OrbwalkingMode = Oasys.Common.Logic.OrbwalkingMode.Combo;
-    //    }
+        //private bool RTargetshouldbeslowed
+        //{
+        //    get => MenuTab.GetItem<Switch>("R Target should be slowed").IsOn;
+        //    set => MenuTab.GetItem<Switch>("R Target should be slowed").IsOn = value;
+        //}
 
-    //    internal static Vector2 GetPrediction(GameObjectBase target, float addMoveDeltaTime = 0f)
-    //    {
-    //        var moveDelta = Vector3.Normalize(target.Position - _previousPosition);
-    //        var movePredictPos = moveDelta * target.UnitStats.MoveSpeed * addMoveDeltaTime;
-    //        Vector2 v = LeagueNativeRendererManager.WorldToScreen(target.Position/* + (addMoveDeltaTime > 0f ? movePredictPos : Vector3.Zero)*/);
-    //        return v;
-    //    }
+        //private bool RTargetshouldbecced
+        //{
+        //    get => MenuTab.GetItem<Switch>("R Target should be cc'ed").IsOn;
+        //    set => MenuTab.GetItem<Switch>("R Target should be cc'ed").IsOn = value;
+        //}
 
-    //    internal static void OnCoreMainTick()
-    //    {
-    //        if (_cachedQTarget != null && EngineManager.GameTime > _cacheTime + 0.01f)
-    //        {
-    //            _cacheTime = EngineManager.GameTime;
-    //            _previousPosition = _cachedQTarget.Position;
-    //        }
-    //    }
+        internal override void InitializeMenu()
+        {
+            MenuManager.AddTab(new Tab($"SIXAIO - {nameof(Xerath)}"));
+            MenuTab.AddItem(new InfoDisplay() { Title = "---Q Settings---" });
+            MenuTab.AddItem(new Switch() { Title = "Use Q", IsOn = true });
+            MenuTab.AddItem(new Switch() { Title = "Q Target should be slowed", IsOn = true });
+            MenuTab.AddItem(new Switch() { Title = "Q Target should be cc'ed", IsOn = true });
+            MenuTab.AddItem(new InfoDisplay() { Title = "---W Settings---" });
+            MenuTab.AddItem(new Switch() { Title = "Use W", IsOn = true });
+            MenuTab.AddItem(new InfoDisplay() { Title = "---E Settings---" });
+            MenuTab.AddItem(new Switch() { Title = "Use E", IsOn = true });
 
-    //    internal static void OnCoreMainInputRelease()
-    //    {
-    //    }
-
-    //    private static float CalculateQExtendableTime(float distance)
-    //    {
-    //        return (distance - 735) / 4.0856f / 100;
-    //    }
-
-    //    internal static void OnCoreLaneClearInput()
-    //    {
-    //    }
-
-    //    private static bool IsInRange(GameObjectBase targHero, float range)
-    //    {
-    //        return targHero.Distance-100 <= range + targHero.UnitComponentInfo.UnitBoundingRadius + 5;
-    //    }
-    //}
+            //MenuTab.AddItem(new InfoDisplay() { Title = "---R Settings---" });
+            //MenuTab.AddItem(new Switch() { Title = "Use R", IsOn = true });
+            //MenuTab.AddItem(new Counter() { Title = "Use only R if x <= HP percent", MinValue = 0, MaxValue = 100, Value = 50, ValueFrequency = 5 });
+            //MenuTab.AddItem(new Switch() { Title = "R Target should be slowed", IsOn = true });
+            //MenuTab.AddItem(new Switch() { Title = "R Target should be cc'ed", IsOn = true });
+        }
+    }
 }
-
