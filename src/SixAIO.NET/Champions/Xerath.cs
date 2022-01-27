@@ -50,7 +50,7 @@ namespace SixAIO.Champions
                 ShouldCast = (target, spellClass, damage) =>
                             UseQ &&
                             spellClass.IsSpellReady &&
-                            UnitManager.MyChampion.Mana > 120 &&
+                            (_isChargingQ || UnitManager.MyChampion.Mana > 120 )&&
                             target != null &&
                             (_isChargingQ ? target.Distance < SpellQ.Range() : target.Distance < 1450),
                 TargetSelect = (mode) =>
@@ -135,7 +135,7 @@ namespace SixAIO.Champions
 
         internal override void OnCoreMainInput()
         {
-            if (SpellW.ExecuteCastSpell() || SpellE.ExecuteCastSpell() || SpellQ.ExecuteCastSpell() /*|| SpellR.ExecuteCastSpell()*/)
+            if (SpellW.ExecuteCastSpell() || SpellE.ExecuteCastSpell() || SpellQ.ExecuteCastSpell(Enums.InputMode.Combo, true) /*|| SpellR.ExecuteCastSpell()*/)
             {
                 return;
             }

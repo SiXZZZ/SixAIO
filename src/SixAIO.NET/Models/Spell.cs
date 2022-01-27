@@ -47,17 +47,13 @@ namespace SixAIO.Models
             return ShouldCast(target, SpellClass, Damage(target, SpellClass));
         }
 
-        public bool ExecuteCastSpell(InputMode mode = InputMode.Combo, bool turnTargetChampionsOnlyOff = false)
+        public bool ExecuteCastSpell(InputMode mode = InputMode.Combo, bool isCharge = false)
         {
             try
             {
-                if (UnitManager.MyChampion.IsAlive /*&& !UnitManager.MyChampion.IsCastingSpell*/)
+                if (UnitManager.MyChampion.IsAlive && (isCharge || !UnitManager.MyChampion.IsCastingSpell))
                 {
                     var target = TargetSelect(mode);
-                    if (turnTargetChampionsOnlyOff)
-                    {
-                        Orbwalker.TargetChampionsOnly = false;
-                    }
                     if (AlertSpellUsage != default)
                     {
                         AlertSpellUsage?.Invoke(CastSlot);
