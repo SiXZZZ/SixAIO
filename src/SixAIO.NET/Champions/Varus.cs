@@ -184,7 +184,7 @@ namespace SixAIO.Champions
 
         internal override void OnCoreMainInput()
         {
-            if (SpellQ.ExecuteCastSpell(Enums.InputMode.Combo, true) || SpellE.ExecuteCastSpell() || SpellR.ExecuteCastSpell())
+            if (SpellQ.ExecuteCastSpell(isCharge: true) || SpellE.ExecuteCastSpell() || SpellR.ExecuteCastSpell())
             {
                 return;
             }

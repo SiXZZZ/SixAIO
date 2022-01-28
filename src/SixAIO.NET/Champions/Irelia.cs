@@ -63,7 +63,7 @@ namespace SixAIO.Champions
                         return jungleReset;
                     }
 
-                    if (mode == Enums.InputMode.Combo)
+                    if (mode == Orbwalker.OrbWalkingModeType.Combo)
                     {
                         var champ = UnitManager.EnemyChampions.FirstOrDefault(x => x.Distance <= SpellQ.Range() && TargetSelector.IsAttackable(x) && CanQResetOnTarget(x));
                         if (champ != null)
@@ -175,7 +175,7 @@ namespace SixAIO.Champions
 
         internal override void OnCoreLaneClearInput()
         {
-            if (SpellQ.ExecuteCastSpell(Enums.InputMode.Laneclear))
+            if (SpellQ.ExecuteCastSpell(Orbwalker.OrbWalkingModeType.LaneClear))
             {
                 return;
             }

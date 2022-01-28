@@ -87,7 +87,7 @@ namespace SixAIO.Champions
                             target != null,
                 TargetSelect = (mode) =>
                 {
-                    if (mode == Enums.InputMode.Combo)
+                    if (mode == Orbwalker.OrbWalkingModeType.Combo)
                     {
                         var champ = UnitManager.EnemyChampions.FirstOrDefault(CanEOnTarget);
                         if (champ != null)
@@ -227,7 +227,7 @@ namespace SixAIO.Champions
 
         internal override void OnCoreLaneClearInput()
         {
-            if (SpellQ.ExecuteCastSpell(Enums.InputMode.Laneclear) || SpellE.ExecuteCastSpell(Enums.InputMode.Laneclear))
+            if (SpellQ.ExecuteCastSpell(Orbwalker.OrbWalkingModeType.LaneClear) || SpellE.ExecuteCastSpell(Orbwalker.OrbWalkingModeType.LaneClear))
             {
                 return;
             }

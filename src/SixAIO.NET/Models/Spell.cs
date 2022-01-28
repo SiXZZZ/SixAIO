@@ -35,19 +35,17 @@ namespace SixAIO.Models
 
         public Func<GameObjectBase, SpellClass, float, bool> ShouldCast = (target, spellClass, damage) => false;
 
-        public Func<InputMode, GameObjectBase> TargetSelect = (mode) => null;
+        public Func<Orbwalker.OrbWalkingModeType, GameObjectBase> TargetSelect = (mode) => null;
 
         public Func<GameObjectBase, SpellClass, float> Damage = (target, spellClass) => 0f;
 
-        public bool ShouldCastSpell() => ShouldCastSpell(InputMode.Combo);
-
-        public bool ShouldCastSpell(InputMode mode)
+        public bool ShouldCastSpell(Orbwalker.OrbWalkingModeType mode)
         {
             var target = TargetSelect(mode);
             return ShouldCast(target, SpellClass, Damage(target, SpellClass));
         }
 
-        public bool ExecuteCastSpell(InputMode mode = InputMode.Combo, bool isCharge = false)
+        public bool ExecuteCastSpell(Orbwalker.OrbWalkingModeType mode = Orbwalker.OrbWalkingModeType.Combo, bool isCharge = false)
         {
             try
             {
@@ -61,7 +59,7 @@ namespace SixAIO.Models
                     }
                     if (target == default && CastTime() == default)
                     {
-                        var result = ShouldCastSpell() && CastSpell(CastSlot);
+                        var result = ShouldCastSpell(mode) && CastSpell(CastSlot);
                         if (result)
                         {
                             OnSpellCast?.Invoke(this, target);
@@ -70,7 +68,7 @@ namespace SixAIO.Models
                     }
                     else if (target == default)
                     {
-                        var result = ShouldCastSpell() && CastSpellWithCastTime(CastSlot, CastTime());
+                        var result = ShouldCastSpell(mode) && CastSpellWithCastTime(CastSlot, CastTime());
                         if (result)
                         {
                             OnSpellCast?.Invoke(this, target);
@@ -87,7 +85,7 @@ namespace SixAIO.Models
                             var w2s = LeagueNativeRendererManager.WorldToScreen(pos);
                             if (w2s != default && UnitManager.MyChampion.DistanceTo(pos) <= Range())
                             {
-                                var result = ShouldCastSpell() && CastSpellAtPos(CastSlot, w2s, CastTime());
+                                var result = ShouldCastSpell(mode) && CastSpellAtPos(CastSlot, w2s, CastTime());
                                 if (result)
                                 {
                                     OnSpellCast?.Invoke(this, target);
@@ -96,7 +94,7 @@ namespace SixAIO.Models
                             }
                         }
 
-                        var res = ShouldCastSpell() && CastSpellAtPos(CastSlot, target.W2S, CastTime());
+                        var res = ShouldCastSpell(mode) && CastSpellAtPos(CastSlot, target.W2S, CastTime());
                         if (res)
                         {
                             OnSpellCast?.Invoke(this, target);

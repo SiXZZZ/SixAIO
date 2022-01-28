@@ -6,6 +6,7 @@ using Oasys.Common.Menu.ItemComponents;
 using Oasys.SDK;
 using Oasys.SDK.Menu;
 using Oasys.SDK.SpellCasting;
+using Oasys.SDK.Tools;
 using SixAIO.Helpers;
 using System.Linq;
 using System.Threading.Tasks;
@@ -21,6 +22,12 @@ namespace SixAIO.Utilities
         public static SpellClass CleanseSpellClass;
 
         private static Tab _menuTab => MenuManagerProvider.GetTab($"SIXAIO - Auto Cleanse");
+
+        private static bool LogCleanseBuff
+        {
+            get => _menuTab.GetItem<Switch>("Log Cleanse Buff").IsOn;
+            set => _menuTab.GetItem<Switch>("Log Cleanse Buff").IsOn = value;
+        }
 
         private static bool UseCleanse
         {
@@ -69,6 +76,7 @@ namespace SixAIO.Utilities
             }
 
             MenuManager.AddTab(new Tab($"SIXAIO - Auto Cleanse"));
+            _menuTab.AddItem(new Switch() { Title = "Log Cleanse Buff", IsOn = false });
             _menuTab.AddItem(new Switch() { Title = "Use Cleanse", IsOn = false });
             _menuTab.AddItem(new Switch() { Title = "Use Items", IsOn = false });
             _menuTab.AddItem(new Switch() { Title = "Cleanse On Combo", IsOn = false });
@@ -120,10 +128,10 @@ namespace SixAIO.Utilities
             }
         }
 
-        private static int _cycles = 0;
+        //private static int _cycles = 0;
         private static async Task OnTick()
         {
-            _cycles++;
+            //_cycles++;
             //if (_cycles % 10 == 0)
             {
                 await InputHandler(true).ConfigureAwait(false);
@@ -190,9 +198,12 @@ namespace SixAIO.Utilities
                                 buff.DurationMs >= _menuTab.GetItem<Counter>(x => x.Title.Contains(buff.EntryType.ToString(), System.StringComparison.OrdinalIgnoreCase))?.Value);
                 //return cc != null;
 
-                if (cc != null)
+                if (cc != null && !cc.Name.Contains("Unknown", System.StringComparison.OrdinalIgnoreCase))
                 {
-                    //Logger.Log($"{cc.Name} {cc.IsActive} {cc.DurationMs} {cc.EntryType}");
+                    if (LogCleanseBuff)
+                    {
+                        Logger.Log($"[AutoCleanse] {cc.Name} {cc.IsActive} {cc.DurationMs} {cc.EntryType}");
+                    }
                     return true;
                 }
                 return false;
