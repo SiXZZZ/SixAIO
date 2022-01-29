@@ -23,6 +23,7 @@ namespace SixAIO.Champions
                 Range = () => 825,
                 Width = () => 80,
                 Speed = () => 2600,
+                CastTime = () => 0f,
                 ShouldCast = (target, spellClass, damage) =>
                             UseQ &&
                             spellClass.IsSpellReady &&
@@ -52,7 +53,7 @@ namespace SixAIO.Champions
                 ShouldCast = (target, spellClass, damage) =>
                             UseE &&
                             spellClass.IsSpellReady &&
-                            UnitManager.MyChampion.Mana > 100 &&
+                            UnitManager.MyChampion.Mana > 80 &&
                             DashModeSelected == DashMode.ToMouse &&
                             UnitManager.EnemyChampions.FirstOrDefault(x => x.Distance <= x.TrueAttackRange + 500 && x.IsAlive && TargetSelector.IsAttackable(x)) != null,
             };
