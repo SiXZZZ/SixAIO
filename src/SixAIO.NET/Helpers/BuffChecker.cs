@@ -9,7 +9,9 @@ namespace SixAIO.Helpers
         {
             return buff.IsActive && buff.EntryType != BuffType.Slow &&
                    (buff.EntryType == BuffType.Knockup || buff.EntryType == BuffType.Suppression ||
-                   IsCrowdControlledButCanCleanse(buff));
+                   IsCrowdControlledButCanCleanse(buff) || 
+                   !buff.Name.Equals("CassiopeiaWSlow", System.StringComparison.OrdinalIgnoreCase) ||
+                   !buff.Name.Equals("megaadhesiveslow", System.StringComparison.OrdinalIgnoreCase));
         }
 
         internal static bool IsCrowdControlledButCanQss(BuffEntry buff)
@@ -26,8 +28,9 @@ namespace SixAIO.Helpers
                    buff.EntryType == BuffType.Silence || buff.EntryType == BuffType.Blind ||
                    buff.EntryType == BuffType.Fear || buff.EntryType == BuffType.Polymorph ||
                    buff.EntryType == BuffType.Flee || buff.EntryType == BuffType.Sleep) &&
-                   !buff.Name.Equals("CassiopeiaWSlow", System.StringComparison.OrdinalIgnoreCase);
-            //TODO: ADD poppy singed tahm kench https://leagueoflegends.fandom.com/wiki/Types_of_Crowd_Control#Ground
+                   !buff.Name.Equals("CassiopeiaWSlow", System.StringComparison.OrdinalIgnoreCase) &&
+                   !buff.Name.Equals("megaadhesiveslow", System.StringComparison.OrdinalIgnoreCase);
+            //TODO: ADD poppy tahm kench https://leagueoflegends.fandom.com/wiki/Types_of_Crowd_Control#Ground
         }
 
         internal static bool IsCrowdControlledOrSlowed(BuffEntry buff)
