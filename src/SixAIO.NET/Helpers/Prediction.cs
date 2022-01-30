@@ -1,6 +1,9 @@
 ﻿using Oasys.Common.Extensions;
 using Oasys.Common.GameObject;
+using Oasys.Common.Menu;
+using Oasys.Common.Menu.ItemComponents;
 using Oasys.SDK;
+using Oasys.SDK.Menu;
 using SharpDX;
 using System;
 
@@ -8,37 +11,38 @@ namespace SixAIO.Helpers
 {
     public static class Prediction
     {
-        public static Vector3 LinePrediction(GameObjectBase target, int offset, float delay, float speed = -1f)
+        internal static Tab MenuTab => MenuManagerProvider.GetTab($"SIXAIO - {nameof(Prediction)}");
+
+        public static void Initialize()
         {
-            var velocity = target.AIManager.Velocity;
-            velocity.Y = 0f;
+            MenuManager.AddTab(new Tab($"SIXAIO - {nameof(Prediction)}"));
+            MenuTab.AddItem(new Counter() { Title = "Offset", MinValue = -1000, MaxValue = 1000, Value = 0, ValueFrequency = 5 });
+        }
 
-            var orientation = velocity;
-            orientation.Normalize();
+        private static int PredictionOffset
+        {
+            get => MenuTab.GetItem<Counter>("Offset").Value;
+            set => MenuTab.GetItem<Counter>("Offset").Value = value;
+        }
 
-            var waypoint = Vector3.Zero;
-
-            waypoint = target.AIManager.GetNavPointCount() > 2
-                        ? WaypointGrab(target, waypoint)
-                        : (target.AIManager.NavEndPosition - target.Position).Normalized();
-
-            if (velocity.X == 0f &&
-                velocity.Y == 0f)
-            {
-                return target.Position;
-            }
+        public static Vector3 LinePrediction(GameObjectBase target, float delay, float speed = -1f)
+        {
+            var waypoint = target.AIManager.GetNavPointCount() > 2
+                    ? WaypointGrab(target)
+                    : (target.AIManager.NavEndPosition - target.Position).Normalized();
 
             var t = ((target.Position - UnitManager.MyChampion.Position).Length() / speed) + delay;
             var result = target.Position + (waypoint * (target.UnitStats.MoveSpeed * t));
             if ((result - target.Position).Length() > 400)
             {
-                result = target.Position + (waypoint * target.UnitStats.MoveSpeed * delay + offset);
+                result = target.Position + (waypoint * target.UnitStats.MoveSpeed * delay + PredictionOffset);
             }
             return result;
         }
 
-        private static Vector3 WaypointGrab(GameObjectBase target, Vector3 waypoint)
+        private static Vector3 WaypointGrab(GameObjectBase target)
         {
+            var waypoint = Vector3.Zero;
             var navList = target.AIManager.GetNavPoints();
             foreach (var nav in navList)
             {

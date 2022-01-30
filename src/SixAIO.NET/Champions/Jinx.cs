@@ -15,8 +15,8 @@ namespace SixAIO.Champions
     {
         private static bool IsQActive()
         {
-            var jinxQBuff = UnitManager.MyChampion.BuffManager.GetBuffByName("JinxQ", false, true);
-            return jinxQBuff != null && jinxQBuff.IsActive && jinxQBuff.Stacks >= 1;
+            var buff = UnitManager.MyChampion.BuffManager.GetBuffByName("JinxQ", false, true);
+            return buff != null && buff.IsActive && buff.Stacks >= 1;
         }
 
         public Jinx()

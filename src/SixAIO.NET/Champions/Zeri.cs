@@ -69,8 +69,22 @@ namespace SixAIO.Champions
             };
         }
 
+        private static bool IsQActive()
+        {
+            var buff = UnitManager.MyChampion.BuffManager.GetBuffByName("zeriqpassiveready", false, true);
+            return buff != null && buff.IsActive && buff.Stacks >= 1;
+        }
+
         internal override void OnCoreMainInput()
         {
+            if (OnlyBasicAttackOnChampions)
+            {
+                Orbwalker.AllowAttacking = true;
+            }
+            if (OnlyBasicAttackOnFullCharge)
+            {
+                Orbwalker.AllowAttacking = IsQActive();
+            }
             if (SpellQ.ExecuteCastSpell() || SpellW.ExecuteCastSpell() || SpellE.ExecuteCastSpell() || SpellR.ExecuteCastSpell())
             {
                 return;
@@ -79,29 +93,50 @@ namespace SixAIO.Champions
 
         internal override void OnCoreHarassInput()
         {
+            if (OnlyBasicAttackOnChampions)
+            {
+                Orbwalker.AllowAttacking = false;
+            }
             if (SpellQ.ExecuteCastSpell(Orbwalker.OrbWalkingModeType.Mixed))
             {
-                //Logger.Log("OnCoreHarassInput");
                 return;
             }
         }
 
         internal override void OnCoreLaneClearInput()
         {
+            if (OnlyBasicAttackOnChampions)
+            {
+                Orbwalker.AllowAttacking = false;
+            }
             if (SpellQ.ExecuteCastSpell(Orbwalker.OrbWalkingModeType.LaneClear))
             {
-                //Logger.Log("OnCoreLaneClearInput");
                 return;
             }
         }
 
         internal override void OnCoreLastHitInput()
         {
+            if (OnlyBasicAttackOnChampions)
+            {
+                Orbwalker.AllowAttacking = false;
+            }
             if (SpellQ.ExecuteCastSpell(Orbwalker.OrbWalkingModeType.LastHit))
             {
-                //Logger.Log("OnCoreLastHitInput");
                 return;
             }
+        }
+
+        private bool OnlyBasicAttackOnFullCharge
+        {
+            get => MenuTab.GetItem<Switch>("Only basic attack on full charge").IsOn;
+            set => MenuTab.GetItem<Switch>("Only basic attack on full charge").IsOn = value;
+        }
+
+        private bool OnlyBasicAttackOnChampions
+        {
+            get => MenuTab.GetItem<Switch>("Only basic attack on champions").IsOn;
+            set => MenuTab.GetItem<Switch>("Only basic attack on champions").IsOn = value;
         }
 
         private DashMode DashModeSelected
@@ -125,6 +160,8 @@ namespace SixAIO.Champions
         internal override void InitializeMenu()
         {
             MenuManager.AddTab(new Tab($"SIXAIO - {nameof(Zeri)}"));
+            MenuTab.AddItem(new Switch() { Title = "Only basic attack on full charge", IsOn = true });
+            MenuTab.AddItem(new Switch() { Title = "Only basic attack on champions", IsOn = true });
             MenuTab.AddItem(new Switch() { Title = "Use Q", IsOn = true });
             MenuTab.AddItem(new Switch() { Title = "Use W", IsOn = true });
             MenuTab.AddItem(new Switch() { Title = "Use E", IsOn = false });

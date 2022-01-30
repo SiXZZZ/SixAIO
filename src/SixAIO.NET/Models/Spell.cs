@@ -80,7 +80,7 @@ namespace SixAIO.Models
                         if (Range() > 0)
                         {
                             var pos = target != null && Speed != default && CastTime != default
-                            ? Prediction.LinePrediction(target, 1, CastTime(), Speed())
+                            ? Prediction.LinePrediction(target, CastTime(), Speed())
                             : target.Position;
                             var w2s = LeagueNativeRendererManager.WorldToScreen(pos);
                             if (w2s != default && UnitManager.MyChampion.DistanceTo(pos) <= Range())
