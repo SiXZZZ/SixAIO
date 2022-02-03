@@ -44,7 +44,7 @@ namespace SixAIO.Champions
                             UnitManager.EnemyChampions
                             .FirstOrDefault(x => x.Distance <= SpellW.Range() && x.IsAlive &&
                                                 TargetSelector.IsAttackable(x) &&
-                                                x.BuffManager.GetBuffList().Any(BuffChecker.IsCrowdControlledOrSlowed) &&
+                                                BuffChecker.IsCrowdControlledOrSlowed(x) &&
                                                 !Collision.MinionCollision(x.W2S, 120))
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)

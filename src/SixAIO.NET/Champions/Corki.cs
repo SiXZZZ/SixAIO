@@ -27,7 +27,7 @@ namespace SixAIO.Champions
                             target != null,
                 TargetSelect = (mode) => 
                 {
-                    var ccTarget = UnitManager.EnemyChampions.FirstOrDefault(x => x.Distance <= 825 && x.IsAlive && x.BuffManager.GetBuffList().Any(BuffChecker.IsCrowdControlledOrSlowed));
+                    var ccTarget = UnitManager.EnemyChampions.FirstOrDefault(x => x.Distance <= 825 && x.IsAlive && BuffChecker.IsCrowdControlledOrSlowed(x));
                     if (ccTarget != null)
                     {
                         return ccTarget;
@@ -58,7 +58,7 @@ namespace SixAIO.Champions
                 TargetSelect = (mode) => UnitManager.EnemyChampions.FirstOrDefault(x => x.Distance <= 1150 && x.IsAlive &&
                                                                                     TargetSelector.IsAttackable(x) &&
                                                                                     !TargetSelector.IsInvulnerable(x, Oasys.Common.Logic.DamageType.Physical, false) &&
-                                                                                    x.BuffManager.GetBuffList().Any(BuffChecker.IsCrowdControlledOrSlowed))
+                                                                                    BuffChecker.IsCrowdControlledOrSlowed(x))
             };
         }
 

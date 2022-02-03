@@ -74,7 +74,7 @@ namespace SixAIO.Champions
                             var target = UnitManager.EnemyChampions.FirstOrDefault(x => (_isChargingQ ? x.Distance < SpellQ.Range() : x.Distance < 1600) &&
                                                                         x.IsAlive && TargetSelector.IsAttackable(x) &&
                                                                         (UseOnlyIfXGTEWStacks == 0 || WStacks(x) >= UseOnlyIfXGTEWStacks) &&
-                                                                        x.BuffManager.GetBuffList().Any(BuffChecker.IsCrowdControlled));
+                                                                        BuffChecker.IsCrowdControlled(x));
                             if (target != null)
                             {
                                 return target;
@@ -85,7 +85,7 @@ namespace SixAIO.Champions
                             var target = UnitManager.EnemyChampions.FirstOrDefault(x => (_isChargingQ ? x.Distance < SpellQ.Range() : x.Distance < 1600) &&
                                                                         x.IsAlive && TargetSelector.IsAttackable(x) &&
                                                                         (UseOnlyIfXGTEWStacks == 0 || WStacks(x) >= UseOnlyIfXGTEWStacks) &&
-                                                                        x.BuffManager.GetBuffList().Any(BuffChecker.IsCrowdControlledOrSlowed));
+                                                                        BuffChecker.IsCrowdControlledOrSlowed(x));
                             if (target != null)
                             {
                                 return target;
@@ -147,7 +147,7 @@ namespace SixAIO.Champions
                             var target = UnitManager.EnemyChampions.FirstOrDefault(x => x.Distance <= SpellR.Range() && x.IsAlive && TargetSelector.IsAttackable(x) &&
                                                                         (x.Health / x.MaxHealth * 100) <= UseOnlyRIfXLTEHPPercent &&
                                                                         (UseOnlyIfXGTEWStacks == 0 || WStacks(x) >= UseOnlyIfXGTEWStacks) &&
-                                                                        x.BuffManager.GetBuffList().Any(BuffChecker.IsCrowdControlled) &&
+                                                                        BuffChecker.IsCrowdControlled(x) &&
                                                                                     RIfMoreThanEnemiesNear < UnitManager.EnemyChampions.Count(enemy =>
                                                                                     TargetSelector.IsAttackable(enemy) && enemy.Distance(x) < REnemiesCloserThan));
                             if (target != null)
@@ -160,7 +160,7 @@ namespace SixAIO.Champions
                             var target = UnitManager.EnemyChampions.FirstOrDefault(x => x.Distance <= SpellR.Range() && x.IsAlive && TargetSelector.IsAttackable(x) &&
                                                                         (x.Health / x.MaxHealth * 100) <= UseOnlyRIfXLTEHPPercent &&
                                                                         (UseOnlyIfXGTEWStacks == 0 || WStacks(x) >= UseOnlyIfXGTEWStacks) &&
-                                                                        x.BuffManager.GetBuffList().Any(BuffChecker.IsCrowdControlledOrSlowed) &&
+                                                                        BuffChecker.IsCrowdControlledOrSlowed(x) &&
                                                                                     RIfMoreThanEnemiesNear < UnitManager.EnemyChampions.Count(enemy =>
                                                                                     TargetSelector.IsAttackable(enemy) && enemy.Distance(x) < REnemiesCloserThan));
                             if (target != null)

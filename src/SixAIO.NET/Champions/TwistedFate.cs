@@ -45,7 +45,7 @@ namespace SixAIO.Champions
                             UnitManager.EnemyChampions
                             .FirstOrDefault(x => x.Distance <= 1350 && x.IsAlive &&
                                                 TargetSelector.IsAttackable(x) &&
-                                                x.BuffManager.GetBuffList().Any(BuffChecker.IsCrowdControlledOrSlowed))
+                                                BuffChecker.IsCrowdControlledOrSlowed(x))
             };
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
             {

@@ -144,10 +144,10 @@ namespace SixAIO.Champions
                             UseR &&
                             spellClass.IsSpellReady &&
                             target != null,
-                TargetSelect = (mode) => UnitManager.EnemyChampions.FirstOrDefault(x => x.Distance <= 1400 && TargetSelector.IsAttackable(x) &&
-                                            x.BuffManager.GetBuffList().Any(buff => buff.IsActive && (buff.EntryType == BuffType.Knockup || buff.EntryType == BuffType.Knockback)))
+                TargetSelect = (mode) => UnitManager.EnemyChampions.FirstOrDefault(x => x.Distance <= 1400 && TargetSelector.IsAttackable(x) && BuffChecker.IsKnockedUpOrBack(x))
             };
         }
+
 
         private GameObjectBase GetMinionBetweenMeAndEnemy(IEnumerable<GameObjectBase> targets, Hero enemy, int width, int distance)
         {
@@ -260,9 +260,9 @@ namespace SixAIO.Champions
 
         private void TabItem_OnTabItemChange(string tabName, TabItem tabItem)
         {
-            if (tabItem.TabName == "Orbwalker Input" && 
+            if (tabItem.TabName == "Orbwalker Input" &&
                 tabItem.Title == "Hold Target Champs Only" &&
-                tabItem is Switch itemSwitch && 
+                tabItem is Switch itemSwitch &&
                 itemSwitch.IsOn)
             {
                 SetTargetChampsOnly();

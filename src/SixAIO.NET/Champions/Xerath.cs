@@ -61,7 +61,7 @@ namespace SixAIO.Champions
                         {
                             var target = UnitManager.EnemyChampions.FirstOrDefault(x => (_isChargingQ ? x.Distance < SpellQ.Range() : x.Distance < 1450) &&
                                                                         x.IsAlive && TargetSelector.IsAttackable(x) &&
-                                                                        x.BuffManager.GetBuffList().Any(BuffChecker.IsCrowdControlled));
+                                                                        BuffChecker.IsCrowdControlled(x));
                             if (target != null)
                             {
                                 return target;
@@ -71,7 +71,7 @@ namespace SixAIO.Champions
                         {
                             var target = UnitManager.EnemyChampions.FirstOrDefault(x => (_isChargingQ ? x.Distance < SpellQ.Range() : x.Distance < 1450) &&
                                                                         x.IsAlive && TargetSelector.IsAttackable(x) &&
-                                                                        x.BuffManager.GetBuffList().Any(BuffChecker.IsCrowdControlledOrSlowed));
+                                                                        BuffChecker.IsCrowdControlledOrSlowed(x));
                             if (target != null)
                             {
                                 return target;

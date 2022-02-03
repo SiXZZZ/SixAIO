@@ -190,10 +190,15 @@ namespace SixAIO.Utilities
         {
             try
             {
-                var buffs = UnitManager.MyChampion.BuffManager.GetBuffList().Where(qss
-                                                                                    ? BuffChecker.IsCrowdControlledButCanQss
-                                                                                    : BuffChecker.IsCrowdControlledButCanCleanse);
-                var cc = buffs.FirstOrDefault(buff =>
+                var buffs = UnitManager.MyChampion.BuffManager.GetBuffList();
+                if (BuffChecker.IsKnockedUpOrBack(UnitManager.MyChampion))
+                {
+                    return false;
+                }
+
+                var cc = buffs.Where(qss
+                                    ? BuffChecker.IsCrowdControllButCanQss
+                                    : BuffChecker.IsCrowdControllButCanCleanse).FirstOrDefault(buff =>
                                (float)buff.StartTime + (float)((float)ReactionDelay / 1000f) < GameEngine.GameTime && buff.DurationMs < 10_000 &&
                                 buff.DurationMs >= _menuTab.GetItem<Counter>(x => x.Title.Contains(buff.EntryType.ToString(), System.StringComparison.OrdinalIgnoreCase))?.Value);
                 //return cc != null;

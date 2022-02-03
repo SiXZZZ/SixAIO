@@ -79,7 +79,7 @@ namespace SixAIO.Models
                     {
                         if (Range() > 0)
                         {
-                            var pos = target != null && Speed != default && CastTime != default
+                            var pos = Prediction.Use && target != null && Speed != default && CastTime != default
                             ? Prediction.LinePrediction(target, CastTime(), Speed())
                             : target.Position;
                             var w2s = LeagueNativeRendererManager.WorldToScreen(pos);

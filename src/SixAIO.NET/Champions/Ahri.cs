@@ -27,10 +27,10 @@ namespace SixAIO.Champions
                             spellClass.IsSpellReady &&
                             UnitManager.MyChampion.Mana > 85 &&
                             target != null,
-                TargetSelect = (mode) => 
+                TargetSelect = (mode) =>
                             UnitManager.EnemyChampions
                             .FirstOrDefault(x => x.Distance <= 1000 && x.IsAlive &&
-                                                 TargetSelector.IsAttackable(x) && x.BuffManager.GetBuffList().Any(BuffChecker.IsCrowdControlledOrSlowed) && 
+                                                 TargetSelector.IsAttackable(x) && BuffChecker.IsCrowdControlledOrSlowed(x) &&
                                                  !TargetSelector.IsInvulnerable(x, Oasys.Common.Logic.DamageType.Magical, false))
             };
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
@@ -51,7 +51,7 @@ namespace SixAIO.Champions
                             spellClass.IsSpellReady &&
                             UnitManager.MyChampion.Mana > 70 &&
                             target != null,
-                TargetSelect = (mode) => 
+                TargetSelect = (mode) =>
                             UnitManager.EnemyChampions
                             .FirstOrDefault(x => x.Distance <= 850 && x.IsAlive &&
                                                  TargetSelector.IsAttackable(x) && !Collision.MinionCollision(x.W2S, 140) &&

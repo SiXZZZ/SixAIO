@@ -1,25 +1,41 @@
 ﻿using Oasys.Common.Enums.GameEnums;
+using Oasys.Common.GameObject;
 using Oasys.Common.GameObject.Clients.ExtendedInstances;
+using System.Linq;
 
 namespace SixAIO.Helpers
 {
-    internal class BuffChecker
+    internal static class BuffChecker
     {
-        internal static bool IsCrowdControlled(BuffEntry buff)
+        internal static bool IsCrowdControlled<T>(T obj) where T : GameObjectBase
         {
-            return buff.IsActive && buff.EntryType != BuffType.Slow &&
-                   (buff.EntryType == BuffType.Knockup || buff.EntryType == BuffType.Suppression ||
-                   IsCrowdControlledButCanCleanse(buff) || 
-                   !buff.Name.Equals("CassiopeiaWSlow", System.StringComparison.OrdinalIgnoreCase) ||
-                   !buff.Name.Equals("megaadhesiveslow", System.StringComparison.OrdinalIgnoreCase));
+            return IsCrowdControlledButCanQss(obj) || IsKnockedUpOrBack(obj) || IsGrounded(obj);
         }
 
-        internal static bool IsCrowdControlledButCanQss(BuffEntry buff)
+        private static bool IsGrounded<T>(T obj) where T : GameObjectBase
         {
-            return buff.IsActive && (buff.EntryType == BuffType.Suppression || IsCrowdControlledButCanCleanse(buff));
+            return obj.BuffManager.GetBuffList().Any(buff => buff.IsActive &&
+                        (buff.Name.Equals("CassiopeiaWSlow", System.StringComparison.OrdinalIgnoreCase) ||
+                         buff.Name.Equals("megaadhesiveslow", System.StringComparison.OrdinalIgnoreCase)));
         }
 
-        internal static bool IsCrowdControlledButCanCleanse(BuffEntry buff)
+        internal static bool IsCrowdControlledButCanQss<T>(T obj) where T : GameObjectBase
+        {
+            return obj.BuffManager.GetBuffList().Any(IsCrowdControllButCanQss);
+        }
+
+        internal static bool IsCrowdControllButCanQss(this BuffEntry buff)
+        {
+            return buff.IsActive && (buff.IsCrowdControllButCanCleanse() || buff.EntryType == BuffType.Suppression);
+        }
+
+        internal static bool IsCrowdControlledButCanCleanse<T>(T obj) where T : GameObjectBase
+        {
+            return obj.BuffManager.GetBuffList().Any(IsCrowdControllButCanCleanse);
+            //TODO: ADD poppy tahm kench https://leagueoflegends.fandom.com/wiki/Types_of_Crowd_Control#Ground
+        }
+
+        internal static bool IsCrowdControllButCanCleanse(this BuffEntry buff)
         {
             return buff.IsActive &&
                    (buff.EntryType == BuffType.Slow ||
@@ -30,13 +46,16 @@ namespace SixAIO.Helpers
                    buff.EntryType == BuffType.Flee || buff.EntryType == BuffType.Sleep) &&
                    !buff.Name.Equals("CassiopeiaWSlow", System.StringComparison.OrdinalIgnoreCase) &&
                    !buff.Name.Equals("megaadhesiveslow", System.StringComparison.OrdinalIgnoreCase);
-            //TODO: ADD poppy tahm kench https://leagueoflegends.fandom.com/wiki/Types_of_Crowd_Control#Ground
         }
 
-        internal static bool IsCrowdControlledOrSlowed(BuffEntry buff)
+        internal static bool IsCrowdControlledOrSlowed<T>(T obj) where T : GameObjectBase
         {
-            return buff.IsActive &&
-                   (buff.EntryType == BuffType.Slow || IsCrowdControlled(buff));
+            return IsCrowdControlled(obj) || obj.BuffManager.GetBuffList().Any(buff => buff.IsActive && buff.EntryType == BuffType.Slow);
+        }
+
+        internal static bool IsKnockedUpOrBack<T>(T obj) where T : GameObjectBase
+        {
+            return obj.BuffManager.GetBuffList().Any(buff => buff.IsActive && (buff.EntryType == BuffType.Knockup || buff.EntryType == BuffType.Knockback));
         }
     }
 }

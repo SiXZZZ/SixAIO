@@ -90,7 +90,7 @@ namespace SixAIO.Champions
                         {
                             var target = UnitManager.EnemyChampions.FirstOrDefault(x => x.Distance <= SpellR.Range() && x.IsAlive && TargetSelector.IsAttackable(x) &&
                                                                         (x.Health / x.MaxHealth * 100) < RTargetMaxHPPercent &&
-                                                                        x.BuffManager.GetBuffList().Any(BuffChecker.IsCrowdControlled));
+                                                                        BuffChecker.IsCrowdControlled(x));
                             if (target != null)
                             {
                                 return target;
@@ -100,7 +100,7 @@ namespace SixAIO.Champions
                         {
                             var target = UnitManager.EnemyChampions.FirstOrDefault(x => x.Distance <= SpellR.Range() && x.IsAlive && TargetSelector.IsAttackable(x) &&
                                                                         (x.Health / x.MaxHealth * 100) < RTargetMaxHPPercent &&
-                                                                        x.BuffManager.GetBuffList().Any(BuffChecker.IsCrowdControlledOrSlowed));
+                                                                        BuffChecker.IsCrowdControlledOrSlowed(x));
                             if (target != null)
                             {
                                 return target;

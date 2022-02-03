@@ -74,7 +74,7 @@ namespace SixAIO.Champions
                             UnitManager.EnemyChampions
                             .FirstOrDefault(x => x.Distance <= 1450 && x.IsAlive &&
                                                 TargetSelector.IsAttackable(x) &&
-                                                x.BuffManager.GetBuffList().Any(BuffChecker.IsCrowdControlledOrSlowed) &&
+                                                BuffChecker.IsCrowdControlledOrSlowed(x) &&
                                                 !Collision.MinionCollision(x.W2S, 120))
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
@@ -86,7 +86,7 @@ namespace SixAIO.Champions
                             target != null,
                 TargetSelect = (mode) =>
                             UnitManager.EnemyChampions
-                            .FirstOrDefault(x => x.Distance <= 850 && x.IsAlive && x.BuffManager.GetBuffList().Any(BuffChecker.IsCrowdControlled))
+                            .FirstOrDefault(x => x.Distance <= 850 && x.IsAlive && BuffChecker.IsCrowdControlled(x))
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
@@ -110,7 +110,7 @@ namespace SixAIO.Champions
                             UnitManager.EnemyChampions
                             .FirstOrDefault(x => x.Distance <= 30000 && x.IsAlive && TargetSelector.IsAttackable(x) &&
                                             (x.Health / x.MaxHealth * 100) < 50 &&
-                                            x.BuffManager.GetBuffList().Any(BuffChecker.IsCrowdControlled))
+                                            BuffChecker.IsCrowdControlled(x))
             };
         }
 

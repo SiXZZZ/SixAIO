@@ -33,7 +33,7 @@ namespace SixAIO.Champions
                         return bombTarget;
                     }
 
-                    var ccTarget = UnitManager.EnemyChampions.FirstOrDefault(x => x.Distance <= 900 && x.IsAlive && x.BuffManager.GetBuffList().Any(BuffChecker.IsCrowdControlledOrSlowed));
+                    var ccTarget = UnitManager.EnemyChampions.FirstOrDefault(x => x.Distance <= 900 && x.IsAlive && BuffChecker.IsCrowdControlledOrSlowed(x));
                     if (ccTarget != null)
                     {
                         return ccTarget;

@@ -41,11 +41,11 @@ namespace SixAIO.Champions
                             spellClass.IsSpellReady &&
                             UnitManager.MyChampion.Mana > 90 &&
                             target != null,
-                TargetSelect = (mode) => 
+                TargetSelect = (mode) =>
                             UnitManager.EnemyChampions
                             .FirstOrDefault(x => x.Distance <= 2800 && x.IsAlive &&
                                                 TargetSelector.IsAttackable(x) &&
-                                                x.BuffManager.GetBuffList().Any(BuffChecker.IsCrowdControlledOrSlowed) &&
+                                                BuffChecker.IsCrowdControlledOrSlowed(x) &&
                                                 !Collision.MinionCollision(x.W2S, 220))
             };
         }

@@ -99,7 +99,7 @@ namespace SixAIO.Champions
                             UnitManager.EnemyChampions
                             .FirstOrDefault(x => !x.W2S.IsZero && x.IsAlive && TargetSelector.IsAttackable(x) &&
                                             x.Health < GetRDamage(x) &&
-                                            x.BuffManager.GetBuffList().Any(BuffChecker.IsCrowdControlledOrSlowed))
+                                            BuffChecker.IsCrowdControlledOrSlowed(x))
             };
         }
 

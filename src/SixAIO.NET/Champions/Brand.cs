@@ -44,7 +44,7 @@ namespace SixAIO.Champions
                             target != null,
                 TargetSelect = (mode) => 
                 {
-                    return UnitManager.EnemyChampions.FirstOrDefault(x => x.Distance <= 900 && x.IsAlive && x.BuffManager.GetBuffList().Any(BuffChecker.IsCrowdControlledOrSlowed));
+                    return UnitManager.EnemyChampions.FirstOrDefault(x => x.Distance <= 900 && x.IsAlive && BuffChecker.IsCrowdControlledOrSlowed(x));
                     
                 }
             };

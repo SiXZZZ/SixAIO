@@ -97,7 +97,10 @@ namespace SixAIO.Champions
                             UseR &&
                             spellClass.IsSpellReady &&
                             target != null,
-                TargetSelect = (mode) => UnitManager.EnemyChampions.FirstOrDefault(x => x.Distance <= SpellR.Range() && TargetSelector.IsAttackable(x) && x.BuffManager.GetBuffList().Any(BuffChecker.IsCrowdControlledOrSlowed))
+                TargetSelect = (mode) => UnitManager.EnemyChampions
+                                            .FirstOrDefault(x => x.Distance <= SpellR.Range() && 
+                                                                 TargetSelector.IsAttackable(x) && 
+                                                                 BuffChecker.IsCrowdControlledOrSlowed(x))
             };
         }
 

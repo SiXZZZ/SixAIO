@@ -16,10 +16,17 @@ namespace SixAIO.Helpers
         public static void Initialize()
         {
             MenuManager.AddTab(new Tab($"SIXAIO - {nameof(Prediction)}"));
+            MenuTab.AddItem(new Switch() { Title = "Use", IsOn = true });
             MenuTab.AddItem(new Counter() { Title = "Offset", MinValue = -1000, MaxValue = 1000, Value = 0, ValueFrequency = 5 });
         }
 
-        private static int PredictionOffset
+        public static bool Use
+        {
+            get => MenuTab.GetItem<Switch>("Use").IsOn;
+            set => MenuTab.GetItem<Switch>("Use").IsOn = value;
+        }
+
+        public static int PredictionOffset
         {
             get => MenuTab.GetItem<Counter>("Offset").Value;
             set => MenuTab.GetItem<Counter>("Offset").Value = value;
