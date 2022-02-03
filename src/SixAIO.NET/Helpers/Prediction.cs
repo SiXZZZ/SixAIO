@@ -16,15 +16,15 @@ namespace SixAIO.Helpers
         public static void Initialize()
         {
             MenuManager.AddTab(new Tab($"SIXAIO - {nameof(Prediction)}"));
-            MenuTab.AddItem(new Switch() { Title = "Use", IsOn = true });
+            //MenuTab.AddItem(new Switch() { Title = "Use", IsOn = true });
             MenuTab.AddItem(new Counter() { Title = "Offset", MinValue = -1000, MaxValue = 1000, Value = 0, ValueFrequency = 5 });
         }
 
-        public static bool Use
-        {
-            get => MenuTab.GetItem<Switch>("Use").IsOn;
-            set => MenuTab.GetItem<Switch>("Use").IsOn = value;
-        }
+        public static bool Use => true;
+        //{
+        //    get => MenuTab.GetItem<Switch>("Use").IsOn;
+        //    set => MenuTab.GetItem<Switch>("Use").IsOn = value;
+        //}
 
         public static int PredictionOffset
         {
@@ -38,8 +38,8 @@ namespace SixAIO.Helpers
                     ? WaypointGrab(target)
                     : (target.AIManager.NavEndPosition - target.Position).Normalized();
 
-            var t = ((target.Position - UnitManager.MyChampion.Position).Length() / speed) + delay;
-            var result = target.Position + (waypoint * (target.UnitStats.MoveSpeed * t));
+            var travelTime = (target.Position - UnitManager.MyChampion.Position).Length() / speed;
+            var result = target.Position + (waypoint * (target.UnitStats.MoveSpeed * travelTime));
             if ((result - target.Position).Length() > 400)
             {
                 result = target.Position + (waypoint * target.UnitStats.MoveSpeed * delay + PredictionOffset);

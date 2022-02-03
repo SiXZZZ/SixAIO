@@ -33,11 +33,20 @@ namespace SixAIO.Champions
                             UnitManager.MyChampion.Mana > QMinMana &&
                             target != null,
                 TargetSelect = (mode) =>
-                            UnitManager.EnemyChampions
-                            .Where(x => x.IsAlive && x.Distance <= SpellQ.Range() && TargetSelector.IsAttackable(x))
-                            .OrderBy(x => x.Health)
-                            .ThenBy(x => !Collision.MinionCollision(x.Position, 120))
-                            .FirstOrDefault()
+                {
+                    if (mode != Orbwalker.OrbWalkingModeType.Combo)
+                    {
+                        var target = Orbwalker.GetTarget(mode, SpellQ.Range());
+                        return target.IsObject(ObjectTypeFlag.AIMinionClient) || target.IsObject(ObjectTypeFlag.AIHeroClient)
+                                ? target
+                                : null;
+                    }
+                    return UnitManager.EnemyChampions
+                                                .Where(x => x.IsAlive && x.Distance <= SpellQ.Range() && TargetSelector.IsAttackable(x))
+                                                .OrderBy(x => x.Health)
+                                                .ThenBy(x => !Collision.MinionCollision(x.Position, 120))
+                                                .FirstOrDefault();
+                }
             };
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
             {
@@ -159,6 +168,31 @@ namespace SixAIO.Champions
                 return;
             }
         }
+
+        internal override void OnCoreHarassInput()
+        {
+            if (SpellQ.ExecuteCastSpell(Orbwalker.OrbWalkingModeType.Mixed))
+            {
+                return;
+            }
+        }
+
+        internal override void OnCoreLaneClearInput()
+        {
+            if (SpellQ.ExecuteCastSpell(Orbwalker.OrbWalkingModeType.LaneClear))
+            {
+                return;
+            }
+        }
+
+        internal override void OnCoreLastHitInput()
+        {
+            if (SpellQ.ExecuteCastSpell(Orbwalker.OrbWalkingModeType.LastHit))
+            {
+                return;
+            }
+        }
+
 
         private int QMinMana
         {
