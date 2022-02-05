@@ -8,6 +8,7 @@ using Oasys.SDK.Menu;
 using Oasys.SDK.SpellCasting;
 using Oasys.SDK.Tools;
 using SixAIO.Helpers;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -101,30 +102,36 @@ namespace SixAIO.Utilities
 
         private static void TabItem_OnTabItemChange(string tabName, TabItem tabItem)
         {
-            if (tabName == "SIXAIO - Auto Cleanse")
+            try
             {
-                if (tabItem.Title == "Cleanse On Tick" && tabItem is Switch itemSwitchOnTick)
+                if (tabName == "SIXAIO - Auto Cleanse")
                 {
-                    if (itemSwitchOnTick.IsOn)
+                    if (tabItem.Title == "Cleanse On Tick" && tabItem is Switch itemSwitchOnTick)
                     {
-                        CoreEvents.OnCoreMainTick += OnTick;
+                        if (itemSwitchOnTick.IsOn)
+                        {
+                            CoreEvents.OnCoreMainTick += OnTick;
+                        }
+                        else
+                        {
+                            CoreEvents.OnCoreMainTick -= OnTick;
+                        }
                     }
-                    else
+                    if (tabItem.Title == "Cleanse On Combo" && tabItem is Switch itemSwitchOnCombo)
                     {
-                        CoreEvents.OnCoreMainTick -= OnTick;
+                        if (itemSwitchOnCombo.IsOn)
+                        {
+                            CoreEvents.OnCoreMainInputAsync += OnCombo;
+                        }
+                        else
+                        {
+                            CoreEvents.OnCoreMainInputAsync -= OnCombo;
+                        }
                     }
                 }
-                if (tabItem.Title == "Cleanse On Combo" && tabItem is Switch itemSwitchOnCombo)
-                {
-                    if (itemSwitchOnCombo.IsOn)
-                    {
-                        CoreEvents.OnCoreMainInputAsync += OnCombo;
-                    }
-                    else
-                    {
-                        CoreEvents.OnCoreMainInputAsync -= OnCombo;
-                    }
-                }
+            }
+            catch (Exception ex)
+            {
             }
         }
 
@@ -145,35 +152,41 @@ namespace SixAIO.Utilities
 
         private static Task InputHandler(bool callFromTick)
         {
-            if ((CleanseOnTick && callFromTick) || CleanseOnCombo)
+            try
             {
-                if (UseCleanse && GameEngine.GameTime > _lastCleanse + 1f && GameEngine.GameTime > _lastQss + 1f && ShouldUseCleanse() &&
-                    CleanseSpellClass is not null && CleanseSpellClass?.IsSpellReady == true)
+                if ((CleanseOnTick && callFromTick) || CleanseOnCombo)
                 {
-                    SpellCastProvider.CastSpell(CleanseCastSlot);
-                    _lastCleanse = GameEngine.GameTime;
+                    if (UseCleanse && GameEngine.GameTime > _lastCleanse + 1f && GameEngine.GameTime > _lastQss + 1f && ShouldUseCleanse() &&
+                        CleanseSpellClass is not null && CleanseSpellClass?.IsSpellReady == true)
+                    {
+                        SpellCastProvider.CastSpell(CleanseCastSlot);
+                        _lastCleanse = GameEngine.GameTime;
+                    }
+                    if (UseItems && GameEngine.GameTime > _lastCleanse + 1f && GameEngine.GameTime > _lastQss + 1f && ShouldUseCleanse(true))
+                    {
+                        if (UnitManager.MyChampion.Inventory.HasItem(ItemID.Quicksilver_Sash) &&
+                            UnitManager.MyChampion.Inventory.GetItemByID(ItemID.Quicksilver_Sash)?.IsReady == true)
+                        {
+                            ItemCastProvider.CastItem(ItemID.Quicksilver_Sash);
+                            _lastQss = GameEngine.GameTime;
+                        }
+                        else if (UnitManager.MyChampion.Inventory.HasItem(ItemID.Silvermere_Dawn) &&
+                                 UnitManager.MyChampion.Inventory.GetItemByID(ItemID.Silvermere_Dawn)?.IsReady == true)
+                        {
+                            ItemCastProvider.CastItem(ItemID.Silvermere_Dawn);
+                            _lastQss = GameEngine.GameTime;
+                        }
+                        else if (UnitManager.MyChampion.Inventory.HasItem(ItemID.Mercurial_Scimitar) &&
+                                 UnitManager.MyChampion.Inventory.GetItemByID(ItemID.Mercurial_Scimitar)?.IsReady == true)
+                        {
+                            ItemCastProvider.CastItem(ItemID.Mercurial_Scimitar);
+                            _lastQss = GameEngine.GameTime;
+                        }
+                    }
                 }
-                if (UseItems && GameEngine.GameTime > _lastCleanse + 1f && GameEngine.GameTime > _lastQss + 1f && ShouldUseCleanse(true))
-                {
-                    if (UnitManager.MyChampion.Inventory.HasItem(ItemID.Quicksilver_Sash) &&
-                        UnitManager.MyChampion.Inventory.GetItemByID(ItemID.Quicksilver_Sash)?.IsReady == true)
-                    {
-                        ItemCastProvider.CastItem(ItemID.Quicksilver_Sash);
-                        _lastQss = GameEngine.GameTime;
-                    }
-                    else if (UnitManager.MyChampion.Inventory.HasItem(ItemID.Silvermere_Dawn) &&
-                             UnitManager.MyChampion.Inventory.GetItemByID(ItemID.Silvermere_Dawn)?.IsReady == true)
-                    {
-                        ItemCastProvider.CastItem(ItemID.Silvermere_Dawn);
-                        _lastQss = GameEngine.GameTime;
-                    }
-                    else if (UnitManager.MyChampion.Inventory.HasItem(ItemID.Mercurial_Scimitar) &&
-                             UnitManager.MyChampion.Inventory.GetItemByID(ItemID.Mercurial_Scimitar)?.IsReady == true)
-                    {
-                        ItemCastProvider.CastItem(ItemID.Mercurial_Scimitar);
-                        _lastQss = GameEngine.GameTime;
-                    }
-                }
+            }
+            catch (Exception ex)
+            {
             }
 
             return Task.CompletedTask;

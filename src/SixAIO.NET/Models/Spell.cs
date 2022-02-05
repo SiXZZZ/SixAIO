@@ -75,7 +75,7 @@ namespace SixAIO.Models
                         }
                         return result;
                     }
-                    else
+                    else if (target != null)
                     {
                         if (Range() > 0)
                         {

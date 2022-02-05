@@ -59,7 +59,7 @@ namespace SixAIO.Champions
                             target != null,
                 TargetSelect = (mode) => 
                             UnitManager.EnemyChampions
-                            .FirstOrDefault(x => x.Distance <= 500 && x.IsAlive && TargetSelector.IsAttackable(x) && !Collision.MinionCollision(x.W2S, 140))
+                            .FirstOrDefault(x => x.Distance <= 700 && x.IsAlive && TargetSelector.IsAttackable(x) && !Collision.MinionCollision(x.W2S, 140))
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
