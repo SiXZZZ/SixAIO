@@ -66,7 +66,7 @@ namespace SixAIO
 
         private static Task GameEvents_OnGameLoadComplete()
         {
-            Prediction.Initialize();
+            //Prediction.Initialize();
             LoadChampion();
             _currentChampion?.InitializeMenu();
             CoreEvents.OnCoreRender += CoreEvents_OnCoreRender;

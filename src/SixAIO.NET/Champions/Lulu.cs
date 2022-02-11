@@ -18,7 +18,7 @@ namespace SixAIO.Champions
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
                 Range = () => 950,
-                Width = () => 120,
+                Radius = () => 120,
                 Speed = () => 1450,
                 ShouldCast = (target, spellClass, damage) =>
                             UseQ &&

@@ -2,8 +2,10 @@
 using Oasys.Common.Enums.GameEnums;
 using Oasys.Common.GameObject;
 using Oasys.Common.GameObject.Clients.ExtendedInstances.Spells;
+using Oasys.Common.Logic;
 using Oasys.SDK;
 using Oasys.SDK.SpellCasting;
+using Oasys.SDK.Tools;
 using SharpDX;
 using SixAIO.Enums;
 using SixAIO.Helpers;
@@ -25,31 +27,31 @@ namespace SixAIO.Models
 
         public Func<float> Range { get; set; } = () => 0f;
         public Func<float> Speed { get; set; } = () => 0f;
-        public Func<float> Width { get; set; } = () => 0f;
+        public Func<float> Radius { get; set; } = () => 0f;
 
         public CastSlot CastSlot { get; set; }
 
         public SpellSlot SpellSlot { get; set; }
 
-        public Func<float> CastTime { get; set; } = () => 0.3f;
+        public Func<float> Delay { get; set; } = () => 0.3f;
 
         public Func<GameObjectBase, SpellClass, float, bool> ShouldCast = (target, spellClass, damage) => false;
 
-        public Func<Orbwalker.OrbWalkingModeType, GameObjectBase> TargetSelect = (mode) => null;
+        public Func<Oasys.SDK.Orbwalker.OrbWalkingModeType, GameObjectBase> TargetSelect = (mode) => null;
 
         public Func<GameObjectBase, SpellClass, float> Damage = (target, spellClass) => 0f;
 
-        public bool ShouldCastSpell(Orbwalker.OrbWalkingModeType mode)
+        public bool ShouldCastSpell(Oasys.SDK.Orbwalker.OrbWalkingModeType mode)
         {
             var target = TargetSelect(mode);
             return ShouldCast(target, SpellClass, Damage(target, SpellClass));
         }
 
-        public bool ExecuteCastSpell(Orbwalker.OrbWalkingModeType mode = Orbwalker.OrbWalkingModeType.Combo, bool isCharge = false)
+        public bool ExecuteCastSpell(Oasys.SDK.Orbwalker.OrbWalkingModeType mode = Oasys.SDK.Orbwalker.OrbWalkingModeType.Combo, bool isCharge = false)
         {
             try
             {
-                if (UnitManager.MyChampion.IsAlive && (isCharge || !UnitManager.MyChampion.IsCastingSpell))
+                if (UnitManager.MyChampion.IsAlive && ShouldCastSpell(mode) && (isCharge || !UnitManager.MyChampion.IsCastingSpell))
                 {
                     var target = TargetSelect(mode);
                     if (AlertSpellUsage != default)
@@ -57,9 +59,9 @@ namespace SixAIO.Models
                         AlertSpellUsage?.Invoke(CastSlot);
                         return true;
                     }
-                    if (target == default && CastTime() == default)
+                    if (target == default && Delay() == default)
                     {
-                        var result = ShouldCastSpell(mode) && CastSpell(CastSlot);
+                        var result = CastSpell(CastSlot);
                         if (result)
                         {
                             OnSpellCast?.Invoke(this, target);
@@ -68,7 +70,7 @@ namespace SixAIO.Models
                     }
                     else if (target == default)
                     {
-                        var result = ShouldCastSpell(mode) && CastSpellWithCastTime(CastSlot, CastTime());
+                        var result = CastSpellWithCastTime(CastSlot, Delay());
                         if (result)
                         {
                             OnSpellCast?.Invoke(this, target);
@@ -79,13 +81,39 @@ namespace SixAIO.Models
                     {
                         if (Range() > 0)
                         {
-                            var pos = Prediction.Use && target != null && Speed != default && CastTime != default
-                            ? Prediction.LinePrediction(target, CastTime(), Speed())
-                            : target.Position;
+                            var input = new PredictionInput()
+                            {
+                                From = UnitManager.MyChampion.Position,
+                                RangeCheckFrom = UnitManager.MyChampion.Position,
+                                Speed = Speed(),
+                                Delay = Delay(),
+                                Radius = Radius(),
+                                Range = Range(),
+                                Type = Oasys.Common.Logic.SkillshotType.SkillshotLine,
+                                Unit = target,
+                                CollisionObjects = new CollisionableObjects[] { CollisionableObjects.YasuoWall },
+                                Collision = true,
+                                Aoe = false,
+                                UseBoundingRadius = false
+                            };
+
+                            var predictResult = Oasys.SDK.Prediction.GetPrediction(input);
+
+                            if (predictResult.Hitchance < HitChance.Medium)
+                            {
+                                return false;
+                            }
+
+                            Logger.Log($"{predictResult.Hitchance} - {predictResult.Input.Unit.UnitComponentInfo.SkinName} - {(predictResult.UnitPosition - predictResult.CastPosition).Length()}");
+
+                            var pos = predictResult.CastPosition;
+                            //var pos = Prediction.Use && target != null && Speed != default && CastTime != default
+                            //? Prediction.LinePrediction(target, CastTime(), Speed())
+                            //: target.Position;
                             var w2s = LeagueNativeRendererManager.WorldToScreen(pos);
                             if (w2s != default && UnitManager.MyChampion.DistanceTo(pos) <= Range())
                             {
-                                var result = ShouldCastSpell(mode) && CastSpellAtPos(CastSlot, w2s, CastTime());
+                                var result = CastSpellAtPos(CastSlot, w2s, Delay());
                                 if (result)
                                 {
                                     OnSpellCast?.Invoke(this, target);
@@ -93,13 +121,11 @@ namespace SixAIO.Models
                                 return result;
                             }
                         }
-
-                        var res = ShouldCastSpell(mode) && CastSpellAtPos(CastSlot, target.W2S, CastTime());
-                        if (res)
+                        else if (CastSpellAtPos(CastSlot, target.W2S, Delay()))
                         {
                             OnSpellCast?.Invoke(this, target);
+                            return true;
                         }
-                        return res;
                     }
                 }
             }

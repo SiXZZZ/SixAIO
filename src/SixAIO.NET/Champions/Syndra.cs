@@ -23,10 +23,10 @@ namespace SixAIO.Champions
         {
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
-                CastTime = () => 0f,
+                Delay = () => 0f,
                 Range = () => 800,
                 Speed = () => 1000,
-                Width = () => 180,
+                Radius = () => 180,
                 ShouldCast = (target, spellClass, damage) =>
                             UseQ &&
                             spellClass.IsSpellReady &&
@@ -45,7 +45,7 @@ namespace SixAIO.Champions
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
                 Range = () => 800,
-                Width = () => 140,
+                Radius = () => 140,
                 Speed = () => 2500,
                 ShouldCast = (target, spellClass, damage) =>
                             UseE &&
@@ -77,7 +77,7 @@ namespace SixAIO.Champions
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
-                CastTime = () => 0f,
+                Delay = () => 0f,
                 ShouldCast = (target, spellClass, damage) =>
                             UseR &&
                             spellClass.IsSpellReady &&

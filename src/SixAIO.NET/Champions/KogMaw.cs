@@ -18,7 +18,7 @@ namespace SixAIO.Champions
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
                 Range = () => 1200,
-                Width = () => 140,
+                Radius = () => 140,
                 Speed = () => 1650,
                 Damage = (target, spellClass) =>
                             target != null
@@ -53,7 +53,7 @@ namespace SixAIO.Champions
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
                 Range = () => 1360,
-                Width = () => 240,
+                Radius = () => 240,
                 Speed = () => 1400,
                 ShouldCast = (target, spellClass, damage) =>
                             UseE &&
@@ -67,7 +67,7 @@ namespace SixAIO.Champions
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
                 Range = () => UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot.R).Level * 250 + 1050,
-                Width = () => 240,
+                Radius = () => 240,
                 Speed = () => 1200,
                 Damage = (target, spellClass) =>
                             target != null

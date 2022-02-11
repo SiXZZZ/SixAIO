@@ -15,7 +15,7 @@ namespace SixAIO.Champions
         {
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
-                CastTime = () => 1f,
+                Delay = () => 1f,
                 ShouldCast = (target, spellClass, damage) =>
                             UseQ &&
                             spellClass.IsSpellReady &&

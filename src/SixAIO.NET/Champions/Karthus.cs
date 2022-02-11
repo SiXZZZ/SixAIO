@@ -32,7 +32,7 @@ namespace SixAIO.Champions
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
                 Range = () => 550f,
-                CastTime = () => 0f,
+                Delay = () => 0f,
                 ShouldCast = (target, spellClass, damage) =>
                 {
                     if (UseE && spellClass.IsSpellReady && UnitManager.MyChampion.Mana > 40)

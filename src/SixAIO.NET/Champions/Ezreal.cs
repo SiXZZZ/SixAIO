@@ -17,7 +17,7 @@ namespace SixAIO.Champions
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
                 Range = () => 1100,
-                Width = () => 120,
+                Radius = () => 120,
                 Speed = () => 2000,
                 //Damage = (target, spellClass) =>
                 //            target != null
@@ -41,6 +41,7 @@ namespace SixAIO.Champions
                                 ? target
                                 : null;
                     }
+
                     return UnitManager.EnemyChampions
                                                 .Where(x => x.IsAlive && x.Distance <= SpellQ.Range() && TargetSelector.IsAttackable(x))
                                                 .OrderBy(x => x.Health)
@@ -51,7 +52,7 @@ namespace SixAIO.Champions
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
             {
                 Range = () => 1000,
-                Width = () => 160,
+                Radius = () => 160,
                 Speed = () => 1700,
                 ShouldCast = (target, spellClass, damage) =>
                             UseW &&
@@ -92,7 +93,7 @@ namespace SixAIO.Champions
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
-                CastTime = () => 1f,
+                Delay = () => 1f,
                 ShouldCast = (target, spellClass, damage) =>
                             UseE &&
                             spellClass.IsSpellReady &&
@@ -108,9 +109,9 @@ namespace SixAIO.Champions
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
                 Range = () => 30000,
-                Width = () => 320,
+                Radius = () => 320,
                 Speed = () => 2000,
-                CastTime = () => 1f,
+                Delay = () => 1f,
                 Damage = (target, spellClass) =>
                             target != null
                             ? DamageCalculator.GetMagicResistMod(UnitManager.MyChampion, target) *

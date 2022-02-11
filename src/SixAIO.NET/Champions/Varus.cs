@@ -56,9 +56,9 @@ namespace SixAIO.Champions
                 Range = () => UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot.Q).IsSpellReady
                         ? 895 + _stopwatch.ElapsedMilliseconds / 1000 / 0.25f * 140
                         : 0,
-                Width = () => 140,
+                Radius = () => 140,
                 Speed = () => 1900,
-                CastTime = () => 0f,
+                Delay = () => 0f,
                 ShouldCast = (target, spellClass, damage) =>
                             UseQ &&
                             spellClass.IsSpellReady &&
@@ -104,7 +104,7 @@ namespace SixAIO.Champions
             };
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
             {
-                CastTime = () => 0f,
+                Delay = () => 0f,
                 ShouldCast = (target, spellClass, damage) =>
                             UseW &&
                             spellClass.IsSpellReady &&
@@ -116,7 +116,7 @@ namespace SixAIO.Champions
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
                 Range = () => 925,
-                Width = () => 300,
+                Radius = () => 300,
                 Speed = () => 1600,
                 ShouldCast = (target, spellClass, damage) =>
                             UseE &&
@@ -131,7 +131,7 @@ namespace SixAIO.Champions
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
                 Range = () => 1370,
-                Width = () => 240,
+                Radius = () => 240,
                 Speed = () => 1500,
                 ShouldCast = (target, spellClass, damage) =>
                             UseR &&

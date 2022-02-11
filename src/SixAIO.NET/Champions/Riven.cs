@@ -67,7 +67,7 @@ namespace SixAIO.Champions
             Orbwalker.OnOrbwalkerAfterBasicAttack += Orbwalker_OnOrbwalkerAfterBasicAttack;
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
-                CastTime = () => 0f,
+                Delay = () => 0f,
                 ShouldCast = (target, spellClass, damage) =>
                             UseQ &&
                             spellClass.IsSpellReady &&
@@ -87,7 +87,7 @@ namespace SixAIO.Champions
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
-                CastTime = () => 0f,
+                Delay = () => 0f,
                 ShouldCast = (target, spellClass, damage) =>
                             UseE &&
                             spellClass.IsSpellReady &&
@@ -98,7 +98,7 @@ namespace SixAIO.Champions
             {
                 Range = () => 1100f,
                 Speed = () => 1600f,
-                Width = () => 200,
+                Radius = () => 200,
                 Damage = GetRDamage,
                 ShouldCast = (target, spellClass, damage) =>
                             UseR &&

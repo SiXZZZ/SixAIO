@@ -56,9 +56,9 @@ namespace SixAIO.Champions
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
             {
                 Range = () => 1500,
-                Width = () => 120,
+                Radius = () => 120,
                 Speed = () => 3300,
-                CastTime = () => 0.6f,
+                Delay = () => 0.6f,
                 //Damage = (target, spellClass) =>
                 //            target != null
                 //            ? DamageCalculator.GetArmorMod(UnitManager.MyChampion, target) *
@@ -91,9 +91,9 @@ namespace SixAIO.Champions
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
                 Range = () => 30000,
-                Width = () => 280,
+                Radius = () => 280,
                 Speed = () => 2000,
-                CastTime = () => 1f,
+                Delay = () => 1f,
                 //Damage = (target, spellClass) =>
                 //            target != null
                 //            ? DamageCalculator.GetMagicResistMod(UnitManager.MyChampion, target) *

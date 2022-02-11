@@ -57,7 +57,7 @@ namespace SixAIO.Champions
             };
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
             {
-                CastTime = () => 0f,
+                Delay = () => 0f,
                 ShouldCast = (target, spellClass, damage) =>
                             UseW &&
                             spellClass.IsSpellReady &&

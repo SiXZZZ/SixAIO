@@ -27,7 +27,7 @@ namespace SixAIO.Champions
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
             {
                 Range = () => 1200,
-                Width = () => 400,
+                Radius = () => 400,
                 Speed = () => 2000,
                 ShouldCast = (target, spellClass, damage) =>
                             UseW &&

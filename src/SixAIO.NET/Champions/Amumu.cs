@@ -26,7 +26,7 @@ namespace SixAIO.Champions
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
                 Range = () => 1100,
-                Width = () => 160,
+                Radius = () => 160,
                 Speed = () => 2000,
                 ShouldCast = (target, spellClass, damage) =>
                             UseQ &&
@@ -37,7 +37,7 @@ namespace SixAIO.Champions
                             target != null,
                 TargetSelect = (mode) =>
                             UnitManager.EnemyChampions
-                            .Where(x => TargetSelector.IsAttackable(x) && x.Distance <= SpellQ.Range() && x.IsAlive && !Collision.MinionCollision(x.W2S, (int)SpellQ.Width()))
+                            .Where(x => TargetSelector.IsAttackable(x) && x.Distance <= SpellQ.Range() && x.IsAlive && !Collision.MinionCollision(x.W2S, (int)SpellQ.Radius()))
                             .OrderBy(x => x.Health)
                             .FirstOrDefault()
             };

@@ -19,7 +19,7 @@ namespace SixAIO.Champions
             {
                 Range = () => 825,
                 Speed = () => 1000,
-                Width = () => 250,
+                Radius = () => 250,
                 ShouldCast = (target, spellClass, damage) =>
                             UseQ &&
                             spellClass.IsSpellReady &&
@@ -47,8 +47,8 @@ namespace SixAIO.Champions
             {
                 Range = () => 1300,
                 Speed = () => 2000,
-                Width = () => 80,
-                CastTime = () => 0.2f,
+                Radius = () => 80,
+                Delay = () => 0.2f,
                 ShouldCast = (target, spellClass, damage) =>
                             UseR &&
                             spellClass.IsSpellReady &&
