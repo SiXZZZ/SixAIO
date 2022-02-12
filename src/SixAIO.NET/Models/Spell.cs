@@ -104,25 +104,28 @@ namespace SixAIO.Models
                                 return false;
                             }
 
-                            Logger.Log($"{predictResult.Hitchance} - {predictResult.Input.Unit.UnitComponentInfo.SkinName} - {(predictResult.UnitPosition - predictResult.CastPosition).Length()}");
-
                             var pos = predictResult.CastPosition;
                             //var pos = Prediction.Use && target != null && Speed != default && CastTime != default
                             //? Prediction.LinePrediction(target, CastTime(), Speed())
                             //: target.Position;
-                            var w2s = LeagueNativeRendererManager.WorldToScreen(pos);
-                            if (w2s != default && UnitManager.MyChampion.DistanceTo(pos) <= Range())
+                            var w2s = LeagueNativeRendererManager.WorldToScreenSpell(pos);
+
+                            if (!w2s.IsZero && UnitManager.MyChampion.Position.Distance(pos) <= Range())
                             {
-                                var result = CastSpellAtPos(CastSlot, w2s, Delay());
-                                if (result)
+                                if (CastSpellAtPos(CastSlot, w2s, Delay()))
                                 {
+                                    //Logger.Log($"HitChance: {predictResult.Hitchance} - Target: {predictResult.Input.Unit.UnitComponentInfo.SkinName} - TargetPos: {target.Position} - PredictDistance: {(predictResult.UnitPosition - predictResult.CastPosition).Length()} - W2S: {w2s} - CastPosDist: {UnitManager.MyChampion.Position.Distance(pos)} - CastPos: {predictResult.CastPosition}");
+                                    Logger.Log($"HitChance: {predictResult.Hitchance} - Target: {target.UnitComponentInfo.SkinName} - W2S: {w2s} - CastPosDist: {UnitManager.MyChampion.Position.Distance(pos)} - CastPos: {predictResult.CastPosition}");
+
                                     OnSpellCast?.Invoke(this, target);
+                                    return true;
                                 }
-                                return result;
                             }
                         }
                         else if (CastSpellAtPos(CastSlot, target.W2S, Delay()))
                         {
+                            Logger.Log($"Target: {target.UnitComponentInfo.SkinName} - W2S: {target.W2S} - using TARGET W2S");
+
                             OnSpellCast?.Invoke(this, target);
                             return true;
                         }
