@@ -96,6 +96,8 @@ namespace SixAIO.Champions
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
+                PredictionType = Prediction.MenuSelected.PredictionType.Cone,
+                MinimumHitChance = () => RHitChance,
                 Range = () => 1100f,
                 Speed = () => 1600f,
                 Radius = () => 200,
@@ -109,8 +111,7 @@ namespace SixAIO.Champions
                             (UltTimeLeft() > 0 && UltTimeLeft() < 1f) ||
                             (AllSpellsOnCooldown() && PassiveStacks() <= 2) ||
                             (GetMissingHealthPercent(target) < 75.0f)),
-                TargetSelect = (mode) => UnitManager.EnemyChampions.FirstOrDefault(x => x.Distance <= 800 && TargetSelector.IsAttackable(x) &&
-                                                                                    x.Health < GetRDamage(x, UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot.R)))
+                TargetSelect = (mode) => SpellR.GetTargets(mode, x => x.Health < GetRDamage(x, SpellR.SpellClass)).FirstOrDefault()
             };
         }
 
@@ -195,6 +196,8 @@ namespace SixAIO.Champions
             MenuTab.AddItem(new Switch() { Title = "Use W", IsOn = true });
             MenuTab.AddItem(new Switch() { Title = "Use E", IsOn = true });
             MenuTab.AddItem(new Switch() { Title = "Use R", IsOn = true });
+            MenuTab.AddItem(new ModeDisplay() { Title = "R HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
+
         }
     }
 }

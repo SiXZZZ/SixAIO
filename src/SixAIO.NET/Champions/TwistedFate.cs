@@ -7,6 +7,7 @@ using Oasys.SDK.SpellCasting;
 using Oasys.SDK.Tools;
 using SixAIO.Helpers;
 using SixAIO.Models;
+using System;
 using System.Linq;
 
 namespace SixAIO.Champions
@@ -33,6 +34,8 @@ namespace SixAIO.Champions
         {
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
+                PredictionType = Prediction.MenuSelected.PredictionType.Line,
+                MinimumHitChance = () => QHitChance,
                 Range = () => 1450,
                 Radius = () => 100,
                 Speed = () => 1000,
@@ -41,11 +44,7 @@ namespace SixAIO.Champions
                             spellClass.IsSpellReady &&
                             UnitManager.MyChampion.Mana > 100 &&
                             target != null,
-                TargetSelect = (mode) => 
-                            UnitManager.EnemyChampions
-                            .FirstOrDefault(x => x.Distance <= 1350 && x.IsAlive &&
-                                                TargetSelector.IsAttackable(x) &&
-                                                BuffChecker.IsCrowdControlledOrSlowed(x))
+                TargetSelect = (mode) => SpellQ.GetTargets(mode).FirstOrDefault()
             };
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
             {
@@ -80,6 +79,8 @@ namespace SixAIO.Champions
         {
             MenuManager.AddTab(new Tab($"SIXAIO - {nameof(TwistedFate)}"));
             MenuTab.AddItem(new Switch() { Title = "Use Q", IsOn = true });
+            MenuTab.AddItem(new ModeDisplay() { Title = "Q HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
+
             MenuTab.AddItem(new Switch() { Title = "Use W", IsOn = true });
         }
     }

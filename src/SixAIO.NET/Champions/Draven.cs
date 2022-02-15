@@ -74,6 +74,8 @@ namespace SixAIO.Champions
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
+                PredictionType = Prediction.MenuSelected.PredictionType.Line,
+                MinimumHitChance = () => EHitChance,
                 Range = () => 1100,
                 Radius = () => 260,
                 Speed = () => 1400,
@@ -82,10 +84,12 @@ namespace SixAIO.Champions
                             spellClass.IsSpellReady &&
                             UnitManager.MyChampion.Mana > 70 &&
                             target != null,
-                TargetSelect = (mode) => UnitManager.EnemyChampions.FirstOrDefault(x => x.Distance <= 800 && x.IsAlive && TargetSelector.IsAttackable(x))
+                TargetSelect = (mode) => SpellE.GetTargets(mode).FirstOrDefault()
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
+                PredictionType = Prediction.MenuSelected.PredictionType.Line,
+                MinimumHitChance = () => RHitChance,
                 Delay = () => 0.5f,
                 Range = () => 30000,
                 Radius = () => 320,
@@ -95,11 +99,7 @@ namespace SixAIO.Champions
                             spellClass.IsSpellReady &&
                             UnitManager.MyChampion.Mana > 100 &&
                             target != null,
-                TargetSelect = (mode) => 
-                            UnitManager.EnemyChampions
-                            .FirstOrDefault(x => !x.W2S.IsZero && x.IsAlive && TargetSelector.IsAttackable(x) &&
-                                            x.Health < GetRDamage(x) &&
-                                            BuffChecker.IsCrowdControlledOrSlowed(x))
+                TargetSelect = (mode) => SpellR.GetTargets(mode).FirstOrDefault(x => x.Health < GetRDamage(x))
             };
         }
 
@@ -187,9 +187,13 @@ namespace SixAIO.Champions
 
             MenuTab.AddItem(new InfoDisplay() { Title = "---E Settings---" });
             MenuTab.AddItem(new Switch() { Title = "Use E", IsOn = true });
+            MenuTab.AddItem(new ModeDisplay() { Title = "E HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
+
 
             MenuTab.AddItem(new InfoDisplay() { Title = "---R Settings---" });
             MenuTab.AddItem(new Switch() { Title = "Use R", IsOn = true });
+            MenuTab.AddItem(new ModeDisplay() { Title = "R HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
+
         }
     }
 }

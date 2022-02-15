@@ -57,6 +57,8 @@ namespace SixAIO.Champions
             };
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
             {
+                PredictionType = Prediction.MenuSelected.PredictionType.Line,
+                MinimumHitChance = () => WHitChance,
                 Range = () => 900,
                 Radius = () => 110,
                 Speed = () => 1600,
@@ -65,9 +67,7 @@ namespace SixAIO.Champions
                             spellClass.IsSpellReady &&
                             UnitManager.MyChampion.Mana > 60 &&
                             target != null,
-                TargetSelect = (mode) =>
-                            UnitManager.EnemyChampions
-                            .FirstOrDefault(x => x.Distance <= 900 && x.IsAlive && TargetSelector.IsAttackable(x))
+                TargetSelect = (mode) => SpellW.GetTargets(mode).FirstOrDefault()
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
@@ -126,6 +126,8 @@ namespace SixAIO.Champions
             MenuTab.AddItem(new Switch() { Title = "Use Q", IsOn = true });
             MenuTab.AddItem(new InfoDisplay() { Title = "---W Settings---" });
             MenuTab.AddItem(new Switch() { Title = "Use W", IsOn = true });
+            MenuTab.AddItem(new ModeDisplay() { Title = "W HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
+
             MenuTab.AddItem(new InfoDisplay() { Title = "---E Settings---" });
             MenuTab.AddItem(new Switch() { Title = "Use E", IsOn = false });
             MenuTab.AddItem(new ModeDisplay() { Title = "Dash Mode", ModeNames = DashHelper.ConstructDashModeTable(), SelectedModeName = "ToMouse" });

@@ -5,6 +5,7 @@ using Oasys.SDK;
 using Oasys.SDK.Menu;
 using Oasys.SDK.SpellCasting;
 using SixAIO.Models;
+using System;
 using System.Linq;
 
 namespace SixAIO.Champions
@@ -28,6 +29,8 @@ namespace SixAIO.Champions
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
+                PredictionType = Prediction.MenuSelected.PredictionType.Circle,
+                MinimumHitChance = () => EHitChance,
                 Range = () => 1000,
                 Speed = () => 5000,
                 Radius = () => 200,
@@ -36,9 +39,7 @@ namespace SixAIO.Champions
                             spellClass.IsSpellReady &&
                             UnitManager.MyChampion.Mana > 80 &&
                             target != null,
-                TargetSelect = (mode) => 
-                            UnitManager.EnemyChampions
-                            .FirstOrDefault(x => x.Distance <= 1000 && x.IsAlive && TargetSelector.IsAttackable(x))
+                TargetSelect = (mode) => SpellE.GetTargets(mode).FirstOrDefault()
             };
         }
 
@@ -72,6 +73,8 @@ namespace SixAIO.Champions
             MenuTab.AddItem(new Switch() { Title = "Use Q", IsOn = true });
             //MenuTab.AddItem(new Switch() { Title = "Use W", IsOn = true });
             MenuTab.AddItem(new Switch() { Title = "Use E", IsOn = true });
+            MenuTab.AddItem(new ModeDisplay() { Title = "E HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
+
             //MenuTab.AddItem(new Switch() { Title = "Use R", IsOn = true });
         }
     }

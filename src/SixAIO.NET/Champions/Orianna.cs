@@ -10,6 +10,7 @@ using Oasys.SDK.SpellCasting;
 using SharpDX;
 using SixAIO.Helpers;
 using SixAIO.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -33,7 +34,10 @@ namespace SixAIO.Champions
         {
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
-                Delay = () => 0f,
+                PredictionType = Prediction.MenuSelected.PredictionType.Line,
+                MinimumHitChance = () => QHitChance,
+                From = GetBallPosition,
+                Delay = () => 0.1f,
                 Range = () => 800,
                 Speed = () => 1400,
                 Radius = () => 160,
@@ -43,15 +47,7 @@ namespace SixAIO.Champions
                             UnitManager.MyChampion.Mana > 50 &&
                             UnitManager.MyChampion.Mana > QMinMana &&
                             target != null,
-                TargetSelect = (mode) => 
-                {
-                    var ccTarget = UnitManager.EnemyChampions.FirstOrDefault(x => x.Distance <= 800 && x.IsAlive && BuffChecker.IsCrowdControlledOrSlowed(x));
-                    if (ccTarget != null)
-                    {
-                        return ccTarget;
-                    }
-                    return UnitManager.EnemyChampions.FirstOrDefault(x => x.Distance <= 800 && x.IsAlive);
-                }
+                TargetSelect = (mode) => SpellQ.GetTargets(mode).FirstOrDefault()
             };
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
             {
@@ -73,7 +69,7 @@ namespace SixAIO.Champions
                             UnitManager.MyChampion.Mana > 60 &&
                             UnitManager.MyChampion.Mana > EMinMana &&
                             target != null,
-                TargetSelect = (mode) => 
+                TargetSelect = (mode) =>
                 {
                     Hero target = null;
 
@@ -210,6 +206,7 @@ namespace SixAIO.Champions
             MenuTab.AddItem(new InfoDisplay() { Title = "---Q Settings---" });
             MenuTab.AddItem(new Switch() { Title = "Use Q", IsOn = true });
             MenuTab.AddItem(new Counter() { Title = "Q Min Mana", MinValue = 0, MaxValue = 500, Value = 70, ValueFrequency = 10 });
+            MenuTab.AddItem(new ModeDisplay() { Title = "Q HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
 
             MenuTab.AddItem(new InfoDisplay() { Title = "---W Settings---" });
             MenuTab.AddItem(new Switch() { Title = "Use W", IsOn = true });

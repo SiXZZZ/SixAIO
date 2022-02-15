@@ -7,6 +7,7 @@ using Oasys.SDK.Menu;
 using Oasys.SDK.SpellCasting;
 using SixAIO.Helpers;
 using SixAIO.Models;
+using System;
 using System.Linq;
 
 namespace SixAIO.Champions
@@ -17,6 +18,8 @@ namespace SixAIO.Champions
         {
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
+                PredictionType = Prediction.MenuSelected.PredictionType.Circle,
+                MinimumHitChance = () => QHitChance,
                 Range = () => 825,
                 Speed = () => 1000,
                 Radius = () => 250,
@@ -25,15 +28,7 @@ namespace SixAIO.Champions
                             spellClass.IsSpellReady &&
                             UnitManager.MyChampion.Mana > 100 &&
                             target != null,
-                TargetSelect = (mode) => 
-                {
-                    var ccTarget = UnitManager.EnemyChampions.FirstOrDefault(x => x.Distance <= 825 && x.IsAlive && BuffChecker.IsCrowdControlledOrSlowed(x));
-                    if (ccTarget != null)
-                    {
-                        return ccTarget;
-                    }
-                    return UnitManager.EnemyChampions.FirstOrDefault(x => x.Distance <= 825 && x.IsAlive);
-                }
+                TargetSelect = (mode) => SpellQ.GetTargets(mode).FirstOrDefault()
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
@@ -45,6 +40,8 @@ namespace SixAIO.Champions
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
+                PredictionType = Prediction.MenuSelected.PredictionType.Line,
+                MinimumHitChance = () => RHitChance,
                 Range = () => 1300,
                 Speed = () => 2000,
                 Radius = () => 80,
@@ -55,10 +52,7 @@ namespace SixAIO.Champions
                             UnitManager.MyChampion.Mana > 20 &&
                             spellClass.Charges >= 1 &&
                             target != null,
-                TargetSelect = (mode) => UnitManager.EnemyChampions.FirstOrDefault(x => x.Distance <= 1150 && x.IsAlive &&
-                                                                                    TargetSelector.IsAttackable(x) &&
-                                                                                    !TargetSelector.IsInvulnerable(x, Oasys.Common.Logic.DamageType.Physical, false) &&
-                                                                                    BuffChecker.IsCrowdControlledOrSlowed(x))
+                TargetSelect = (mode) => SpellR.GetTargets(mode).FirstOrDefault()
             };
         }
 
@@ -74,8 +68,12 @@ namespace SixAIO.Champions
         {
             MenuManager.AddTab(new Tab($"SIXAIO - {nameof(Corki)}"));
             MenuTab.AddItem(new Switch() { Title = "Use Q", IsOn = true });
+            MenuTab.AddItem(new ModeDisplay() { Title = "Q HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
+
             MenuTab.AddItem(new Switch() { Title = "Use E", IsOn = true });
             MenuTab.AddItem(new Switch() { Title = "Use R", IsOn = true });
+            MenuTab.AddItem(new ModeDisplay() { Title = "R HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
+
         }
     }
 }

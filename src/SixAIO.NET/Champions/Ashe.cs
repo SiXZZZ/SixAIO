@@ -4,9 +4,8 @@ using Oasys.Common.Menu.ItemComponents;
 using Oasys.SDK;
 using Oasys.SDK.Menu;
 using Oasys.SDK.SpellCasting;
-using Oasys.SDK.Tools;
-using SixAIO.Helpers;
 using SixAIO.Models;
+using System;
 using System.Linq;
 
 namespace SixAIO.Champions
@@ -26,6 +25,8 @@ namespace SixAIO.Champions
             };
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
             {
+                PredictionType = Prediction.MenuSelected.PredictionType.Cone,
+                MinimumHitChance = () => WHitChance,
                 Range = () => 1200,
                 Radius = () => 400,
                 Speed = () => 2000,
@@ -34,15 +35,27 @@ namespace SixAIO.Champions
                             spellClass.IsSpellReady &&
                             UnitManager.MyChampion.Mana > 70 &&
                             target != null,
-                TargetSelect = (mode) => 
-                            UnitManager.EnemyChampions
-                            .FirstOrDefault(x => x.Distance <= 1000 && x.IsAlive && TargetSelector.IsAttackable(x) && !Collision.MinionCollision(x.Position, 400))
+                TargetSelect = (mode) => SpellW.GetTargets(mode, x => !Collision.MinionCollision(x.W2S, (int)SpellQ.Radius())).FirstOrDefault()
+            };
+            SpellR = new Spell(CastSlot.R, SpellSlot.R)
+            {
+                PredictionType = Prediction.MenuSelected.PredictionType.Line,
+                MinimumHitChance = () => RHitChance,
+                Range = () => 30000,
+                Radius = () => 350,
+                Speed = () => 1600,
+                ShouldCast = (target, spellClass, damage) =>
+                            UseR &&
+                            spellClass.IsSpellReady &&
+                            UnitManager.MyChampion.Mana > 100 &&
+                            target != null,
+                TargetSelect = (mode) => SpellR.GetTargets(mode).FirstOrDefault()
             };
         }
 
         internal override void OnCoreMainInput()
         {
-            if (SpellQ.ExecuteCastSpell() || SpellW.ExecuteCastSpell())
+            if (SpellQ.ExecuteCastSpell() || SpellW.ExecuteCastSpell() || SpellR.ExecuteCastSpell())
             {
                 return;
             }
@@ -61,8 +74,11 @@ namespace SixAIO.Champions
             MenuManager.AddTab(new Tab($"SIXAIO - {nameof(Ashe)}"));
             MenuTab.AddItem(new Switch() { Title = "Use Q", IsOn = true });
             MenuTab.AddItem(new Switch() { Title = "Use W", IsOn = true });
+            MenuTab.AddItem(new ModeDisplay() { Title = "W HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
+
             //MenuTab.AddItem(new Switch() { Title = "Use E", IsOn = true });
-            //MenuTab.AddItem(new Switch() { Title = "Use R", IsOn = true });
+            MenuTab.AddItem(new Switch() { Title = "Use R", IsOn = true });
+            MenuTab.AddItem(new ModeDisplay() { Title = "R HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
         }
     }
 }

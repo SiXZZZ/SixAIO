@@ -10,6 +10,7 @@ using Oasys.SDK.SpellCasting;
 using SharpDX;
 using SixAIO.Helpers;
 using SixAIO.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -23,6 +24,8 @@ namespace SixAIO.Champions
         {
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
+                PredictionType = Prediction.MenuSelected.PredictionType.Circle,
+                MinimumHitChance = () => QHitChance,
                 Delay = () => 0f,
                 Range = () => 800,
                 Speed = () => 1000,
@@ -32,18 +35,12 @@ namespace SixAIO.Champions
                             spellClass.IsSpellReady &&
                             UnitManager.MyChampion.Mana > 80 &&
                             target != null,
-                TargetSelect = (mode) => 
-                {
-                    var ccTarget = UnitManager.EnemyChampions.FirstOrDefault(x => x.Distance <= 800 && x.IsAlive && BuffChecker.IsCrowdControlledOrSlowed(x));
-                    if (ccTarget != null)
-                    {
-                        return ccTarget;
-                    }
-                    return UnitManager.EnemyChampions.FirstOrDefault(x => x.Distance <= 800 && x.IsAlive);
-                }
+                TargetSelect = (mode) => SpellQ.GetTargets(mode).FirstOrDefault()
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
+                PredictionType = Prediction.MenuSelected.PredictionType.Cone,
+                MinimumHitChance = () => EHitChance,
                 Range = () => 800,
                 Radius = () => 140,
                 Speed = () => 2500,
@@ -127,8 +124,12 @@ namespace SixAIO.Champions
         {
             MenuManager.AddTab(new Tab($"SIXAIO - {nameof(Syndra)}"));
             MenuTab.AddItem(new Switch() { Title = "Use Q", IsOn = true });
+            MenuTab.AddItem(new ModeDisplay() { Title = "Q HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
+
             //MenuTab.AddItem(new Switch() { Title = "Use W", IsOn = true });
             MenuTab.AddItem(new Switch() { Title = "Use E", IsOn = true });
+            MenuTab.AddItem(new ModeDisplay() { Title = "E HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
+
             MenuTab.AddItem(new Switch() { Title = "Use R", IsOn = true });
         }
     }

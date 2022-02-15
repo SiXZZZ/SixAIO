@@ -47,6 +47,8 @@ namespace SixAIO.Champions
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
+                PredictionType = Prediction.MenuSelected.PredictionType.Line,
+                MinimumHitChance = () => RHitChance,
                 Range = () => 1000,
                 Radius = () => 280,
                 Speed = () => 2400,
@@ -55,11 +57,7 @@ namespace SixAIO.Champions
                             spellClass.IsSpellReady &&
                             UnitManager.MyChampion.Mana > 100 &&
                             target != null,
-                TargetSelect = (mode) => 
-                            UnitManager.EnemyChampions
-                            .FirstOrDefault(x => x.Distance <= 850 && x.IsAlive &&
-                                                 TargetSelector.IsAttackable(x) && BuffChecker.IsCrowdControlledOrSlowed(x) &&
-                                                 !TargetSelector.IsInvulnerable(x, Oasys.Common.Logic.DamageType.Magical, false))
+                TargetSelect = (mode) => SpellR.GetTargets(mode, x => !TargetSelector.IsInvulnerable(x, Oasys.Common.Logic.DamageType.Magical, false)).FirstOrDefault()
             };
         }
 
@@ -99,6 +97,8 @@ namespace SixAIO.Champions
 
             MenuTab.AddItem(new InfoDisplay() { Title = "---R Settings---" });
             MenuTab.AddItem(new Switch() { Title = "Use R", IsOn = true });
+            MenuTab.AddItem(new ModeDisplay() { Title = "R HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
+
         }
     }
 }

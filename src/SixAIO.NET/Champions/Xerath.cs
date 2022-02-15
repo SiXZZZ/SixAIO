@@ -1,13 +1,9 @@
 ﻿using Oasys.Common.Enums.GameEnums;
-using Oasys.Common.Extensions;
-using Oasys.Common.GameObject;
 using Oasys.Common.Menu;
 using Oasys.Common.Menu.ItemComponents;
 using Oasys.SDK;
 using Oasys.SDK.Menu;
 using Oasys.SDK.SpellCasting;
-using Oasys.SDK.Tools;
-using SixAIO.Helpers;
 using SixAIO.Models;
 using System;
 using System.Linq;
@@ -23,6 +19,8 @@ namespace SixAIO.Champions
         {
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
+                PredictionType = Prediction.MenuSelected.PredictionType.Line,
+                MinimumHitChance = () => QHitChance,
                 CastSpellAtPos = (castSlot, pos, castTime) =>
                 {
                     if (_isChargingQ)
@@ -42,9 +40,11 @@ namespace SixAIO.Champions
                         return SpellCastProvider.StartChargeSpell(SpellCastSlot.Q);
                     }
                 },
-                Range = () => UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot.Q).IsSpellReady
-                        ? 735 + _stopwatch.ElapsedMilliseconds / 1000 / 0.25f * 102f
-                        : 0,
+                Range = () => _isChargingQ
+                                        ? SpellQ.SpellClass.IsSpellReady
+                                            ? 735 + _stopwatch.ElapsedMilliseconds / 1000 / 0.25f * 102f
+                                            : 0
+                                        : 1450,
                 Radius = () => 140,
                 Speed = () => 1900,
                 ShouldCast = (target, spellClass, damage) =>
@@ -52,57 +52,27 @@ namespace SixAIO.Champions
                             spellClass.IsSpellReady &&
                             (_isChargingQ || UnitManager.MyChampion.Mana > 120) &&
                             target != null &&
-                            (_isChargingQ ? target.Distance < SpellQ.Range() : target.Distance < 1450),
-                TargetSelect = (mode) =>
-                {
-                    if (QTargetshouldbecced || QTargetshouldbeslowed)
-                    {
-                        if (QTargetshouldbecced)
-                        {
-                            var target = UnitManager.EnemyChampions.FirstOrDefault(x => (_isChargingQ ? x.Distance < SpellQ.Range() : x.Distance < 1450) &&
-                                                                        x.IsAlive && TargetSelector.IsAttackable(x) &&
-                                                                        BuffChecker.IsCrowdControlled(x));
-                            if (target != null)
-                            {
-                                return target;
-                            }
-                        }
-                        if (QTargetshouldbeslowed)
-                        {
-                            var target = UnitManager.EnemyChampions.FirstOrDefault(x => (_isChargingQ ? x.Distance < SpellQ.Range() : x.Distance < 1450) &&
-                                                                        x.IsAlive && TargetSelector.IsAttackable(x) &&
-                                                                        BuffChecker.IsCrowdControlledOrSlowed(x));
-                            if (target != null)
-                            {
-                                return target;
-                            }
-                        }
-                    }
-                    else
-                    {
-                        return UnitManager.EnemyChampions.FirstOrDefault(x => (_isChargingQ ? x.Distance < SpellQ.Range() : x.Distance < 1450) &&
-                                                                             x.IsAlive && TargetSelector.IsAttackable(x));
-                    }
-
-                    return null;
-                }
+                            target.Distance < SpellQ.Range(),
+                TargetSelect = (mode) => SpellQ.GetTargets(mode).FirstOrDefault()
             };
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
             {
+                PredictionType = Prediction.MenuSelected.PredictionType.Circle,
+                MinimumHitChance = () => WHitChance,
                 Range = () => 1000,
                 Radius = () => 250,
-                Speed = () => -1,
+                Speed = () => 10000,
                 ShouldCast = (target, spellClass, damage) =>
                             UseW &&
                             spellClass.IsSpellReady &&
                             UnitManager.MyChampion.Mana > 110 &&
                             target != null,
-                TargetSelect = (mode) =>
-                            UnitManager.EnemyChampions
-                            .FirstOrDefault(x => x.Distance <= SpellW.Range() && x.IsAlive && TargetSelector.IsAttackable(x))
+                TargetSelect = (mode) => SpellW.GetTargets(mode).FirstOrDefault()
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
+                PredictionType = Prediction.MenuSelected.PredictionType.Line,
+                MinimumHitChance = () => EHitChance,
                 Range = () => 1125,
                 Radius = () => 120,
                 Speed = () => 1400,
@@ -111,12 +81,12 @@ namespace SixAIO.Champions
                             spellClass.IsSpellReady &&
                             UnitManager.MyChampion.Mana > 80 &&
                             target != null,
-                TargetSelect = (mode) =>
-                            UnitManager.EnemyChampions
-                            .FirstOrDefault(x => x.Distance <= SpellE.Range() && x.IsAlive && TargetSelector.IsAttackable(x) && !Collision.MinionCollision(x.Position, 120))
+                TargetSelect = (mode) => SpellE.GetTargets(mode, x => !Collision.MinionCollision(x.Position, 120)).FirstOrDefault()
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
+                PredictionType = Prediction.MenuSelected.PredictionType.Circle,
+                MinimumHitChance = () => RHitChance,
                 Range = () => 5000,
                 Radius = () => 200,
                 Speed = () => 1500,
@@ -126,10 +96,7 @@ namespace SixAIO.Champions
                             spellClass.IsSpellReady &&
                             UnitManager.MyChampion.Mana > 100 &&
                             target != null,
-                TargetSelect = (mode) =>
-                {
-                    return UnitManager.EnemyChampions.FirstOrDefault(x => x.Distance <= SpellR.Range() && x.IsAlive && TargetSelector.IsAttackable(x));
-                }
+                TargetSelect = (mode) => SpellR.GetTargets(mode).FirstOrDefault()
             };
         }
 
@@ -141,53 +108,24 @@ namespace SixAIO.Champions
             }
         }
 
-        private bool QTargetshouldbeslowed
-        {
-            get => MenuTab.GetItem<Switch>("Q Target should be slowed").IsOn;
-            set => MenuTab.GetItem<Switch>("Q Target should be slowed").IsOn = value;
-        }
-
-        private bool QTargetshouldbecced
-        {
-            get => MenuTab.GetItem<Switch>("Q Target should be cc'ed").IsOn;
-            set => MenuTab.GetItem<Switch>("Q Target should be cc'ed").IsOn = value;
-        }
-
-        //private int UseOnlyRIfXLTEHPPercent
-        //{
-        //    get => MenuTab.GetItem<Counter>("Use only R if x <= HP percent").Value;
-        //    set => MenuTab.GetItem<Counter>("Use only R if x <= HP percent").Value = value;
-        //}
-
-        //private bool RTargetshouldbeslowed
-        //{
-        //    get => MenuTab.GetItem<Switch>("R Target should be slowed").IsOn;
-        //    set => MenuTab.GetItem<Switch>("R Target should be slowed").IsOn = value;
-        //}
-
-        //private bool RTargetshouldbecced
-        //{
-        //    get => MenuTab.GetItem<Switch>("R Target should be cc'ed").IsOn;
-        //    set => MenuTab.GetItem<Switch>("R Target should be cc'ed").IsOn = value;
-        //}
-
         internal override void InitializeMenu()
         {
             MenuManager.AddTab(new Tab($"SIXAIO - {nameof(Xerath)}"));
             MenuTab.AddItem(new InfoDisplay() { Title = "---Q Settings---" });
             MenuTab.AddItem(new Switch() { Title = "Use Q", IsOn = true });
-            MenuTab.AddItem(new Switch() { Title = "Q Target should be slowed", IsOn = true });
-            MenuTab.AddItem(new Switch() { Title = "Q Target should be cc'ed", IsOn = true });
+            MenuTab.AddItem(new ModeDisplay() { Title = "Q HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
+
             MenuTab.AddItem(new InfoDisplay() { Title = "---W Settings---" });
             MenuTab.AddItem(new Switch() { Title = "Use W", IsOn = true });
+            MenuTab.AddItem(new ModeDisplay() { Title = "W HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
+
             MenuTab.AddItem(new InfoDisplay() { Title = "---E Settings---" });
             MenuTab.AddItem(new Switch() { Title = "Use E", IsOn = true });
+            MenuTab.AddItem(new ModeDisplay() { Title = "E HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
 
             //MenuTab.AddItem(new InfoDisplay() { Title = "---R Settings---" });
             //MenuTab.AddItem(new Switch() { Title = "Use R", IsOn = true });
             //MenuTab.AddItem(new Counter() { Title = "Use only R if x <= HP percent", MinValue = 0, MaxValue = 100, Value = 50, ValueFrequency = 5 });
-            //MenuTab.AddItem(new Switch() { Title = "R Target should be slowed", IsOn = true });
-            //MenuTab.AddItem(new Switch() { Title = "R Target should be cc'ed", IsOn = true });
         }
     }
 }

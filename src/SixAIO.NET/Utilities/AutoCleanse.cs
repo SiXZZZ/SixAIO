@@ -213,10 +213,10 @@ namespace SixAIO.Utilities
                                     ? BuffChecker.IsCrowdControllButCanQss
                                     : BuffChecker.IsCrowdControllButCanCleanse).FirstOrDefault(buff =>
                                (float)buff.StartTime + (float)((float)ReactionDelay / 1000f) < GameEngine.GameTime && buff.DurationMs < 10_000 &&
-                                buff.DurationMs >= _menuTab.GetItem<Counter>(x => x.Title.Contains(buff.EntryType.ToString(), System.StringComparison.OrdinalIgnoreCase))?.Value);
+                                buff.DurationMs >= _menuTab.GetItem<Counter>(x => x.Title.Contains(buff.EntryType.ToString(), StringComparison.OrdinalIgnoreCase))?.Value);
                 //return cc != null;
 
-                if (cc != null && !cc.Name.Contains("Unknown", System.StringComparison.OrdinalIgnoreCase))
+                if (cc != null && !cc.Name.Contains("Unknown", StringComparison.OrdinalIgnoreCase))
                 {
                     if (LogCleanseBuff)
                     {
@@ -226,7 +226,7 @@ namespace SixAIO.Utilities
                 }
                 return false;
             }
-            catch (System.Exception)
+            catch (Exception)
             {
                 return false;
             }

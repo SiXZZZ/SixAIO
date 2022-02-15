@@ -8,6 +8,7 @@ using Oasys.SDK.Menu;
 using Oasys.SDK.SpellCasting;
 using Oasys.SDK.Tools;
 using SixAIO.Models;
+using System;
 using System.Linq;
 
 namespace SixAIO.Champions
@@ -29,15 +30,14 @@ namespace SixAIO.Champions
         {
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
+                PredictionType = Prediction.MenuSelected.PredictionType.Line,
+                MinimumHitChance = () => QHitChance,
                 Range = () => 1200,
                 Radius = () => 80,
                 Speed = () => 2400,
                 Damage = (target, spellClass) => -45 + (65 * spellClass.Level) + UnitManager.MyChampion.UnitStats.TotalAttackDamage,
                 ShouldCast = (target, spellClass, damage) => UseQ && spellClass.IsSpellReady && UnitManager.MyChampion.Mana > 70 && target != null,
-                TargetSelect = (mode) => UnitManager.EnemyChampions
-                                    .Where(x => TargetSelector.IsAttackable(x) && x.Distance <= 1100 && x.IsAlive)
-                                    .OrderBy(x => x.Health)
-                                    .FirstOrDefault()
+                TargetSelect = (mode) => SpellQ.GetTargets(mode, x => !Collision.MinionCollision(x.W2S, 100)).FirstOrDefault()
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
@@ -170,7 +170,7 @@ namespace SixAIO.Champions
             _cycles++;
             if (BindedAlly is null && _cycles % 10 == 0 && UnitManager.MyChampion.Level >= 6)
             {
-                BindedAlly = UnitManager.AllyChampions.FirstOrDefault(ally => ally.BuffManager.GetBuffList().Any(x => x.Name.Contains("kalistacoopstrikeally", System.StringComparison.OrdinalIgnoreCase)));
+                BindedAlly = UnitManager.AllyChampions.FirstOrDefault(ally => ally.BuffManager.GetBuffList().Any(x => x.Name.Contains("kalistacoopstrikeally", StringComparison.OrdinalIgnoreCase)));
             }
         }
 
@@ -186,6 +186,8 @@ namespace SixAIO.Champions
 
             MenuTab.AddItem(new InfoDisplay() { Title = "---Q Settings---" });
             MenuTab.AddItem(new Switch() { Title = "Use Q", IsOn = true });
+            MenuTab.AddItem(new ModeDisplay() { Title = "Q HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
+
 
             MenuTab.AddItem(new InfoDisplay() { Title = "---E Settings---" });
             MenuTab.AddItem(new Switch() { Title = "Use E", IsOn = true });

@@ -7,6 +7,7 @@ using Oasys.SDK.Menu;
 using Oasys.SDK.SpellCasting;
 using SixAIO.Helpers;
 using SixAIO.Models;
+using System;
 using System.Linq;
 
 namespace SixAIO.Champions
@@ -17,6 +18,8 @@ namespace SixAIO.Champions
         {
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
+                PredictionType = Prediction.MenuSelected.PredictionType.Line,
+                MinimumHitChance = () => QHitChance,
                 Range = () => 1300,
                 Radius = () => 140,
                 Speed = () => 1200,
@@ -25,14 +28,14 @@ namespace SixAIO.Champions
                             spellClass.IsSpellReady &&
                             UnitManager.MyChampion.Mana > 50 &&
                             target != null,
-                TargetSelect = (mode) => 
-                            UnitManager.EnemyChampions
-                            .FirstOrDefault(x => x.Distance <= 1200 && x.IsAlive &&
-                                                 TargetSelector.IsAttackable(x) && !Collision.MinionCollision(x.W2S, 140) &&
-                                                 !TargetSelector.IsInvulnerable(x, Oasys.Common.Logic.DamageType.Magical, false))
+                TargetSelect = (mode) => SpellQ.GetTargets(mode, x => !Collision.MinionCollision(x.W2S, 140) &&
+                                                                      !TargetSelector.IsInvulnerable(x, Oasys.Common.Logic.DamageType.Magical, false))
+                                                .FirstOrDefault()
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
+                PredictionType = Prediction.MenuSelected.PredictionType.Circle,
+                MinimumHitChance = () => EHitChance,
                 Range = () => 1100,
                 Speed = () => 5000,
                 Radius = () => 310,
@@ -41,18 +44,12 @@ namespace SixAIO.Champions
                             spellClass.IsSpellReady &&
                             UnitManager.MyChampion.Mana > 110 &&
                             target != null,
-                TargetSelect = (mode) => 
-                {
-                    var ccTarget = UnitManager.EnemyChampions.FirstOrDefault(x => x.Distance <= 1000 && x.IsAlive && BuffChecker.IsCrowdControlledOrSlowed(x));
-                    if (ccTarget != null)
-                    {
-                        return ccTarget;
-                    }
-                    return UnitManager.EnemyChampions.FirstOrDefault(x => x.Distance <= 1000 && x.IsAlive);
-                }
+                TargetSelect = (mode) => SpellE.GetTargets(mode).FirstOrDefault()
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
+                PredictionType = Prediction.MenuSelected.PredictionType.Line,
+                MinimumHitChance = () => RHitChance,
                 Range = () => 3400,
                 Radius = () => 200,
                 Speed = () => 1000,
@@ -62,12 +59,7 @@ namespace SixAIO.Champions
                             spellClass.IsSpellReady &&
                             UnitManager.MyChampion.Mana > 100 &&
                             target != null,
-                TargetSelect = (mode) => 
-                            UnitManager.EnemyChampions
-                            .FirstOrDefault(x => x.Distance <= 3400 && x.IsAlive &&
-                                                 TargetSelector.IsAttackable(x) &&
-                                                 !TargetSelector.IsInvulnerable(x, Oasys.Common.Logic.DamageType.Magical, false) &&
-                                                 BuffChecker.IsCrowdControlledOrSlowed(x))
+                TargetSelect = (mode) => SpellR.GetTargets(mode, x => !TargetSelector.IsInvulnerable(x, Oasys.Common.Logic.DamageType.Magical, false)).FirstOrDefault()
             };
         }
 
@@ -83,9 +75,15 @@ namespace SixAIO.Champions
         {
             MenuManager.AddTab(new Tab($"SIXAIO - {nameof(Lux)}"));
             MenuTab.AddItem(new Switch() { Title = "Use Q", IsOn = true });
+            MenuTab.AddItem(new ModeDisplay() { Title = "Q HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
+
             //MenuTab.AddItem(new Switch() { Title = "Use W", IsOn = true });
             MenuTab.AddItem(new Switch() { Title = "Use E", IsOn = true });
+            MenuTab.AddItem(new ModeDisplay() { Title = "E HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
+
             MenuTab.AddItem(new Switch() { Title = "Use R", IsOn = true });
+            MenuTab.AddItem(new ModeDisplay() { Title = "R HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
+
         }
     }
 }

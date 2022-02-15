@@ -20,6 +20,8 @@ namespace SixAIO.Champions
         {
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
+                PredictionType = Prediction.MenuSelected.PredictionType.Line,
+                MinimumHitChance = () => QHitChance,
                 Range = () => 825,
                 Radius = () => 80,
                 Speed = () => 2600,
@@ -32,6 +34,8 @@ namespace SixAIO.Champions
             };
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
             {
+                PredictionType = Prediction.MenuSelected.PredictionType.Line,
+                MinimumHitChance = () => WHitChance,
                 Range = () => 1200,
                 Radius = () => 80,
                 Speed = () => 2200,
@@ -40,12 +44,7 @@ namespace SixAIO.Champions
                             spellClass.IsSpellReady &&
                             UnitManager.MyChampion.Mana > 90 &&
                             target != null,
-                TargetSelect = (mode) =>
-                            UnitManager.EnemyChampions
-                            .FirstOrDefault(x => x.Distance <= SpellW.Range() && x.IsAlive &&
-                                                TargetSelector.IsAttackable(x) &&
-                                                BuffChecker.IsCrowdControlledOrSlowed(x) &&
-                                                !Collision.MinionCollision(x.W2S, 120))
+                TargetSelect = (mode) => SpellW.GetTargets(mode, x => !Collision.MinionCollision(x.W2S, 120)).FirstOrDefault()
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
@@ -163,7 +162,11 @@ namespace SixAIO.Champions
             MenuTab.AddItem(new Switch() { Title = "Only basic attack on full charge", IsOn = true });
             MenuTab.AddItem(new Switch() { Title = "Only basic attack on champions", IsOn = true });
             MenuTab.AddItem(new Switch() { Title = "Use Q", IsOn = true });
+            MenuTab.AddItem(new ModeDisplay() { Title = "Q HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
+
             MenuTab.AddItem(new Switch() { Title = "Use W", IsOn = true });
+            MenuTab.AddItem(new ModeDisplay() { Title = "W HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
+
             MenuTab.AddItem(new Switch() { Title = "Use E", IsOn = false });
             MenuTab.AddItem(new ModeDisplay() { Title = "E Dash Mode", ModeNames = DashHelper.ConstructDashModeTable(), SelectedModeName = "ToMouse" });
             MenuTab.AddItem(new Switch() { Title = "Use R", IsOn = true });

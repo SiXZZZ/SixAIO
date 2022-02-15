@@ -7,6 +7,7 @@ using Oasys.SDK.Menu;
 using Oasys.SDK.SpellCasting;
 using SixAIO.Helpers;
 using SixAIO.Models;
+using System;
 using System.Linq;
 
 namespace SixAIO.Champions
@@ -17,6 +18,8 @@ namespace SixAIO.Champions
         {
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
+                PredictionType = Prediction.MenuSelected.PredictionType.Circle,
+                MinimumHitChance = () => QHitChance,
                 Range = () => 900,
                 Speed = () => 5000,
                 Radius = () => 140,
@@ -25,21 +28,7 @@ namespace SixAIO.Champions
                             spellClass.IsSpellReady &&
                             UnitManager.MyChampion.Mana > 80 &&
                             target != null,
-                TargetSelect = (mode) => 
-                {
-                    var bombTarget = UnitManager.EnemyChampions.FirstOrDefault(x => x.Distance <= 900 && x.IsAlive && x.BuffManager.HasBuff("ZileanQ"));
-                    if (bombTarget != null)
-                    {
-                        return bombTarget;
-                    }
-
-                    var ccTarget = UnitManager.EnemyChampions.FirstOrDefault(x => x.Distance <= 900 && x.IsAlive && BuffChecker.IsCrowdControlledOrSlowed(x));
-                    if (ccTarget != null)
-                    {
-                        return ccTarget;
-                    }
-                    return UnitManager.EnemyChampions.FirstOrDefault(x => x.Distance <= 900 && x.IsAlive);
-                }
+                TargetSelect = (mode) => SpellQ.GetTargets(mode).OrderBy(x=> x.BuffManager.HasBuff("ZileanQ")).FirstOrDefault()
             };
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
             {
@@ -96,6 +85,8 @@ namespace SixAIO.Champions
             MenuManager.AddTab(new Tab($"SIXAIO - {nameof(Zilean)}"));
             MenuTab.AddItem(new InfoDisplay() { Title = "---Q Settings---" });
             MenuTab.AddItem(new Switch() { Title = "Use Q", IsOn = true });
+            MenuTab.AddItem(new ModeDisplay() { Title = "Q HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
+
             MenuTab.AddItem(new InfoDisplay() { Title = "---W Settings---" });
             MenuTab.AddItem(new Switch() { Title = "Use W", IsOn = true });
             MenuTab.AddItem(new InfoDisplay() { Title = "---E Settings---" });

@@ -46,6 +46,8 @@ namespace SixAIO.Champions
             Orbwalker.OnOrbwalkerAfterBasicAttack += Orbwalker_OnOrbwalkerAfterBasicAttack;
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
+                PredictionType = Prediction.MenuSelected.PredictionType.Line,
+                MinimumHitChance = () => QHitChance,
                 Speed = () => 1200,
                 Radius = () => GetQState() == 3 ? 180 : 80,
                 Range = () => GetQState() == 3 ? 1150 : 450,
@@ -96,7 +98,7 @@ namespace SixAIO.Champions
                         }
                         else
                         {
-                            var enemyChamps = UnitManager.EnemyChampions.Where(x => x.IsAlive && x.Distance <= 800 && TargetSelector.IsAttackable(x));
+                            var enemyChamps = UnitManager.EnemyChampions.Where(x => CanEOnTarget(x) && x.IsAlive && x.Distance <= 800 && TargetSelector.IsAttackable(x));
                             if (enemyChamps.Any(x => x.Distance <= 450))
                             {
                                 return enemyChamps.FirstOrDefault(x => x.Distance <= 450);
@@ -238,6 +240,8 @@ namespace SixAIO.Champions
             TabItem.OnTabItemChange += TabItem_OnTabItemChange;
             MenuManager.AddTab(new Tab($"SIXAIO - {nameof(Yasuo)}"));
             MenuTab.AddItem(new Switch() { Title = "Use Q", IsOn = true });
+            MenuTab.AddItem(new ModeDisplay() { Title = "Q HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
+
             //MenuTab.AddItem(new Switch() { Title = "Use W", IsOn = true });
             MenuTab.AddItem(new Switch() { Title = "Use E", IsOn = true });
             MenuTab.AddItem(new Switch() { Title = "Use R", IsOn = true });
