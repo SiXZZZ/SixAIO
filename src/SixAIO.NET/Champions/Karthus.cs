@@ -29,6 +29,20 @@ namespace SixAIO.Champions
 
         public Karthus()
         {
+            SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
+            {
+                PredictionType = Prediction.MenuSelected.PredictionType.Circle,
+                MinimumHitChance = () => QHitChance,
+                Range = () => 875,
+                Speed = () => 1200,
+                Radius = () => 160,
+                ShouldCast = (target, spellClass, damage) =>
+                            UseQ &&
+                            spellClass.IsSpellReady &&
+                            UnitManager.MyChampion.Mana > 40 &&
+                            target != null,
+                TargetSelect = (mode) => SpellQ.GetTargets(mode).FirstOrDefault()
+            };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
                 Range = () => 550f,
@@ -106,7 +120,7 @@ namespace SixAIO.Champions
 
         internal override void OnCoreMainInput()
         {
-            if (SpellE.ExecuteCastSpell())
+            if (SpellE.ExecuteCastSpell() || SpellQ.ExecuteCastSpell())
             {
                 return;
             }
@@ -132,7 +146,9 @@ namespace SixAIO.Champions
         internal override void InitializeMenu()
         {
             MenuManager.AddTab(new Tab($"SIXAIO - {nameof(Karthus)}"));
-            //MenuTab.AddItem(new Switch() { Title = "Use Q", IsOn = true });
+            MenuTab.AddItem(new Switch() { Title = "Use Q", IsOn = true });
+            MenuTab.AddItem(new ModeDisplay() { Title = "Q HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
+
             //MenuTab.AddItem(new Switch() { Title = "Use W", IsOn = true });
             MenuTab.AddItem(new Switch() { Title = "Use E", IsOn = true });
             MenuTab.AddItem(new Switch() { Title = "Use R", IsOn = true });
