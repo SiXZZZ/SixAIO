@@ -134,6 +134,14 @@ namespace SixAIO.Champions
             }
         }
 
+        internal override void OnCoreLaneClearInput()
+        {
+            if (SpellQ.ExecuteCastSpell(Orbwalker.OrbWalkingModeType.LaneClear))
+            {
+                return;
+            }
+        }
+
         internal override void OnCoreRender()
         {
             if (!string.IsNullOrEmpty(_killMessage))
