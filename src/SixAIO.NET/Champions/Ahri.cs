@@ -40,6 +40,7 @@ namespace SixAIO.Champions
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
+                AllowCollision = collisions => !collisions.Any(),
                 PredictionType = Prediction.MenuSelected.PredictionType.Line,
                 MinimumHitChance = () => EHitChance,
                 Range = () => 1000,
@@ -51,9 +52,7 @@ namespace SixAIO.Champions
                             UnitManager.MyChampion.Mana > 70 &&
                             target != null,
 
-                TargetSelect = (mode) => SpellE.GetTargets(mode, x => TargetSelector.IsAttackable(x) && !Collision.MinionCollision(x.W2S, 140) &&
-                                                                     !TargetSelector.IsInvulnerable(x, Oasys.Common.Logic.DamageType.Magical, false))
-                                               .FirstOrDefault()
+                TargetSelect = (mode) => SpellE.GetTargets(mode, x => !TargetSelector.IsInvulnerable(x, Oasys.Common.Logic.DamageType.Magical, false)).FirstOrDefault()
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {

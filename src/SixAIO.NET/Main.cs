@@ -31,16 +31,12 @@ namespace SixAIO
             Oasys.Common.EventsProvider.GameEvents.OnCreateObject += GameEvents_OnCreateObject;
             Oasys.Common.EventsProvider.GameEvents.OnDeleteObject += GameEvents_OnDeleteObject;
         }
-        //private static GameObjectBase _threshQ = null;
+
         private static Task GameEvents_OnDeleteObject(List<AIBaseClient> callbackObjectList, AIBaseClient callbackObject, float callbackGameTime)
         {
             try
             {
                 _currentChampion?.OnDeleteObject(callbackObject);
-                //if (callbackObject.Name.Contains("ThreshQMissile", StringComparison.OrdinalIgnoreCase))
-                //{
-                //    _threshQ = null;
-                //}
             }
             catch (Exception)
             {
@@ -53,10 +49,6 @@ namespace SixAIO
             try
             {
                 _currentChampion?.OnCreateObject(callbackObject);
-                //if (callbackObject.Name.Contains("ThreshQMissile", StringComparison.OrdinalIgnoreCase))
-                //{
-                //    _threshQ = callbackObject;
-                //}
             }
             catch (Exception)
             {
@@ -66,7 +58,6 @@ namespace SixAIO
 
         private static Task GameEvents_OnGameLoadComplete()
         {
-            //Prediction.Initialize();
             LoadChampion();
             _currentChampion?.InitializeMenu();
             CoreEvents.OnCoreRender += CoreEvents_OnCoreRender;
@@ -185,45 +176,6 @@ namespace SixAIO
 
         private static void CoreEvents_OnCoreRender()
         {
-            //foreach (var missile in UnitManager.AllNativeObjects
-            //                        .Where(x =>
-            //                                !x.IsAlive &&
-            //                                 x.IsObject(Oasys.Common.Enums.GameEnums.ObjectTypeFlag.AIMissileClient) &&
-            //                                !x.IsObject(Oasys.Common.Enums.GameEnums.ObjectTypeFlag.AIMinionClient))
-            //                        .Select(x => x.As<AIMissileClient>()))
-            //{
-            //    if (missile.Position != missile.EndPosition)
-            //    {
-            //        try
-            //        {
-            //            Oasys.SDK.Rendering.RenderFactory.DrawText(missile.Name, 12, missile.W2S, Color.Blue);
-            //        }
-            //        catch (Exception)
-            //        {
-            //        }
-            //        Oasys.SDK.Rendering.RenderFactory.DrawNativeCircle(missile.Position, 60, Color.AliceBlue, 5);
-            //    }
-            //}
-
-            //if (_threshQ is not null && _threshQ.IsAlive)
-            //{
-            //    var missile = _threshQ.As<AIMissileClient>();
-            //    //try
-            //    //{
-            //    //    Oasys.SDK.Rendering.RenderFactory.DrawText(missile.Name, 12, _threshQ.W2S, Color.Blue);
-            //    //}
-            //    //catch (Exception)
-            //    //{
-            //    //}
-            //    var w2s = LeagueNativeRendererManager.WorldToScreenSpell(missile.StartPosition);
-            //    Oasys.SDK.Rendering.RenderFactory.DrawNativeCircle(missile.Position, 60, Color.AliceBlue, 5);
-            //    var missilew2s = LeagueNativeRendererManager.WorldToScreenSpell(missile.EndPosition);
-            //    if (!missilew2s.IsZero)
-            //    {
-            //        Oasys.SDK.Rendering.RenderFactory.DrawLine(w2s.X, w2s.Y, missilew2s.X, missilew2s.Y, 60, Color.AliceBlue);
-            //    }
-            //}
-
             _currentChampion?.OnCoreRender();
         }
     }

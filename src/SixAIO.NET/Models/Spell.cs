@@ -5,6 +5,7 @@ using Oasys.Common.GameObject.Clients.ExtendedInstances.Spells;
 using Oasys.Common.Logic;
 using Oasys.SDK;
 using Oasys.SDK.SpellCasting;
+using Oasys.SDK.Tools;
 using SharpDX;
 using System;
 using System.Collections.Generic;
@@ -27,6 +28,7 @@ namespace SixAIO.Models
         public CastSlot CastSlot { get; set; }
 
         public SpellSlot SpellSlot { get; set; }
+        public Func<IEnumerable<GameObjectBase>, bool> AllowCollision { get; set; } = (collisions) => true;
 
         public Func<float> Delay { get; set; } = () => 0.25f;
 
@@ -151,6 +153,7 @@ namespace SixAIO.Models
 
                             if (UnitManager.MyChampion.Position.Distance(predictResult.CastPosition) <= Range() &&
                                 predictResult.HitChance >= MinimumHitChance() &&
+                                (!predictResult.Collision || AllowCollision(predictResult.CollisionObjects)) &&
                                 !predictResult.CastPosition.ToW2S().IsZero &&
                                 CastSpellAtPos(CastSlot, predictResult.CastPosition.ToW2S(), Delay()))
                             {

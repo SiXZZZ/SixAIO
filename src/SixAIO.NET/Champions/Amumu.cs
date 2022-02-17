@@ -22,6 +22,7 @@ namespace SixAIO.Champions
         {
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
+                AllowCollision = collisions => !collisions.Any(),
                 PredictionType = Prediction.MenuSelected.PredictionType.Line,
                 MinimumHitChance = () => QHitChance,
                 Range = () => 1100,
@@ -34,7 +35,7 @@ namespace SixAIO.Champions
                             UnitManager.MyChampion.Mana > QMinMana &&
                             spellClass.Charges > 0 &&
                             target != null,
-                TargetSelect = (mode) => SpellQ.GetTargets(mode, x=> !Collision.MinionCollision(x.W2S, (int)SpellQ.Radius())).FirstOrDefault()
+                TargetSelect = (mode) => SpellQ.GetTargets(mode).FirstOrDefault()
             };
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
             {

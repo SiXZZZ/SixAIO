@@ -28,14 +28,14 @@ namespace SixAIO.Champions
                 PredictionType = Prediction.MenuSelected.PredictionType.Cone,
                 MinimumHitChance = () => WHitChance,
                 Range = () => 1200,
-                Radius = () => 400,
+                Radius = () => 18.5f + (9.25f * SpellW.SpellClass.Level),
                 Speed = () => 2000,
                 ShouldCast = (target, spellClass, damage) =>
                             UseW &&
                             spellClass.IsSpellReady &&
                             UnitManager.MyChampion.Mana > 70 &&
                             target != null,
-                TargetSelect = (mode) => SpellW.GetTargets(mode, x => !Collision.MinionCollision(x.W2S, (int)SpellQ.Radius())).FirstOrDefault()
+                TargetSelect = (mode) => SpellW.GetTargets(mode).FirstOrDefault()
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
