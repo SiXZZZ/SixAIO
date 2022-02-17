@@ -40,7 +40,7 @@ namespace SixAIO.Champions
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
-                AllowCollision = collisions => !collisions.Any(),
+                AllowCollision = (target, collisions) => !collisions.Any(),
                 PredictionType = Prediction.MenuSelected.PredictionType.Line,
                 MinimumHitChance = () => EHitChance,
                 Range = () => 1000,

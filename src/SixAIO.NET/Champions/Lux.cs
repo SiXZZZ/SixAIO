@@ -18,7 +18,7 @@ namespace SixAIO.Champions
         {
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
-                AllowCollision = collisions => collisions.Count() <=1,
+                AllowCollision = (target, collisions) => collisions.Count() <= 1,
                 PredictionType = Prediction.MenuSelected.PredictionType.Line,
                 MinimumHitChance = () => QHitChance,
                 Range = () => 1300,
