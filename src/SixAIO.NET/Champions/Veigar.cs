@@ -21,6 +21,7 @@ namespace SixAIO.Champions
         {
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
+                IsTargetted = () => true,
                 ShouldCast = (target, spellClass, damage) =>
                             UseR &&
                             spellClass.IsSpellReady &&

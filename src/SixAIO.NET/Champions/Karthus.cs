@@ -1,18 +1,14 @@
 ﻿using Oasys.Common;
 using Oasys.Common.Enums.GameEnums;
 using Oasys.Common.GameObject;
-using Oasys.Common.GameObject.ObjectClass;
 using Oasys.Common.Menu;
 using Oasys.Common.Menu.ItemComponents;
 using Oasys.SDK;
 using Oasys.SDK.Menu;
 using Oasys.SDK.SpellCasting;
-using Oasys.SDK.Tools;
 using SharpDX;
-using SixAIO.Enums;
 using SixAIO.Models;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 
 namespace SixAIO.Champions
@@ -31,7 +27,7 @@ namespace SixAIO.Champions
         {
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
-                PredictionType = Prediction.MenuSelected.PredictionType.Circle,
+                PredictionMode = () => Prediction.MenuSelected.PredictionType.Circle,
                 MinimumHitChance = () => QHitChance,
                 Range = () => 875,
                 Speed = () => 1200,
@@ -81,7 +77,7 @@ namespace SixAIO.Champions
                             UseR &&
                             spellClass.IsSpellReady &&
                             UnitManager.MyChampion.Mana > 100,
-                AlertSpellUsage = (spellSlot) =>
+                RenderSpellUsage = () =>
                 {
                     var enemies = UnitManager.EnemyChampions.Where(x => x.IsAlive && x.IsTargetable &&
                                              !TargetSelector.IsInvulnerable(x, Oasys.Common.Logic.DamageType.Magical, false) &&

@@ -57,7 +57,7 @@ namespace SixAIO.Champions
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
             {
                 AllowCollision = (target, collisions) => !collisions.Any(),
-                PredictionType = Prediction.MenuSelected.PredictionType.Line,
+                PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
                 MinimumHitChance = () => WHitChance,
                 Range = () => 1500,
                 Radius = () => 120,
@@ -78,6 +78,7 @@ namespace SixAIO.Champions
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
+                IsTargetted = () => true,
                 ShouldCast = (target, spellClass, damage) =>
                             UseE &&
                             spellClass.IsSpellReady &&
@@ -89,7 +90,7 @@ namespace SixAIO.Champions
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
-                PredictionType = Prediction.MenuSelected.PredictionType.Line,
+                PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
                 MinimumHitChance = () => RHitChance,
                 Range = () => 30000,
                 Radius = () => 280,
@@ -107,7 +108,7 @@ namespace SixAIO.Champions
                             spellClass.IsSpellReady &&
                             UnitManager.MyChampion.Mana > 100 &&
                             target != null,
-                TargetSelect = (mode) => SpellR.GetTargets(mode).FirstOrDefault(x => (x.Health / x.MaxHealth * 100) < 50)
+                TargetSelect = (mode) => SpellR.GetTargets(mode, x => x.HealthPercent <= 50).FirstOrDefault()
             };
         }
 

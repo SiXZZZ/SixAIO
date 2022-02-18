@@ -63,7 +63,7 @@ namespace SixAIO.Champions
 
         public Riven()
         {
-            Spell.OnSpellCast += Spell_OnSpellCast;
+            SDKSpell.OnSpellCast += Spell_OnSpellCast;
             Orbwalker.OnOrbwalkerAfterBasicAttack += Orbwalker_OnOrbwalkerAfterBasicAttack;
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
@@ -96,7 +96,7 @@ namespace SixAIO.Champions
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
-                PredictionType = Prediction.MenuSelected.PredictionType.Cone,
+                PredictionMode = () => Prediction.MenuSelected.PredictionType.Cone,
                 MinimumHitChance = () => RHitChance,
                 Range = () => 1100f,
                 Speed = () => 1600f,
@@ -136,7 +136,7 @@ namespace SixAIO.Champions
                    ((UnitManager.MyChampion.UnitStats.BonusAttackDamage * 0.60f) + 50 + 50 * spellClass.Level));
         }
 
-        private void Spell_OnSpellCast(Spell spell, GameObjectBase target)
+        private void Spell_OnSpellCast(SDKSpell spell, GameObjectBase target)
         {
             if (spell.SpellSlot == SpellSlot.Q)
             {

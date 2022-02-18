@@ -18,7 +18,7 @@ namespace SixAIO.Champions
         {
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
-                PredictionType = Prediction.MenuSelected.PredictionType.Circle,
+                PredictionMode = () => Prediction.MenuSelected.PredictionType.Circle,
                 MinimumHitChance = () => QHitChance,
                 Range = () => 825,
                 Speed = () => 1000,
@@ -40,7 +40,7 @@ namespace SixAIO.Champions
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
-                PredictionType = Prediction.MenuSelected.PredictionType.Line,
+                PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
                 MinimumHitChance = () => RHitChance,
                 Range = () => 1300,
                 Speed = () => 2000,

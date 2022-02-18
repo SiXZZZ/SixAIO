@@ -12,37 +12,16 @@ namespace SixAIO.Champions
 {
     internal class Xerath : Champion
     {
-        private static bool _isChargingQ;
-        private static System.Diagnostics.Stopwatch _stopwatch = new();
-
         public Xerath()
         {
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
-                PredictionType = Prediction.MenuSelected.PredictionType.Line,
+                IsCharge = () => true,
+                PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
                 MinimumHitChance = () => QHitChance,
-                CastSpellAtPos = (castSlot, pos, castTime) =>
-                {
-                    if (_isChargingQ)
-                    {
-                        var released = SpellCastProvider.ReleaseChargeSpell(SpellCastSlot.Q, pos, castTime);
-                        if (released)
-                        {
-                            _stopwatch.Stop();
-                            _isChargingQ = false;
-                        }
-                        return released;
-                    }
-                    else
-                    {
-                        _isChargingQ = true;
-                        _stopwatch.Restart();
-                        return SpellCastProvider.StartChargeSpell(SpellCastSlot.Q);
-                    }
-                },
-                Range = () => _isChargingQ
+                Range = () => SpellQ.ChargeTimer.IsRunning
                                         ? SpellQ.SpellClass.IsSpellReady
-                                            ? 735 + _stopwatch.ElapsedMilliseconds / 1000 / 0.25f * 102f
+                                            ? 735 + SpellQ.ChargeTimer.ElapsedMilliseconds / 1000 / 0.25f * 102f
                                             : 0
                                         : 1450,
                 Radius = () => 140,
@@ -50,14 +29,14 @@ namespace SixAIO.Champions
                 ShouldCast = (target, spellClass, damage) =>
                             UseQ &&
                             spellClass.IsSpellReady &&
-                            (_isChargingQ || UnitManager.MyChampion.Mana > 120) &&
+                            (SpellQ.ChargeTimer.IsRunning || UnitManager.MyChampion.Mana > 120) &&
                             target != null &&
                             target.Distance < SpellQ.Range(),
                 TargetSelect = (mode) => SpellQ.GetTargets(mode).FirstOrDefault()
             };
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
             {
-                PredictionType = Prediction.MenuSelected.PredictionType.Circle,
+                PredictionMode = () => Prediction.MenuSelected.PredictionType.Circle,
                 MinimumHitChance = () => WHitChance,
                 Range = () => 1000,
                 Radius = () => 250,
@@ -72,7 +51,7 @@ namespace SixAIO.Champions
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
                 AllowCollision = (target, collisions) => !collisions.Any(),
-                PredictionType = Prediction.MenuSelected.PredictionType.Line,
+                PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
                 MinimumHitChance = () => EHitChance,
                 Range = () => 1125,
                 Radius = () => 120,
@@ -86,7 +65,7 @@ namespace SixAIO.Champions
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
-                PredictionType = Prediction.MenuSelected.PredictionType.Circle,
+                PredictionMode = () => Prediction.MenuSelected.PredictionType.Circle,
                 MinimumHitChance = () => RHitChance,
                 Range = () => 5000,
                 Radius = () => 200,
@@ -103,7 +82,7 @@ namespace SixAIO.Champions
 
         internal override void OnCoreMainInput()
         {
-            if (SpellW.ExecuteCastSpell() || SpellE.ExecuteCastSpell() || SpellQ.ExecuteCastSpell(isCharge: true) /*|| SpellR.ExecuteCastSpell()*/)
+            if (SpellW.ExecuteCastSpell() || SpellE.ExecuteCastSpell() || SpellQ.ExecuteCastSpell() /*|| SpellR.ExecuteCastSpell()*/)
             {
                 return;
             }

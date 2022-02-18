@@ -16,9 +16,6 @@ namespace SixAIO.Champions
 {
     internal class Varus : Champion
     {
-        private static bool _isChargingQ;
-        private static System.Diagnostics.Stopwatch _stopwatch = new();
-
         private static int WStacks<T>(T target) where T : GameObjectBase
         {
             var buff = target.BuffManager.GetBuffByName("VarusWDebuff", false, true);
@@ -33,31 +30,12 @@ namespace SixAIO.Champions
         {
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
-                PredictionType = Prediction.MenuSelected.PredictionType.Line,
+                IsCharge = () => true,
+                PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
                 MinimumHitChance = () => QHitChance,
-                CastSpellAtPos = (castSlot, pos, castTime) =>
-                {
-                    if (_isChargingQ)
-                    {
-                        var released = SpellCastProvider.ReleaseChargeSpell(SpellCastSlot.Q, pos, castTime);
-                        if (released)
-                        {
-                            _stopwatch.Stop();
-                            _isChargingQ = false;
-                        }
-                        return released;
-                    }
-                    else
-                    {
-                        SpellW.ExecuteCastSpell();
-                        _isChargingQ = true;
-                        _stopwatch.Restart();
-                        return SpellCastProvider.StartChargeSpell(SpellCastSlot.Q);
-                    }
-                },
-                Range = () => _isChargingQ
+                Range = () => SpellQ.ChargeTimer.IsRunning
                                     ? SpellQ.SpellClass.IsSpellReady
-                                            ? 895 + _stopwatch.ElapsedMilliseconds / 1000 / 0.25f * 140
+                                            ? 895 + SpellQ.ChargeTimer.ElapsedMilliseconds / 1000 / 0.25f * 140
                                             : 0
                                     : 1600,
                 Radius = () => 140,
@@ -66,9 +44,9 @@ namespace SixAIO.Champions
                 ShouldCast = (target, spellClass, damage) =>
                             UseQ &&
                             spellClass.IsSpellReady &&
-                            (_isChargingQ || UnitManager.MyChampion.Mana > 85) &&
+                            (SpellQ.ChargeTimer.IsRunning || UnitManager.MyChampion.Mana > 85) &&
                             target != null &&
-                            (_isChargingQ ? target.Distance < SpellQ.Range() : target.Distance < 1600),
+                            (SpellQ.ChargeTimer.IsRunning ? target.Distance < SpellQ.Range() : target.Distance < 1600),
                 TargetSelect = (mode) => SpellQ.GetTargets(mode, x => (UseOnlyIfXGTEWStacks == 0 || WStacks(x) >= UseOnlyIfXGTEWStacks)).FirstOrDefault()
             };
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
@@ -84,7 +62,7 @@ namespace SixAIO.Champions
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
-                PredictionType = Prediction.MenuSelected.PredictionType.Circle,
+                PredictionMode = () => Prediction.MenuSelected.PredictionType.Circle,
                 MinimumHitChance = () => EHitChance,
                 Range = () => 925,
                 Radius = () => 300,
@@ -98,7 +76,7 @@ namespace SixAIO.Champions
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
-                PredictionType = Prediction.MenuSelected.PredictionType.Line,
+                PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
                 MinimumHitChance = () => RHitChance,
                 Range = () => 1370,
                 Radius = () => 240,
@@ -118,7 +96,7 @@ namespace SixAIO.Champions
 
         internal override void OnCoreMainInput()
         {
-            if (SpellQ.ExecuteCastSpell(isCharge: true) || SpellE.ExecuteCastSpell() || SpellR.ExecuteCastSpell())
+            if (SpellQ.ExecuteCastSpell() || SpellE.ExecuteCastSpell() || SpellR.ExecuteCastSpell())
             {
                 return;
             }

@@ -47,7 +47,7 @@ namespace SixAIO.Champions
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
-                PredictionType = Prediction.MenuSelected.PredictionType.Line,
+                PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
                 MinimumHitChance = () => RHitChance,
                 Range = () => 1000,
                 Radius = () => 280,

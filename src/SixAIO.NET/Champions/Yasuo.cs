@@ -42,11 +42,11 @@ namespace SixAIO.Champions
 
         public Yasuo()
         {
-            Spell.OnSpellCast += Spell_OnSpellCast;
+            SDKSpell.OnSpellCast += Spell_OnSpellCast;
             Orbwalker.OnOrbwalkerAfterBasicAttack += Orbwalker_OnOrbwalkerAfterBasicAttack;
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
-                PredictionType = Prediction.MenuSelected.PredictionType.Line,
+                PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
                 MinimumHitChance = () => QHitChance,
                 Speed = () => 1200,
                 Radius = () => GetQState() == 3 ? 180 : 80,
@@ -83,6 +83,7 @@ namespace SixAIO.Champions
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
+                IsTargetted = () => true,
                 ShouldCast = (target, spellClass, damage) =>
                             UseE &&
                             spellClass.IsSpellReady &&
@@ -142,6 +143,7 @@ namespace SixAIO.Champions
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
+                IsTargetted = () => true,
                 ShouldCast = (target, spellClass, damage) =>
                             UseR &&
                             spellClass.IsSpellReady &&
@@ -199,7 +201,7 @@ namespace SixAIO.Champions
                    ((UnitManager.MyChampion.UnitStats.BonusAttackDamage * 0.20f) + (UnitManager.MyChampion.UnitStats.TotalAbilityPower * 0.60f) + 50 + 10 * spellClass.Level);
         }
 
-        private void Spell_OnSpellCast(Spell spell, GameObjectBase target)
+        private void Spell_OnSpellCast(SDKSpell spell, GameObjectBase target)
         {
             if (spell.SpellSlot == SpellSlot.E && (UnitManager.EnemyChampions.Any(x => x.Distance <= UnitManager.MyChampion.AttackRange && TargetSelector.IsAttackable(x)) || GetQState() < 3))
             {

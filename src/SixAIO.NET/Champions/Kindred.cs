@@ -44,7 +44,7 @@ namespace SixAIO.Champions
 
         public Kindred()
         {
-            Spell.OnSpellCast += Spell_OnSpellCast;
+            SDKSpell.OnSpellCast += Spell_OnSpellCast;
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
                 ShouldCast = (target, spellClass, damage) =>
@@ -67,6 +67,7 @@ namespace SixAIO.Champions
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
+                IsTargetted = () => true,
                 ShouldCast = (target, spellClass, damage) =>
                             UseE &&
                             spellClass.IsSpellReady &&
@@ -80,7 +81,7 @@ namespace SixAIO.Champions
 
         private bool ShouldQ() => Qonlyifhaswbuff ? HasWBuff() : true;
 
-        private void Spell_OnSpellCast(Spell spell, GameObjectBase target)
+        private void Spell_OnSpellCast(SDKSpell spell, GameObjectBase target)
         {
             if (spell != null)
             {

@@ -17,7 +17,7 @@ namespace SixAIO.Champions
         {
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
-                PredictionType = Prediction.MenuSelected.PredictionType.Line,
+                PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
                 MinimumHitChance = () => QHitChance,
                 Range = () => 1300,
                 Radius = () => 120,
@@ -38,6 +38,7 @@ namespace SixAIO.Champions
             };
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
             {
+                IsTargetted = () => true,
                 ShouldCast = (target, spellClass, damage) =>
                             UseW &&
                             spellClass.IsSpellReady &&
@@ -51,7 +52,7 @@ namespace SixAIO.Champions
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
                 AllowCollision = (target, collisions) => !collisions.Any(),
-                PredictionType = Prediction.MenuSelected.PredictionType.Line,
+                PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
                 MinimumHitChance = () => EHitChance,
                 Range = () => 800,
                 Radius = () => 140,
@@ -65,7 +66,9 @@ namespace SixAIO.Champions
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
+                IsTargetted = () => true,
                 Delay = () => 1f,
+                Range = () => 3500f,
                 Damage = (target, spellClass) =>
                             target != null
                             ? DamageCalculator.GetArmorMod(UnitManager.MyChampion, target) *
@@ -79,9 +82,7 @@ namespace SixAIO.Champions
                             !UnitManager.EnemyChampions.Any(x => x.Distance < 1000) &&
                             target != null &&
                             target.Health < damage,
-                TargetSelect = (mode) =>
-                            UnitManager.EnemyChampions
-                            .FirstOrDefault(x => x.Distance <= 3500 && x.IsAlive && TargetSelector.IsAttackable(x))
+                TargetSelect = (mode) => SpellR.GetTargets(mode).FirstOrDefault()
             };
         }
 

@@ -32,10 +32,11 @@ namespace SixAIO.Champions
 
         public Irelia()
         {
-            Spell.OnSpellCast += Spell_OnSpellCast;
+            SDKSpell.OnSpellCast += Spell_OnSpellCast;
             Orbwalker.OnOrbwalkerAfterBasicAttack += Orbwalker_OnOrbwalkerAfterBasicAttack;
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
+                IsTargetted = () => true,
                 Speed = () => 1400 + UnitManager.MyChampion.UnitStats.MoveSpeed,
                 Range = () => 600f,
                 Delay = () => 0f,
@@ -98,8 +99,8 @@ namespace SixAIO.Champions
                             spellClass.IsSpellReady &&
                             target != null,
                 TargetSelect = (mode) => UnitManager.EnemyChampions
-                                            .FirstOrDefault(x => x.Distance <= SpellR.Range() && 
-                                                                 TargetSelector.IsAttackable(x) && 
+                                            .FirstOrDefault(x => x.Distance <= SpellR.Range() &&
+                                                                 TargetSelector.IsAttackable(x) &&
                                                                  BuffChecker.IsCrowdControlledOrSlowed(x))
             };
         }
@@ -149,7 +150,7 @@ namespace SixAIO.Champions
                    ((UnitManager.MyChampion.UnitStats.TotalAttackDamage * 0.60f) + (UnitManager.MyChampion.UnitStats.TotalAbilityPower * 0.60f) + (-15) + 20 * spellClass.Level));
         }
 
-        private void Spell_OnSpellCast(Spell spell, GameObjectBase target)
+        private void Spell_OnSpellCast(SDKSpell spell, GameObjectBase target)
         {
             if (spell.SpellSlot == SpellSlot.E)
             {

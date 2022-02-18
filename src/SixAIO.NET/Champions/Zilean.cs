@@ -18,7 +18,7 @@ namespace SixAIO.Champions
         {
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
-                PredictionType = Prediction.MenuSelected.PredictionType.Circle,
+                PredictionMode = () => Prediction.MenuSelected.PredictionType.Circle,
                 MinimumHitChance = () => QHitChance,
                 Range = () => 900,
                 Speed = () => 5000,
@@ -42,15 +42,18 @@ namespace SixAIO.Champions
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
+                IsTargetted = () => true,
+                Range = () => 550,
                 ShouldCast = (target, spellClass, damage) =>
                             UseE &&
                             spellClass.IsSpellReady &&
                             UnitManager.MyChampion.Mana > 50 &&
                             target != null,
-                TargetSelect = (mode) => UnitManager.EnemyChampions.FirstOrDefault(x => x.Distance <= 550 && x.IsAlive && TargetSelector.IsAttackable(x))
+                TargetSelect = (mode) => SpellE.GetTargets(mode).FirstOrDefault()
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
+                IsTargetted = () => true,
                 Delay = () => 0f,
                 ShouldCast = (target, spellClass, damage) =>
                             UseR &&

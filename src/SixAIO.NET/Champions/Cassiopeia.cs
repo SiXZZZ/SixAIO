@@ -21,7 +21,7 @@ namespace SixAIO.Champions
         {
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
-                PredictionType = Prediction.MenuSelected.PredictionType.Circle,
+                PredictionMode = () => Prediction.MenuSelected.PredictionType.Circle,
                 MinimumHitChance = () => QHitChance,
                 Range = () => 850,
                 Speed = () => 5000,
@@ -35,6 +35,7 @@ namespace SixAIO.Champions
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
+                IsTargetted = () => true,
                 Damage = (target, spellClass) => GetEDamage(target, spellClass),
                 ShouldCast = (target, spellClass, damage) =>
                             UseE &&
@@ -61,7 +62,7 @@ namespace SixAIO.Champions
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
-                PredictionType = Prediction.MenuSelected.PredictionType.Cone,
+                PredictionMode = () => Prediction.MenuSelected.PredictionType.Cone,
                 MinimumHitChance = () => RHitChance,
                 Range = () => 750,
                 Speed = () => 10000,

@@ -34,6 +34,7 @@ namespace SixAIO.Champions
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
+                IsTargetted = () => true,
                 ShouldCast = (target, spellClass, damage) =>
                             spellClass.IsSpellReady &&
                             UnitManager.MyChampion.Mana > 90 &&
@@ -57,6 +58,7 @@ namespace SixAIO.Champions
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
+                IsTargetted = () => true,
                 Damage = (target, spellClass) =>
                             target != null
                             ? GetRDamage(target)

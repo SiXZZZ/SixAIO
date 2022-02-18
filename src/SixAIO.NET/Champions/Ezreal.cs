@@ -18,7 +18,7 @@ namespace SixAIO.Champions
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
                 AllowCollision = (target, collisions) => target.IsObject(ObjectTypeFlag.AIMinionClient) || !collisions.Any(),
-                PredictionType = Prediction.MenuSelected.PredictionType.Line,
+                PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
                 MinimumHitChance = () => QHitChance,
                 Range = () => 1200,
                 Radius = () => 120,
@@ -40,7 +40,7 @@ namespace SixAIO.Champions
             };
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
             {
-                PredictionType = Prediction.MenuSelected.PredictionType.Line,
+                PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
                 MinimumHitChance = () => WHitChance,
                 Range = () => 1000,
                 Radius = () => 160,
@@ -70,7 +70,8 @@ namespace SixAIO.Champions
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
-                PredictionType = Prediction.MenuSelected.PredictionType.Line,
+                AllowCastOnMap = () => true,
+                PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
                 MinimumHitChance = () => RHitChance,
                 Range = () => 30000,
                 Radius = () => 320,
@@ -90,7 +91,7 @@ namespace SixAIO.Champions
                             UnitManager.MyChampion.Mana > RMinMana &&
                             target != null &&
                             target.Health < damage,
-                TargetSelect = (mode) => SpellR.GetTargets(mode).FirstOrDefault()
+                TargetSelect = (mode) => SpellR.GetTargets(mode, x => x.HealthPercent <= RTargetMaxHPPercent).FirstOrDefault()
             };
         }
 
