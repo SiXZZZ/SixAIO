@@ -86,7 +86,7 @@ namespace SixAIO.Champions
                             UnitManager.MyChampion.Mana > 40 &&
                             UnitManager.MyChampion.Mana > RMinMana &&
                             target != null,
-                TargetSelect = (mode) => SpellR.GetTargets(mode, x => (x.Health / x.MaxHealth * 100) < RTargetMaxHPPercent).FirstOrDefault()
+                TargetSelect = (mode) => SpellR.GetTargets(mode, x => x.HealthPercent < RTargetMaxHPPercent).FirstOrDefault()
             };
         }
 

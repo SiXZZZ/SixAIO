@@ -53,7 +53,7 @@ namespace SixAIO.Champions
                                                                 TargetSelector.IsAttackable(x) &&
                                                                 !TargetSelector.IsInvulnerable(x, Oasys.Common.Logic.DamageType.Physical, false))
                                                     .OrderBy(x => x.Health);
-            var target = targets.FirstOrDefault(x => CanStun(x));
+            var target = targets.FirstOrDefault(CanStun);
             if (target != null)
             {
                 return target;

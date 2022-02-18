@@ -36,29 +36,14 @@ namespace SixAIO.Champions
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
                 IsTargetted = () => true,
+                Range = () => 680,
                 Damage = (target, spellClass) => GetEDamage(target, spellClass),
                 ShouldCast = (target, spellClass, damage) =>
                             UseE &&
                             spellClass.IsSpellReady &&
                             UnitManager.MyChampion.Mana > 50 &&
                             target != null,
-                TargetSelect = (mode) => 
-                {
-                    var champTarget = UnitManager.EnemyChampions
-                                     .Where(x => x.IsAlive && TargetSelector.IsAttackable(x) && x.Distance <= 680)
-                                     .OrderBy(x => x.Health)
-                                     .FirstOrDefault();
-                    if (champTarget != null)
-                    {
-                        return champTarget;
-                    }
-
-                    return Orbwalker.TargetChampionsOnly
-                                    ? null
-                                    : UnitManager.Enemies.Where(x => x.IsAlive && x.Distance <= 680 && !x.IsObject(ObjectTypeFlag.BuildingProps) && !x.IsObject(ObjectTypeFlag.AITurretClient) && TargetSelector.IsAttackable(x))
-                                                         .OrderBy(x => x.Health)
-                                                         .FirstOrDefault();
-                }
+                TargetSelect = (mode) => SpellE.GetTargets(mode).OrderBy(IsPoisoned).ThenByDescending(x => x.EffectiveMagicHealth).FirstOrDefault()
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
@@ -73,9 +58,9 @@ namespace SixAIO.Champions
                             spellClass.IsSpellReady &&
                             UnitManager.MyChampion.Mana > 100 &&
                             target != null,
-                TargetSelect = (mode) => SpellR.GetTargets(mode,x=> 
-                                                     x.IsFacing(UnitManager.MyChampion) &&
-                                                     !TargetSelector.IsInvulnerable(x, Oasys.Common.Logic.DamageType.Magical, false))
+                TargetSelect = (mode) => SpellR.GetTargets(mode, x =>
+                                                      x.IsFacing(UnitManager.MyChampion) &&
+                                                      !TargetSelector.IsInvulnerable(x, Oasys.Common.Logic.DamageType.Magical, false))
                                                 .FirstOrDefault()
             };
         }

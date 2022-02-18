@@ -57,7 +57,7 @@ namespace SixAIO.Champions
                             spellClass.IsSpellReady &&
                             SpellQ.ShouldCast(target, spellClass, damage) &&
                             target != null &&
-                            (target.Health / target.MaxHealth * 100) < UseOnlyWIfXLTEHPPercent,
+                            target.HealthPercent <= UseOnlyWIfXLTEHPPercent,
                 TargetSelect = (mode) => SpellQ.TargetSelect(mode),
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
@@ -86,7 +86,7 @@ namespace SixAIO.Champions
                             spellClass.IsSpellReady &&
                             UnitManager.MyChampion.Mana > 100 &&
                             target != null,
-                TargetSelect = (mode) => SpellR.GetTargets(mode, x => (x.Health / x.MaxHealth * 100) <= UseOnlyRIfXLTEHPPercent &&
+                TargetSelect = (mode) => SpellR.GetTargets(mode, x => x.HealthPercent <= UseOnlyRIfXLTEHPPercent &&
                                                                         (UseOnlyIfXGTEWStacks == 0 || WStacks(x) >= UseOnlyIfXGTEWStacks) &&
                                                                         RIfMoreThanEnemiesNear < UnitManager.EnemyChampions.Count(enemy =>
                                                                         TargetSelector.IsAttackable(enemy) && enemy.Distance(x) < REnemiesCloserThan))

@@ -39,15 +39,14 @@ namespace SixAIO.Champions
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
             {
                 IsTargetted = () => true,
+                Range = () => 780,
                 ShouldCast = (target, spellClass, damage) =>
                             UseW &&
                             spellClass.IsSpellReady &&
                             spellClass.Charges >= 1 &&
                             UnitManager.MyChampion.Mana > 30 &&
                             target != null,
-                TargetSelect = (mode) =>
-                            UnitManager.EnemyChampions
-                            .FirstOrDefault(x => x.Distance <= 780 && x.IsAlive && TargetSelector.IsAttackable(x) && BuffChecker.IsCrowdControlled(x))
+                TargetSelect = (mode) => SpellW.GetTargets(mode, x => BuffChecker.IsCrowdControlled(x)).FirstOrDefault()
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {

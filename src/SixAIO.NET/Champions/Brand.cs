@@ -49,31 +49,25 @@ namespace SixAIO.Champions
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
                 IsTargetted = () => true,
+                Range = () => 675,
                 ShouldCast = (target, spellClass, damage) =>
                             UseE &&
                             spellClass.IsSpellReady &&
                             UnitManager.MyChampion.Mana > 90 &&
                             target != null,
-                TargetSelect = (mode) =>
-                            UnitManager.EnemyChampions
-                            .FirstOrDefault(x => x.Distance <= 675 && x.IsAlive &&
-                                                 TargetSelector.IsAttackable(x) &&
-                                                 !TargetSelector.IsInvulnerable(x, Oasys.Common.Logic.DamageType.Magical, false))
+                TargetSelect = (mode) => SpellE.GetTargets(mode,x=> !TargetSelector.IsInvulnerable(x, Oasys.Common.Logic.DamageType.Magical, false)).FirstOrDefault()
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
                 IsTargetted = () => true,
+                Range = () => 750,
                 ShouldCast = (target, spellClass, damage) =>
                             UseR &&
                             spellClass.IsSpellReady &&
                             UnitManager.MyChampion.Mana > 100 &&
                             target != null &&
                             (UnitManager.Enemies.Count(x => x.Position.Distance(target.Position) < 500) >= 2 || target.Distance < 500),
-                TargetSelect = (mode) =>
-                            UnitManager.EnemyChampions
-                            .FirstOrDefault(x => x.Distance <= 750 && x.IsAlive &&
-                                                 TargetSelector.IsAttackable(x) &&
-                                                 !TargetSelector.IsInvulnerable(x, Oasys.Common.Logic.DamageType.Magical, false))
+                TargetSelect = (mode) => SpellR.GetTargets(mode, x => !TargetSelector.IsInvulnerable(x, Oasys.Common.Logic.DamageType.Magical, false)).FirstOrDefault()
             };
         }
 
