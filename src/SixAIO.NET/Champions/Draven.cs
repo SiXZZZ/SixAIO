@@ -54,7 +54,7 @@ namespace SixAIO.Champions
             {
                 Delay = () => 0f,
                 IsEnabled = () => UseQ,
-                ShouldCast = (target, spellClass, damage) =>
+                ShouldCast = (mode, target, spellClass, damage) =>
                             TargetSelector.IsAttackable(Orbwalker.TargetHero) &&
                             TargetSelector.IsInRange(Orbwalker.TargetHero) &&
                             QStacks() <= 1,
@@ -63,7 +63,7 @@ namespace SixAIO.Champions
             {
                 Delay = () => 0f,
                 IsEnabled = () => UseW,
-                ShouldCast = (target, spellClass, damage) =>
+                ShouldCast = (mode, target, spellClass, damage) =>
                             TargetSelector.IsAttackable(Orbwalker.TargetHero) &&
                             TargetSelector.IsInRange(Orbwalker.TargetHero) &&
                             QStacks() > 0,

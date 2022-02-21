@@ -64,7 +64,7 @@ namespace SixAIO.Champions
                             : 0,
                 IsEnabled = () => UseR,
                 IsSpellReady = (spellClass, minimumMana, minimumCharges) => spellClass.IsSpellReady && UnitManager.MyChampion.Mana >= spellClass.SpellData.ResourceCost && !UnitManager.EnemyChampions.Any(x => x.Distance < 1000),
-                ShouldCast = (target, spellClass, damage) => target != null && target.Health < damage,
+                ShouldCast = (mode, target, spellClass, damage) => target != null && target.Health < damage,
                 TargetSelect = (mode) => SpellR.GetTargets(mode).FirstOrDefault()
             };
         }

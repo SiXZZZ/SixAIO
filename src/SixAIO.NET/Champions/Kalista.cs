@@ -1,6 +1,7 @@
 ﻿using Oasys.Common.Enums.GameEnums;
 using Oasys.Common.GameObject;
 using Oasys.Common.GameObject.Clients.ExtendedInstances.Spells;
+using Oasys.Common.GameObject.ObjectClass;
 using Oasys.Common.Menu;
 using Oasys.Common.Menu.ItemComponents;
 using Oasys.SDK;
@@ -15,16 +16,7 @@ namespace SixAIO.Champions
 {
     internal class Kalista : Champion
     {
-        private enum Mode
-        {
-            Champs,
-            Jungle,
-            Everything,
-        }
-
-        private static Mode _mode = Mode.Everything;
-
-        public Oasys.Common.GameObject.ObjectClass.Hero BindedAlly { get; private set; }
+        public Hero BindedAlly { get; private set; }
 
         public Kalista()
         {
@@ -43,7 +35,7 @@ namespace SixAIO.Champions
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
                 IsEnabled = () => UseE,
-                ShouldCast = (target, spellClass, damage) => ShouldCastE(),
+                ShouldCast = (mode, target, spellClass, damage) => ShouldCastE(mode),
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
@@ -56,53 +48,37 @@ namespace SixAIO.Champions
             };
         }
 
-        internal bool ShouldCastE()
+        internal bool ShouldCastE(Orbwalker.OrbWalkingModeType mode)
         {
-                switch (_mode)
-                {
-                    case Mode.Champs:
-                        {
-                            return UnitManager.EnemyChampions
-                                .Count(x => x.Distance <= 1100 && x.IsAlive &&
-                                            TargetSelector.IsAttackable(x) && x.Health < GetEDamage(x) &&
-                                                                !TargetSelector.IsInvulnerable(x, Oasys.Common.Logic.DamageType.Physical, false) &&
-                                                                MenuTab.GetItem<Switch>("E - " + x.ModelName).IsOn)
-                                 >= 1;
-                        }
-                    case Mode.Jungle:
-                        {
-                            return (UnitManager.EnemyJungleMobs.Count(x => x.Distance <= 1100 && x.IsAlive &&
-                                           TargetSelector.IsAttackable(x) && x.Health < GetEDamage(x) &&
-                                           (x.UnitComponentInfo.SkinName.ToLower().Contains("dragon") ||
-                                           x.UnitComponentInfo.SkinName.ToLower().Contains("baron") ||
-                                           x.UnitComponentInfo.SkinName.ToLower().Contains("herald")))
-                                >= 1) ||
-                              (UnitManager.EnemyJungleMobs.Count(x => x.Distance <= 1100 && x.IsAlive &&
-                                                                          TargetSelector.IsAttackable(x) && x.Health < GetEDamage(x))
-                                 >= 3);
-                        }
-                    case Mode.Everything:
-                        {
-                            return (UnitManager.EnemyChampions.Count(x => x.Distance <= 1100 && x.IsAlive &&
-                                                                          TargetSelector.IsAttackable(x) && x.Health < GetEDamage(x) &&
-                                                                          !TargetSelector.IsInvulnerable(x, Oasys.Common.Logic.DamageType.Physical, false) &&
-                                                                          MenuTab.GetItem<Switch>("E - " + x.ModelName).IsOn) >= 1) ||
-                                (UnitManager.EnemyJungleMobs.Count(x => x.Distance <= 1100 && x.IsAlive &&
-                                                                          TargetSelector.IsAttackable(x) && x.Health < GetEDamage(x) &&
-                                                                          (x.UnitComponentInfo.SkinName.ToLower().Contains("dragon") ||
-                                                                          x.UnitComponentInfo.SkinName.ToLower().Contains("baron") ||
-                                                                          x.UnitComponentInfo.SkinName.ToLower().Contains("herald")))
-                                >= 1) ||
-                                (UnitManager.EnemyJungleMobs.Count(x => x.Distance <= 1100 && x.IsAlive &&
-                                                                          TargetSelector.IsAttackable(x) && x.Health < GetEDamage(x))
-                                 >= 3) ||
-                                (UnitManager.EnemyMinions.Count(x => x.Distance <= 1100 && x.IsAlive &&
-                                                                          TargetSelector.IsAttackable(x) && x.Health < GetEDamage(x))
-                                >= 3);
-                        }
-                }
+            return mode switch
+            {
+                Orbwalker.OrbWalkingModeType.Combo => UnitManager.EnemyChampions.Count(IsValidHero) >= 1,
+                Orbwalker.OrbWalkingModeType.LaneClear =>
+                            (UnitManager.EnemyChampions.Count(IsValidHero) >= 1) ||
+                            (UnitManager.EnemyJungleMobs.Count(x => IsValidTarget(x) && IsEpicJungleMonster(x)) >= 1) ||
+                            (UnitManager.EnemyJungleMobs.Count(IsValidTarget) >= 3) ||
+                            (UnitManager.EnemyMinions.Count(IsValidTarget) >= 3),
+                _ => false
+            };
+        }
 
-            return false;
+        private bool IsValidHero(Hero target)
+        {
+            return IsValidTarget(target) &&
+                    !TargetSelector.IsInvulnerable(target, Oasys.Common.Logic.DamageType.Physical, false) &&
+                    MenuTab.GetItem<Switch>("E - " + target.ModelName).IsOn;
+        }
+
+        private static bool IsEpicJungleMonster(JungleMob target)
+        {
+            return target.UnitComponentInfo.SkinName.ToLower().Contains("dragon") ||
+                   target.UnitComponentInfo.SkinName.ToLower().Contains("baron") ||
+                   target.UnitComponentInfo.SkinName.ToLower().Contains("herald");
+        }
+
+        private static bool IsValidTarget(GameObjectBase target)
+        {
+            return target.Distance <= 1100 && target.IsAlive && TargetSelector.IsAttackable(target) && target.Health < GetEDamage(target);
         }
 
         internal static float GetEDamage(GameObjectBase enemy)
@@ -115,7 +91,9 @@ namespace SixAIO.Champions
             var armorMod = DamageCalculator.GetArmorMod(UnitManager.MyChampion, enemy);
             var firstSpearDaamage = 10 + (UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot.E).Level * 10) + UnitManager.MyChampion.UnitStats.TotalAttackDamage * 0.7;
 
-            var additionalSpearDamage = 4 + UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot.E).Level * 6 + UnitManager.MyChampion.UnitStats.TotalAttackDamage * GetAdditionalSpearLevelAttackDamageMod();
+            var additionalSpearDamage = 4 +
+                                        UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot.E).Level * 6 +
+                                        UnitManager.MyChampion.UnitStats.TotalAttackDamage * GetAdditionalSpearLevelAttackDamageMod();
             var physicalDamage = firstSpearDaamage + additionalSpearDamage * (kalistaE.Stacks - 1);
             var skin = enemy.UnitComponentInfo.SkinName.ToLower();
             if (skin.Contains("dragon") ||
@@ -143,7 +121,6 @@ namespace SixAIO.Champions
 
         internal override void OnCoreMainInput()
         {
-            _mode = Mode.Champs;
             if (SpellE.ExecuteCastSpell() || SpellQ.ExecuteCastSpell() || SpellR.ExecuteCastSpell())
             {
                 return;
@@ -152,8 +129,7 @@ namespace SixAIO.Champions
 
         internal override void OnCoreLaneClearInput()
         {
-            _mode = Mode.Everything;
-            if (SpellE.ExecuteCastSpell())
+            if (SpellE.ExecuteCastSpell(Orbwalker.OrbWalkingModeType.LaneClear))
             {
                 return;
             }

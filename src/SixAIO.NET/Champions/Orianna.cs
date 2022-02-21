@@ -50,7 +50,7 @@ namespace SixAIO.Champions
                 Delay = () => 0f,
                 IsEnabled = () => UseW,
                 MinimumMana = () => WMinMana,
-                ShouldCast = (target, spellClass, damage) =>
+                ShouldCast = (mode, target, spellClass, damage) =>
                             UnitManager.EnemyChampions.Any(enemy => enemy.IsAlive && enemy.DistanceTo(GetBallPosition()) < 200 && TargetSelector.IsAttackable(enemy)) ||
                             (WSpeedAlly && UnitManager.AllyChampions.Any(ally => ally.IsAlive && ally.DistanceTo(GetBallPosition()) < 200 && TargetSelector.IsAttackable(ally, false))),
             };
@@ -88,7 +88,7 @@ namespace SixAIO.Champions
                 Delay = () => 0.5f,
                 IsEnabled = () => UseR,
                 MinimumMana = () => RMinMana,
-                ShouldCast = (target, spellClass, damage) =>
+                ShouldCast = (mode, target, spellClass, damage) =>
                             RUltEnemies <= UnitManager.EnemyChampions
                                             .Count(x => x.IsAlive && x.DistanceTo(GetBallPosition()) < 400 &&
                                                         TargetSelector.IsAttackable(x) && !TargetSelector.IsInvulnerable(x, Oasys.Common.Logic.DamageType.Magical, false)),

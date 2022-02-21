@@ -44,14 +44,14 @@ namespace SixAIO.Champions
             {
                 Delay = () => 0f,
                 IsEnabled = () => UseE,
-                ShouldCast = (target, spellClass, damage) =>
+                ShouldCast = (mode, target, spellClass, damage) =>
                             DashModeSelected == DashMode.ToMouse &&
                             UnitManager.EnemyChampions.Any(x => x.Distance <= x.TrueAttackRange + 500 && x.IsAlive && TargetSelector.IsAttackable(x)),
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
                 IsEnabled = () => UseR,
-                ShouldCast = (target, spellClass, damage) => UnitManager.EnemyChampions.Count(x => TargetSelector.IsAttackable(x) && x.Distance < REnemiesCloserThan) > RIfMoreThanEnemiesNear,
+                ShouldCast = (mode, target, spellClass, damage) => UnitManager.EnemyChampions.Count(x => TargetSelector.IsAttackable(x) && x.Distance < REnemiesCloserThan) > RIfMoreThanEnemiesNear,
             };
         }
 

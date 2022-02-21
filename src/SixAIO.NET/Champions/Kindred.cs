@@ -48,7 +48,7 @@ namespace SixAIO.Champions
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
                 IsEnabled = () => UseQ,
-                ShouldCast = (target, spellClass, damage) =>
+                ShouldCast = (mode, target, spellClass, damage) =>
                             DashModeSelected == DashMode.ToMouse &&
                             ShouldQ() &&
                             UnitManager.EnemyChampions.Any(x => x.IsAlive && x.Distance <= 1000 && TargetSelector.IsAttackable(x)),
@@ -57,7 +57,7 @@ namespace SixAIO.Champions
             {
                 Delay = () => 0f,
                 IsEnabled = () => UseW,
-                ShouldCast = (target, spellClass, damage) =>
+                ShouldCast = (mode, target, spellClass, damage) =>
                             !HasWBuff() &&
                             UnitManager.EnemyChampions.Any(x => x.IsAlive && x.Distance <= 1000 && TargetSelector.IsAttackable(x)),
             };

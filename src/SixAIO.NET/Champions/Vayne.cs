@@ -29,7 +29,7 @@ namespace SixAIO.Champions
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
                 IsEnabled = () => UseQ,
-                ShouldCast = (target, spellClass, damage) =>
+                ShouldCast = (mode, target, spellClass, damage) =>
                             _lastAATime > _lastQTime &&
                             DashModeSelected == DashMode.ToMouse &&
                             !Orbwalker.CanBasicAttack &&
@@ -73,7 +73,7 @@ namespace SixAIO.Champions
             return null;
         }
 
-        private bool ShouldCastE(GameObjectBase target, SpellClass spellClass, float damage)
+        private bool ShouldCastE(Orbwalker.OrbWalkingModeType mode, GameObjectBase target, SpellClass spellClass, float damage)
         {
             return UseE && spellClass.IsSpellReady && UnitManager.MyChampion.Mana > 90 && target != null;
         }

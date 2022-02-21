@@ -29,7 +29,7 @@ namespace SixAIO.Champions
                 IsEnabled = () => UseQ,
                 MinimumMana = () => 120,
                 IsSpellReady = (spellClass, minMana, minCharges) => SpellQ.ChargeTimer.IsRunning || UnitManager.MyChampion.Mana > minMana,
-                ShouldCast = (target, spellClass, damage) => target != null && target.Distance < SpellQ.Range(),
+                ShouldCast = (mode, target, spellClass, damage) => target != null && target.Distance < SpellQ.Range(),
                 TargetSelect = (mode) => SpellQ.GetTargets(mode).FirstOrDefault()
             };
             SpellW = new Spell(CastSlot.W, SpellSlot.W)

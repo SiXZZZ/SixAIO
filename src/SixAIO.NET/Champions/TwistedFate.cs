@@ -45,7 +45,7 @@ namespace SixAIO.Champions
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
             {
                 IsEnabled = () => UseW,
-                ShouldCast = (target, spellClass, damage) => GetCard() switch
+                ShouldCast = (mode, target, spellClass, damage) => GetCard() switch
                 {
                     Card.None => UnitManager.MyChampion.Mana > 100 && TargetSelector.IsAttackable(Orbwalker.TargetHero) && TargetSelector.IsInRange(Orbwalker.TargetHero),
                     Card.Blue => UnitManager.MyChampion.Mana <= 100,

@@ -29,7 +29,7 @@ namespace SixAIO.Champions
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
             {
                 IsEnabled = () => UseW,
-                ShouldCast = (target, spellClass, damage) =>
+                ShouldCast = (mode, target, spellClass, damage) =>
                             !SpellQ.SpellClass.IsSpellReady &&
                             (!SpellE.SpellClass.IsSpellReady ||
                               UnitManager.EnemyChampions.FirstOrDefault(x => x.Distance <= 900 && x.IsAlive && x.BuffManager.HasBuff("ZileanQ")) != null)

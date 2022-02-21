@@ -69,7 +69,7 @@ namespace SixAIO.Champions
             {
                 Delay = () => 0f,
                 IsEnabled = () => UseQ,
-                ShouldCast = (target, spellClass, damage) =>
+                ShouldCast = (mode, target, spellClass, damage) =>
                             _lastAATime > _lastQTime + 0.333f &&
                             _lastAATime > _lastQChargeTime + 0.333f &&
                             target != null,
@@ -78,7 +78,7 @@ namespace SixAIO.Champions
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
             {
                 IsEnabled = () => UseW,
-                ShouldCast = (target, spellClass, damage) =>
+                ShouldCast = (mode, target, spellClass, damage) =>
                             UnitManager.EnemyChampions.Any(x => x.Distance <= x.UnitComponentInfo.UnitBoundingRadius + (IsUltActive() ? 300 : 250) && TargetSelector.IsAttackable(x)),
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
@@ -97,7 +97,7 @@ namespace SixAIO.Champions
                 Damage = GetRDamage,
                 IsEnabled = () => UseR,
                 IsSpellReady = (spellClass, minMana, minCharges) => spellClass.IsSpellReady && IsWindSlashReady(),
-                ShouldCast = (target, spellClass, damage) =>
+                ShouldCast = (mode, target, spellClass, damage) =>
                             target != null &&
                             (target.Health < GetRDamage(target, spellClass) ||
                             (UltTimeLeft() > 0 && UltTimeLeft() < 1f) ||

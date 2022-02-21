@@ -33,12 +33,12 @@ namespace SixAIO.Champions
             {
                 IsEnabled = () => UseW,
                 MinimumMana = () => WMinMana,
-                ShouldCast = (target, spellClass, damage) => UnitManager.MyChampion.HealthPercent <= WHealBelowPercent,
+                ShouldCast = (mode, target, spellClass, damage) => UnitManager.MyChampion.HealthPercent <= WHealBelowPercent,
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
                 IsEnabled = () => UseE,
-                ShouldCast = (target, spellClass, damage) =>
+                ShouldCast = (mode, target, spellClass, damage) =>
                 {
                     if (EOnlyExecute)
                     {
@@ -78,7 +78,7 @@ namespace SixAIO.Champions
                 TargetSelect = (mode) => UnitManager.MyChampion,
                 IsEnabled = () => UseR,
                 MinimumMana = () => RMinMana,
-                ShouldCast = (target, spellClass, damage) =>
+                ShouldCast = (mode, target, spellClass, damage) =>
                 {
                     return UnitManager.MyChampion.HealthPercent < RBelowHealthPercent &&
                            UnitManager.EnemyChampions.Count(x => TargetSelector.IsAttackable(x) && x.Distance < REnemiesCloserThan) > RIfMoreThanEnemiesNear;

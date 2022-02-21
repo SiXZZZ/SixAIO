@@ -40,7 +40,7 @@ namespace SixAIO.Champions
                 Range = () => 550f,
                 Delay = () => 0f,
                 IsEnabled = () => UseE,
-                ShouldCast = (target, spellClass, damage) =>
+                ShouldCast = (mode, target, spellClass, damage) =>
                 {
                     var usingDefile = IsEActive();
                     var targetInRange = UnitManager.EnemyChampions.Any(x => x.Distance < SpellE.Range() && TargetSelector.IsAttackable(x));

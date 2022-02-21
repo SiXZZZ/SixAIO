@@ -43,7 +43,7 @@ namespace SixAIO.Champions
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
             {
                 IsEnabled = () => UseW,
-                ShouldCast = (target, spellClass, damage) =>
+                ShouldCast = (mode, target, spellClass, damage) =>
                             TargetSelector.IsAttackable(Orbwalker.TargetHero) &&
                             TargetSelector.IsInRange(Orbwalker.TargetHero),
             };
@@ -51,7 +51,7 @@ namespace SixAIO.Champions
             {
                 IsEnabled = () => UseE,
                 MinimumCharges = () => 1,
-                ShouldCast = (target, spellClass, damage) => ShouldCastE(),
+                ShouldCast = (mode, target, spellClass, damage) => ShouldCastE(),
             };
         }
 

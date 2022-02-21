@@ -42,7 +42,7 @@ namespace SixAIO.Champions
                 Speed = () => 1900,
                 Delay = () => 0f,
                 IsEnabled = () => UseQ,
-                ShouldCast = (target, spellClass, damage) =>
+                ShouldCast = (mode, target, spellClass, damage) =>
                             (SpellQ.ChargeTimer.IsRunning || UnitManager.MyChampion.Mana > 85) &&
                             target != null &&
                             (SpellQ.ChargeTimer.IsRunning ? target.Distance < SpellQ.Range() : target.Distance < 1600),
@@ -52,8 +52,8 @@ namespace SixAIO.Champions
             {
                 Delay = () => 0f,
                 IsEnabled = () => UseW,
-                ShouldCast = (target, spellClass, damage) =>
-                            SpellQ.ShouldCast(target, SpellQ.SpellClass, damage) &&
+                ShouldCast = (mode, target, spellClass, damage) =>
+                            SpellQ.ShouldCast(mode, target, SpellQ.SpellClass, damage) &&
                             target != null &&
                             target.HealthPercent <= UseOnlyWIfXLTEHPPercent,
                 TargetSelect = (mode) => SpellQ.TargetSelect(mode),

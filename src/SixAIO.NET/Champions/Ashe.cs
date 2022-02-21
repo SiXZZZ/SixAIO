@@ -19,7 +19,7 @@ namespace SixAIO.Champions
                 IsEnabled = () => UseQ,
                 IsSpellReady = (spellClass, minimumMana, minimumCharges) => spellClass.IsSpellReady && UnitManager.MyChampion.Mana > 50 &&
                                                UnitManager.MyChampion.BuffManager.GetBuffList().Any(x => x.IsActive && x.Stacks >= 4 && x.Name == "asheqcastready"),
-                ShouldCast = (target, spellClass, damage) => TargetSelector.IsAttackable(Orbwalker.TargetHero) && TargetSelector.IsInRange(Orbwalker.TargetHero),
+                ShouldCast = (mode, target, spellClass, damage) => TargetSelector.IsAttackable(Orbwalker.TargetHero) && TargetSelector.IsInRange(Orbwalker.TargetHero),
             };
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
             {

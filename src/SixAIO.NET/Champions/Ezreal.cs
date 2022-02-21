@@ -74,7 +74,7 @@ namespace SixAIO.Champions
                             : 0,
                 IsEnabled = () => UseR,
                 MinimumMana = () => RMinMana,
-                ShouldCast = (target, spellClass, damage) => target != null && target.Health < damage,
+                ShouldCast = (mode, target, spellClass, damage) => target != null && target.Health < damage,
                 TargetSelect = (mode) => SpellR.GetTargets(mode, x => x.HealthPercent <= RTargetMaxHPPercent).FirstOrDefault()
             };
         }

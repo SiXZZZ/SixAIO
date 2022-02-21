@@ -39,7 +39,7 @@ namespace SixAIO.Champions
             {
                 IsEnabled = () => UseW,
                 MinimumMana = () => WMinMana,
-                ShouldCast = (target, spellClass, damage) => UnitManager.EnemyChampions.Any(x => x.Distance < GetAttackRangeWithWActive() && TargetSelector.IsAttackable(x))
+                ShouldCast = (mode, target, spellClass, damage) => UnitManager.EnemyChampions.Any(x => x.Distance < GetAttackRangeWithWActive() && TargetSelector.IsAttackable(x))
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {

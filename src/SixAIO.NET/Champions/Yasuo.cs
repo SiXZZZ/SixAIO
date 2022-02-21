@@ -52,7 +52,7 @@ namespace SixAIO.Champions
                 Radius = () => GetQState() == 3 ? 180 : 80,
                 Range = () => GetQState() == 3 ? 1150 : 450,
                 IsEnabled = () => UseQ,
-                ShouldCast = (target, spellClass, damage) => target != null && (target.IsObject(ObjectTypeFlag.AIHeroClient) || GetQState() < 3),
+                ShouldCast = (mode, target, spellClass, damage) => target != null && (target.IsObject(ObjectTypeFlag.AIHeroClient) || GetQState() < 3),
                 TargetSelect = (mode) =>
                 {
                     var champ = UnitManager.EnemyChampions.FirstOrDefault(x => x.Distance <= SpellQ.Range() && TargetSelector.IsAttackable(x));

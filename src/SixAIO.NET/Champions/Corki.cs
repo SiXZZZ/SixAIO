@@ -29,7 +29,7 @@ namespace SixAIO.Champions
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
                 IsEnabled = () => UseE,
-                ShouldCast = (target, spellClass, damage) => UnitManager.EnemyChampions.Any(x => x.Distance <= UnitManager.MyChampion.TrueAttackRange && x.IsAlive && TargetSelector.IsAttackable(x)),
+                ShouldCast = (mode, target, spellClass, damage) => UnitManager.EnemyChampions.Any(x => x.Distance <= UnitManager.MyChampion.TrueAttackRange && x.IsAlive && TargetSelector.IsAttackable(x)),
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
