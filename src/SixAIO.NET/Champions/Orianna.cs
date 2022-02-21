@@ -41,34 +41,24 @@ namespace SixAIO.Champions
                 Range = () => 800,
                 Speed = () => 1400,
                 Radius = () => 160,
-                ShouldCast = (target, spellClass, damage) =>
-                            UseQ &&
-                            spellClass.IsSpellReady &&
-                            UnitManager.MyChampion.Mana > 50 &&
-                            UnitManager.MyChampion.Mana > QMinMana &&
-                            target != null,
+                IsEnabled = () => UseQ,
+                MinimumMana = () => QMinMana,
                 TargetSelect = (mode) => SpellQ.GetTargets(mode).FirstOrDefault()
             };
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
             {
                 Delay = () => 0f,
+                IsEnabled = () => UseW,
+                MinimumMana = () => WMinMana,
                 ShouldCast = (target, spellClass, damage) =>
-                            UseW &&
-                            spellClass.IsSpellReady &&
-                            UnitManager.MyChampion.Mana > 110 &&
-                            UnitManager.MyChampion.Mana > WMinMana &&
-                            (UnitManager.EnemyChampions.Any(enemy => enemy.IsAlive && enemy.DistanceTo(GetBallPosition()) < 200 && TargetSelector.IsAttackable(enemy)) ||
-                            (WSpeedAlly && UnitManager.AllyChampions.Any(ally => ally.IsAlive && ally.DistanceTo(GetBallPosition()) < 200 && TargetSelector.IsAttackable(ally, false)))),
+                            UnitManager.EnemyChampions.Any(enemy => enemy.IsAlive && enemy.DistanceTo(GetBallPosition()) < 200 && TargetSelector.IsAttackable(enemy)) ||
+                            (WSpeedAlly && UnitManager.AllyChampions.Any(ally => ally.IsAlive && ally.DistanceTo(GetBallPosition()) < 200 && TargetSelector.IsAttackable(ally, false))),
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
                 Delay = () => 0f,
-                ShouldCast = (target, spellClass, damage) =>
-                            UseE &&
-                            spellClass.IsSpellReady &&
-                            UnitManager.MyChampion.Mana > 60 &&
-                            UnitManager.MyChampion.Mana > EMinMana &&
-                            target != null,
+                IsEnabled = () => UseE,
+                MinimumMana = () => EMinMana,
                 TargetSelect = (mode) =>
                 {
                     Hero target = null;
@@ -96,11 +86,9 @@ namespace SixAIO.Champions
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
                 Delay = () => 0.5f,
+                IsEnabled = () => UseR,
+                MinimumMana = () => RMinMana,
                 ShouldCast = (target, spellClass, damage) =>
-                            UseR &&
-                            spellClass.IsSpellReady &&
-                            UnitManager.MyChampion.Mana > 100 &&
-                            UnitManager.MyChampion.Mana > RMinMana &&
                             RUltEnemies <= UnitManager.EnemyChampions
                                             .Count(x => x.IsAlive && x.DistanceTo(GetBallPosition()) < 400 &&
                                                         TargetSelector.IsAttackable(x) && !TargetSelector.IsInvulnerable(x, Oasys.Common.Logic.DamageType.Magical, false)),

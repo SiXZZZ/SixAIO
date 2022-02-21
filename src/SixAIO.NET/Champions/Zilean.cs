@@ -23,49 +23,34 @@ namespace SixAIO.Champions
                 Range = () => 900,
                 Speed = () => 5000,
                 Radius = () => 140,
-                ShouldCast = (target, spellClass, damage) =>
-                            UseQ &&
-                            spellClass.IsSpellReady &&
-                            UnitManager.MyChampion.Mana > 80 &&
-                            target != null,
-                TargetSelect = (mode) => SpellQ.GetTargets(mode).OrderBy(x=> x.BuffManager.HasBuff("ZileanQ")).FirstOrDefault()
+                IsEnabled = () => UseQ,
+                TargetSelect = (mode) => SpellQ.GetTargets(mode).OrderBy(x => x.BuffManager.HasBuff("ZileanQ")).FirstOrDefault()
             };
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
             {
+                IsEnabled = () => UseW,
                 ShouldCast = (target, spellClass, damage) =>
-                            UseW &&
-                            spellClass.IsSpellReady &&
-                            UnitManager.MyChampion.Mana > 40 &&
-                            !UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot.Q).IsSpellReady &&
-                            (!UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot.E).IsSpellReady ||
+                            !SpellQ.SpellClass.IsSpellReady &&
+                            (!SpellE.SpellClass.IsSpellReady ||
                               UnitManager.EnemyChampions.FirstOrDefault(x => x.Distance <= 900 && x.IsAlive && x.BuffManager.HasBuff("ZileanQ")) != null)
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
                 IsTargetted = () => true,
                 Range = () => 550,
-                ShouldCast = (target, spellClass, damage) =>
-                            UseE &&
-                            spellClass.IsSpellReady &&
-                            UnitManager.MyChampion.Mana > 50 &&
-                            target != null,
+                IsEnabled = () => UseE,
                 TargetSelect = (mode) => SpellE.GetTargets(mode).FirstOrDefault()
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
                 IsTargetted = () => true,
                 Delay = () => 0f,
-                ShouldCast = (target, spellClass, damage) =>
-                            UseR &&
-                            spellClass.IsSpellReady &&
-                            UnitManager.MyChampion.Mana > 175 &&
-                            target != null,
-                TargetSelect = (mode) => 
+                IsEnabled = () => UseR,
+                TargetSelect = (mode) =>
                 UnitManager.AllyChampions
                         .Where(ally => MenuTab.GetItem<Counter>("Ult Ally - " + ally.ModelName).Value > 0)
                         .OrderByDescending(ally => MenuTab.GetItem<Counter>("Ult Ally - " + ally.ModelName).Value)
-                        .FirstOrDefault(ally => ally.IsAlive && ally.Distance <= 900 && TargetSelector.IsAttackable(ally, false) &&
-                                                                 (ally.Health / ally.MaxHealth * 100) < RBuffHealthPercent)
+                        .FirstOrDefault(ally => ally.IsAlive && ally.Distance <= 900 && TargetSelector.IsAttackable(ally, false) && ally.HealthPercent < RBuffHealthPercent)
             };
         }
 

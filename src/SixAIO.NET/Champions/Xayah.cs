@@ -37,38 +37,29 @@ namespace SixAIO.Champions
                             (25 + spellClass.Level * 25 +
                             (UnitManager.MyChampion.UnitStats.BonusAttackDamage * 0.5f))
                             : 0,
-                ShouldCast = (target, spellClass, damage) =>
-                            UseQ &&
-                            spellClass.IsSpellReady &&
-                            UnitManager.MyChampion.Mana > 50 &&
-                            target != null,
+                IsEnabled = () => UseQ,
                 TargetSelect = (mode) => SpellQ.GetTargets(mode).FirstOrDefault()
             };
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
             {
+                IsEnabled = () => UseW,
                 ShouldCast = (target, spellClass, damage) =>
-                            UseW &&
-                            spellClass.IsSpellReady &&
-                            UnitManager.MyChampion.Mana > 60 &&
                             TargetSelector.IsAttackable(Orbwalker.TargetHero) &&
                             TargetSelector.IsInRange(Orbwalker.TargetHero),
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
-                ShouldCast = (target, spellClass, damage) => ShouldCastE(spellClass),
+                IsEnabled = () => UseE,
+                MinimumCharges = () => 1,
+                ShouldCast = (target, spellClass, damage) => ShouldCastE(),
             };
         }
 
-        private bool ShouldCastE(SpellClass spellClass)
+        private bool ShouldCastE()
         {
-            if (UseE && spellClass.IsSpellReady && spellClass.Charges >= 1 && UnitManager.MyChampion.Mana > 30)
-            {
-                return UnitManager.EnemyChampions.Where(x => TargetSelector.IsAttackable(x) &&
-                                                             !TargetSelector.IsInvulnerable(x, Oasys.Common.Logic.DamageType.Physical, false))
-                                                 .Any(x => GetFeathersBetweenMeAndEnemy(x) >= FeathersToHitChampions);
-            }
-
-            return false;
+            return UnitManager.EnemyChampions.Where(x => TargetSelector.IsAttackable(x) &&
+                                                         !TargetSelector.IsInvulnerable(x, Oasys.Common.Logic.DamageType.Physical, false))
+                                             .Any(x => GetFeathersBetweenMeAndEnemy(x) >= FeathersToHitChampions);
         }
 
         private int GetFeathersBetweenMeAndEnemy(AIBaseClient enemy)

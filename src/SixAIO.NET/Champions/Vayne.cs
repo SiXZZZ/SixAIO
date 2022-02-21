@@ -28,10 +28,8 @@ namespace SixAIO.Champions
             Orbwalker.OnOrbwalkerAfterBasicAttack += Orbwalker_OnOrbwalkerAfterBasicAttack;
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
+                IsEnabled = () => UseQ,
                 ShouldCast = (target, spellClass, damage) =>
-                            UseQ &&
-                            spellClass.IsSpellReady &&
-                            UnitManager.MyChampion.Mana > 30 &&
                             _lastAATime > _lastQTime &&
                             DashModeSelected == DashMode.ToMouse &&
                             !Orbwalker.CanBasicAttack &&
@@ -41,6 +39,7 @@ namespace SixAIO.Champions
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
                 IsTargetted = () => true,
+                IsEnabled = () => UseE,
                 ShouldCast = ShouldCastE,
                 TargetSelect = (mode) => _eTarget
             };

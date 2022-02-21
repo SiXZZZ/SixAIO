@@ -37,32 +37,27 @@ namespace SixAIO.Champions
                 Radius = () => 80,
                 Speed = () => 2400,
                 Damage = (target, spellClass) => -45 + (65 * spellClass.Level) + UnitManager.MyChampion.UnitStats.TotalAttackDamage,
-                ShouldCast = (target, spellClass, damage) => UseQ && spellClass.IsSpellReady && UnitManager.MyChampion.Mana > 70 && target != null,
+                IsEnabled = () => UseQ,
                 TargetSelect = (mode) => SpellQ.GetTargets(mode).FirstOrDefault()
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
-                ShouldCast = (target, spellClass, damage) => ShouldCastE(spellClass),
+                IsEnabled = () => UseE,
+                ShouldCast = (target, spellClass, damage) => ShouldCastE(),
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
                 Delay = () => 0f,
-                ShouldCast = (target, spellClass, damage) =>
-                            UseR &&
-                            spellClass.IsSpellReady &&
-                            UnitManager.MyChampion.Mana > 100 &&
-                            target != null,
+                IsEnabled = () => UseR,
                 TargetSelect = (mode) =>
-                            BindedAlly != null && BindedAlly.IsAlive && BindedAlly.Distance <= 1100 && (BindedAlly.Health / BindedAlly.MaxHealth * 100) < RHealthPercent
+                            BindedAlly != null && BindedAlly.IsAlive && BindedAlly.Distance <= 1100 && BindedAlly.HealthPercent < RHealthPercent
                                         ? BindedAlly
                                         : null
             };
         }
 
-        internal bool ShouldCastE(SpellClass spellClass)
+        internal bool ShouldCastE()
         {
-            if (UseE && spellClass.IsSpellReady && UnitManager.MyChampion.Mana > 40)
-            {
                 switch (_mode)
                 {
                     case Mode.Champs:
@@ -106,7 +101,6 @@ namespace SixAIO.Champions
                                 >= 3);
                         }
                 }
-            }
 
             return false;
         }

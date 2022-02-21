@@ -41,9 +41,8 @@ namespace SixAIO.Champions
                 Radius = () => 140,
                 Speed = () => 1900,
                 Delay = () => 0f,
+                IsEnabled = () => UseQ,
                 ShouldCast = (target, spellClass, damage) =>
-                            UseQ &&
-                            spellClass.IsSpellReady &&
                             (SpellQ.ChargeTimer.IsRunning || UnitManager.MyChampion.Mana > 85) &&
                             target != null &&
                             (SpellQ.ChargeTimer.IsRunning ? target.Distance < SpellQ.Range() : target.Distance < 1600),
@@ -52,10 +51,9 @@ namespace SixAIO.Champions
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
             {
                 Delay = () => 0f,
+                IsEnabled = () => UseW,
                 ShouldCast = (target, spellClass, damage) =>
-                            UseW &&
-                            spellClass.IsSpellReady &&
-                            SpellQ.ShouldCast(target, spellClass, damage) &&
+                            SpellQ.ShouldCast(target, SpellQ.SpellClass, damage) &&
                             target != null &&
                             target.HealthPercent <= UseOnlyWIfXLTEHPPercent,
                 TargetSelect = (mode) => SpellQ.TargetSelect(mode),
@@ -67,11 +65,7 @@ namespace SixAIO.Champions
                 Range = () => 925,
                 Radius = () => 300,
                 Speed = () => 1600,
-                ShouldCast = (target, spellClass, damage) =>
-                            UseE &&
-                            spellClass.IsSpellReady &&
-                            UnitManager.MyChampion.Mana > 80 &&
-                            target != null,
+                IsEnabled = () => UseE,
                 TargetSelect = (mode) => SpellE.GetTargets(mode, x => (UseOnlyIfXGTEWStacks == 0 || WStacks(x) >= UseOnlyIfXGTEWStacks)).FirstOrDefault()
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
@@ -81,11 +75,7 @@ namespace SixAIO.Champions
                 Range = () => 1370,
                 Radius = () => 240,
                 Speed = () => 1500,
-                ShouldCast = (target, spellClass, damage) =>
-                            UseR &&
-                            spellClass.IsSpellReady &&
-                            UnitManager.MyChampion.Mana > 100 &&
-                            target != null,
+                IsEnabled = () => UseR,
                 TargetSelect = (mode) => SpellR.GetTargets(mode, x => x.HealthPercent <= UseOnlyRIfXLTEHPPercent &&
                                                                         (UseOnlyIfXGTEWStacks == 0 || WStacks(x) >= UseOnlyIfXGTEWStacks) &&
                                                                         RIfMoreThanEnemiesNear < UnitManager.EnemyChampions.Count(enemy =>

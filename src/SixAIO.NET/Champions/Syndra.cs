@@ -30,11 +30,7 @@ namespace SixAIO.Champions
                 Range = () => 800,
                 Speed = () => 1000,
                 Radius = () => 180,
-                ShouldCast = (target, spellClass, damage) =>
-                            UseQ &&
-                            spellClass.IsSpellReady &&
-                            UnitManager.MyChampion.Mana > 80 &&
-                            target != null,
+                IsEnabled = () => UseQ,
                 TargetSelect = (mode) => SpellQ.GetTargets(mode).FirstOrDefault()
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
@@ -44,11 +40,7 @@ namespace SixAIO.Champions
                 Range = () => 800,
                 Radius = () => 140,
                 Speed = () => 2500,
-                ShouldCast = (target, spellClass, damage) =>
-                            UseE &&
-                            spellClass.IsSpellReady &&
-                            UnitManager.MyChampion.Mana > 50 &&
-                            target != null,
+                IsEnabled = () => UseE,
                 TargetSelect = (mode) => 
                 {
                     var targets = UnitManager.EnemyChampions
@@ -76,11 +68,7 @@ namespace SixAIO.Champions
             {
                 IsTargetted = () => true,
                 Delay = () => 0f,
-                ShouldCast = (target, spellClass, damage) =>
-                            UseR &&
-                            spellClass.IsSpellReady &&
-                            UnitManager.MyChampion.Mana > 100 &&
-                            target != null,
+                IsEnabled = () => UseR,
                 TargetSelect = (mode) => UnitManager.EnemyChampions.Where(x => x.Distance <= (UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot.R).Level >= 3 ? 750 : 675) &&
                                             TargetSelector.IsAttackable(x) &&
                                             !TargetSelector.IsInvulnerable(x, Oasys.Common.Logic.DamageType.Magical, false))

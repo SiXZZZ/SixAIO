@@ -31,24 +31,15 @@ namespace SixAIO.Champions
                             (UnitManager.MyChampion.UnitStats.TotalAttackDamage * 1.3f) +
                             (UnitManager.MyChampion.UnitStats.TotalAbilityPower * 0.15f))
                             : 0,
-                ShouldCast = (target, spellClass, damage) =>
-                            UseQ &&
-                            spellClass.IsSpellReady &&
-                            UnitManager.MyChampion.Mana > 40 &&
-                            UnitManager.MyChampion.Mana > QMinMana &&
-                            target != null,
+                IsEnabled = () => UseQ,
+                MinimumMana = () => QMinMana,
                 TargetSelect = (mode) => SpellQ.GetTargets(mode).FirstOrDefault()
             };
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
             {
-                ShouldCast = (target, spellClass, damage) =>
-                            UseW &&
-                            spellClass.IsSpellReady &&
-                            UnitManager.MyChampion.Mana > 40 &&
-                            UnitManager.MyChampion.Mana > WMinMana &&
-                            UnitManager.EnemyChampions.Any(x =>
-                                            x.Distance < UnitManager.MyChampion.TrueAttackRange + 110 + (20 * UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot.W).Level) &&
-                                            TargetSelector.IsAttackable(x))
+                IsEnabled = () => UseW,
+                MinimumMana = () => WMinMana,
+                ShouldCast = (target, spellClass, damage) => UnitManager.EnemyChampions.Any(x => x.Distance < GetAttackRangeWithWActive() && TargetSelector.IsAttackable(x))
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
@@ -57,12 +48,8 @@ namespace SixAIO.Champions
                 Range = () => 1360,
                 Radius = () => 240,
                 Speed = () => 1400,
-                ShouldCast = (target, spellClass, damage) =>
-                            UseE &&
-                            spellClass.IsSpellReady &&
-                            UnitManager.MyChampion.Mana > 100 &&
-                            UnitManager.MyChampion.Mana > EMinMana &&
-                            target != null,
+                IsEnabled = () => UseE,
+                MinimumMana = () => EMinMana,
                 TargetSelect = (mode) => SpellE.GetTargets(mode).FirstOrDefault()
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
@@ -80,14 +67,15 @@ namespace SixAIO.Champions
                                         (UnitManager.MyChampion.UnitStats.BonusAttackDamage) +
                                         (UnitManager.MyChampion.UnitStats.TotalAbilityPower))
                             : 0,
-                ShouldCast = (target, spellClass, damage) =>
-                            UseR &&
-                            spellClass.IsSpellReady &&
-                            UnitManager.MyChampion.Mana > 40 &&
-                            UnitManager.MyChampion.Mana > RMinMana &&
-                            target != null,
+                IsEnabled = () => UseR,
+                MinimumMana = () => RMinMana,
                 TargetSelect = (mode) => SpellR.GetTargets(mode, x => x.HealthPercent < RTargetMaxHPPercent).FirstOrDefault()
             };
+        }
+
+        private static float GetAttackRangeWithWActive()
+        {
+            return UnitManager.MyChampion.TrueAttackRange + 110 + (20 * UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot.W).Level);
         }
 
         internal override void OnCoreMainInput()

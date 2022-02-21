@@ -30,12 +30,8 @@ namespace SixAIO.Champions
                 //            (UnitManager.MyChampion.UnitStats.TotalAttackDamage * 1.3f) +
                 //            (UnitManager.MyChampion.UnitStats.TotalAbilityPower * 0.15f))
                 //            : 0,
-                ShouldCast = (target, spellClass, damage) =>
-                            UseQ &&
-                            spellClass.IsSpellReady &&
-                            UnitManager.MyChampion.Mana > 40 &&
-                            UnitManager.MyChampion.Mana > QMinMana &&
-                            target != null,
+                IsEnabled = () => UseQ,
+                MinimumMana = () => QMinMana,
                 TargetSelect = (mode) => SpellQ.GetTargets(mode).FirstOrDefault()
             };
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
@@ -45,23 +41,15 @@ namespace SixAIO.Champions
                 Range = () => 1000,
                 Radius = () => 160,
                 Speed = () => 1700,
-                ShouldCast = (target, spellClass, damage) =>
-                            UseW &&
-                            spellClass.IsSpellReady &&
-                            UnitManager.MyChampion.Mana > 50 &&
-                            UnitManager.MyChampion.Mana > WMinMana &&
-                            target != null,
+                IsEnabled = () => UseW,
+                MinimumMana = () => WMinMana,
                 TargetSelect = (mode) => SpellW.GetTargets(mode).FirstOrDefault()
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
                 Delay = () => 1f,
-                ShouldCast = (target, spellClass, damage) =>
-                            UseE &&
-                            spellClass.IsSpellReady &&
-                            UnitManager.MyChampion.Mana > 90 &&
-                            UnitManager.MyChampion.Mana > EMinMana &&
-                            target != null,
+                IsEnabled = () => UseE,
+                MinimumMana = () => EMinMana,
                 TargetSelect = (mode) =>
                             UnitManager.EnemyChampions
                             .Where(x => TargetSelector.IsAttackable(x))
@@ -84,13 +72,9 @@ namespace SixAIO.Champions
                                         (UnitManager.MyChampion.UnitStats.BonusAttackDamage) +
                                         (UnitManager.MyChampion.UnitStats.TotalAbilityPower))
                             : 0,
-                ShouldCast = (target, spellClass, damage) =>
-                            UseR &&
-                            spellClass.IsSpellReady &&
-                            UnitManager.MyChampion.Mana > 100 &&
-                            UnitManager.MyChampion.Mana > RMinMana &&
-                            target != null &&
-                            target.Health < damage,
+                IsEnabled = () => UseR,
+                MinimumMana = () => RMinMana,
+                ShouldCast = (target, spellClass, damage) => target != null && target.Health < damage,
                 TargetSelect = (mode) => SpellR.GetTargets(mode, x => x.HealthPercent <= RTargetMaxHPPercent).FirstOrDefault()
             };
         }

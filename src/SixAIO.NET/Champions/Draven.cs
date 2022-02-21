@@ -53,10 +53,8 @@ namespace SixAIO.Champions
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
                 Delay = () => 0f,
+                IsEnabled = () => UseQ,
                 ShouldCast = (target, spellClass, damage) =>
-                            UseQ &&
-                            spellClass.IsSpellReady &&
-                            UnitManager.MyChampion.Mana > 50 &&
                             TargetSelector.IsAttackable(Orbwalker.TargetHero) &&
                             TargetSelector.IsInRange(Orbwalker.TargetHero) &&
                             QStacks() <= 1,
@@ -64,10 +62,8 @@ namespace SixAIO.Champions
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
             {
                 Delay = () => 0f,
+                IsEnabled = () => UseW,
                 ShouldCast = (target, spellClass, damage) =>
-                            UseW &&
-                            spellClass.IsSpellReady &&
-                            UnitManager.MyChampion.Mana > 50 &&
                             TargetSelector.IsAttackable(Orbwalker.TargetHero) &&
                             TargetSelector.IsInRange(Orbwalker.TargetHero) &&
                             QStacks() > 0,
@@ -79,11 +75,7 @@ namespace SixAIO.Champions
                 Range = () => 1100,
                 Radius = () => 260,
                 Speed = () => 1400,
-                ShouldCast = (target, spellClass, damage) =>
-                            UseE &&
-                            spellClass.IsSpellReady &&
-                            UnitManager.MyChampion.Mana > 70 &&
-                            target != null,
+                IsEnabled = () => UseE,
                 TargetSelect = (mode) => SpellE.GetTargets(mode).FirstOrDefault()
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
@@ -94,11 +86,7 @@ namespace SixAIO.Champions
                 Range = () => 30000,
                 Radius = () => 320,
                 Speed = () => 2000,
-                ShouldCast = (target, spellClass, damage) =>
-                            UseR &&
-                            spellClass.IsSpellReady &&
-                            UnitManager.MyChampion.Mana > 100 &&
-                            target != null,
+                IsEnabled = () => UseR,
                 TargetSelect = (mode) => SpellR.GetTargets(mode).FirstOrDefault(x => x.Health < GetRDamage(x))
             };
         }

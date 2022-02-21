@@ -22,11 +22,7 @@ namespace SixAIO.Champions
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
                 IsTargetted = () => true,
-                ShouldCast = (target, spellClass, damage) =>
-                            UseR &&
-                            spellClass.IsSpellReady &&
-                            UnitManager.MyChampion.Mana > 100 &&
-                            target != null,
+                IsEnabled = () => UseR,
                 TargetSelect = (mode) => UnitManager.EnemyChampions.Where(x => x.Distance <= 650 && 
                                             TargetSelector.IsAttackable(x) &&
                                             !TargetSelector.IsInvulnerable(x, Oasys.Common.Logic.DamageType.Magical, false))

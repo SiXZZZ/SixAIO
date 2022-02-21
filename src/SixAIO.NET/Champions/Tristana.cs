@@ -26,20 +26,13 @@ namespace SixAIO.Champions
         {
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
-                ShouldCast = (target, spellClass, damage) =>
-                            spellClass.IsSpellReady &&
-                            UseQ &&
-                            target != null,
+                IsEnabled = () => UseQ,
                 TargetSelect = (mode) => GetETarget(UnitManager.EnemyChampions)
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
                 IsTargetted = () => true,
-                ShouldCast = (target, spellClass, damage) =>
-                            spellClass.IsSpellReady &&
-                            UnitManager.MyChampion.Mana > 90 &&
-                            UseE &&
-                            target != null,
+                IsEnabled = () => UseE,
                 TargetSelect = (mode) => 
                 {
                     var bestTarget = TargetSelector.GetBestChampionTarget(Orbwalker.SelectedHero);
@@ -63,11 +56,7 @@ namespace SixAIO.Champions
                             target != null
                             ? GetRDamage(target)
                             : 0,
-                ShouldCast = (target, spellClass, damage) =>
-                            spellClass.IsSpellReady &&
-                            UnitManager.MyChampion.Mana > 100 &&
-                            UseR &&
-                            target != null,
+                IsEnabled = () => UseR,
                 TargetSelect = (mode) => TargetSelectR()
             };
         }

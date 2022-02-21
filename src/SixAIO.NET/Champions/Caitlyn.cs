@@ -29,23 +29,15 @@ namespace SixAIO.Champions
                             ((10 + spellClass.Level * 40) +
                             (UnitManager.MyChampion.UnitStats.TotalAttackDamage * (1.15f + 0.15f * spellClass.Level)))
                             : 0,
-                ShouldCast = (target, spellClass, damage) =>
-                            UseQ &&
-                            spellClass.IsSpellReady &&
-                            UnitManager.MyChampion.Mana > 90 &&
-                            target != null,
+                IsEnabled = () => UseQ,
                 TargetSelect = (mode) => SpellQ.GetTargets(mode).FirstOrDefault()
             };
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
             {
                 IsTargetted = () => true,
                 Range = () => 780,
-                ShouldCast = (target, spellClass, damage) =>
-                            UseW &&
-                            spellClass.IsSpellReady &&
-                            spellClass.Charges >= 1 &&
-                            UnitManager.MyChampion.Mana > 30 &&
-                            target != null,
+                IsEnabled = () => UseW,
+                MinimumCharges = () => 1,
                 TargetSelect = (mode) => SpellW.GetTargets(mode, x => BuffChecker.IsCrowdControlled(x)).FirstOrDefault()
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
@@ -56,11 +48,7 @@ namespace SixAIO.Champions
                 Range = () => 800,
                 Radius = () => 140,
                 Speed = () => 1600,
-                ShouldCast = (target, spellClass, damage) =>
-                            UseE &&
-                            spellClass.IsSpellReady &&
-                            UnitManager.MyChampion.Mana > 75 &&
-                            target != null,
+                IsEnabled = () => UseE,
                 TargetSelect = (mode) => SpellE.GetTargets(mode).FirstOrDefault()
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
@@ -74,13 +62,9 @@ namespace SixAIO.Champions
                             ((75 + spellClass.Level * 225) +
                             (UnitManager.MyChampion.UnitStats.BonusAttackDamage * 2f))
                             : 0,
-                ShouldCast = (target, spellClass, damage) =>
-                            UseR &&
-                            spellClass.IsSpellReady &&
-                            UnitManager.MyChampion.Mana > 100 &&
-                            !UnitManager.EnemyChampions.Any(x => x.Distance < 1000) &&
-                            target != null &&
-                            target.Health < damage,
+                IsEnabled = () => UseR,
+                IsSpellReady = (spellClass, minimumMana, minimumCharges) => spellClass.IsSpellReady && UnitManager.MyChampion.Mana >= spellClass.SpellData.ResourceCost && !UnitManager.EnemyChampions.Any(x => x.Distance < 1000),
+                ShouldCast = (target, spellClass, damage) => target != null && target.Health < damage,
                 TargetSelect = (mode) => SpellR.GetTargets(mode).FirstOrDefault()
             };
         }

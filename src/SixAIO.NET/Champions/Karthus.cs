@@ -32,51 +32,40 @@ namespace SixAIO.Champions
                 Range = () => 875,
                 Speed = () => 1200,
                 Radius = () => 160,
-                ShouldCast = (target, spellClass, damage) =>
-                            UseQ &&
-                            spellClass.IsSpellReady &&
-                            UnitManager.MyChampion.Mana > 40 &&
-                            target != null,
+                IsEnabled = () => UseQ,
                 TargetSelect = (mode) => SpellQ.GetTargets(mode).FirstOrDefault()
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
                 Range = () => 550f,
                 Delay = () => 0f,
+                IsEnabled = () => UseE,
                 ShouldCast = (target, spellClass, damage) =>
                 {
-                    if (UseE && spellClass.IsSpellReady && UnitManager.MyChampion.Mana > 40)
+                    var usingDefile = IsEActive();
+                    var targetInRange = UnitManager.EnemyChampions.Any(x => x.Distance < SpellE.Range() && TargetSelector.IsAttackable(x));
+
+                    if (usingDefile && targetInRange)
                     {
-                        var usingDefile = IsEActive();
-                        var targetInRange = UnitManager.EnemyChampions.Any(x => x.Distance < SpellE.Range() && TargetSelector.IsAttackable(x));
-
-                        if (usingDefile && targetInRange)
-                        {
-                            return false;
-                        }
-                        else if (!usingDefile && targetInRange)
-                        {
-                            return true;
-                        }
-                        else if (usingDefile && !targetInRange)
-                        {
-                            return true;
-                        }
-                        else
-                        {
-                            return false;
-                        }
+                        return false;
                     }
-
-                    return false;
+                    else if (!usingDefile && targetInRange)
+                    {
+                        return true;
+                    }
+                    else if (usingDefile && !targetInRange)
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
                 }
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
-                ShouldCast = (target, spellClass, damage) =>
-                            UseR &&
-                            spellClass.IsSpellReady &&
-                            UnitManager.MyChampion.Mana > 100,
+                IsEnabled = () => UseR,
                 RenderSpellUsage = () =>
                 {
                     var enemies = UnitManager.EnemyChampions.Where(x => x.IsAlive && x.IsTargetable &&

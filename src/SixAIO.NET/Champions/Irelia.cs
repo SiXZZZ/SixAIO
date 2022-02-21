@@ -40,10 +40,7 @@ namespace SixAIO.Champions
                 Speed = () => 1400 + UnitManager.MyChampion.UnitStats.MoveSpeed,
                 Range = () => 600f,
                 Delay = () => 0f,
-                ShouldCast = (target, spellClass, damage) =>
-                            UseQ &&
-                            spellClass.IsSpellReady &&
-                            target != null,
+                IsEnabled = () => UseQ,
                 TargetSelect = (mode) =>
                 {
                     var champReset = UnitManager.EnemyChampions.FirstOrDefault(x => x.Distance <= SpellQ.Range() && TargetSelector.IsAttackable(x) && CanQResetOnTarget(x));
@@ -78,10 +75,8 @@ namespace SixAIO.Champions
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
-                ShouldCast = (target, spellClass, damage) =>
-                            UseE &&
-                            spellClass.IsSpellReady &&
-                            target != null,
+                IsEnabled = () => UseE,
+                MinimumCharges = () => 1,
                 TargetSelect = (mode) =>
                 {
                     //do stuff
@@ -94,10 +89,7 @@ namespace SixAIO.Champions
                 Range = () => 1000f,
                 Radius = () => 320,
                 Delay = () => 0.4f,
-                ShouldCast = (target, spellClass, damage) =>
-                            UseR &&
-                            spellClass.IsSpellReady &&
-                            target != null,
+                IsEnabled = () => UseR,
                 TargetSelect = (mode) => UnitManager.EnemyChampions
                                             .FirstOrDefault(x => x.Distance <= SpellR.Range() &&
                                                                  TargetSelector.IsAttackable(x) &&

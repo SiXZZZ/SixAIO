@@ -51,11 +51,8 @@ namespace SixAIO.Champions
                 Speed = () => 1200,
                 Radius = () => GetQState() == 3 ? 180 : 80,
                 Range = () => GetQState() == 3 ? 1150 : 450,
-                ShouldCast = (target, spellClass, damage) =>
-                            UseQ &&
-                            spellClass.IsSpellReady &&
-                            target != null &&
-                            (target.IsObject(ObjectTypeFlag.AIHeroClient) || GetQState() < 3),
+                IsEnabled = () => UseQ,
+                ShouldCast = (target, spellClass, damage) => target != null && (target.IsObject(ObjectTypeFlag.AIHeroClient) || GetQState() < 3),
                 TargetSelect = (mode) =>
                 {
                     var champ = UnitManager.EnemyChampions.FirstOrDefault(x => x.Distance <= SpellQ.Range() && TargetSelector.IsAttackable(x));
@@ -84,10 +81,7 @@ namespace SixAIO.Champions
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
                 IsTargetted = () => true,
-                ShouldCast = (target, spellClass, damage) =>
-                            UseE &&
-                            spellClass.IsSpellReady &&
-                            target != null,
+                IsEnabled = () => UseE,
                 TargetSelect = (mode) =>
                 {
                     if (mode == Orbwalker.OrbWalkingModeType.Combo)
@@ -144,14 +138,10 @@ namespace SixAIO.Champions
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
                 IsTargetted = () => true,
-                ShouldCast = (target, spellClass, damage) =>
-                            UseR &&
-                            spellClass.IsSpellReady &&
-                            target != null,
+                IsEnabled = () => UseR,
                 TargetSelect = (mode) => UnitManager.EnemyChampions.FirstOrDefault(x => x.Distance <= 1400 && TargetSelector.IsAttackable(x) && BuffChecker.IsKnockedUpOrBack(x))
             };
         }
-
 
         private GameObjectBase GetMinionBetweenMeAndEnemy(IEnumerable<GameObjectBase> targets, Hero enemy, int width, int distance)
         {

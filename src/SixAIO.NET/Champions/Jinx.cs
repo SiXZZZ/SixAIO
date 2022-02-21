@@ -24,31 +24,29 @@ namespace SixAIO.Champions
         {
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
+                IsEnabled = () => UseQ,
                 ShouldCast = (target, spellClass, damage) =>
                 {
-                    if (UseQ && spellClass.IsSpellReady && UnitManager.MyChampion.Mana > 40)
-                    {
-                        var usingRockets = IsQActive();
-                        var extraRange = 75 + (25 * UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot.Q).Level);
-                        var minigunRange = usingRockets
-                                            ? UnitManager.MyChampion.TrueAttackRange - extraRange
-                                            : UnitManager.MyChampion.TrueAttackRange;
-                        var rocketRange = usingRockets
-                                            ? UnitManager.MyChampion.TrueAttackRange
-                                            : UnitManager.MyChampion.TrueAttackRange + extraRange;
+                    var usingRockets = IsQActive();
+                    var extraRange = 75 + (25 * UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot.Q).Level);
+                    var minigunRange = usingRockets
+                                        ? UnitManager.MyChampion.TrueAttackRange - extraRange
+                                        : UnitManager.MyChampion.TrueAttackRange;
+                    var rocketRange = usingRockets
+                                        ? UnitManager.MyChampion.TrueAttackRange
+                                        : UnitManager.MyChampion.TrueAttackRange + extraRange;
 
-                        //if (!UnitManager.EnemyChampions.Any(x => x.Distance < 1200 && TargetSelector.IsAttackable(x)))
-                        //{
-                        //    return usingRockets;
-                        //}
-                        if (usingRockets && Orbwalker.TargetHero != null && Orbwalker.TargetHero.Distance <= minigunRange)
-                        {
-                            return usingRockets;
-                        }
-                        if (!usingRockets && Orbwalker.TargetHero == null)
-                        {
-                            return UnitManager.EnemyChampions.Any(x => x.Distance < rocketRange && TargetSelector.IsAttackable(x));
-                        }
+                    //if (!UnitManager.EnemyChampions.Any(x => x.Distance < 1200 && TargetSelector.IsAttackable(x)))
+                    //{
+                    //    return usingRockets;
+                    //}
+                    if (usingRockets && Orbwalker.TargetHero != null && Orbwalker.TargetHero.Distance <= minigunRange)
+                    {
+                        return usingRockets;
+                    }
+                    if (!usingRockets && Orbwalker.TargetHero == null)
+                    {
+                        return UnitManager.EnemyChampions.Any(x => x.Distance < rocketRange && TargetSelector.IsAttackable(x));
                     }
 
                     return false;
@@ -69,11 +67,7 @@ namespace SixAIO.Champions
                 //            ((10 + spellClass.Level * 40) +
                 //            (UnitManager.MyChampion.UnitStats.TotalAttackDamage * (1.15f + 0.15f * spellClass.Level)))
                 //            : 0,
-                ShouldCast = (target, spellClass, damage) =>
-                            UseW &&
-                            spellClass.IsSpellReady &&
-                            UnitManager.MyChampion.Mana > 90 &&
-                            target != null,
+                IsEnabled = () => UseW,
                 TargetSelect = (mode) => SpellW.GetTargets(mode).FirstOrDefault()
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
@@ -81,11 +75,7 @@ namespace SixAIO.Champions
                 IsTargetted = () => true,
                 Range = () => 850,
                 MinimumHitChance = () => Prediction.MenuSelected.HitChance.Immobile,
-                ShouldCast = (target, spellClass, damage) =>
-                            UseE &&
-                            spellClass.IsSpellReady &&
-                            UnitManager.MyChampion.Mana > 90 &&
-                            target != null,
+                IsEnabled = () => UseE,
                 TargetSelect = (mode) => SpellE.GetTargets(mode).FirstOrDefault()
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
@@ -103,11 +93,7 @@ namespace SixAIO.Champions
                 //                        (1.5f*UnitManager.MyChampion.UnitStats.BonusAttackDamage) +
                 //                         (target.Health / target.MaxHealth * 100) < 50))
                 //            : 0,
-                ShouldCast = (target, spellClass, damage) =>
-                            UseR &&
-                            spellClass.IsSpellReady &&
-                            UnitManager.MyChampion.Mana > 100 &&
-                            target != null,
+                IsEnabled = () => UseR,
                 TargetSelect = (mode) => SpellR.GetTargets(mode, x => x.HealthPercent <= 50).FirstOrDefault()
             };
         }

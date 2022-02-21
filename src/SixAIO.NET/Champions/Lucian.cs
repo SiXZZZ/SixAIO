@@ -26,11 +26,7 @@ namespace SixAIO.Champions
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
                 IsTargetted = () => true,
-                ShouldCast = (target, spellClass, damage) =>
-                            UseQ &&
-                            spellClass.IsSpellReady &&
-                            UnitManager.MyChampion.Mana > 90 &&
-                            target != null,
+                IsEnabled = () => UseQ,
                 TargetSelect = (mode) =>
                 {
                     var targets = UnitManager.EnemyChampions
@@ -63,19 +59,13 @@ namespace SixAIO.Champions
                 Range = () => 900,
                 Radius = () => 110,
                 Speed = () => 1600,
-                ShouldCast = (target, spellClass, damage) =>
-                            UseW &&
-                            spellClass.IsSpellReady &&
-                            UnitManager.MyChampion.Mana > 60 &&
-                            target != null,
+                IsEnabled = () => UseW,
                 TargetSelect = (mode) => SpellW.GetTargets(mode).FirstOrDefault()
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
+                IsEnabled = () => UseE,
                 ShouldCast = (target, spellClass, damage) =>
-                            UseE &&
-                            spellClass.IsSpellReady &&
-                            UnitManager.MyChampion.Mana > 40 &&
                             DashModeSelected == DashMode.ToMouse &&
                             TargetSelector.IsAttackable(Orbwalker.TargetHero) &&
                             TargetSelector.IsInRange(Orbwalker.TargetHero),

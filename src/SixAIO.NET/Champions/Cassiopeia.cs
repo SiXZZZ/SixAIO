@@ -26,11 +26,7 @@ namespace SixAIO.Champions
                 Range = () => 850,
                 Speed = () => 5000,
                 Radius = () => 200,
-                ShouldCast = (target, spellClass, damage) =>
-                            UseQ &&
-                            spellClass.IsSpellReady &&
-                            UnitManager.MyChampion.Mana > 90 &&
-                            target != null,
+                IsEnabled = () => UseQ,
                 TargetSelect = (mode) => SpellQ.GetTargets(mode).FirstOrDefault()
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
@@ -38,11 +34,7 @@ namespace SixAIO.Champions
                 IsTargetted = () => true,
                 Range = () => 680,
                 Damage = (target, spellClass) => GetEDamage(target, spellClass),
-                ShouldCast = (target, spellClass, damage) =>
-                            UseE &&
-                            spellClass.IsSpellReady &&
-                            UnitManager.MyChampion.Mana > 50 &&
-                            target != null,
+                IsEnabled = () => UseE,
                 TargetSelect = (mode) => SpellE.GetTargets(mode).OrderBy(IsPoisoned).ThenByDescending(x => x.EffectiveMagicHealth).FirstOrDefault()
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
@@ -53,11 +45,7 @@ namespace SixAIO.Champions
                 Speed = () => 10000,
                 Radius = () => 400,
                 Delay = () => 0.5f,
-                ShouldCast = (target, spellClass, damage) =>
-                            UseR &&
-                            spellClass.IsSpellReady &&
-                            UnitManager.MyChampion.Mana > 100 &&
-                            target != null,
+                IsEnabled = () => UseR,
                 TargetSelect = (mode) => SpellR.GetTargets(mode, x =>
                                                       x.IsFacing(UnitManager.MyChampion) &&
                                                       !TargetSelector.IsInvulnerable(x, Oasys.Common.Logic.DamageType.Magical, false))

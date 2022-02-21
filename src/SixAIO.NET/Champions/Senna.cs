@@ -17,11 +17,7 @@ namespace SixAIO.Champions
             {
                 IsTargetted = () => true,
                 Delay = () => 1f,
-                ShouldCast = (target, spellClass, damage) =>
-                            UseQ &&
-                            spellClass.IsSpellReady &&
-                            UnitManager.MyChampion.Mana > 110 &&
-                            target != null,
+                IsEnabled = () => UseQ,
                 TargetSelect = (mode) => 
                             UnitManager.EnemyChampions
                             .FirstOrDefault(x => x.Distance <= UnitManager.MyChampion.TrueAttackRange && x.IsAlive &&

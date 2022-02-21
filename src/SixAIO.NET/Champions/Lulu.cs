@@ -23,24 +23,16 @@ namespace SixAIO.Champions
                 Range = () => 950,
                 Radius = () => 120,
                 Speed = () => 1450,
-                ShouldCast = (target, spellClass, damage) =>
-                            UseQ &&
-                            spellClass.IsSpellReady &&
-                            UnitManager.MyChampion.Mana > 70 &&
-                            UnitManager.MyChampion.Mana > QMinMana &&
-                            target != null,
+                IsEnabled = () => UseQ,
+                MinimumMana = () => QMinMana,
                 TargetSelect = (mode) => SpellQ.GetTargets(mode).FirstOrDefault()
             };
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
             {
                 IsTargetted = () => true,
-                ShouldCast = (target, spellClass, damage) =>
-                            UseW &&
-                            spellClass.IsSpellReady &&
-                            UnitManager.MyChampion.Mana > 65 &&
-                            UnitManager.MyChampion.Mana > WMinMana &&
-                            target != null,
-                TargetSelect = (mode) => 
+                IsEnabled = () => UseW,
+                MinimumMana = () => WMinMana,
+                TargetSelect = (mode) =>
                 {
                     Hero target = null;
 
@@ -70,13 +62,9 @@ namespace SixAIO.Champions
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
                 IsTargetted = () => true,
-                ShouldCast = (target, spellClass, damage) =>
-                            UseE &&
-                            spellClass.IsSpellReady &&
-                            UnitManager.MyChampion.Mana > 80 &&
-                            UnitManager.MyChampion.Mana > EMinMana &&
-                            target != null,
-                TargetSelect = (mode) => 
+                IsEnabled = () => UseE,
+                MinimumMana = () => EMinMana,
+                TargetSelect = (mode) =>
                 {
                     Hero target = null;
 
@@ -113,13 +101,9 @@ namespace SixAIO.Champions
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
                 IsTargetted = () => true,
-                ShouldCast = (target, spellClass, damage) =>
-                            UseR &&
-                            spellClass.IsSpellReady &&
-                            UnitManager.MyChampion.Mana > 100 &&
-                            UnitManager.MyChampion.Mana > RMinMana &&
-                            target != null,
-                TargetSelect = (mode) => 
+                IsEnabled = () => UseR,
+                MinimumMana = () => RMinMana,
+                TargetSelect = (mode) =>
                 {
                     Hero target = null;
                     if (target == null && RKnockupEnemies)

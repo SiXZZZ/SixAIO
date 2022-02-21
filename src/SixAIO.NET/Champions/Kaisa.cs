@@ -18,17 +18,13 @@ namespace SixAIO.Champions
         {
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
+                IsEnabled = () => UseQ,
                 ShouldCast = (target, spellClass, damage) =>
                 {
-                    if (UseQ && spellClass.IsSpellReady && UnitManager.MyChampion.Mana > 55)
-                    {
-                        var champs = UnitManager.EnemyChampions.Count(x => x.Distance <= 600 && TargetSelector.IsAttackable(x));
-                        var minions = UnitManager.EnemyMinions.Count(x => x.Distance <= 600 && TargetSelector.IsAttackable(x));
-                        var jungleMobs = UnitManager.EnemyJungleMobs.Count(x => x.Distance <= 600 && TargetSelector.IsAttackable(x));
-                        return champs > 0 && minions <= 1 && jungleMobs <= 1;
-                    }
-
-                    return false;
+                    var champs = UnitManager.EnemyChampions.Count(x => x.Distance <= 600 && TargetSelector.IsAttackable(x));
+                    var minions = UnitManager.EnemyMinions.Count(x => x.Distance <= 600 && TargetSelector.IsAttackable(x));
+                    var jungleMobs = UnitManager.EnemyJungleMobs.Count(x => x.Distance <= 600 && TargetSelector.IsAttackable(x));
+                    return champs > 0 && minions <= 1 && jungleMobs <= 1;
                 }
             };
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
@@ -40,11 +36,7 @@ namespace SixAIO.Champions
                 Radius = () => 200,
                 Speed = () => 1750,
                 Delay = () => 0.4f,
-                ShouldCast = (target, spellClass, damage) =>
-                            UseW &&
-                            spellClass.IsSpellReady &&
-                            UnitManager.MyChampion.Mana > 90 &&
-                            target != null,
+                IsEnabled = () => UseW,
                 TargetSelect = (mode) => SpellW.GetTargets(mode).FirstOrDefault()
             };
         }

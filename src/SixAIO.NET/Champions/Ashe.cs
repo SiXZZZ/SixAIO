@@ -16,12 +16,10 @@ namespace SixAIO.Champions
         {
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
-                ShouldCast = (target, spellClass, damage) =>
-                            UseQ &&
-                            spellClass.IsSpellReady &&
-                            UnitManager.MyChampion.Mana > 50 &&
-                            TargetSelector.IsAttackable(Orbwalker.TargetHero) && TargetSelector.IsInRange(Orbwalker.TargetHero) &&
-                            UnitManager.MyChampion.BuffManager.GetBuffList().FirstOrDefault(x => x.IsActive && x.Stacks >= 4 && x.Name == "asheqcastready") != null,
+                IsEnabled = () => UseQ,
+                IsSpellReady = (spellClass, minimumMana, minimumCharges) => spellClass.IsSpellReady && UnitManager.MyChampion.Mana > 50 &&
+                                               UnitManager.MyChampion.BuffManager.GetBuffList().Any(x => x.IsActive && x.Stacks >= 4 && x.Name == "asheqcastready"),
+                ShouldCast = (target, spellClass, damage) => TargetSelector.IsAttackable(Orbwalker.TargetHero) && TargetSelector.IsInRange(Orbwalker.TargetHero),
             };
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
             {
@@ -30,11 +28,7 @@ namespace SixAIO.Champions
                 Range = () => 1200,
                 Radius = () => 18.5f + (9.25f * SpellW.SpellClass.Level),
                 Speed = () => 2000,
-                ShouldCast = (target, spellClass, damage) =>
-                            UseW &&
-                            spellClass.IsSpellReady &&
-                            UnitManager.MyChampion.Mana > 70 &&
-                            target != null,
+                IsEnabled = () => UseW,
                 TargetSelect = (mode) => SpellW.GetTargets(mode).FirstOrDefault()
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
@@ -44,11 +38,7 @@ namespace SixAIO.Champions
                 Range = () => 30000,
                 Radius = () => 350,
                 Speed = () => 1600,
-                ShouldCast = (target, spellClass, damage) =>
-                            UseR &&
-                            spellClass.IsSpellReady &&
-                            UnitManager.MyChampion.Mana > 100 &&
-                            target != null,
+                IsEnabled = () => UseR,
                 TargetSelect = (mode) => SpellR.GetTargets(mode).FirstOrDefault()
             };
         }

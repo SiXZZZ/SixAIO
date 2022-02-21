@@ -22,21 +22,13 @@ namespace SixAIO.Champions
                 Range = () => 900,
                 Radius = () => 200,
                 Speed = () => 1550,
-                ShouldCast = (target, spellClass, damage) =>
-                            UseQ &&
-                            spellClass.IsSpellReady &&
-                            UnitManager.MyChampion.Mana > 85 &&
-                            target != null,
-                TargetSelect = (mode) =>
-                    SpellQ.GetTargets(mode, x => !TargetSelector.IsInvulnerable(x, Oasys.Common.Logic.DamageType.Magical, false)).FirstOrDefault(),
+                IsEnabled = () => UseQ,
+                TargetSelect = (mode) => SpellQ.GetTargets(mode, x => !TargetSelector.IsInvulnerable(x, Oasys.Common.Logic.DamageType.Magical, false)).FirstOrDefault(),
             };
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
             {
-                ShouldCast = (target, spellClass, damage) =>
-                            UseW &&
-                            spellClass.IsSpellReady &&
-                            UnitManager.MyChampion.Mana > 40 &&
-                            UnitManager.EnemyChampions.FirstOrDefault(x => x.Distance <= 700 && x.IsAlive && TargetSelector.IsAttackable(x)) != null,
+                IsEnabled = () => UseW,
+                ShouldCast = (target, spellClass, damage) => UnitManager.EnemyChampions.Any(x => x.Distance <= 700 && x.IsAlive && TargetSelector.IsAttackable(x)),
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
@@ -46,23 +38,16 @@ namespace SixAIO.Champions
                 Range = () => 1000,
                 Speed = () => 1550,
                 Radius = () => 120,
-                ShouldCast = (target, spellClass, damage) =>
-                            UseE &&
-                            spellClass.IsSpellReady &&
-                            UnitManager.MyChampion.Mana > 70 &&
-                            target != null,
-
+                IsEnabled = () => UseE,
                 TargetSelect = (mode) => SpellE.GetTargets(mode, x => !TargetSelector.IsInvulnerable(x, Oasys.Common.Logic.DamageType.Magical, false)).FirstOrDefault()
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
                 Delay = () => 0f,
+                IsEnabled = () => UseR,
                 ShouldCast = (target, spellClass, damage) =>
-                            UseR &&
-                            spellClass.IsSpellReady &&
-                            UnitManager.MyChampion.Mana > 100 &&
                             DashModeSelected == DashMode.ToMouse &&
-                            UnitManager.EnemyChampions.FirstOrDefault(x => x.Distance <= x.TrueAttackRange + 500 && x.IsAlive && TargetSelector.IsAttackable(x)) != null,
+                            UnitManager.EnemyChampions.Any(x => x.Distance <= x.TrueAttackRange + 500 && x.IsAlive && TargetSelector.IsAttackable(x)),
             };
         }
 

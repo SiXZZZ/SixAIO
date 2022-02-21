@@ -26,12 +26,10 @@ namespace SixAIO.Champions
                                         : 1450,
                 Radius = () => 140,
                 Speed = () => 1900,
-                ShouldCast = (target, spellClass, damage) =>
-                            UseQ &&
-                            spellClass.IsSpellReady &&
-                            (SpellQ.ChargeTimer.IsRunning || UnitManager.MyChampion.Mana > 120) &&
-                            target != null &&
-                            target.Distance < SpellQ.Range(),
+                IsEnabled = () => UseQ,
+                MinimumMana = () => 120,
+                IsSpellReady = (spellClass, minMana, minCharges) => SpellQ.ChargeTimer.IsRunning || UnitManager.MyChampion.Mana > minMana,
+                ShouldCast = (target, spellClass, damage) => target != null && target.Distance < SpellQ.Range(),
                 TargetSelect = (mode) => SpellQ.GetTargets(mode).FirstOrDefault()
             };
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
@@ -41,11 +39,7 @@ namespace SixAIO.Champions
                 Range = () => 1000,
                 Radius = () => 250,
                 Speed = () => 10000,
-                ShouldCast = (target, spellClass, damage) =>
-                            UseW &&
-                            spellClass.IsSpellReady &&
-                            UnitManager.MyChampion.Mana > 110 &&
-                            target != null,
+                IsEnabled = () => UseW,
                 TargetSelect = (mode) => SpellW.GetTargets(mode).FirstOrDefault()
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
@@ -56,11 +50,7 @@ namespace SixAIO.Champions
                 Range = () => 1125,
                 Radius = () => 120,
                 Speed = () => 1400,
-                ShouldCast = (target, spellClass, damage) =>
-                            UseE &&
-                            spellClass.IsSpellReady &&
-                            UnitManager.MyChampion.Mana > 80 &&
-                            target != null,
+                IsEnabled = () => UseE,
                 TargetSelect = (mode) => SpellE.GetTargets(mode).FirstOrDefault()
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
@@ -71,11 +61,7 @@ namespace SixAIO.Champions
                 Radius = () => 200,
                 Speed = () => 1500,
                 Delay = () => 0f,
-                ShouldCast = (target, spellClass, damage) =>
-                            UseR &&
-                            spellClass.IsSpellReady &&
-                            UnitManager.MyChampion.Mana > 100 &&
-                            target != null,
+                IsEnabled = () => UseR,
                 TargetSelect = (mode) => SpellR.GetTargets(mode).FirstOrDefault()
             };
         }

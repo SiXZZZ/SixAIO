@@ -47,10 +47,8 @@ namespace SixAIO.Champions
             SDKSpell.OnSpellCast += Spell_OnSpellCast;
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
+                IsEnabled = () => UseQ,
                 ShouldCast = (target, spellClass, damage) =>
-                            UseQ &&
-                            spellClass.IsSpellReady &&
-                            UnitManager.MyChampion.Mana > 40 &&
                             DashModeSelected == DashMode.ToMouse &&
                             ShouldQ() &&
                             UnitManager.EnemyChampions.Any(x => x.IsAlive && x.Distance <= 1000 && TargetSelector.IsAttackable(x)),
@@ -58,21 +56,15 @@ namespace SixAIO.Champions
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
             {
                 Delay = () => 0f,
+                IsEnabled = () => UseW,
                 ShouldCast = (target, spellClass, damage) =>
-                            UseW &&
-                            spellClass.IsSpellReady &&
-                            UnitManager.MyChampion.Mana > 40 &&
                             !HasWBuff() &&
                             UnitManager.EnemyChampions.Any(x => x.IsAlive && x.Distance <= 1000 && TargetSelector.IsAttackable(x)),
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
                 IsTargetted = () => true,
-                ShouldCast = (target, spellClass, damage) =>
-                            UseE &&
-                            spellClass.IsSpellReady &&
-                            UnitManager.MyChampion.Mana > 50 &&
-                            target != null,
+                IsEnabled = () => UseE,
                 TargetSelect = (mode) => TargetSelector.IsAttackable(Orbwalker.TargetHero) && Orbwalker.TargetHero.Distance <= ERange()
                             ? Orbwalker.TargetHero
                             : UnitManager.EnemyChampions.FirstOrDefault(x => x.IsAlive && x.Distance <= ERange() && TargetSelector.IsAttackable(x) && !TargetSelector.IsInvulnerable(x, Oasys.Common.Logic.DamageType.Physical, false))

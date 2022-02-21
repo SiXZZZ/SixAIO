@@ -20,30 +20,21 @@ namespace SixAIO.Champions
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
                 Delay = () => 0f,
-                ShouldCast = (target, spellClass, damage) =>
-                            UseQ &&
-                            spellClass.IsSpellReady &&
-                            UnitManager.MyChampion.Mana > 70 &&
-                            UnitManager.EnemyChampions.FirstOrDefault(x => x.Distance <= 800 && x.IsAlive && TargetSelector.IsAttackable(x)) != null,
+                IsEnabled = () => UseQ,
+                ShouldCast = (target, spellClass, damage) => UnitManager.EnemyChampions.Any(x => x.Distance <= 800 && x.IsAlive && TargetSelector.IsAttackable(x)),
             };
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
             {
                 Delay = () => 0f,
-                ShouldCast = (target, spellClass, damage) =>
-                            UseW &&
-                            spellClass.IsSpellReady &&
-                            UnitManager.MyChampion.Mana > 40 &&
-                            UnitManager.MyChampion.Mana > WMinMana &&
-                            UnitManager.AllyChampions.FirstOrDefault(x => x.Distance <= 800 && x.IsAlive && (x.Health / x.MaxHealth * 100) < WBuffHealthPercent) != null,
+                IsEnabled = () => UseW,
+                MinimumMana = () => WMinMana,
+                ShouldCast = (target, spellClass, damage) => UnitManager.AllyChampions.Any(x => x.Distance <= 800 && x.IsAlive && x.HealthPercent < WBuffHealthPercent),
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
                 Delay = () => 0f,
-                ShouldCast = (target, spellClass, damage) =>
-                            UseE &&
-                            spellClass.IsSpellReady &&
-                            UnitManager.MyChampion.Mana > 65 &&
-                            UnitManager.AllyChampions.FirstOrDefault(x => x.Distance <= 400 && x.IsAlive) != null,
+                IsEnabled = () => UseE,
+                ShouldCast = (target, spellClass, damage) => UnitManager.AllyChampions.Any(x => x.Distance <= 400 && x.IsAlive),
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
@@ -52,11 +43,7 @@ namespace SixAIO.Champions
                 Range = () => 1000,
                 Radius = () => 280,
                 Speed = () => 2400,
-                ShouldCast = (target, spellClass, damage) =>
-                            UseR &&
-                            spellClass.IsSpellReady &&
-                            UnitManager.MyChampion.Mana > 100 &&
-                            target != null,
+                IsEnabled = () => UseR,
                 TargetSelect = (mode) => SpellR.GetTargets(mode, x => !TargetSelector.IsInvulnerable(x, Oasys.Common.Logic.DamageType.Magical, false)).FirstOrDefault()
             };
         }

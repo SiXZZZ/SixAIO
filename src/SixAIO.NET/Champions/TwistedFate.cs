@@ -39,30 +39,19 @@ namespace SixAIO.Champions
                 Range = () => 1450,
                 Radius = () => 100,
                 Speed = () => 1000,
-                ShouldCast = (target, spellClass, damage) =>
-                            UseQ &&
-                            spellClass.IsSpellReady &&
-                            UnitManager.MyChampion.Mana > 100 &&
-                            target != null,
+                IsEnabled = () => UseQ,
                 TargetSelect = (mode) => SpellQ.GetTargets(mode).FirstOrDefault()
             };
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
             {
-                ShouldCast = (target, spellClass, damage) =>
+                IsEnabled = () => UseW,
+                ShouldCast = (target, spellClass, damage) => GetCard() switch
                 {
-                    if (UseW && spellClass.IsSpellReady)
-                    {
-                        return GetCard() switch
-                        {
-                            Card.None => UnitManager.MyChampion.Mana > 100 && TargetSelector.IsAttackable(Orbwalker.TargetHero) && TargetSelector.IsInRange(Orbwalker.TargetHero),
-                            Card.Blue => UnitManager.MyChampion.Mana <= 100,
-                            Card.Red => false,
-                            Card.Gold => TargetSelector.IsAttackable(Orbwalker.TargetHero) && TargetSelector.IsInRange(Orbwalker.TargetHero),
-                            _ => false,
-                        };
-                    }
-
-                    return false;
+                    Card.None => UnitManager.MyChampion.Mana > 100 && TargetSelector.IsAttackable(Orbwalker.TargetHero) && TargetSelector.IsInRange(Orbwalker.TargetHero),
+                    Card.Blue => UnitManager.MyChampion.Mana <= 100,
+                    Card.Red => false,
+                    Card.Gold => TargetSelector.IsAttackable(Orbwalker.TargetHero) && TargetSelector.IsInRange(Orbwalker.TargetHero),
+                    _ => false,
                 }
             };
         }

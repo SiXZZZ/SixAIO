@@ -26,10 +26,7 @@ namespace SixAIO.Champions
                 Radius = () => 80,
                 Speed = () => 2600,
                 Delay = () => 0f,
-                ShouldCast = (target, spellClass, damage) =>
-                            UseQ &&
-                            spellClass.IsSpellReady &&
-                            target != null,
+                IsEnabled = () => UseQ,
                 TargetSelect = (mode) => Orbwalker.GetTarget(mode, SpellQ.Range())
             };
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
@@ -40,32 +37,21 @@ namespace SixAIO.Champions
                 Range = () => 1200,
                 Radius = () => 80,
                 Speed = () => 2200,
-                ShouldCast = (target, spellClass, damage) =>
-                            UseW &&
-                            spellClass.IsSpellReady &&
-                            UnitManager.MyChampion.Mana > 90 &&
-                            target != null,
+                IsEnabled = () => UseW,
                 TargetSelect = (mode) => SpellW.GetTargets(mode).FirstOrDefault()
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
                 Delay = () => 0f,
+                IsEnabled = () => UseE,
                 ShouldCast = (target, spellClass, damage) =>
-                            UseE &&
-                            spellClass.IsSpellReady &&
-                            UnitManager.MyChampion.Mana > 80 &&
                             DashModeSelected == DashMode.ToMouse &&
-                            UnitManager.EnemyChampions.FirstOrDefault(x => x.Distance <= x.TrueAttackRange + 500 && x.IsAlive && TargetSelector.IsAttackable(x)) != null,
+                            UnitManager.EnemyChampions.Any(x => x.Distance <= x.TrueAttackRange + 500 && x.IsAlive && TargetSelector.IsAttackable(x)),
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
-                ShouldCast = (target, spellClass, damage) =>
-                {
-                    return (UseR &&
-                            spellClass.IsSpellReady &&
-                            UnitManager.MyChampion.Mana > 100 &&
-                            UnitManager.EnemyChampions.Count(x => TargetSelector.IsAttackable(x) && x.Distance < REnemiesCloserThan) > RIfMoreThanEnemiesNear);
-                },
+                IsEnabled = () => UseR,
+                ShouldCast = (target, spellClass, damage) => UnitManager.EnemyChampions.Count(x => TargetSelector.IsAttackable(x) && x.Distance < REnemiesCloserThan) > RIfMoreThanEnemiesNear,
             };
         }
 

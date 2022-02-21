@@ -25,58 +25,50 @@ namespace SixAIO.Champions
                 Range = () => 900,
                 Radius = () => 150,
                 Speed = () => 1600,
-                ShouldCast = (target, spellClass, damage) =>
-                            UseQ &&
-                            spellClass.IsSpellReady &&
-                            UnitManager.MyChampion.Mana > 90 &&
-                            UnitManager.MyChampion.Mana > QMinMana &&
-                            target != null,
+                IsEnabled = () => UseQ,
+                MinimumMana = () => QMinMana,
                 TargetSelect = (mode) => SpellQ.GetTargets(mode).FirstOrDefault()
             };
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
             {
-                ShouldCast = (target, spellClass, damage) =>
-                            UseW &&
-                            spellClass.IsSpellReady &&
-                            UnitManager.MyChampion.Mana > 130 &&
-                            UnitManager.MyChampion.Mana > WMinMana &&
-                            (UnitManager.MyChampion.Health / UnitManager.MyChampion.MaxHealth * 100) < WHealBelowPercent,
+                IsEnabled = () => UseW,
+                MinimumMana = () => WMinMana,
+                ShouldCast = (target, spellClass, damage) => UnitManager.MyChampion.HealthPercent <= WHealBelowPercent,
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
+                IsEnabled = () => UseE,
                 ShouldCast = (target, spellClass, damage) =>
                 {
-                    if (UseE && spellClass.IsSpellReady && UnitManager.MyChampion.Mana > 40)
+                    if (EOnlyExecute)
                     {
-                        if (EOnlyExecute)
+                        var executeTarget = UnitManager.EnemyChampions
+                            .Where(x => TargetSelector.IsAttackable(x) &&
+                                        ((UnitManager.MyChampion.Level < 6 && x.Distance < 525 + UnitManager.MyChampion.UnitComponentInfo.UnitBoundingRadius) ||
+                                         TargetSelector.IsInRange(x)) &&
+                                         EDamage(x) > x.Health)
+                            .OrderBy(EDamage)
+                            .FirstOrDefault();
+                        if (executeTarget != null)
                         {
-                            var executeTarget = UnitManager.EnemyChampions
-                                .Where(x => TargetSelector.IsAttackable(x) &&
-                                            ((UnitManager.MyChampion.Level < 6 && x.Distance < 525 + UnitManager.MyChampion.UnitComponentInfo.UnitBoundingRadius) ||
-                                             TargetSelector.IsInRange(x)) &&
-                                             EDamage(x) > x.Health)
-                                .OrderBy(EDamage)
-                                .FirstOrDefault();
-                            if (executeTarget != null)
-                            {
-                                Orbwalker.SelectedTarget = executeTarget;
-                                return true;
-                            }
+                            Orbwalker.SelectedTarget = executeTarget;
+                            return true;
+                        }
+                    }
+                    else
+                    {
+                        if (UnitManager.MyChampion.Level < 6)
+                        {
+                            return UnitManager.EnemyChampions.Any(x =>
+                                                                x.Distance < 525 + UnitManager.MyChampion.UnitComponentInfo.UnitBoundingRadius &&
+                                                                TargetSelector.IsAttackable(x));
                         }
                         else
                         {
-                            if (UnitManager.MyChampion.Level < 6)
-                            {
-                                return UnitManager.EnemyChampions.Any(x =>
-                                                                    x.Distance < 525 + UnitManager.MyChampion.UnitComponentInfo.UnitBoundingRadius &&
-                                                                    TargetSelector.IsAttackable(x));
-                            }
-                            else
-                            {
-                                return TargetSelector.IsAttackable(Orbwalker.TargetHero) && TargetSelector.IsInRange(Orbwalker.TargetHero);
-                            }
+                            return TargetSelector.IsAttackable(Orbwalker.TargetHero) && TargetSelector.IsInRange(Orbwalker.TargetHero);
                         }
                     }
+
                     return false;
                 }
             };
@@ -84,14 +76,12 @@ namespace SixAIO.Champions
             {
                 IsTargetted = () => true,
                 TargetSelect = (mode) => UnitManager.MyChampion,
+                IsEnabled = () => UseR,
+                MinimumMana = () => RMinMana,
                 ShouldCast = (target, spellClass, damage) =>
                 {
-                    return (UseR &&
-                            spellClass.IsSpellReady &&
-                            UnitManager.MyChampion.Mana > 100 &&
-                            UnitManager.MyChampion.Mana > RMinMana &&
-                            (UnitManager.MyChampion.Health / UnitManager.MyChampion.MaxHealth * 100) < RBelowHealthPercent &&
-                            UnitManager.EnemyChampions.Count(x => TargetSelector.IsAttackable(x) && x.Distance < REnemiesCloserThan) > RIfMoreThanEnemiesNear);
+                    return UnitManager.MyChampion.HealthPercent < RBelowHealthPercent &&
+                           UnitManager.EnemyChampions.Count(x => TargetSelector.IsAttackable(x) && x.Distance < REnemiesCloserThan) > RIfMoreThanEnemiesNear;
                 },
             };
         }
