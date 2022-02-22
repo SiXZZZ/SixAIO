@@ -39,7 +39,7 @@ namespace SixAIO.Champions
         private static float UltTimeLeft()
         {
             var buff = GetUltBuff();
-            return buff != null && buff.IsActive ? buff.EndTime - GameEngine.GameTime : 0;
+            return buff != null && buff.IsActive ? buff.Duration : 0;
         }
 
         private static bool IsWindSlashReady()
@@ -67,6 +67,7 @@ namespace SixAIO.Champions
             Orbwalker.OnOrbwalkerAfterBasicAttack += Orbwalker_OnOrbwalkerAfterBasicAttack;
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
+                IsTargetted = () => true,
                 Delay = () => 0f,
                 IsEnabled = () => UseQ,
                 ShouldCast = (mode, target, spellClass, damage) =>
@@ -83,6 +84,7 @@ namespace SixAIO.Champions
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
+                IsTargetted = () => true,
                 Delay = () => 0f,
                 IsEnabled = () => UseE,
                 TargetSelect = (mode) => UnitManager.EnemyChampions.FirstOrDefault(x => x.Distance <= (IsUltActive() ? 450 : 400) && TargetSelector.IsAttackable(x))
