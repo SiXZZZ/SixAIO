@@ -1,5 +1,6 @@
 ﻿using Oasys.Common;
 using Oasys.Common.Enums.GameEnums;
+using Oasys.Common.Extensions;
 using Oasys.Common.GameObject;
 using Oasys.Common.GameObject.Clients.ExtendedInstances.Spells;
 using Oasys.Common.Menu;
@@ -82,7 +83,8 @@ namespace SixAIO.Champions
         {
             for (var i = 0; i < CondemnRange; i += 5)
             {
-                if (EngineManager.IsWall(UnitManager.MyChampion.Position.Extend(target.Position, target.Distance + i)))
+                var pos = UnitManager.MyChampion.Position.Extend(target.Position, target.Distance + i);
+                if (pos.IsValid() && EngineManager.IsWall(pos))
                 {
                     return i;
                 }
@@ -94,7 +96,7 @@ namespace SixAIO.Champions
         private bool CanStun(GameObjectBase target)
         {
             var distance = DistanceToWall(target);
-            return distance < int.MaxValue && distance > 0;
+            return distance <= CondemnRange && distance > 0;
         }
 
         private void Orbwalker_OnOrbwalkerAfterBasicAttack(float gameTime, GameObjectBase target)
@@ -126,13 +128,24 @@ namespace SixAIO.Champions
         {
             //foreach (var target in UnitManager.EnemyChampions.Where(x => TargetSelector.IsAttackable(x) &&
             //                                                             x.Distance <= 550 + x.UnitComponentInfo.UnitBoundingRadius + UnitManager.MyChampion.UnitComponentInfo.UnitBoundingRadius &&
-            //                                                             x.IsAlive &&
-            //                                                             CanStun(x)))
+            //                                                             x.IsAlive))
             //{
             //    var myPoint = UnitManager.MyChampion.W2S;
-            //    var targetPoint = UnitManager.MyChampion.W2S.Extend(target.W2S, target.Distance + DistanceToWall(target));
-            //    Oasys.SDK.Rendering.RenderFactory.DrawText("Can stun " + target.UnitComponentInfo.SkinName, 12, target.W2S, Color.Blue);
-            //    Oasys.SDK.Rendering.RenderFactory.DrawLine(myPoint.X, myPoint.Y, targetPoint.X, targetPoint.Y, 5, Color.Black);
+            //    var targetPoint = UnitManager.MyChampion.Position.Extend(target.Position, target.Distance + CondemnRange);
+            //    var targetPointW2S = targetPoint.ToW2S();
+            //    if (targetPointW2S.IsValid() && myPoint.IsValid())
+            //    {
+            //        if (CanStun(target))
+            //        {
+            //            Oasys.SDK.Rendering.RenderFactory.DrawText("Can stun " + target.UnitComponentInfo.SkinName, 12, target.W2S, Color.Blue);
+            //        }
+            //        if (EngineManager.IsWall(targetPoint))
+            //        {
+            //            Oasys.SDK.Rendering.RenderFactory.DrawText("Is wall ", 12, targetPointW2S, Color.Blue);
+            //        }
+
+            //        Oasys.SDK.Rendering.RenderFactory.DrawLine(myPoint.X, myPoint.Y, targetPointW2S.X, targetPointW2S.Y, 5, Color.Black);
+            //    }
             //}
         }
 
