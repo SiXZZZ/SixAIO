@@ -24,13 +24,6 @@ namespace SixAIO.Champions
                 Range = () => 1200,
                 Radius = () => 140,
                 Speed = () => 1650,
-                Damage = (target, spellClass) =>
-                            target != null
-                            ? DamageCalculator.GetArmorMod(UnitManager.MyChampion, target) *
-                            ((-5 + spellClass.Level * 25) +
-                            (UnitManager.MyChampion.UnitStats.TotalAttackDamage * 1.3f) +
-                            (UnitManager.MyChampion.UnitStats.TotalAbilityPower * 0.15f))
-                            : 0,
                 IsEnabled = () => UseQ,
                 MinimumMana = () => QMinMana,
                 TargetSelect = (mode) => SpellQ.GetTargets(mode).FirstOrDefault()
@@ -84,30 +77,6 @@ namespace SixAIO.Champions
             {
                 return;
             }
-        }
-
-        private int QMinMana
-        {
-            get => MenuTab.GetItem<Counter>("Q Min Mana").Value;
-            set => MenuTab.GetItem<Counter>("Q Min Mana").Value = value;
-        }
-
-        private int WMinMana
-        {
-            get => MenuTab.GetItem<Counter>("W Min Mana").Value;
-            set => MenuTab.GetItem<Counter>("W Min Mana").Value = value;
-        }
-
-        private int EMinMana
-        {
-            get => MenuTab.GetItem<Counter>("E Min Mana").Value;
-            set => MenuTab.GetItem<Counter>("E Min Mana").Value = value;
-        }
-
-        private int RMinMana
-        {
-            get => MenuTab.GetItem<Counter>("R Min Mana").Value;
-            set => MenuTab.GetItem<Counter>("R Min Mana").Value = value;
         }
 
         private int RTargetMaxHPPercent
