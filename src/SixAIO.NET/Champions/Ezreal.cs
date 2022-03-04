@@ -58,7 +58,7 @@ namespace SixAIO.Champions
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
-                AllowCastOnMap = () => true,
+                AllowCastOnMap = () => AllowRCastOnMinimap,
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
                 MinimumHitChance = () => RHitChance,
                 Range = () => 30000,
@@ -111,31 +111,6 @@ namespace SixAIO.Champions
             }
         }
 
-
-        private int QMinMana
-        {
-            get => MenuTab.GetItem<Counter>("Q Min Mana").Value;
-            set => MenuTab.GetItem<Counter>("Q Min Mana").Value = value;
-        }
-
-        private int WMinMana
-        {
-            get => MenuTab.GetItem<Counter>("W Min Mana").Value;
-            set => MenuTab.GetItem<Counter>("W Min Mana").Value = value;
-        }
-
-        private int EMinMana
-        {
-            get => MenuTab.GetItem<Counter>("E Min Mana").Value;
-            set => MenuTab.GetItem<Counter>("E Min Mana").Value = value;
-        }
-
-        private int RMinMana
-        {
-            get => MenuTab.GetItem<Counter>("R Min Mana").Value;
-            set => MenuTab.GetItem<Counter>("R Min Mana").Value = value;
-        }
-
         private int RTargetMaxHPPercent
         {
             get => MenuTab.GetItem<Counter>("R Target Max HP Percent").Value;
@@ -165,6 +140,7 @@ namespace SixAIO.Champions
             MenuTab.AddItem(new Counter() { Title = "R Min Mana", MinValue = 0, MaxValue = 500, Value = 150, ValueFrequency = 10 });
             MenuTab.AddItem(new Counter() { Title = "R Target Max HP Percent", MinValue = 10, MaxValue = 100, Value = 50, ValueFrequency = 5 });
             MenuTab.AddItem(new ModeDisplay() { Title = "R HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
+            MenuTab.AddItem(new Switch() { Title = "Allow R cast on minimap", IsOn = true });
 
         }
     }

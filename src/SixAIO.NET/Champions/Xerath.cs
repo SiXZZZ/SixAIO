@@ -55,6 +55,7 @@ namespace SixAIO.Champions
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
+                AllowCastOnMap = () => AllowRCastOnMinimap,
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Circle,
                 MinimumHitChance = () => RHitChance,
                 Range = () => 5000,
@@ -92,6 +93,7 @@ namespace SixAIO.Champions
             //MenuTab.AddItem(new InfoDisplay() { Title = "---R Settings---" });
             //MenuTab.AddItem(new Switch() { Title = "Use R", IsOn = true });
             //MenuTab.AddItem(new Counter() { Title = "Use only R if x <= HP percent", MinValue = 0, MaxValue = 100, Value = 50, ValueFrequency = 5 });
+            //MenuTab.AddItem(new Switch() { Title = "Allow R cast on minimap", IsOn = true });
         }
     }
 }

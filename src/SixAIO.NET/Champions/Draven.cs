@@ -23,14 +23,14 @@ namespace SixAIO.Champions
 
         private static int PassiveStacks()
         {
-            var buff = UnitManager.MyChampion.BuffManager.GetBuffByName("dravenpassivestacks", false, true);
+            var buff = UnitManager.MyChampion.BuffManager.GetActiveBuff("dravenpassivestacks");
             return buff != null ? (int)buff.Stacks : 0;
         }
 
         private static int QStacks()
         {
-            var buff1 = UnitManager.MyChampion.BuffManager.GetBuffByName("DravenSpinning", false, true);
-            var buff2 = UnitManager.MyChampion.BuffManager.GetBuffByName("dravenspinningleft", false, true);
+            var buff1 = UnitManager.MyChampion.BuffManager.GetActiveBuff("DravenSpinning");
+            var buff2 = UnitManager.MyChampion.BuffManager.GetActiveBuff("dravenspinningleft");
 
             var stacks = buff1 != null && buff1.IsActive ? (int)buff1.Stacks : 0;
             stacks += buff2 != null && buff2.IsActive ? (int)buff2.Stacks : 0;
@@ -80,6 +80,7 @@ namespace SixAIO.Champions
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
+                AllowCastOnMap = () => AllowRCastOnMinimap,
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
                 MinimumHitChance = () => RHitChance,
                 Delay = () => 0.5f,
@@ -181,7 +182,7 @@ namespace SixAIO.Champions
             MenuTab.AddItem(new InfoDisplay() { Title = "---R Settings---" });
             MenuTab.AddItem(new Switch() { Title = "Use R", IsOn = true });
             MenuTab.AddItem(new ModeDisplay() { Title = "R HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
-
+            MenuTab.AddItem(new Switch() { Title = "Allow R cast on minimap", IsOn = true });
         }
     }
 }

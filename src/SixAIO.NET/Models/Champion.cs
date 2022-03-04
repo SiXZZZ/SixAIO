@@ -26,6 +26,19 @@ namespace SixAIO.Models
             set => MenuTab.GetItem<ModeDisplay>("Q HitChance").SelectedModeName = value.ToString();
         }
 
+        internal bool AllowQCastOnMinimap
+        {
+            get => MenuTab.GetItem<Switch>("Allow Q cast on minimap").IsOn;
+            set => MenuTab.GetItem<Switch>("Allow Q cast on minimap").IsOn = value;
+        }
+
+
+        internal int QMinMana
+        {
+            get => MenuTab.GetItem<Counter>("Q Min Mana").Value;
+            set => MenuTab.GetItem<Counter>("Q Min Mana").Value = value;
+        }
+
         internal bool UseW
         {
             get => MenuTab.GetItem<Switch>("Use W").IsOn;
@@ -36,6 +49,18 @@ namespace SixAIO.Models
         {
             get => (Oasys.SDK.Prediction.MenuSelected.HitChance)Enum.Parse(typeof(Oasys.SDK.Prediction.MenuSelected.HitChance), MenuTab.GetItem<ModeDisplay>("W HitChance").SelectedModeName);
             set => MenuTab.GetItem<ModeDisplay>("W HitChance").SelectedModeName = value.ToString();
+        }
+
+        internal bool AllowWCastOnMinimap
+        {
+            get => MenuTab.GetItem<Switch>("Allow W cast on minimap").IsOn;
+            set => MenuTab.GetItem<Switch>("Allow W cast on minimap").IsOn = value;
+        }
+
+        internal int WMinMana
+        {
+            get => MenuTab.GetItem<Counter>("W Min Mana").Value;
+            set => MenuTab.GetItem<Counter>("W Min Mana").Value = value;
         }
 
         internal bool UseE
@@ -50,6 +75,18 @@ namespace SixAIO.Models
             set => MenuTab.GetItem<ModeDisplay>("E HitChance").SelectedModeName = value.ToString();
         }
 
+        internal bool AllowECastOnMinimap
+        {
+            get => MenuTab.GetItem<Switch>("Allow E cast on minimap").IsOn;
+            set => MenuTab.GetItem<Switch>("Allow E cast on minimap").IsOn = value;
+        }
+
+        internal int EMinMana
+        {
+            get => MenuTab.GetItem<Counter>("E Min Mana").Value;
+            set => MenuTab.GetItem<Counter>("E Min Mana").Value = value;
+        }
+
         internal bool UseR
         {
             get => MenuTab.GetItem<Switch>("Use R").IsOn;
@@ -60,6 +97,18 @@ namespace SixAIO.Models
         {
             get => (Oasys.SDK.Prediction.MenuSelected.HitChance)Enum.Parse(typeof(Oasys.SDK.Prediction.MenuSelected.HitChance), MenuTab.GetItem<ModeDisplay>("R HitChance").SelectedModeName);
             set => MenuTab.GetItem<ModeDisplay>("R HitChance").SelectedModeName = value.ToString();
+        }
+
+        internal bool AllowRCastOnMinimap
+        {
+            get => MenuTab.GetItem<Switch>("Allow R cast on minimap").IsOn;
+            set => MenuTab.GetItem<Switch>("Allow R cast on minimap").IsOn = value;
+        }
+
+        internal int RMinMana
+        {
+            get => MenuTab.GetItem<Counter>("R Min Mana").Value;
+            set => MenuTab.GetItem<Counter>("R Min Mana").Value = value;
         }
 
         internal static Champion GetChampion(string champion)

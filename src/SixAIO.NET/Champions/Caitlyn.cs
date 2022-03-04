@@ -53,6 +53,7 @@ namespace SixAIO.Champions
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
+                AllowCastOnMap = () => AllowRCastOnMinimap,
                 IsTargetted = () => true,
                 Delay = () => 1f,
                 Range = () => 3500f,
@@ -88,6 +89,7 @@ namespace SixAIO.Champions
             MenuTab.AddItem(new ModeDisplay() { Title = "E HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
 
             MenuTab.AddItem(new Switch() { Title = "Use R", IsOn = true });
+            MenuTab.AddItem(new Switch() { Title = "Allow R cast on minimap", IsOn = false });
         }
     }
 }
