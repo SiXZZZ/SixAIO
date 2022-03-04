@@ -46,7 +46,7 @@ namespace SixAIO.Champions
                 Range = () => 700,
                 Damage = (target, spellClass) => GetEDamage(target, spellClass),
                 IsEnabled = () => UseE,
-                TargetSelect = (mode) => SpellE.GetTargets(mode).OrderBy(IsPoisoned).ThenByDescending(x => x.EffectiveMagicHealth).FirstOrDefault()
+                TargetSelect = (mode) => SpellE.GetTargets(mode).OrderBy(IsPoisoned).ThenBy(x => x.EffectiveMagicHealth).FirstOrDefault()
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
