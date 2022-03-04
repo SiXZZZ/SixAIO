@@ -27,7 +27,17 @@ namespace SixAIO.Champions
                 Speed = () => 5000,
                 Radius = () => 200,
                 IsEnabled = () => UseQ,
-                TargetSelect = (mode) => SpellQ.GetTargets(mode).FirstOrDefault()
+                TargetSelect = (mode) => SpellQ.GetTargets(mode, x => x.HealthPercent >= 10).FirstOrDefault()
+            };
+            SpellW = new Spell(CastSlot.Q, SpellSlot.Q)
+            {
+                PredictionMode = () => Prediction.MenuSelected.PredictionType.Circle,
+                MinimumHitChance = () => WHitChance,
+                Range = () => 850,
+                Speed = () => 5000,
+                Radius = () => 200,
+                IsEnabled = () => UseW,
+                TargetSelect = (mode) => SpellW.GetTargets(mode, x => x.HealthPercent >= 10).FirstOrDefault()
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
@@ -44,7 +54,7 @@ namespace SixAIO.Champions
                 MinimumHitChance = () => RHitChance,
                 Range = () => 750,
                 Speed = () => 10000,
-                Radius = () => 400,
+                Radius = () => 80,
                 Delay = () => 0.5f,
                 IsEnabled = () => UseR,
                 TargetSelect = (mode) => SpellR.GetTargets(mode, x =>
@@ -93,8 +103,15 @@ namespace SixAIO.Champions
             //{
             //    Orbwalker.AllowAttacking = false;
             //}
+            if (SpellE.ExecuteCastSpell() || SpellQ.ExecuteCastSpell() || SpellW.ExecuteCastSpell() || SpellR.ExecuteCastSpell())
+            {
+                return;
+            }
+        }
 
-            if (SpellE.ExecuteCastSpell() || SpellQ.ExecuteCastSpell() || SpellR.ExecuteCastSpell())
+        internal override void OnCoreHarassInput()
+        {
+            if (SpellE.ExecuteCastSpell(Orbwalker.OrbWalkingModeType.Mixed) || SpellQ.ExecuteCastSpell(Orbwalker.OrbWalkingModeType.Mixed))
             {
                 return;
             }
@@ -113,7 +130,15 @@ namespace SixAIO.Champions
             //    Orbwalker.AllowAttacking = false;
             //}
 
-            if (SpellE.ExecuteCastSpell())
+            if (SpellE.ExecuteCastSpell(Orbwalker.OrbWalkingModeType.LaneClear) || SpellQ.ExecuteCastSpell(Orbwalker.OrbWalkingModeType.LaneClear))
+            {
+                return;
+            }
+        }
+
+        internal override void OnCoreLastHitInput()
+        {
+            if (SpellE.ExecuteCastSpell(Orbwalker.OrbWalkingModeType.LastHit) || SpellQ.ExecuteCastSpell(Orbwalker.OrbWalkingModeType.LastHit))
             {
                 return;
             }
@@ -125,7 +150,7 @@ namespace SixAIO.Champions
             MenuTab.AddItem(new Switch() { Title = "Use Q", IsOn = true });
             MenuTab.AddItem(new ModeDisplay() { Title = "Q HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
 
-            //MenuTab.AddItem(new Switch() { Title = "Use W", IsOn = true });
+            MenuTab.AddItem(new Switch() { Title = "Use W", IsOn = true });
             MenuTab.AddItem(new Switch() { Title = "Use E", IsOn = true });
             MenuTab.AddItem(new Switch() { Title = "Use R", IsOn = true });
             MenuTab.AddItem(new ModeDisplay() { Title = "R HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
