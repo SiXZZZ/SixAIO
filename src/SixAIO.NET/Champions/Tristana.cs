@@ -6,6 +6,7 @@ using Oasys.Common.Menu.ItemComponents;
 using Oasys.SDK;
 using Oasys.SDK.Menu;
 using Oasys.SDK.SpellCasting;
+using Oasys.SDK.Tools;
 using SixAIO.Enums;
 using SixAIO.Models;
 using System;
@@ -33,7 +34,7 @@ namespace SixAIO.Champions
             {
                 IsTargetted = () => true,
                 IsEnabled = () => UseE,
-                TargetSelect = (mode) => 
+                TargetSelect = (mode) =>
                 {
                     var bestTarget = TargetSelector.GetBestChampionTarget(Orbwalker.SelectedHero);
                     if (bestTarget != null && MenuTab.GetItem<Switch>("E - " + bestTarget.ModelName).IsOn)
@@ -79,7 +80,7 @@ namespace SixAIO.Champions
                 return PushAwayModeSelected switch
                 {
                     PushAwayMode.Melee => targets.FirstOrDefault(x => x.CombatType == CombatTypes.Melee && x.Distance < PushAwayRange),
-                    PushAwayMode.LowerThanMyRange=> targets.FirstOrDefault(x => x.AttackRange < UnitManager.MyChampion.AttackRange && x.Distance < PushAwayRange),
+                    PushAwayMode.LowerThanMyRange => targets.FirstOrDefault(x => x.AttackRange < UnitManager.MyChampion.AttackRange && x.Distance < PushAwayRange),
                     PushAwayMode.DashNearMe => targets.FirstOrDefault(x => x.AIManager.IsDashing && UnitManager.MyChampion.DistanceTo(x.AIManager.NavEndPosition) < 300 && x.Distance < PushAwayRange),
                     PushAwayMode.Everything => targets.FirstOrDefault(x => x.Distance < PushAwayRange),
                     _ => null,
@@ -91,6 +92,7 @@ namespace SixAIO.Champions
 
         internal override void OnCoreMainInput()
         {
+            Orbwalker.SelectedTarget = GetETarget(UnitManager.EnemyChampions);
             if (SpellQ.ExecuteCastSpell() || SpellE.ExecuteCastSpell() || SpellR.ExecuteCastSpell())
             {
                 return;
@@ -105,7 +107,7 @@ namespace SixAIO.Champions
 
         private static GameObjectBase GetETarget<T>(List<T> enemies) where T : GameObjectBase
         {
-            return enemies.FirstOrDefault(x => TargetSelector.IsAttackable(x) && x.Distance <= UnitManager.MyChampion.TrueAttackRange && !x.IsObject(ObjectTypeFlag.BuildingProps) && x.BuffManager.HasBuff("tristanaecharge"));
+            return enemies.FirstOrDefault(x => TargetSelector.IsAttackable(x) && x.Distance <= UnitManager.MyChampion.TrueAttackRange && !x.IsObject(ObjectTypeFlag.BuildingProps) && x.BuffManager.HasActiveBuff("tristanaechargesound"));
         }
 
         private bool UsePushAway
@@ -146,7 +148,7 @@ namespace SixAIO.Champions
             }
 
             MenuTab.AddItem(new Switch() { Title = "Use Push Away", IsOn = false });
-            MenuTab.AddItem(new Counter() { Title = "Push Away Range", MinValue = 50, MaxValue = 500, Value = 150, ValueFrequency = 50 });
+            MenuTab.AddItem(new Counter() { Title = "Push Away Range", MinValue = 50, MaxValue = 500, Value = 150, ValueFrequency = 25 });
             MenuTab.AddItem(new ModeDisplay() { Title = "Push Away Mode", ModeNames = PushAwayHelper.ConstructPushAwayModeTable(), SelectedModeName = "Melee" });
 
         }

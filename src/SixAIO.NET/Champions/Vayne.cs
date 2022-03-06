@@ -188,9 +188,9 @@ namespace SixAIO.Champions
 
             MenuTab.AddItem(new InfoDisplay() { Title = "---E Settings---" });
             MenuTab.AddItem(new Switch() { Title = "Use E", IsOn = true });
-            MenuTab.AddItem(new Counter() { Title = "Condemn Range", MinValue = 50, MaxValue = 475, Value = 450, ValueFrequency = 5 });
+            MenuTab.AddItem(new Counter() { Title = "Condemn Range", MinValue = 50, MaxValue = 475, Value = 450, ValueFrequency = 25 });
             MenuTab.AddItem(new Switch() { Title = "Use Push Away", IsOn = false });
-            MenuTab.AddItem(new Counter() { Title = "Push Away Range", MinValue = 50, MaxValue = 550, Value = 150, ValueFrequency = 5 });
+            MenuTab.AddItem(new Counter() { Title = "Push Away Range", MinValue = 50, MaxValue = 550, Value = 150, ValueFrequency = 25 });
             MenuTab.AddItem(new ModeDisplay() { Title = "Push Away Mode", ModeNames = PushAwayHelper.ConstructPushAwayModeTable(), SelectedModeName = "Everything" });
 
         }

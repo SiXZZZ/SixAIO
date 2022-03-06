@@ -22,12 +22,12 @@ namespace SixAIO.Champions
             {
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
                 MinimumHitChance = () => QHitChance,
-                Range = () => 825,
+                Range = () => UnitManager.MyChampion.AttackRange + 325,
                 Radius = () => 80,
                 Speed = () => 2600,
                 Delay = () => 0f,
                 IsEnabled = () => UseQ,
-                TargetSelect = (mode) => Orbwalker.GetTarget(mode, SpellQ.Range())
+                TargetSelect = (mode) => SpellQ.GetTargets(mode).FirstOrDefault()//Orbwalker.GetTarget(mode, SpellQ.Range())
             };
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
             {
@@ -113,6 +113,15 @@ namespace SixAIO.Champions
             }
         }
 
+        internal override void OnCoreRender()
+        {
+            if (ShowQRange)
+            {
+                var color = Oasys.Common.Tools.ColorConverter.GetColor(QRangeColor);
+                Oasys.SDK.Rendering.RenderFactory.DrawNativeCircle(UnitManager.MyChampion.Position, SpellQ.Range(), color, 5);
+            }
+        }
+
         private bool OnlyBasicAttackOnFullCharge
         {
             get => MenuTab.GetItem<Switch>("Only basic attack on full charge").IsOn;
@@ -123,6 +132,18 @@ namespace SixAIO.Champions
         {
             get => MenuTab.GetItem<Switch>("Only basic attack on champions").IsOn;
             set => MenuTab.GetItem<Switch>("Only basic attack on champions").IsOn = value;
+        }
+
+        private bool ShowQRange
+        {
+            get => MenuTab.GetItem<Switch>("Show Q range").IsOn;
+            set => MenuTab.GetItem<Switch>("Show Q range").IsOn = value;
+        }
+
+        private string QRangeColor
+        {
+            get => MenuTab.GetItem<ModeDisplay>("Q range color").SelectedModeName;
+            set => MenuTab.GetItem<ModeDisplay>("Q range color").SelectedModeName = value;
         }
 
         private DashMode DashModeSelected
@@ -150,6 +171,8 @@ namespace SixAIO.Champions
             MenuTab.AddItem(new Switch() { Title = "Only basic attack on champions", IsOn = true });
             MenuTab.AddItem(new Switch() { Title = "Use Q", IsOn = true });
             MenuTab.AddItem(new ModeDisplay() { Title = "Q HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
+            MenuTab.AddItem(new Switch() { Title = "Show Q range", IsOn = true });
+            MenuTab.AddItem(new ModeDisplay() { Title = "Q range color", ModeNames = Oasys.Common.Tools.ColorConverter.GetColors(), SelectedModeName = "Blue" });
 
             MenuTab.AddItem(new Switch() { Title = "Use W", IsOn = true });
             MenuTab.AddItem(new ModeDisplay() { Title = "W HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
