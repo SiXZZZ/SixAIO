@@ -88,7 +88,7 @@ namespace SixAIO.Champions
                 Radius = () => 320,
                 Speed = () => 2000,
                 IsEnabled = () => UseR,
-                TargetSelect = (mode) => SpellR.GetTargets(mode).FirstOrDefault(x => x.Health < GetRDamage(x))
+                TargetSelect = (mode) => SpellR.GetTargets(mode, x => x.Distance > RMinimumRange && x.Distance <= RMaximumRange).FirstOrDefault(x => x.Health < GetRDamage(x))
             };
         }
 
@@ -162,6 +162,18 @@ namespace SixAIO.Champions
             Self
         }
 
+        private int RMinimumRange
+        {
+            get => MenuTab.GetItem<Counter>("R minimum range").Value;
+            set => MenuTab.GetItem<Counter>("R minimum range").Value = value;
+        }
+
+        private int RMaximumRange
+        {
+            get => MenuTab.GetItem<Counter>("R maximum range").Value;
+            set => MenuTab.GetItem<Counter>("R maximum range").Value = value;
+        }
+
         internal override void InitializeMenu()
         {
             MenuManager.AddTab(new Tab($"SIXAIO - {nameof(Draven)}"));
@@ -183,6 +195,8 @@ namespace SixAIO.Champions
             MenuTab.AddItem(new Switch() { Title = "Use R", IsOn = true });
             MenuTab.AddItem(new ModeDisplay() { Title = "R HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
             MenuTab.AddItem(new Switch() { Title = "Allow R cast on minimap", IsOn = true });
+            MenuTab.AddItem(new Counter() { Title = "R minimum range", MinValue = 0, MaxValue = 30_000, Value = 0, ValueFrequency = 50 });
+            MenuTab.AddItem(new Counter() { Title = "R maximum range", MinValue = 0, MaxValue = 30_000, Value = 30_000, ValueFrequency = 50 });
         }
     }
 }

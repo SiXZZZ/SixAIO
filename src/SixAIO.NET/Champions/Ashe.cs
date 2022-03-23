@@ -36,11 +36,11 @@ namespace SixAIO.Champions
                 AllowCastOnMap = () => AllowRCastOnMinimap,
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
                 MinimumHitChance = () => RHitChance,
-                Range = () => UltRange,
+                Range = () => 30_000,
                 Radius = () => 350,
                 Speed = () => 1600,
                 IsEnabled = () => UseR,
-                TargetSelect = (mode) => SpellR.GetTargets(mode).FirstOrDefault()
+                TargetSelect = (mode) => SpellR.GetTargets(mode, x => x.Distance > RMinimumRange && x.Distance <= RMaximumRange).FirstOrDefault()
             };
         }
 
@@ -60,10 +60,16 @@ namespace SixAIO.Champions
             }
         }
 
-        private int UltRange
+        private int RMinimumRange
         {
-            get => MenuTab.GetItem<Counter>("R Range").Value;
-            set => MenuTab.GetItem<Counter>("R Range").Value = value;
+            get => MenuTab.GetItem<Counter>("R minimum range").Value;
+            set => MenuTab.GetItem<Counter>("R minimum range").Value = value;
+        }
+
+        private int RMaximumRange
+        {
+            get => MenuTab.GetItem<Counter>("R maximum range").Value;
+            set => MenuTab.GetItem<Counter>("R maximum range").Value = value;
         }
 
         internal override void InitializeMenu()
@@ -77,7 +83,8 @@ namespace SixAIO.Champions
             MenuTab.AddItem(new Switch() { Title = "Use R", IsOn = true });
             MenuTab.AddItem(new ModeDisplay() { Title = "R HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
             MenuTab.AddItem(new Switch() { Title = "Allow R cast on minimap", IsOn = true });
-            MenuTab.AddItem(new Counter() { Title = "R Range", MinValue = 250, MaxValue = 25000, Value = 2500, ValueFrequency = 250 });
+            MenuTab.AddItem(new Counter() { Title = "R minimum range", MinValue = 0, MaxValue = 30_000, Value = 0, ValueFrequency = 50 });
+            MenuTab.AddItem(new Counter() { Title = "R maximum range", MinValue = 0, MaxValue = 30_000, Value = 2500, ValueFrequency = 50 });
 
         }
     }

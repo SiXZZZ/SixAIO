@@ -75,7 +75,7 @@ namespace SixAIO.Champions
                 IsEnabled = () => UseR,
                 MinimumMana = () => RMinMana,
                 ShouldCast = (mode, target, spellClass, damage) => target != null && target.Health < damage,
-                TargetSelect = (mode) => SpellR.GetTargets(mode, x => x.HealthPercent <= RTargetMaxHPPercent).FirstOrDefault()
+                TargetSelect = (mode) => SpellR.GetTargets(mode, x => x.HealthPercent <= RTargetMaxHPPercent && x.Distance > RMinimumRange && x.Distance <= RMaximumRange).FirstOrDefault()
             };
         }
 
@@ -117,6 +117,18 @@ namespace SixAIO.Champions
             set => MenuTab.GetItem<Counter>("R Target Max HP Percent").Value = value;
         }
 
+        private int RMinimumRange
+        {
+            get => MenuTab.GetItem<Counter>("R minimum range").Value;
+            set => MenuTab.GetItem<Counter>("R minimum range").Value = value;
+        }
+
+        private int RMaximumRange
+        {
+            get => MenuTab.GetItem<Counter>("R maximum range").Value;
+            set => MenuTab.GetItem<Counter>("R maximum range").Value = value;
+        }
+
         internal override void InitializeMenu()
         {
             MenuManager.AddTab(new Tab($"SIXAIO - {nameof(Ezreal)}"));
@@ -141,6 +153,8 @@ namespace SixAIO.Champions
             MenuTab.AddItem(new Counter() { Title = "R Target Max HP Percent", MinValue = 10, MaxValue = 100, Value = 50, ValueFrequency = 5 });
             MenuTab.AddItem(new ModeDisplay() { Title = "R HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
             MenuTab.AddItem(new Switch() { Title = "Allow R cast on minimap", IsOn = true });
+            MenuTab.AddItem(new Counter() { Title = "R minimum range", MinValue = 0, MaxValue = 30_000, Value = 0, ValueFrequency = 50 });
+            MenuTab.AddItem(new Counter() { Title = "R maximum range", MinValue = 0, MaxValue = 30_000, Value = 30_000, ValueFrequency = 50 });
 
         }
     }
