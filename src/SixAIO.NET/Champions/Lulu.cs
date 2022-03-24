@@ -250,7 +250,7 @@ namespace SixAIO.Champions
 
             MenuTab.AddItem(new Switch() { Title = "R Knockup enemies", IsOn = true });
             MenuTab.AddItem(new InfoDisplay() { Title = "-Min champs to knockup-" });
-            foreach (var allyChampion in UnitManager.AllyChampions)
+            foreach (var allyChampion in UnitManager.AllyChampions.Where(x => !x.IsTargetDummy))
             {
                 MenuTab.AddItem(new Counter() { Title = "Knockup - " + allyChampion.ModelName, MinValue = 1, MaxValue = 5, Value = 3, ValueFrequency = 1 });
             }

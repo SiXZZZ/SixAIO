@@ -76,7 +76,7 @@ namespace SixAIO.Utilities
             _menuTab.AddItem(new KeyBinding() { Title = "Key binding", SelectedKey = Keys.M });
 
             _menuTab.AddItem(new InfoDisplay() { Title = "-Only alert enabled summoners-" });
-            foreach (var enemy in UnitManager.EnemyChampions.Where(x => !x.UnitComponentInfo.SkinName.Contains("TargetDummy", StringComparison.OrdinalIgnoreCase)))
+            foreach (var enemy in UnitManager.EnemyChampions.Where(x => !x.IsTargetDummy))
             {
                 var spellBook = enemy.GetSpellBook();
                 var summoner1 = spellBook.GetSpellClass(Oasys.Common.Enums.GameEnums.SpellSlot.Summoner1);
@@ -114,7 +114,7 @@ namespace SixAIO.Utilities
                 _lastMessage + 10 < GameEngine.GameTime)
             {
                 _lastMessage = GameEngine.GameTime;
-                foreach (var enemy in UnitManager.EnemyChampions.Where(x => !x.UnitComponentInfo.SkinName.Contains("TargetDummy", StringComparison.OrdinalIgnoreCase)))
+                foreach (var enemy in UnitManager.EnemyChampions.Where(x => !x.IsTargetDummy))
                 {
                     var spellBook = enemy.GetSpellBook();
                     var summoner1 = spellBook.GetSpellClass(Oasys.Common.Enums.GameEnums.SpellSlot.Summoner1);

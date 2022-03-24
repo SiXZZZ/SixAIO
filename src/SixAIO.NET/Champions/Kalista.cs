@@ -64,9 +64,9 @@ namespace SixAIO.Champions
 
         private bool IsValidHero(Hero target)
         {
-            return IsValidTarget(target) &&
+            return !target.IsTargetDummy && IsValidTarget(target) &&
                     !TargetSelector.IsInvulnerable(target, Oasys.Common.Logic.DamageType.Physical, false) &&
-                    MenuTab.GetItem<Switch>("E - " + target.ModelName).IsOn;
+                    (MenuTab.GetItem<Switch>("E - " + target.ModelName)?.IsOn ?? false);
         }
 
         private static bool IsEpicJungleMonster(JungleMob target)
@@ -162,7 +162,7 @@ namespace SixAIO.Champions
 
             MenuTab.AddItem(new InfoDisplay() { Title = "---E Settings---" });
             MenuTab.AddItem(new Switch() { Title = "Use E", IsOn = true });
-            foreach (var enemy in UnitManager.EnemyChampions)
+            foreach (var enemy in UnitManager.EnemyChampions.Where(x => !x.IsTargetDummy))
             {
                 MenuTab.AddItem(new Switch() { Title = "E - " + enemy.ModelName, IsOn = true });
             }

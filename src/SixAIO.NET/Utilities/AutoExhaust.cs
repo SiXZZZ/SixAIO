@@ -93,7 +93,7 @@ namespace SixAIO.Utilities
                 var jsonText = reader.ReadToEnd();
 
                 _targetSelection = JsonConvert.DeserializeObject<TargetSelection>(jsonText);
-                var enemies = UnitManager.EnemyChampions;
+                var enemies = UnitManager.EnemyChampions.Where(x => !x.IsTargetDummy);
 
                 InitializeSettings(_targetSelection.TargetPrioritizations.Where(x => enemies.Any(e => e.ModelName.Equals(x.Champion, StringComparison.OrdinalIgnoreCase))));
             }

@@ -96,7 +96,7 @@ namespace SixAIO.Champions
             //MenuTab.AddItem(new Switch() { Title = "Use W", IsOn = true });
             MenuTab.AddItem(new InfoDisplay() { Title = "---E Settings---" });
             MenuTab.AddItem(new Switch() { Title = "Use E", IsOn = true });
-            foreach (var enemy in UnitManager.EnemyChampions)
+            foreach (var enemy in UnitManager.EnemyChampions.Where(x => !x.IsTargetDummy))
             {
                 MenuTab.AddItem(new Switch() { Title = "E - " + enemy.ModelName, IsOn = true });
             }

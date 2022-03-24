@@ -186,7 +186,7 @@ namespace SixAIO.Champions
             MenuManager.AddTab(new Tab($"SIXAIO - {nameof(Orianna)}"));
 
             MenuTab.AddItem(new InfoDisplay() { Title = "---Allies to buff - 0 to disable---" });
-            foreach (var allyChampion in UnitManager.AllyChampions)
+            foreach (var allyChampion in UnitManager.AllyChampions.Where(x => !x.IsTargetDummy))
             {
                 MenuTab.AddItem(new Counter() { Title = "Buff Ally Prio- " + allyChampion.ModelName, MinValue = 0, MaxValue = 5, Value = 0 });
             }
