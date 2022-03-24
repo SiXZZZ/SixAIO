@@ -41,10 +41,7 @@ namespace SixAIO.Champions
             {
                 Delay = () => 0f,
                 IsEnabled = () => UseR,
-                TargetSelect = (mode) =>
-                            BindedAlly != null && BindedAlly.IsAlive && BindedAlly.Distance <= 1100 && BindedAlly.HealthPercent < RHealthPercent
-                                        ? BindedAlly
-                                        : null
+                ShouldCast = (mode, target, spellClass, damage) => BindedAlly != null && BindedAlly.IsAlive && BindedAlly.Distance <= 1100 && BindedAlly.HealthPercent < RHealthPercent
             };
         }
 
@@ -142,6 +139,10 @@ namespace SixAIO.Champions
             if (BindedAlly is null && _cycles % 10 == 0 && UnitManager.MyChampion.Level >= 6)
             {
                 BindedAlly = UnitManager.AllyChampions.FirstOrDefault(ally => ally.BuffManager.GetBuffList().Any(x => x.Name.Contains("kalistacoopstrikeally", StringComparison.OrdinalIgnoreCase)));
+                if (BindedAlly is not null)
+                {
+                    Logger.Log("Binded Ally: " + BindedAlly.Name + " " + BindedAlly.ModelName);
+                }
             }
         }
 
