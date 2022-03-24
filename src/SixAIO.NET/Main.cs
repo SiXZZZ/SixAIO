@@ -26,6 +26,7 @@ namespace SixAIO
             GameEvents.OnGameLoadComplete += AutoSmite.GameEvents_OnGameLoadComplete;
             GameEvents.OnGameLoadComplete += AutoHeal.GameEvents_OnGameLoadComplete;
             GameEvents.OnGameLoadComplete += AutoCleanse.GameEvents_OnGameLoadComplete;
+            GameEvents.OnGameLoadComplete += AutoExhaust.GameEvents_OnGameLoadComplete;
             GameEvents.OnGameLoadComplete += ChatCooldownAlerter.GameEvents_OnGameLoadComplete;
             GameEvents.OnGameMatchComplete += GameEvents_OnGameMatchComplete;
             Oasys.Common.EventsProvider.GameEvents.OnCreateObject += GameEvents_OnCreateObject;
@@ -71,6 +72,7 @@ namespace SixAIO
             CoreEvents.OnCoreLasthitInputAsync += AutoSmite.OnCoreLasthitInputAsync;
             CoreEvents.OnCoreMainTick += AutoHeal.OnCoreMainTick;
             CoreEvents.OnCoreMainInputAsync += AutoHeal.OnCoreMainInputAsync;
+            CoreEvents.OnCoreMainInputAsync += AutoExhaust.OnCoreMainInputAsync;
             CoreEvents.OnCoreMainInputRelease += CoreEvents_OnCoreMainInputRelease;
 
             return Task.CompletedTask;

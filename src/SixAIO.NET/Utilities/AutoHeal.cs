@@ -40,7 +40,6 @@ namespace SixAIO.Utilities
 
         internal static Task GameEvents_OnGameLoadComplete()
         {
-            var spellBook = UnitManager.MyChampion.GetSpellBook();
             if (SummonerSpellsProvider.IHaveSpellOnSlot(SummonerSpellsEnum.Heal, SummonerSpellSlot.First))
             {
                 HealSlot = CastSlot.Summoner1;
@@ -98,7 +97,7 @@ namespace SixAIO.Utilities
 
         private static bool ShouldUseHeal()
         {
-            return UnitManager.MyChampion.IsAlive && TargetSelector.IsAttackable(UnitManager.MyChampion, false) && (UnitManager.MyChampion.Health / UnitManager.MyChampion.MaxHealth * 100) < HealBelowPercent;
+            return UnitManager.MyChampion.IsAlive && TargetSelector.IsAttackable(UnitManager.MyChampion, false) && UnitManager.MyChampion.HealthPercent < HealBelowPercent;
         }
     }
 }
