@@ -4,6 +4,7 @@ using Oasys.Common.Menu.ItemComponents;
 using Oasys.SDK;
 using Oasys.SDK.Menu;
 using Oasys.SDK.SpellCasting;
+using SixAIO.Helpers;
 using SixAIO.Models;
 using System;
 using System.Linq;
@@ -82,7 +83,14 @@ namespace SixAIO.Champions
                 Range = () => 850,
                 MinimumHitChance = () => Prediction.MenuSelected.HitChance.Immobile,
                 IsEnabled = () => UseE,
-                TargetSelect = (mode) => SpellE.GetTargets(mode).FirstOrDefault()
+                TargetSelect = (mode) =>
+                {
+                    return EOnSelf && UnitManager.EnemyChampions.Any(x => x.Distance <= EMaximumRange)
+                            ? UnitManager.MyChampion
+                            : EOnlyOnSelf
+                                ? null
+                                : SpellE.GetTargets(mode, x => !EOnlyHardCC || !BuffChecker.IsCrowdControlledButCanQss(x)).FirstOrDefault();
+                }
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
@@ -107,7 +115,7 @@ namespace SixAIO.Champions
                                 UnitManager.MyChampion.Mana >= minimumMana &&
                                 spellClass.Charges >= minimumCharges &&
                                 !ROnlyOutsideOfAttackRange || !UnitManager.EnemyChampions.Any(TargetSelector.IsInRange),
-                TargetSelect = (mode) => SpellR.GetTargets(mode, x => x.HealthPercent <= 50 && x.Distance > RMinimumRange && x.Distance <= RMaximumRange).FirstOrDefault()
+                TargetSelect = (mode) => SpellR.GetTargets(mode, x => x.HealthPercent <= RTargetMaxHPPercent && x.Distance > RMinimumRange && x.Distance <= RMaximumRange).FirstOrDefault()
             };
         }
 
@@ -145,6 +153,30 @@ namespace SixAIO.Champions
             set => MenuTab.GetItem<Counter>("W minimum range").Value = value;
         }
 
+        private bool EOnlyHardCC
+        {
+            get => MenuTab.GetItem<Switch>("E only hard CC").IsOn;
+            set => MenuTab.GetItem<Switch>("E only hard CC").IsOn = value;
+        }
+
+        private bool EOnSelf
+        {
+            get => MenuTab.GetItem<Switch>("E on self").IsOn;
+            set => MenuTab.GetItem<Switch>("E on self").IsOn = value;
+        }
+
+        private bool EOnlyOnSelf
+        {
+            get => MenuTab.GetItem<Switch>("E only on self").IsOn;
+            set => MenuTab.GetItem<Switch>("E only on self").IsOn = value;
+        }
+
+        private int EMaximumRange
+        {
+            get => MenuTab.GetItem<Counter>("E enemy maximum range").Value;
+            set => MenuTab.GetItem<Counter>("E enemy maximum range").Value = value;
+        }
+
         private bool ROnlyOutsideOfAttackRange
         {
             get => MenuTab.GetItem<Switch>("R only outside of attack range").IsOn;
@@ -163,6 +195,13 @@ namespace SixAIO.Champions
             set => MenuTab.GetItem<Counter>("R maximum range").Value = value;
         }
 
+        private int RTargetMaxHPPercent
+        {
+            get => MenuTab.GetItem<Counter>("R Target Max HP Percent").Value;
+            set => MenuTab.GetItem<Counter>("R Target Max HP Percent").Value = value;
+        }
+
+
         internal override void InitializeMenu()
         {
             MenuManager.AddTab(new Tab($"SIXAIO - {nameof(Jinx)}"));
@@ -179,6 +218,11 @@ namespace SixAIO.Champions
 
             MenuTab.AddItem(new InfoDisplay() { Title = "---E Settings---" });
             MenuTab.AddItem(new Switch() { Title = "Use E", IsOn = true });
+            MenuTab.AddItem(new Switch() { Title = "E only hard CC", IsOn = true });
+            MenuTab.AddItem(new InfoDisplay() { Title = "---E anti melee Settings---" });
+            MenuTab.AddItem(new Switch() { Title = "E on self", IsOn = true });
+            MenuTab.AddItem(new Switch() { Title = "E only on self", IsOn = false });
+            MenuTab.AddItem(new Counter() { Title = "E enemy maximum range", MinValue = 0, MaxValue = 900, Value = 250, ValueFrequency = 50 });
 
             MenuTab.AddItem(new InfoDisplay() { Title = "---R Settings---" });
             MenuTab.AddItem(new Switch() { Title = "Use R", IsOn = true });
@@ -187,6 +231,7 @@ namespace SixAIO.Champions
             MenuTab.AddItem(new Switch() { Title = "R only outside of attack range", IsOn = false });
             MenuTab.AddItem(new Counter() { Title = "R minimum range", MinValue = 0, MaxValue = 30_000, Value = 0, ValueFrequency = 50 });
             MenuTab.AddItem(new Counter() { Title = "R maximum range", MinValue = 0, MaxValue = 30_000, Value = 30_000, ValueFrequency = 50 });
+            MenuTab.AddItem(new Counter() { Title = "R Target Max HP Percent", MinValue = 10, MaxValue = 100, Value = 50, ValueFrequency = 5 });
         }
     }
 }
