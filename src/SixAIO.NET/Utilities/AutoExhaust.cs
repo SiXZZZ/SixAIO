@@ -101,7 +101,7 @@ namespace SixAIO.Utilities
             {
                 var prio = _targetSelection.TargetPrioritizations.FirstOrDefault(x => ally.ModelName.Equals(x.Champion, StringComparison.OrdinalIgnoreCase));
                 var percent = prio.Prioritization * 10;
-                _menuTab.AddItem(new Counter() { Title = prio.Champion, MinValue = 0, MaxValue = 100, Value = percent, ValueFrequency = 5 });
+                _menuTab.AddItem(new Counter() { Title = "Ally - " + prio.Champion, MinValue = 0, MaxValue = 100, Value = percent, ValueFrequency = 5 });
             }
         }
 
@@ -131,7 +131,7 @@ namespace SixAIO.Utilities
             }
             foreach (var targetPrioritization in targetPrioritizations)
             {
-                _menuTab.AddItem(new Counter() { Title = "Ally - " + targetPrioritization.Champion, MinValue = 0, MaxValue = 5, Value = targetPrioritization.Prioritization, ValueFrequency = 1 });
+                _menuTab.AddItem(new Counter() { Title = targetPrioritization.Champion, MinValue = 0, MaxValue = 5, Value = targetPrioritization.Prioritization, ValueFrequency = 1 });
             }
         }
 
