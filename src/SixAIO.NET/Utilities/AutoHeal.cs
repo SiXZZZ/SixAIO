@@ -1,10 +1,12 @@
-﻿using Oasys.Common.EventsProvider;
-using Oasys.Common.Menu;
+﻿using Oasys.Common.Menu;
 using Oasys.Common.Menu.ItemComponents;
 using Oasys.SDK;
 using Oasys.SDK.Menu;
 using Oasys.SDK.SpellCasting;
+using System;
 using System.Threading.Tasks;
+using System.Linq;
+using Oasys.Common.EventsProvider;
 
 namespace SixAIO.Utilities
 {
@@ -32,12 +34,6 @@ namespace SixAIO.Utilities
             set => _menuTab.GetItem<Switch>("Heal On Tick").IsOn = value;
         }
 
-        private static int HealBelowPercent
-        {
-            get => _menuTab.GetItem<Counter>("Heal Below Percent").Value;
-            set => _menuTab.GetItem<Counter>("Heal Below Percent").Value = value;
-        }
-
         internal static Task GameEvents_OnGameLoadComplete()
         {
             if (SummonerSpellsProvider.IHaveSpellOnSlot(SummonerSpellsEnum.Heal, SummonerSpellSlot.First))
@@ -50,19 +46,34 @@ namespace SixAIO.Utilities
             }
             else
             {
-                CoreEvents.OnCoreMainTick -= InputHandler;
-                CoreEvents.OnCoreLaneclearInputAsync -= InputHandler;
-                CoreEvents.OnCoreLasthitInputAsync -= InputHandler;
+                CoreEvents.OnCoreMainTick -= OnCoreMainTick;
+                CoreEvents.OnCoreMainInputAsync -= OnCoreMainInputAsync;
                 return Task.CompletedTask;
             }
 
             MenuManager.AddTab(new Tab($"SIXAIO - Auto Heal"));
             _menuTab.AddItem(new Switch() { Title = "Use Heal", IsOn = true });
-            _menuTab.AddItem(new Counter() { Title = "Heal Below Percent", Value = 20, MinValue = 0, MaxValue = 100, ValueFrequency = 1 });
             _menuTab.AddItem(new Switch() { Title = "Heal On Combo", IsOn = false });
             _menuTab.AddItem(new Switch() { Title = "Heal On Tick", IsOn = false });
 
+            LoadAllyHealthPercents();
+
             return Task.CompletedTask;
+        }
+
+        private static void LoadAllyHealthPercents()
+        {
+            try
+            {
+                _menuTab.AddItem(new InfoDisplay() { Title = "-Heal ally health percent is lower than-" });
+                foreach (var ally in UnitManager.AllyChampions)
+                {
+                    _menuTab.AddItem(new Counter() { Title = "Ally - " + ally.ModelName, MinValue = 0, MaxValue = 100, Value = 20, ValueFrequency = 5 });
+                }
+            }
+            catch (Exception)
+            {
+            }
         }
 
         internal static Task OnCoreMainTick()
@@ -95,9 +106,25 @@ namespace SixAIO.Utilities
             return Task.CompletedTask;
         }
 
+        private static bool IsAnyAllyLow()
+        {
+            try
+            {
+                return UnitManager.AllyChampions.Where(x => x.Distance <= 850)
+                        .Any(ally =>
+                            ally.IsAlive && ally.HealthPercent <= _menuTab.GetItem<Counter>(item => item.Title == "Ally - " + ally.ModelName).Value);
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
         private static bool ShouldUseHeal()
         {
-            return UnitManager.MyChampion.IsAlive && TargetSelector.IsAttackable(UnitManager.MyChampion, false) && UnitManager.MyChampion.HealthPercent < HealBelowPercent;
+            return UnitManager.MyChampion.IsAlive &&
+                   TargetSelector.IsAttackable(UnitManager.MyChampion, false) &&
+                   IsAnyAllyLow();
         }
     }
 }
