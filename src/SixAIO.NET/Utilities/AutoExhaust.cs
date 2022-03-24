@@ -10,6 +10,7 @@ using System.IO;
 using System.Linq;
 using System.Collections.Generic;
 using Oasys.Common.GameObject;
+using Oasys.Common.EventsProvider;
 
 namespace SixAIO.Utilities
 {
@@ -51,7 +52,7 @@ namespace SixAIO.Utilities
 
         private static bool UseExhaust
         {
-            get => _menuTab.GetItem<Switch>("Use Exhaust").IsOn;
+            get => _menuTab?.GetItem<Switch>("Use Exhaust").IsOn ?? false;
             set => _menuTab.GetItem<Switch>("Use Exhaust").IsOn = value;
         }
 
@@ -79,6 +80,7 @@ namespace SixAIO.Utilities
             }
             else
             {
+                CoreEvents.OnCoreMainInputAsync -= OnCoreMainInputAsync;
                 return Task.CompletedTask;
             }
 
@@ -96,12 +98,18 @@ namespace SixAIO.Utilities
 
         private static void LoadAllyHealthPercents()
         {
-            _menuTab.AddItem(new InfoDisplay() { Title = "-Exhaust target if ally health percent is lower than-" });
-            foreach (var ally in UnitManager.AllyChampions)
+            try
             {
-                var prio = _targetSelection.TargetPrioritizations.FirstOrDefault(x => ally.ModelName.Equals(x.Champion, StringComparison.OrdinalIgnoreCase));
-                var percent = prio.Prioritization * 10;
-                _menuTab.AddItem(new Counter() { Title = "Ally - " + prio.Champion, MinValue = 0, MaxValue = 100, Value = percent, ValueFrequency = 5 });
+                _menuTab.AddItem(new InfoDisplay() { Title = "-Exhaust target if ally health percent is lower than-" });
+                foreach (var ally in UnitManager.AllyChampions)
+                {
+                    var prio = _targetSelection.TargetPrioritizations.FirstOrDefault(x => ally.ModelName.Equals(x.Champion, StringComparison.OrdinalIgnoreCase));
+                    var percent = prio.Prioritization * 10;
+                    _menuTab.AddItem(new Counter() { Title = "Ally - " + prio.Champion, MinValue = 0, MaxValue = 100, Value = percent, ValueFrequency = 5 });
+                }
+            }
+            catch (Exception)
+            {
             }
         }
 
@@ -125,25 +133,37 @@ namespace SixAIO.Utilities
 
         internal static void InitializeSettings(IEnumerable<TargetPrioritization> targetPrioritizations)
         {
-            if (targetPrioritizations.Any())
+            try
             {
-                _menuTab.AddItem(new InfoDisplay() { Title = "-Exhaust target prio-" });
+                if (targetPrioritizations.Any())
+                {
+                    _menuTab.AddItem(new InfoDisplay() { Title = "-Exhaust target prio-" });
+                }
+                foreach (var targetPrioritization in targetPrioritizations)
+                {
+                    _menuTab.AddItem(new Counter() { Title = targetPrioritization.Champion, MinValue = 0, MaxValue = 5, Value = targetPrioritization.Prioritization, ValueFrequency = 1 });
+                }
             }
-            foreach (var targetPrioritization in targetPrioritizations)
+            catch (Exception)
             {
-                _menuTab.AddItem(new Counter() { Title = targetPrioritization.Champion, MinValue = 0, MaxValue = 5, Value = targetPrioritization.Prioritization, ValueFrequency = 1 });
             }
         }
 
         internal static Task OnCoreMainInputAsync()
         {
-            if (ShouldUseExhaust())
+            try
             {
-                var exhaustTarget = GetPrioritizationTarget();
-                if (exhaustTarget is not null && exhaustTarget.Distance <= 650)
+                if (ShouldUseExhaust())
                 {
-                    SpellCastProvider.CastSpell(ExhaustSlot, exhaustTarget.W2S);
+                    var exhaustTarget = GetPrioritizationTarget();
+                    if (exhaustTarget is not null && exhaustTarget.Distance <= 650)
+                    {
+                        SpellCastProvider.CastSpell(ExhaustSlot, exhaustTarget.W2S);
+                    }
                 }
+            }
+            catch (Exception)
+            {
             }
 
             return Task.CompletedTask;
@@ -151,33 +171,47 @@ namespace SixAIO.Utilities
 
         private static GameObjectBase GetPrioritizationTarget()
         {
-            GameObjectBase tempTarget = null;
-            var tempPrio = 0;
-
-            foreach (var hero in UnitManager.Enemies.Where(x => x.Distance <= ExhaustTargetRange))
+            try
             {
-                try
+                GameObjectBase tempTarget = null;
+                var tempPrio = 0;
+
+                foreach (var hero in UnitManager.Enemies.Where(x => x.Distance <= ExhaustTargetRange))
                 {
-                    var targetPrio = _menuTab.GetItem<Counter>(x => x.Title == hero.ModelName)?.Value ?? 0;
-                    if (targetPrio > tempPrio)
+                    try
                     {
-                        tempPrio = targetPrio;
-                        tempTarget = hero;
+                        var targetPrio = _menuTab.GetItem<Counter>(x => x.Title == hero.ModelName)?.Value ?? 0;
+                        if (targetPrio > tempPrio)
+                        {
+                            tempPrio = targetPrio;
+                            tempTarget = hero;
+                        }
+                    }
+                    catch (Exception)
+                    {
                     }
                 }
-                catch (Exception)
-                {
-                }
-            }
 
-            return tempTarget;
+                return tempTarget;
+            }
+            catch (Exception)
+            {
+                return null;
+            }
         }
 
         private static bool IsAnyAllyLow()
         {
-            return UnitManager.AllyChampions.Where(x => x.Distance <= ExhaustTargetRange)
-                    .Any(ally =>
-                        ally.IsAlive && ally.HealthPercent <= _menuTab.GetItem<Counter>(item => item.Title == "Ally - " + ally.ModelName).Value);
+            try
+            {
+                return UnitManager.AllyChampions.Where(x => x.Distance <= ExhaustTargetRange)
+                        .Any(ally =>
+                            ally.IsAlive && ally.HealthPercent <= _menuTab.GetItem<Counter>(item => item.Title == "Ally - " + ally.ModelName).Value);
+            }
+            catch (Exception)
+            {
+                return false;
+            }
         }
 
         private static bool ShouldUseExhaust()
