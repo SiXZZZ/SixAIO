@@ -121,64 +121,40 @@ namespace SixAIO.Champions
             }
         }
 
-        private int QMinMana
-        {
-            get => MenuTab.GetItem<Counter>("Q Min Mana").Value;
-            set => MenuTab.GetItem<Counter>("Q Min Mana").Value = value;
-        }
-
-        private int WMinMana
-        {
-            get => MenuTab.GetItem<Counter>("W Min Mana").Value;
-            set => MenuTab.GetItem<Counter>("W Min Mana").Value = value;
-        }
-
-        private int EMinMana
-        {
-            get => MenuTab.GetItem<Counter>("E Min Mana").Value;
-            set => MenuTab.GetItem<Counter>("E Min Mana").Value = value;
-        }
-
-        private int RMinMana
-        {
-            get => MenuTab.GetItem<Counter>("R Min Mana").Value;
-            set => MenuTab.GetItem<Counter>("R Min Mana").Value = value;
-        }
-
         private bool WSpeedAlly
         {
-            get => MenuTab.GetItem<Switch>("W Speed ally").IsOn;
-            set => MenuTab.GetItem<Switch>("W Speed ally").IsOn = value;
+            get => WSettings.GetItem<Switch>("W Speed ally").IsOn;
+            set => WSettings.GetItem<Switch>("W Speed ally").IsOn = value;
         }
 
         private bool EShieldAlly
         {
-            get => MenuTab.GetItem<Switch>("E Shield ally").IsOn;
-            set => MenuTab.GetItem<Switch>("E Shield ally").IsOn = value;
+            get => ESettings.GetItem<Switch>("E Shield ally").IsOn;
+            set => ESettings.GetItem<Switch>("E Shield ally").IsOn = value;
         }
 
         private int EShieldHealthPercent
         {
-            get => MenuTab.GetItem<Counter>("E Shield Health Percent").Value;
-            set => MenuTab.GetItem<Counter>("E Shield Health Percent").Value = value;
+            get => ESettings.GetItem<Counter>("E Shield Health Percent").Value;
+            set => ESettings.GetItem<Counter>("E Shield Health Percent").Value = value;
         }
 
         private int EIfMoreThanEnemiesNear
         {
-            get => MenuTab.GetItem<Counter>("E If More Than Enemies Near").Value;
-            set => MenuTab.GetItem<Counter>("E If More Than Enemies Near").Value = value;
+            get => ESettings.GetItem<Counter>("E If More Than Enemies Near").Value;
+            set => ESettings.GetItem<Counter>("E If More Than Enemies Near").Value = value;
         }
 
         private int EEnemiesCloserThan
         {
-            get => MenuTab.GetItem<Counter>("E Enemies Closer Than").Value;
-            set => MenuTab.GetItem<Counter>("E Enemies Closer Than").Value = value;
+            get => ESettings.GetItem<Counter>("E Enemies Closer Than").Value;
+            set => ESettings.GetItem<Counter>("E Enemies Closer Than").Value = value;
         }
 
         private int RUltEnemies
         {
-            get => MenuTab.GetItem<Counter>("R Ult enemies").Value;
-            set => MenuTab.GetItem<Counter>("R Ult enemies").Value = value;
+            get => RSettings.GetItem<Counter>("R Ult enemies").Value;
+            set => RSettings.GetItem<Counter>("R Ult enemies").Value = value;
         }
 
         internal override void InitializeMenu()
@@ -191,28 +167,24 @@ namespace SixAIO.Champions
                 MenuTab.AddItem(new Counter() { Title = "Buff Ally Prio- " + allyChampion.ModelName, MinValue = 0, MaxValue = 5, Value = 0 });
             }
 
-            MenuTab.AddItem(new InfoDisplay() { Title = "---Q Settings---" });
-            MenuTab.AddItem(new Switch() { Title = "Use Q", IsOn = true });
-            MenuTab.AddItem(new Counter() { Title = "Q Min Mana", MinValue = 0, MaxValue = 500, Value = 70, ValueFrequency = 10 });
-            MenuTab.AddItem(new ModeDisplay() { Title = "Q HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
+            QSettings.AddItem(new Switch() { Title = "Use Q", IsOn = true });
+            QSettings.AddItem(new Counter() { Title = "Q Min Mana", MinValue = 0, MaxValue = 500, Value = 70, ValueFrequency = 10 });
+            QSettings.AddItem(new ModeDisplay() { Title = "Q HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
 
-            MenuTab.AddItem(new InfoDisplay() { Title = "---W Settings---" });
-            MenuTab.AddItem(new Switch() { Title = "Use W", IsOn = true });
-            MenuTab.AddItem(new Counter() { Title = "W Min Mana", MinValue = 0, MaxValue = 500, Value = 65, ValueFrequency = 10 });
-            MenuTab.AddItem(new Switch() { Title = "W Speed ally", IsOn = false });
+            WSettings.AddItem(new Switch() { Title = "Use W", IsOn = true });
+            WSettings.AddItem(new Counter() { Title = "W Min Mana", MinValue = 0, MaxValue = 500, Value = 65, ValueFrequency = 10 });
+            WSettings.AddItem(new Switch() { Title = "W Speed ally", IsOn = false });
 
-            MenuTab.AddItem(new InfoDisplay() { Title = "---E Settings---" });
-            MenuTab.AddItem(new Switch() { Title = "Use E", IsOn = true });
-            MenuTab.AddItem(new Counter() { Title = "E Min Mana", MinValue = 0, MaxValue = 500, Value = 80, ValueFrequency = 10 });
-            MenuTab.AddItem(new Switch() { Title = "E Shield ally", IsOn = true });
-            MenuTab.AddItem(new Counter() { Title = "E Shield Health Percent", MinValue = 0, MaxValue = 100, Value = 70, ValueFrequency = 5 });
-            MenuTab.AddItem(new Counter() { Title = "E If More Than Enemies Near", MinValue = 0, MaxValue = 5, Value = 2, ValueFrequency = 1 });
-            MenuTab.AddItem(new Counter() { Title = "E Enemies Closer Than", MinValue = 50, MaxValue = 600, Value = 400, ValueFrequency = 25 });
+            ESettings.AddItem(new Switch() { Title = "Use E", IsOn = true });
+            ESettings.AddItem(new Counter() { Title = "E Min Mana", MinValue = 0, MaxValue = 500, Value = 80, ValueFrequency = 10 });
+            ESettings.AddItem(new Switch() { Title = "E Shield ally", IsOn = true });
+            ESettings.AddItem(new Counter() { Title = "E Shield Health Percent", MinValue = 0, MaxValue = 100, Value = 70, ValueFrequency = 5 });
+            ESettings.AddItem(new Counter() { Title = "E If More Than Enemies Near", MinValue = 0, MaxValue = 5, Value = 2, ValueFrequency = 1 });
+            ESettings.AddItem(new Counter() { Title = "E Enemies Closer Than", MinValue = 50, MaxValue = 600, Value = 400, ValueFrequency = 25 });
 
-            MenuTab.AddItem(new InfoDisplay() { Title = "---R Settings---" });
-            MenuTab.AddItem(new Switch() { Title = "Use R", IsOn = true });
-            MenuTab.AddItem(new Counter() { Title = "R Min Mana", MinValue = 0, MaxValue = 500, Value = 100, ValueFrequency = 10 });
-            MenuTab.AddItem(new Counter() { Title = "R Ult enemies", MinValue = 1, MaxValue = 5, Value = 2, ValueFrequency = 1 });
+            RSettings.AddItem(new Switch() { Title = "Use R", IsOn = true });
+            RSettings.AddItem(new Counter() { Title = "R Min Mana", MinValue = 0, MaxValue = 500, Value = 100, ValueFrequency = 10 });
+            RSettings.AddItem(new Counter() { Title = "R Ult enemies", MinValue = 1, MaxValue = 5, Value = 2, ValueFrequency = 1 });
 
         }
     }

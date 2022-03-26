@@ -58,33 +58,23 @@ namespace SixAIO.Champions
 
         private int WBuffHealthPercent
         {
-            get => MenuTab.GetItem<Counter>("W Buff Health Percent").Value;
-            set => MenuTab.GetItem<Counter>("W Buff Health Percent").Value = value;
-        }
-
-        private int WMinMana
-        {
-            get => MenuTab.GetItem<Counter>("W Min Mana").Value;
-            set => MenuTab.GetItem<Counter>("W Min Mana").Value = value;
+            get => WSettings.GetItem<Counter>("W Buff Health Percent").Value;
+            set => WSettings.GetItem<Counter>("W Buff Health Percent").Value = value;
         }
 
         internal override void InitializeMenu()
         {
             MenuManager.AddTab(new Tab($"SIXAIO - {nameof(Sona)}"));
-            MenuTab.AddItem(new InfoDisplay() { Title = "---Q Settings---" });
-            MenuTab.AddItem(new Switch() { Title = "Use Q", IsOn = true });
+            QSettings.AddItem(new Switch() { Title = "Use Q", IsOn = true });
 
-            MenuTab.AddItem(new InfoDisplay() { Title = "---W Settings---" });
-            MenuTab.AddItem(new Switch() { Title = "Use W", IsOn = true });
-            MenuTab.AddItem(new Counter() { Title = "W Min Mana", MinValue = 0, MaxValue = 500, Value = 100, ValueFrequency = 10 });
-            MenuTab.AddItem(new Counter() { Title = "W Buff Health Percent", MinValue = 0, MaxValue = 100, Value = 50, ValueFrequency = 5 });
+            WSettings.AddItem(new Switch() { Title = "Use W", IsOn = true });
+            WSettings.AddItem(new Counter() { Title = "W Min Mana", MinValue = 0, MaxValue = 500, Value = 100, ValueFrequency = 10 });
+            WSettings.AddItem(new Counter() { Title = "W Buff Health Percent", MinValue = 0, MaxValue = 100, Value = 50, ValueFrequency = 5 });
 
-            MenuTab.AddItem(new InfoDisplay() { Title = "---E Settings---" });
-            MenuTab.AddItem(new Switch() { Title = "Use E", IsOn = true });
+            ESettings.AddItem(new Switch() { Title = "Use E", IsOn = true });
 
-            MenuTab.AddItem(new InfoDisplay() { Title = "---R Settings---" });
-            MenuTab.AddItem(new Switch() { Title = "Use R", IsOn = true });
-            MenuTab.AddItem(new ModeDisplay() { Title = "R HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
+            RSettings.AddItem(new Switch() { Title = "Use R", IsOn = true });
+            RSettings.AddItem(new ModeDisplay() { Title = "R HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
 
         }
     }

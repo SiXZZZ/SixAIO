@@ -66,54 +66,34 @@ namespace SixAIO.Champions
             }
         }
 
-        private int QMinMana
-        {
-            get => MenuTab.GetItem<Counter>("Q Min Mana").Value;
-            set => MenuTab.GetItem<Counter>("Q Min Mana").Value = value;
-        }
-
-        private int WMinMana
-        {
-            get => MenuTab.GetItem<Counter>("W Min Mana").Value;
-            set => MenuTab.GetItem<Counter>("W Min Mana").Value = value;
-        }
-
-        private int RMinMana
-        {
-            get => MenuTab.GetItem<Counter>("R Min Mana").Value;
-            set => MenuTab.GetItem<Counter>("R Min Mana").Value = value;
-        }
-
         private int RIfMoreThanEnemiesNear
         {
-            get => MenuTab.GetItem<Counter>("R If More Than Enemies Near").Value;
-            set => MenuTab.GetItem<Counter>("R If More Than Enemies Near").Value = value;
+            get => RSettings.GetItem<Counter>("R If More Than Enemies Near").Value;
+            set => RSettings.GetItem<Counter>("R If More Than Enemies Near").Value = value;
         }
 
         private int REnemiesCloserThan
         {
-            get => MenuTab.GetItem<Counter>("R Enemies Closer Than").Value;
-            set => MenuTab.GetItem<Counter>("R Enemies Closer Than").Value = value;
+            get => RSettings.GetItem<Counter>("R Enemies Closer Than").Value;
+            set => RSettings.GetItem<Counter>("R Enemies Closer Than").Value = value;
         }
 
         internal override void InitializeMenu()
         {
             MenuManager.AddTab(new Tab($"SIXAIO - {nameof(Amumu)}"));
-            MenuTab.AddItem(new InfoDisplay() { Title = "---Q Settings---" });
-            MenuTab.AddItem(new Switch() { Title = "Use Q", IsOn = true });
-            MenuTab.AddItem(new Counter() { Title = "Q Min Mana", MinValue = 0, MaxValue = 500, Value = 150, ValueFrequency = 10 });
-            MenuTab.AddItem(new ModeDisplay() { Title = "Q HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
+            QSettings.AddItem(new Switch() { Title = "Use Q", IsOn = true });
+            QSettings.AddItem(new Counter() { Title = "Q Min Mana", MinValue = 0, MaxValue = 500, Value = 150, ValueFrequency = 10 });
+            QSettings.AddItem(new ModeDisplay() { Title = "Q HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
 
-            MenuTab.AddItem(new InfoDisplay() { Title = "---W Settings---" });
-            MenuTab.AddItem(new Switch() { Title = "Use W", IsOn = true });
-            MenuTab.AddItem(new Counter() { Title = "W Min Mana", MinValue = 0, MaxValue = 500, Value = 150, ValueFrequency = 10 });
-            MenuTab.AddItem(new InfoDisplay() { Title = "---E Settings---" });
-            MenuTab.AddItem(new Switch() { Title = "Use E", IsOn = true });
-            MenuTab.AddItem(new InfoDisplay() { Title = "---R Settings---" });
-            MenuTab.AddItem(new Switch() { Title = "Use R", IsOn = true });
-            MenuTab.AddItem(new Counter() { Title = "R Min Mana", MinValue = 0, MaxValue = 500, Value = 150, ValueFrequency = 10 });
-            MenuTab.AddItem(new Counter() { Title = "R If More Than Enemies Near", MinValue = 0, MaxValue = 5, Value = 2, ValueFrequency = 1 });
-            MenuTab.AddItem(new Counter() { Title = "R Enemies Closer Than", MinValue = 50, MaxValue = 600, Value = 350, ValueFrequency = 50 });
+            WSettings.AddItem(new Switch() { Title = "Use W", IsOn = true });
+            WSettings.AddItem(new Counter() { Title = "W Min Mana", MinValue = 0, MaxValue = 500, Value = 150, ValueFrequency = 10 });
+
+            ESettings.AddItem(new Switch() { Title = "Use E", IsOn = true });
+
+            RSettings.AddItem(new Switch() { Title = "Use R", IsOn = true });
+            RSettings.AddItem(new Counter() { Title = "R Min Mana", MinValue = 0, MaxValue = 500, Value = 150, ValueFrequency = 10 });
+            RSettings.AddItem(new Counter() { Title = "R If More Than Enemies Near", MinValue = 0, MaxValue = 5, Value = 2, ValueFrequency = 1 });
+            RSettings.AddItem(new Counter() { Title = "R Enemies Closer Than", MinValue = 50, MaxValue = 600, Value = 350, ValueFrequency = 50 });
         }
     }
 }

@@ -178,14 +178,14 @@ namespace SixAIO.Champions
 
         private FeatherMode ChampionMode
         {
-            get => (FeatherMode)Enum.Parse(typeof(FeatherMode), MenuTab.GetItem<ModeDisplay>("Champion Mode").SelectedModeName);
-            set => MenuTab.GetItem<ModeDisplay>("Champion Mode").SelectedModeName = value.ToString();
+            get => (FeatherMode)Enum.Parse(typeof(FeatherMode), ESettings.GetItem<ModeDisplay>("Champion Mode").SelectedModeName);
+            set => ESettings.GetItem<ModeDisplay>("Champion Mode").SelectedModeName = value.ToString();
         }
 
         private int FeathersToHitChampions
         {
-            get => MenuTab.GetItem<Counter>("Feathers To Hit Champions").Value;
-            set => MenuTab.GetItem<Counter>("Feathers To Hit Champions").Value = value;
+            get => ESettings.GetItem<Counter>("Feathers To Hit Champions").Value;
+            set => ESettings.GetItem<Counter>("Feathers To Hit Champions").Value = value;
         }
 
         //private FeatherMode EpicMonsterMode
@@ -215,20 +215,19 @@ namespace SixAIO.Champions
         internal override void InitializeMenu()
         {
             MenuManager.AddTab(new Tab($"SIXAIO - {nameof(Xayah)}"));
-            MenuTab.AddItem(new InfoDisplay() { Title = "---Draw Settings---" });
+
             MenuTab.AddItem(new Switch() { Title = "Draw Feathers", IsOn = true });
             MenuTab.AddItem(new Counter() { Title = "Draw Thickness", MinValue = 0, MaxValue = 250, Value = 5, ValueFrequency = 1 });
             MenuTab.AddItem(new ModeDisplay() { Title = "Draw Color", ModeNames = Oasys.Common.Tools.ColorConverter.GetColors(), SelectedModeName = "Blue" });
-            MenuTab.AddItem(new InfoDisplay() { Title = "---Q Settings---" });
-            MenuTab.AddItem(new Switch() { Title = "Use Q", IsOn = true });
-            MenuTab.AddItem(new ModeDisplay() { Title = "Q HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
 
-            MenuTab.AddItem(new InfoDisplay() { Title = "---W Settings---" });
-            MenuTab.AddItem(new Switch() { Title = "Use W", IsOn = true });
-            MenuTab.AddItem(new InfoDisplay() { Title = "---E Settings---" });
-            MenuTab.AddItem(new Switch() { Title = "Use E", IsOn = true });
-            MenuTab.AddItem(new ModeDisplay() { Title = "Champion Mode", ModeNames = ConstructFeatherModeTable(), SelectedModeName = "Stacks" });
-            MenuTab.AddItem(new Counter() { Title = "Feathers To Hit Champions", MinValue = 1, MaxValue = 25, Value = 3, ValueFrequency = 1 });
+            QSettings.AddItem(new Switch() { Title = "Use Q", IsOn = true });
+            QSettings.AddItem(new ModeDisplay() { Title = "Q HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
+
+            WSettings.AddItem(new Switch() { Title = "Use W", IsOn = true });
+
+            ESettings.AddItem(new Switch() { Title = "Use E", IsOn = true });
+            ESettings.AddItem(new ModeDisplay() { Title = "Champion Mode", ModeNames = ConstructFeatherModeTable(), SelectedModeName = "Stacks" });
+            ESettings.AddItem(new Counter() { Title = "Feathers To Hit Champions", MinValue = 1, MaxValue = 25, Value = 3, ValueFrequency = 1 });
             //MenuTab.AddItem(new ModeDisplay() { Title = "Epic Monster Mode", ModeNames = ConstructFeatherModeTable(), SelectedModeName = "Stacks" });
             //MenuTab.AddItem(new Counter() { Title = "Feathers To Hit Epic Monster", MinValue = 1, MaxValue = 25, Value = 10, ValueFrequency = 1 });
             //MenuTab.AddItem(new ModeDisplay() { Title = "Targets Mode", ModeNames = ConstructFeatherModeTable(), SelectedModeName = "Stacks" });

@@ -231,12 +231,14 @@ namespace SixAIO.Champions
         {
             TabItem.OnTabItemChange += TabItem_OnTabItemChange;
             MenuManager.AddTab(new Tab($"SIXAIO - {nameof(Yasuo)}"));
-            MenuTab.AddItem(new Switch() { Title = "Use Q", IsOn = true });
-            MenuTab.AddItem(new ModeDisplay() { Title = "Q HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
+            QSettings.AddItem(new Switch() { Title = "Use Q", IsOn = true });
+            QSettings.AddItem(new ModeDisplay() { Title = "Q HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
 
             //MenuTab.AddItem(new Switch() { Title = "Use W", IsOn = true });
-            MenuTab.AddItem(new Switch() { Title = "Use E", IsOn = true });
-            MenuTab.AddItem(new Switch() { Title = "Use R", IsOn = true });
+
+            ESettings.AddItem(new Switch() { Title = "Use E", IsOn = true });
+
+            RSettings.AddItem(new Switch() { Title = "Use R", IsOn = true });
             SetTargetChampsOnly();
         }
 
@@ -244,9 +246,10 @@ namespace SixAIO.Champions
         {
             try
             {
-                var orbTab = MenuManagerProvider.GetTab("Orbwalker Input");
-                _originalTargetChampsOnlySetting = orbTab.GetItem<Switch>("Hold Target Champs Only").IsOn;
-                orbTab.GetItem<Switch>("Hold Target Champs Only").IsOn = false;
+                var orbTab = MenuManagerProvider.GetTab("Orbwalker");
+                var orbGroup = orbTab.GetGroup("Input");
+                _originalTargetChampsOnlySetting = orbGroup.GetItem<Switch>("Hold Target Champs Only").IsOn;
+                orbGroup.GetItem<Switch>("Hold Target Champs Only").IsOn = false;
             }
             catch (Exception ex)
             {
@@ -256,7 +259,8 @@ namespace SixAIO.Champions
 
         private void TabItem_OnTabItemChange(string tabName, TabItem tabItem)
         {
-            if (tabItem.TabName == "Orbwalker Input" &&
+            if (tabItem.TabName == "Orbwalker" &&
+                tabItem.GroupName == "Input" &&
                 tabItem.Title == "Hold Target Champs Only" &&
                 tabItem is Switch itemSwitch &&
                 itemSwitch.IsOn)
@@ -270,10 +274,11 @@ namespace SixAIO.Champions
             try
             {
                 TabItem.OnTabItemChange -= TabItem_OnTabItemChange;
-                MenuManagerProvider
-                    .GetTab("Orbwalker Input")
-                    .GetItem<Switch>("Hold Target Champs Only")
-                    .IsOn = _originalTargetChampsOnlySetting;
+
+                var orbTab = MenuManagerProvider.GetTab("Orbwalker");
+                var orbGroup = orbTab.GetGroup("Input");
+                orbGroup.GetItem<Switch>("Hold Target Champs Only")
+                        .IsOn = _originalTargetChampsOnlySetting;
             }
             catch (Exception ex)
             {

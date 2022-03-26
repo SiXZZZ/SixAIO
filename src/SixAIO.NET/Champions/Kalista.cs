@@ -63,7 +63,7 @@ namespace SixAIO.Champions
         {
             return !target.IsTargetDummy && IsValidTarget(target) &&
                     !TargetSelector.IsInvulnerable(target, Oasys.Common.Logic.DamageType.Physical, false) &&
-                    (MenuTab.GetItem<Switch>("E - " + target.ModelName)?.IsOn ?? false);
+                    (ESettings.GetItem<Switch>("E - " + target.ModelName)?.IsOn ?? false);
         }
 
         private static bool IsEpicJungleMonster(JungleMob target)
@@ -148,29 +148,26 @@ namespace SixAIO.Champions
 
         private int RHealthPercent
         {
-            get => MenuTab.GetItem<Counter>("R Health Percent").Value;
-            set => MenuTab.GetItem<Counter>("R Health Percent").Value = value;
+            get => RSettings.GetItem<Counter>("R Health Percent").Value;
+            set => RSettings.GetItem<Counter>("R Health Percent").Value = value;
         }
 
         internal override void InitializeMenu()
         {
             MenuManager.AddTab(new Tab($"SIXAIO - {nameof(Kalista)}"));
 
-            MenuTab.AddItem(new InfoDisplay() { Title = "---Q Settings---" });
-            MenuTab.AddItem(new Switch() { Title = "Use Q", IsOn = true });
-            MenuTab.AddItem(new ModeDisplay() { Title = "Q HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
+            QSettings.AddItem(new Switch() { Title = "Use Q", IsOn = true });
+            QSettings.AddItem(new ModeDisplay() { Title = "Q HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
 
 
-            MenuTab.AddItem(new InfoDisplay() { Title = "---E Settings---" });
-            MenuTab.AddItem(new Switch() { Title = "Use E", IsOn = true });
+            ESettings.AddItem(new Switch() { Title = "Use E", IsOn = true });
             foreach (var enemy in UnitManager.EnemyChampions.Where(x => !x.IsTargetDummy))
             {
-                MenuTab.AddItem(new Switch() { Title = "E - " + enemy.ModelName, IsOn = true });
+                ESettings.AddItem(new Switch() { Title = "E - " + enemy.ModelName, IsOn = true });
             }
 
-            MenuTab.AddItem(new InfoDisplay() { Title = "---R Settings---" });
-            MenuTab.AddItem(new Switch() { Title = "Use R", IsOn = true });
-            MenuTab.AddItem(new Counter() { Title = "R Health Percent", MinValue = 0, MaxValue = 100, Value = 20, ValueFrequency = 5 });
+            RSettings.AddItem(new Switch() { Title = "Use R", IsOn = true });
+            RSettings.AddItem(new Counter() { Title = "R Health Percent", MinValue = 0, MaxValue = 100, Value = 20, ValueFrequency = 5 });
         }
     }
 }

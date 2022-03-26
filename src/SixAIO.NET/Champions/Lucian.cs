@@ -105,24 +105,23 @@ namespace SixAIO.Champions
 
         private DashMode DashModeSelected
         {
-            get => (DashMode)Enum.Parse(typeof(DashMode), MenuTab.GetItem<ModeDisplay>("Dash Mode").SelectedModeName);
-            set => MenuTab.GetItem<ModeDisplay>("Dash Mode").SelectedModeName = value.ToString();
+            get => (DashMode)Enum.Parse(typeof(DashMode), ESettings.GetItem<ModeDisplay>("Dash Mode").SelectedModeName);
+            set => ESettings.GetItem<ModeDisplay>("Dash Mode").SelectedModeName = value.ToString();
         }
 
         internal override void InitializeMenu()
         {
             TabItem.OnTabItemChange += TabItem_OnTabItemChange;
             MenuManager.AddTab(new Tab($"SIXAIO - {nameof(Lucian)}"));
-            MenuTab.AddItem(new InfoDisplay() { Title = "---Q Settings---" });
-            MenuTab.AddItem(new Switch() { Title = "Use Q", IsOn = true });
-            MenuTab.AddItem(new InfoDisplay() { Title = "---W Settings---" });
-            MenuTab.AddItem(new Switch() { Title = "Use W", IsOn = true });
-            MenuTab.AddItem(new ModeDisplay() { Title = "W HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
+            QSettings.AddItem(new Switch() { Title = "Use Q", IsOn = true });
 
-            MenuTab.AddItem(new InfoDisplay() { Title = "---E Settings---" });
-            MenuTab.AddItem(new Switch() { Title = "Use E", IsOn = false });
-            MenuTab.AddItem(new ModeDisplay() { Title = "Dash Mode", ModeNames = DashHelper.ConstructDashModeTable(), SelectedModeName = "ToMouse" });
-            //MenuTab.AddItem(new Switch() { Title = "Use R", IsOn = true });
+            WSettings.AddItem(new Switch() { Title = "Use W", IsOn = true });
+            WSettings.AddItem(new ModeDisplay() { Title = "W HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
+
+            ESettings.AddItem(new Switch() { Title = "Use E", IsOn = false });
+            ESettings.AddItem(new ModeDisplay() { Title = "Dash Mode", ModeNames = DashHelper.ConstructDashModeTable(), SelectedModeName = "ToMouse" });
+
+            //RSettings.AddItem(new Switch() { Title = "Use R", IsOn = true });
             SetTargetChampsOnly();
         }
 
@@ -130,9 +129,10 @@ namespace SixAIO.Champions
         {
             try
             {
-                var orbTab = MenuManagerProvider.GetTab("Orbwalker Input");
-                _originalTargetChampsOnlySetting = orbTab.GetItem<Switch>("Hold Target Champs Only").IsOn;
-                orbTab.GetItem<Switch>("Hold Target Champs Only").IsOn = false;
+                var orbTab = MenuManagerProvider.GetTab("Orbwalker");
+                var orbGroup = orbTab.GetGroup("Input");
+                _originalTargetChampsOnlySetting = orbGroup.GetItem<Switch>("Hold Target Champs Only").IsOn;
+                orbGroup.GetItem<Switch>("Hold Target Champs Only").IsOn = false;
             }
             catch (Exception ex)
             {
@@ -142,7 +142,8 @@ namespace SixAIO.Champions
 
         private void TabItem_OnTabItemChange(string tabName, TabItem tabItem)
         {
-            if (tabItem.TabName == "Orbwalker Input" &&
+            if (tabItem.TabName == "Orbwalker" &&
+                tabItem.GroupName == "Input" &&
                 tabItem.Title == "Hold Target Champs Only" &&
                 tabItem is Switch itemSwitch &&
                 itemSwitch.IsOn)
@@ -156,10 +157,11 @@ namespace SixAIO.Champions
             try
             {
                 TabItem.OnTabItemChange -= TabItem_OnTabItemChange;
-                MenuManagerProvider
-                    .GetTab("Orbwalker Input")
-                    .GetItem<Switch>("Hold Target Champs Only")
-                    .IsOn = _originalTargetChampsOnlySetting;
+
+                var orbTab = MenuManagerProvider.GetTab("Orbwalker");
+                var orbGroup = orbTab.GetGroup("Input");
+                orbGroup.GetItem<Switch>("Hold Target Champs Only")
+                        .IsOn = _originalTargetChampsOnlySetting;
             }
             catch (Exception ex)
             {

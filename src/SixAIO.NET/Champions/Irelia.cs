@@ -1,22 +1,14 @@
 ﻿using Oasys.Common.Enums.GameEnums;
-using Oasys.Common.Extensions;
 using Oasys.Common.GameObject;
-using Oasys.Common.GameObject.Clients.ExtendedInstances;
 using Oasys.Common.GameObject.Clients.ExtendedInstances.Spells;
-using Oasys.Common.GameObject.ObjectClass;
 using Oasys.Common.Menu;
 using Oasys.Common.Menu.ItemComponents;
 using Oasys.SDK;
 using Oasys.SDK.Menu;
 using Oasys.SDK.SpellCasting;
-using Oasys.SDK.Tools;
-using SharpDX;
 using SixAIO.Helpers;
 using SixAIO.Models;
-using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace SixAIO.Champions
 {
@@ -180,10 +172,10 @@ namespace SixAIO.Champions
         internal override void InitializeMenu()
         {
             MenuManager.AddTab(new Tab($"SIXAIO - {nameof(Irelia)}"));
-            MenuTab.AddItem(new Switch() { Title = "Use Q", IsOn = true });
-            MenuTab.AddItem(new Switch() { Title = "Use W", IsOn = true });
-            MenuTab.AddItem(new Switch() { Title = "Use E", IsOn = true });
-            MenuTab.AddItem(new Switch() { Title = "Use R", IsOn = true });
+            QSettings.AddItem(new Switch() { Title = "Use Q", IsOn = true });
+            WSettings.AddItem(new Switch() { Title = "Use W", IsOn = true });
+            ESettings.AddItem(new Switch() { Title = "Use E", IsOn = true });
+            RSettings.AddItem(new Switch() { Title = "Use R", IsOn = true });
         }
     }
 }

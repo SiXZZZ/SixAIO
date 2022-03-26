@@ -37,7 +37,7 @@ namespace SixAIO.Champions
                 TargetSelect = (mode) =>
                 {
                     var bestTarget = TargetSelector.GetBestChampionTarget(Orbwalker.SelectedHero);
-                    if (bestTarget != null && MenuTab.GetItem<Switch>("E - " + bestTarget.ModelName).IsOn)
+                    if (bestTarget != null && ESettings.GetItem<Switch>("E - " + bestTarget.ModelName).IsOn)
                     {
                         return bestTarget;
                     }
@@ -45,7 +45,7 @@ namespace SixAIO.Champions
                     var targets = UnitManager.EnemyChampions.Where(x => x.Distance <= UnitManager.MyChampion.TrueAttackRange &&
                                                                      TargetSelector.IsAttackable(x) &&
                                                                      !TargetSelector.IsInvulnerable(x, Oasys.Common.Logic.DamageType.Physical, false) &&
-                                                                     MenuTab.GetItem<Switch>("E - " + x.ModelName).IsOn)
+                                                                     ESettings.GetItem<Switch>("E - " + x.ModelName).IsOn)
                                                          .OrderBy(x => x.Health);
                     return targets.FirstOrDefault();
                 }
@@ -67,7 +67,7 @@ namespace SixAIO.Champions
             var targets = UnitManager.EnemyChampions.Where(x => x.Distance <= UnitManager.MyChampion.TrueAttackRange &&
                                                                 TargetSelector.IsAttackable(x) &&
                                                                 !TargetSelector.IsInvulnerable(x, Oasys.Common.Logic.DamageType.Magical, false) &&
-                                                                MenuTab.GetItem<Switch>("R - " + x.ModelName).IsOn)
+                                                                RSettings.GetItem<Switch>("R - " + x.ModelName).IsOn)
                                                     .OrderBy(x => x.Health);
 
             var target = targets.FirstOrDefault(x => DamageCalculator.GetTargetHealthAfterBasicAttack(UnitManager.MyChampion, x) + x.NeutralShield + x.MagicalShield + 100 < GetRDamage(x));
@@ -112,44 +112,44 @@ namespace SixAIO.Champions
 
         private bool UsePushAway
         {
-            get => MenuTab.GetItem<Switch>("Use Push Away").IsOn;
-            set => MenuTab.GetItem<Switch>("Use Push Away").IsOn = value;
+            get => RSettings.GetItem<Switch>("Use Push Away").IsOn;
+            set => RSettings.GetItem<Switch>("Use Push Away").IsOn = value;
         }
 
         private int PushAwayRange
         {
-            get => MenuTab.GetItem<Counter>("Push Away Range").Value;
-            set => MenuTab.GetItem<Counter>("Push Away Range").Value = value;
+            get => RSettings.GetItem<Counter>("Push Away Range").Value;
+            set => RSettings.GetItem<Counter>("Push Away Range").Value = value;
         }
 
         private PushAwayMode PushAwayModeSelected
         {
-            get => (PushAwayMode)Enum.Parse(typeof(PushAwayMode), MenuTab.GetItem<ModeDisplay>("Push Away Mode").SelectedModeName);
-            set => MenuTab.GetItem<ModeDisplay>("Push Away Mode").SelectedModeName = value.ToString();
+            get => (PushAwayMode)Enum.Parse(typeof(PushAwayMode), RSettings.GetItem<ModeDisplay>("Push Away Mode").SelectedModeName);
+            set => RSettings.GetItem<ModeDisplay>("Push Away Mode").SelectedModeName = value.ToString();
         }
 
         internal override void InitializeMenu()
         {
             MenuManager.AddTab(new Tab($"SIXAIO - {nameof(Tristana)}"));
-            MenuTab.AddItem(new InfoDisplay() { Title = "---Q Settings---" });
-            MenuTab.AddItem(new Switch() { Title = "Use Q", IsOn = true });
-            MenuTab.AddItem(new InfoDisplay() { Title = "---E Settings---" });
-            MenuTab.AddItem(new Switch() { Title = "Use E", IsOn = true });
+
+            QSettings.AddItem(new Switch() { Title = "Use Q", IsOn = true });
+
+            ESettings.AddItem(new Switch() { Title = "Use E", IsOn = true });
             foreach (var enemy in UnitManager.EnemyChampions.Where(x => !x.IsTargetDummy))
             {
-                MenuTab.AddItem(new Switch() { Title = "E - " + enemy.ModelName, IsOn = true });
+                ESettings.AddItem(new Switch() { Title = "E - " + enemy.ModelName, IsOn = true });
             }
 
-            MenuTab.AddItem(new InfoDisplay() { Title = "---R Settings---" });
-            MenuTab.AddItem(new Switch() { Title = "Use R", IsOn = true });
+
+            RSettings.AddItem(new Switch() { Title = "Use R", IsOn = true });
             foreach (var enemy in UnitManager.EnemyChampions.Where(x => !x.IsTargetDummy))
             {
-                MenuTab.AddItem(new Switch() { Title = "R - " + enemy.ModelName, IsOn = true });
+                RSettings.AddItem(new Switch() { Title = "R - " + enemy.ModelName, IsOn = true });
             }
 
-            MenuTab.AddItem(new Switch() { Title = "Use Push Away", IsOn = false });
-            MenuTab.AddItem(new Counter() { Title = "Push Away Range", MinValue = 50, MaxValue = 500, Value = 150, ValueFrequency = 25 });
-            MenuTab.AddItem(new ModeDisplay() { Title = "Push Away Mode", ModeNames = PushAwayHelper.ConstructPushAwayModeTable(), SelectedModeName = "Melee" });
+            RSettings.AddItem(new Switch() { Title = "Use Push Away", IsOn = false });
+            RSettings.AddItem(new Counter() { Title = "Push Away Range", MinValue = 50, MaxValue = 500, Value = 150, ValueFrequency = 25 });
+            RSettings.AddItem(new ModeDisplay() { Title = "Push Away Mode", ModeNames = PushAwayHelper.ConstructPushAwayModeTable(), SelectedModeName = "Melee" });
 
         }
     }

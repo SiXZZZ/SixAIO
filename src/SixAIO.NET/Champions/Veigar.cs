@@ -65,7 +65,7 @@ namespace SixAIO.Champions
             //MenuTab.AddItem(new Switch() { Title = "Use Q", IsOn = true });
             //MenuTab.AddItem(new Switch() { Title = "Use W", IsOn = true });
             //MenuTab.AddItem(new Switch() { Title = "Use E", IsOn = true });
-            MenuTab.AddItem(new Switch() { Title = "Use R", IsOn = true });
+            RSettings.AddItem(new Switch() { Title = "Use R", IsOn = true });
         }
     }
 }

@@ -111,28 +111,28 @@ namespace SixAIO.Champions
 
         private DashMode DashModeSelected
         {
-            get => (DashMode)Enum.Parse(typeof(DashMode), MenuTab.GetItem<ModeDisplay>("Dash Mode").SelectedModeName);
-            set => MenuTab.GetItem<ModeDisplay>("Dash Mode").SelectedModeName = value.ToString();
+            get => (DashMode)Enum.Parse(typeof(DashMode), QSettings.GetItem<ModeDisplay>("Dash Mode").SelectedModeName);
+            set => QSettings.GetItem<ModeDisplay>("Dash Mode").SelectedModeName = value.ToString();
         }
 
         private bool Qonlyifhaswbuff
         {
-            get => MenuTab.GetItem<Switch>("Q only if has w buff").IsOn;
-            set => MenuTab.GetItem<Switch>("Q only if has w buff").IsOn = value;
+            get => QSettings.GetItem<Switch>("Q only if has w buff").IsOn;
+            set => QSettings.GetItem<Switch>("Q only if has w buff").IsOn = value;
         }
 
         internal override void InitializeMenu()
         {
             MenuManager.AddTab(new Tab($"SIXAIO - {nameof(Kindred)}"));
-            MenuTab.AddItem(new InfoDisplay() { Title = "---Q Settings---" });
-            MenuTab.AddItem(new Switch() { Title = "Use Q", IsOn = true });
-            MenuTab.AddItem(new ModeDisplay() { Title = "Dash Mode", ModeNames = DashHelper.ConstructDashModeTable(), SelectedModeName = "ToMouse" });
-            MenuTab.AddItem(new Switch() { Title = "Q only if has w buff", IsOn = true });
-            MenuTab.AddItem(new InfoDisplay() { Title = "---W Settings---" });
-            MenuTab.AddItem(new Switch() { Title = "Use W", IsOn = true });
-            MenuTab.AddItem(new InfoDisplay() { Title = "---E Settings---" });
-            MenuTab.AddItem(new Switch() { Title = "Use E", IsOn = true });
-            //MenuTab.AddItem(new Switch() { Title = "Use R", IsOn = true });
+
+            QSettings.AddItem(new Switch() { Title = "Use Q", IsOn = true });
+            QSettings.AddItem(new ModeDisplay() { Title = "Dash Mode", ModeNames = DashHelper.ConstructDashModeTable(), SelectedModeName = "ToMouse" });
+            QSettings.AddItem(new Switch() { Title = "Q only if has w buff", IsOn = true });
+
+            WSettings.AddItem(new Switch() { Title = "Use W", IsOn = true });
+
+            ESettings.AddItem(new Switch() { Title = "Use E", IsOn = true });
+            //RSettings.AddItem(new Switch() { Title = "Use R", IsOn = true });
         }
     }
 }

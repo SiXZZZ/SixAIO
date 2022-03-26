@@ -41,7 +41,7 @@ namespace SixAIO.Champions
         {
             return IsValidTarget(target) &&
                     !TargetSelector.IsInvulnerable(target, Oasys.Common.Logic.DamageType.Physical, false) &&
-                    MenuTab.GetItem<Switch>("E - " + target.ModelName).IsOn;
+                    ESettings.GetItem<Switch>("E - " + target.ModelName).IsOn;
         }
 
         private static bool IsEpicJungleMonster(JungleMob target)
@@ -92,15 +92,11 @@ namespace SixAIO.Champions
         internal override void InitializeMenu()
         {
             MenuManager.AddTab(new Tab($"SIXAIO - {nameof(Twitch)}"));
-            //MenuTab.AddItem(new Switch() { Title = "Use Q", IsOn = true });
-            //MenuTab.AddItem(new Switch() { Title = "Use W", IsOn = true });
-            MenuTab.AddItem(new InfoDisplay() { Title = "---E Settings---" });
-            MenuTab.AddItem(new Switch() { Title = "Use E", IsOn = true });
+            ESettings.AddItem(new Switch() { Title = "Use E", IsOn = true });
             foreach (var enemy in UnitManager.EnemyChampions.Where(x => !x.IsTargetDummy))
             {
-                MenuTab.AddItem(new Switch() { Title = "E - " + enemy.ModelName, IsOn = true });
+                ESettings.AddItem(new Switch() { Title = "E - " + enemy.ModelName, IsOn = true });
             }
-            //MenuTab.AddItem(new Switch() { Title = "Use R", IsOn = true });
         }
     }
 }

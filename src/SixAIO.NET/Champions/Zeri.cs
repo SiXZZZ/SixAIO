@@ -124,64 +124,66 @@ namespace SixAIO.Champions
 
         private bool OnlyBasicAttackOnFullCharge
         {
-            get => MenuTab.GetItem<Switch>("Only basic attack on full charge").IsOn;
-            set => MenuTab.GetItem<Switch>("Only basic attack on full charge").IsOn = value;
+            get => BasicAttackSettings.GetItem<Switch>("Only basic attack on full charge").IsOn;
+            set => BasicAttackSettings.GetItem<Switch>("Only basic attack on full charge").IsOn = value;
         }
 
         private bool OnlyBasicAttackOnChampions
         {
-            get => MenuTab.GetItem<Switch>("Only basic attack on champions").IsOn;
-            set => MenuTab.GetItem<Switch>("Only basic attack on champions").IsOn = value;
+            get => BasicAttackSettings.GetItem<Switch>("Only basic attack on champions").IsOn;
+            set => BasicAttackSettings.GetItem<Switch>("Only basic attack on champions").IsOn = value;
         }
 
         private bool ShowQRange
         {
-            get => MenuTab.GetItem<Switch>("Show Q range").IsOn;
-            set => MenuTab.GetItem<Switch>("Show Q range").IsOn = value;
+            get => QSettings.GetItem<Switch>("Show Q range").IsOn;
+            set => QSettings.GetItem<Switch>("Show Q range").IsOn = value;
         }
 
         private string QRangeColor
         {
-            get => MenuTab.GetItem<ModeDisplay>("Q range color").SelectedModeName;
-            set => MenuTab.GetItem<ModeDisplay>("Q range color").SelectedModeName = value;
+            get => QSettings.GetItem<ModeDisplay>("Q range color").SelectedModeName;
+            set => QSettings.GetItem<ModeDisplay>("Q range color").SelectedModeName = value;
         }
 
         private DashMode DashModeSelected
         {
-            get => (DashMode)Enum.Parse(typeof(DashMode), MenuTab.GetItem<ModeDisplay>("E Dash Mode").SelectedModeName);
-            set => MenuTab.GetItem<ModeDisplay>("E Dash Mode").SelectedModeName = value.ToString();
+            get => (DashMode)Enum.Parse(typeof(DashMode), ESettings.GetItem<ModeDisplay>("E Dash Mode").SelectedModeName);
+            set => ESettings.GetItem<ModeDisplay>("E Dash Mode").SelectedModeName = value.ToString();
         }
 
         private int RIfMoreThanEnemiesNear
         {
-            get => MenuTab.GetItem<Counter>("R If More Than Enemies Near").Value;
-            set => MenuTab.GetItem<Counter>("R If More Than Enemies Near").Value = value;
+            get => RSettings.GetItem<Counter>("R If More Than Enemies Near").Value;
+            set => RSettings.GetItem<Counter>("R If More Than Enemies Near").Value = value;
         }
 
         private int REnemiesCloserThan
         {
-            get => MenuTab.GetItem<Counter>("R Enemies Closer Than").Value;
-            set => MenuTab.GetItem<Counter>("R Enemies Closer Than").Value = value;
+            get => RSettings.GetItem<Counter>("R Enemies Closer Than").Value;
+            set => RSettings.GetItem<Counter>("R Enemies Closer Than").Value = value;
         }
 
         internal override void InitializeMenu()
         {
             MenuManager.AddTab(new Tab($"SIXAIO - {nameof(Zeri)}"));
-            MenuTab.AddItem(new Switch() { Title = "Only basic attack on full charge", IsOn = true });
-            MenuTab.AddItem(new Switch() { Title = "Only basic attack on champions", IsOn = true });
-            MenuTab.AddItem(new Switch() { Title = "Use Q", IsOn = true });
-            MenuTab.AddItem(new ModeDisplay() { Title = "Q HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
-            MenuTab.AddItem(new Switch() { Title = "Show Q range", IsOn = true });
-            MenuTab.AddItem(new ModeDisplay() { Title = "Q range color", ModeNames = Oasys.Common.Tools.ColorConverter.GetColors(), SelectedModeName = "Blue" });
+            BasicAttackSettings.AddItem(new Switch() { Title = "Only basic attack on full charge", IsOn = true });
+            BasicAttackSettings.AddItem(new Switch() { Title = "Only basic attack on champions", IsOn = true });
 
-            MenuTab.AddItem(new Switch() { Title = "Use W", IsOn = true });
-            MenuTab.AddItem(new ModeDisplay() { Title = "W HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
+            QSettings.AddItem(new Switch() { Title = "Use Q", IsOn = true });
+            QSettings.AddItem(new ModeDisplay() { Title = "Q HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
+            QSettings.AddItem(new Switch() { Title = "Show Q range", IsOn = true });
+            QSettings.AddItem(new ModeDisplay() { Title = "Q range color", ModeNames = Oasys.Common.Tools.ColorConverter.GetColors(), SelectedModeName = "Blue" });
 
-            MenuTab.AddItem(new Switch() { Title = "Use E", IsOn = false });
-            MenuTab.AddItem(new ModeDisplay() { Title = "E Dash Mode", ModeNames = DashHelper.ConstructDashModeTable(), SelectedModeName = "ToMouse" });
-            MenuTab.AddItem(new Switch() { Title = "Use R", IsOn = true });
-            MenuTab.AddItem(new Counter() { Title = "R If More Than Enemies Near", MinValue = 0, MaxValue = 5, Value = 2, ValueFrequency = 1 });
-            MenuTab.AddItem(new Counter() { Title = "R Enemies Closer Than", MinValue = 50, MaxValue = 850, Value = 750, ValueFrequency = 50 });
+            WSettings.AddItem(new Switch() { Title = "Use W", IsOn = true });
+            WSettings.AddItem(new ModeDisplay() { Title = "W HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
+
+            ESettings.AddItem(new Switch() { Title = "Use E", IsOn = false });
+            ESettings.AddItem(new ModeDisplay() { Title = "E Dash Mode", ModeNames = DashHelper.ConstructDashModeTable(), SelectedModeName = "ToMouse" });
+
+            RSettings.AddItem(new Switch() { Title = "Use R", IsOn = true });
+            RSettings.AddItem(new Counter() { Title = "R If More Than Enemies Near", MinValue = 0, MaxValue = 5, Value = 2, ValueFrequency = 1 });
+            RSettings.AddItem(new Counter() { Title = "R Enemies Closer Than", MinValue = 50, MaxValue = 850, Value = 750, ValueFrequency = 50 });
         }
     }
 }

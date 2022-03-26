@@ -100,50 +100,47 @@ namespace SixAIO.Champions
 
         private int UseOnlyWIfXLTEHPPercent
         {
-            get => MenuTab.GetItem<Counter>("Use only W if x <= HP percent").Value;
-            set => MenuTab.GetItem<Counter>("Use only W if x <= HP percent").Value = value;
+            get => WSettings.GetItem<Counter>("Use only W if x <= HP percent").Value;
+            set => WSettings.GetItem<Counter>("Use only W if x <= HP percent").Value = value;
         }
 
         private int UseOnlyRIfXLTEHPPercent
         {
-            get => MenuTab.GetItem<Counter>("Use only R if x <= HP percent").Value;
-            set => MenuTab.GetItem<Counter>("Use only R if x <= HP percent").Value = value;
+            get => RSettings.GetItem<Counter>("Use only R if x <= HP percent").Value;
+            set => RSettings.GetItem<Counter>("Use only R if x <= HP percent").Value = value;
         }
 
         private int RIfMoreThanEnemiesNear
         {
-            get => MenuTab.GetItem<Counter>("R x >= Enemies Near Target").Value;
-            set => MenuTab.GetItem<Counter>("R x >= Enemies Near Target").Value = value;
+            get => RSettings.GetItem<Counter>("R x >= Enemies Near Target").Value;
+            set => RSettings.GetItem<Counter>("R x >= Enemies Near Target").Value = value;
         }
 
         private int REnemiesCloserThan
         {
-            get => MenuTab.GetItem<Counter>("R Enemies Closer Than").Value;
-            set => MenuTab.GetItem<Counter>("R Enemies Closer Than").Value = value;
+            get => RSettings.GetItem<Counter>("R Enemies Closer Than").Value;
+            set => RSettings.GetItem<Counter>("R Enemies Closer Than").Value = value;
         }
 
         internal override void InitializeMenu()
         {
             MenuManager.AddTab(new Tab($"SIXAIO - {nameof(Varus)}"));
-            MenuTab.AddItem(new InfoDisplay() { Title = "---General Settings---" });
             MenuTab.AddItem(new Counter() { Title = "Use only if x >= W stacks", MinValue = 0, MaxValue = 3, Value = 3, ValueFrequency = 1 });
-            MenuTab.AddItem(new InfoDisplay() { Title = "---Q Settings---" });
-            MenuTab.AddItem(new Switch() { Title = "Use Q", IsOn = true });
-            MenuTab.AddItem(new ModeDisplay() { Title = "Q HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
 
-            MenuTab.AddItem(new InfoDisplay() { Title = "---W Settings---" });
-            MenuTab.AddItem(new Switch() { Title = "Use W", IsOn = true });
-            MenuTab.AddItem(new Counter() { Title = "Use only W if x <= HP percent", MinValue = 0, MaxValue = 100, Value = 50, ValueFrequency = 5 });
-            MenuTab.AddItem(new InfoDisplay() { Title = "---E Settings---" });
-            MenuTab.AddItem(new Switch() { Title = "Use E", IsOn = true });
-            MenuTab.AddItem(new ModeDisplay() { Title = "E HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
+            QSettings.AddItem(new Switch() { Title = "Use Q", IsOn = true });
+            QSettings.AddItem(new ModeDisplay() { Title = "Q HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
 
-            MenuTab.AddItem(new InfoDisplay() { Title = "---R Settings---" });
-            MenuTab.AddItem(new Switch() { Title = "Use R", IsOn = true });
-            MenuTab.AddItem(new Counter() { Title = "Use only R if x <= HP percent", MinValue = 0, MaxValue = 100, Value = 50, ValueFrequency = 5 });
-            MenuTab.AddItem(new ModeDisplay() { Title = "R HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
-            MenuTab.AddItem(new Counter() { Title = "R x >= Enemies Near Target", MinValue = 0, MaxValue = 5, Value = 1, ValueFrequency = 1 });
-            MenuTab.AddItem(new Counter() { Title = "R Enemies Closer Than", MinValue = 200, MaxValue = 800, Value = 600, ValueFrequency = 50 });
+            WSettings.AddItem(new Switch() { Title = "Use W", IsOn = true });
+            WSettings.AddItem(new Counter() { Title = "Use only W if x <= HP percent", MinValue = 0, MaxValue = 100, Value = 50, ValueFrequency = 5 });
+
+            ESettings.AddItem(new Switch() { Title = "Use E", IsOn = true });
+            ESettings.AddItem(new ModeDisplay() { Title = "E HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
+
+            RSettings.AddItem(new Switch() { Title = "Use R", IsOn = true });
+            RSettings.AddItem(new Counter() { Title = "Use only R if x <= HP percent", MinValue = 0, MaxValue = 100, Value = 50, ValueFrequency = 5 });
+            RSettings.AddItem(new ModeDisplay() { Title = "R HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
+            RSettings.AddItem(new Counter() { Title = "R x >= Enemies Near Target", MinValue = 0, MaxValue = 5, Value = 1, ValueFrequency = 1 });
+            RSettings.AddItem(new Counter() { Title = "R Enemies Closer Than", MinValue = 200, MaxValue = 800, Value = 600, ValueFrequency = 50 });
         }
     }
 }

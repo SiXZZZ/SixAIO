@@ -151,47 +151,45 @@ namespace SixAIO.Champions
 
         private DashMode DashModeSelected
         {
-            get => (DashMode)Enum.Parse(typeof(DashMode), MenuTab.GetItem<ModeDisplay>("Dash Mode").SelectedModeName);
-            set => MenuTab.GetItem<ModeDisplay>("Dash Mode").SelectedModeName = value.ToString();
+            get => (DashMode)Enum.Parse(typeof(DashMode), QSettings.GetItem<ModeDisplay>("Dash Mode").SelectedModeName);
+            set => QSettings.GetItem<ModeDisplay>("Dash Mode").SelectedModeName = value.ToString();
         }
 
         private bool UsePushAway
         {
-            get => MenuTab.GetItem<Switch>("Use Push Away").IsOn;
-            set => MenuTab.GetItem<Switch>("Use Push Away").IsOn = value;
+            get => ESettings.GetItem<Switch>("Use Push Away").IsOn;
+            set => ESettings.GetItem<Switch>("Use Push Away").IsOn = value;
         }
 
         private int CondemnRange
         {
-            get => MenuTab.GetItem<Counter>("Condemn Range").Value;
-            set => MenuTab.GetItem<Counter>("Condemn Range").Value = value;
+            get => ESettings.GetItem<Counter>("Condemn Range").Value;
+            set => ESettings.GetItem<Counter>("Condemn Range").Value = value;
         }
 
         private int PushAwayRange
         {
-            get => MenuTab.GetItem<Counter>("Push Away Range").Value;
-            set => MenuTab.GetItem<Counter>("Push Away Range").Value = value;
+            get => ESettings.GetItem<Counter>("Push Away Range").Value;
+            set => ESettings.GetItem<Counter>("Push Away Range").Value = value;
         }
 
         private PushAwayMode PushAwayModeSelected
         {
-            get => (PushAwayMode)Enum.Parse(typeof(PushAwayMode), MenuTab.GetItem<ModeDisplay>("Push Away Mode").SelectedModeName);
-            set => MenuTab.GetItem<ModeDisplay>("Push Away Mode").SelectedModeName = value.ToString();
+            get => (PushAwayMode)Enum.Parse(typeof(PushAwayMode), ESettings.GetItem<ModeDisplay>("Push Away Mode").SelectedModeName);
+            set => ESettings.GetItem<ModeDisplay>("Push Away Mode").SelectedModeName = value.ToString();
         }
 
         internal override void InitializeMenu()
         {
             MenuManager.AddTab(new Tab($"SIXAIO - {nameof(Vayne)}"));
-            MenuTab.AddItem(new InfoDisplay() { Title = "---Q Settings---" });
-            MenuTab.AddItem(new Switch() { Title = "Use Q", IsOn = false });
-            MenuTab.AddItem(new ModeDisplay() { Title = "Dash Mode", ModeNames = DashHelper.ConstructDashModeTable(), SelectedModeName = "ToMouse" });
+            QSettings.AddItem(new Switch() { Title = "Use Q", IsOn = false });
+            QSettings.AddItem(new ModeDisplay() { Title = "Dash Mode", ModeNames = DashHelper.ConstructDashModeTable(), SelectedModeName = "ToMouse" });
 
-            MenuTab.AddItem(new InfoDisplay() { Title = "---E Settings---" });
-            MenuTab.AddItem(new Switch() { Title = "Use E", IsOn = true });
-            MenuTab.AddItem(new Counter() { Title = "Condemn Range", MinValue = 50, MaxValue = 475, Value = 450, ValueFrequency = 25 });
-            MenuTab.AddItem(new Switch() { Title = "Use Push Away", IsOn = false });
-            MenuTab.AddItem(new Counter() { Title = "Push Away Range", MinValue = 50, MaxValue = 550, Value = 150, ValueFrequency = 25 });
-            MenuTab.AddItem(new ModeDisplay() { Title = "Push Away Mode", ModeNames = PushAwayHelper.ConstructPushAwayModeTable(), SelectedModeName = "Everything" });
+            ESettings.AddItem(new Switch() { Title = "Use E", IsOn = true });
+            ESettings.AddItem(new Counter() { Title = "Condemn Range", MinValue = 50, MaxValue = 475, Value = 450, ValueFrequency = 25 });
+            ESettings.AddItem(new Switch() { Title = "Use Push Away", IsOn = false });
+            ESettings.AddItem(new Counter() { Title = "Push Away Range", MinValue = 50, MaxValue = 550, Value = 150, ValueFrequency = 25 });
+            ESettings.AddItem(new ModeDisplay() { Title = "Push Away Mode", ModeNames = PushAwayHelper.ConstructPushAwayModeTable(), SelectedModeName = "Everything" });
 
         }
     }

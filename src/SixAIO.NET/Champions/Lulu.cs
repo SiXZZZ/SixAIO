@@ -111,7 +111,7 @@ namespace SixAIO.Champions
                         target = UnitManager.AllyChampions
                                 .FirstOrDefault(allyChamp => allyChamp.IsAlive && allyChamp.Distance <= 900 && TargetSelector.IsAttackable(allyChamp, false) &&
                                                 UnitManager.EnemyChampions.Count(enemyChamp => enemyChamp.IsAlive && enemyChamp.DistanceTo(allyChamp.Position) < 400 && TargetSelector.IsAttackable(enemyChamp))
-                                                >= MenuTab.GetItem<Counter>("Knockup - " + allyChamp.ModelName).Value);
+                                                >= RSettings.GetItem<Counter>("Knockup - " + allyChamp.ModelName).Value);
                     }
                     if (target == null && RBuffAlly)
                     {
@@ -135,82 +135,58 @@ namespace SixAIO.Champions
             }
         }
 
-        private int QMinMana
-        {
-            get => MenuTab.GetItem<Counter>("Q Min Mana").Value;
-            set => MenuTab.GetItem<Counter>("Q Min Mana").Value = value;
-        }
-
-        private int WMinMana
-        {
-            get => MenuTab.GetItem<Counter>("W Min Mana").Value;
-            set => MenuTab.GetItem<Counter>("W Min Mana").Value = value;
-        }
-
-        private int EMinMana
-        {
-            get => MenuTab.GetItem<Counter>("E Min Mana").Value;
-            set => MenuTab.GetItem<Counter>("E Min Mana").Value = value;
-        }
-
-        private int RMinMana
-        {
-            get => MenuTab.GetItem<Counter>("R Min Mana").Value;
-            set => MenuTab.GetItem<Counter>("R Min Mana").Value = value;
-        }
-
         private bool WBuffAlly
         {
-            get => MenuTab.GetItem<Switch>("W Buff ally").IsOn;
-            set => MenuTab.GetItem<Switch>("W Buff ally").IsOn = value;
+            get => WSettings.GetItem<Switch>("W Buff ally").IsOn;
+            set => WSettings.GetItem<Switch>("W Buff ally").IsOn = value;
         }
 
         private bool Polymorph
         {
-            get => MenuTab.GetItem<Switch>("Polymorph").IsOn;
-            set => MenuTab.GetItem<Switch>("Polymorph").IsOn = value;
+            get => WSettings.GetItem<Switch>("Polymorph").IsOn;
+            set => WSettings.GetItem<Switch>("Polymorph").IsOn = value;
         }
 
         private bool EBuffAlly
         {
-            get => MenuTab.GetItem<Switch>("E Buff ally").IsOn;
-            set => MenuTab.GetItem<Switch>("E Buff ally").IsOn = value;
+            get => ESettings.GetItem<Switch>("E Buff ally").IsOn;
+            set => ESettings.GetItem<Switch>("E Buff ally").IsOn = value;
         }
 
         private bool EShieldAlly
         {
-            get => MenuTab.GetItem<Switch>("E Shield ally").IsOn;
-            set => MenuTab.GetItem<Switch>("E Shield ally").IsOn = value;
+            get => ESettings.GetItem<Switch>("E Shield ally").IsOn;
+            set => ESettings.GetItem<Switch>("E Shield ally").IsOn = value;
         }
 
         private int EShieldHealthPercent
         {
-            get => MenuTab.GetItem<Counter>("E Shield Health Percent").Value;
-            set => MenuTab.GetItem<Counter>("E Shield Health Percent").Value = value;
+            get => ESettings.GetItem<Counter>("E Shield Health Percent").Value;
+            set => ESettings.GetItem<Counter>("E Shield Health Percent").Value = value;
         }
 
         private bool EOnEnemies
         {
-            get => MenuTab.GetItem<Switch>("E for damage on enemies").IsOn;
-            set => MenuTab.GetItem<Switch>("E for damage on enemies").IsOn = value;
+            get => ESettings.GetItem<Switch>("E for damage on enemies").IsOn;
+            set => ESettings.GetItem<Switch>("E for damage on enemies").IsOn = value;
         }
 
         private bool RBuffAlly
         {
-            get => MenuTab.GetItem<Switch>("R Buff ally").IsOn;
-            set => MenuTab.GetItem<Switch>("R Buff ally").IsOn = value;
+            get => RSettings.GetItem<Switch>("R Buff ally").IsOn;
+            set => RSettings.GetItem<Switch>("R Buff ally").IsOn = value;
         }
 
         private int RBuffHealthPercent
         {
-            get => MenuTab.GetItem<Counter>("R Buff Health Percent").Value;
-            set => MenuTab.GetItem<Counter>("R Buff Health Percent").Value = value;
+            get => RSettings.GetItem<Counter>("R Buff Health Percent").Value;
+            set => RSettings.GetItem<Counter>("R Buff Health Percent").Value = value;
         }
 
         private bool RKnockupEnemies
         {
-            get => MenuTab.GetItem<Switch>("R Knockup enemies").IsOn;
-            set => MenuTab.GetItem<Switch>("R Knockup enemies").IsOn = value;
+            get => RSettings.GetItem<Switch>("R Knockup enemies").IsOn;
+            set => RSettings.GetItem<Switch>("R Knockup enemies").IsOn = value;
         }
 
         internal override void InitializeMenu()
@@ -223,36 +199,32 @@ namespace SixAIO.Champions
                 MenuTab.AddItem(new Counter() { Title = "Buff Ally Prio- " + allyChampion.ModelName, MinValue = 0, MaxValue = 5, Value = 0 });
             }
 
-            MenuTab.AddItem(new InfoDisplay() { Title = "---Q Settings---" });
-            MenuTab.AddItem(new Switch() { Title = "Use Q", IsOn = true });
-            MenuTab.AddItem(new Counter() { Title = "Q Min Mana", MinValue = 0, MaxValue = 500, Value = 70, ValueFrequency = 10 });
-            MenuTab.AddItem(new ModeDisplay() { Title = "Q HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
+            QSettings.AddItem(new Switch() { Title = "Use Q", IsOn = true });
+            QSettings.AddItem(new Counter() { Title = "Q Min Mana", MinValue = 0, MaxValue = 500, Value = 70, ValueFrequency = 10 });
+            QSettings.AddItem(new ModeDisplay() { Title = "Q HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
 
-            MenuTab.AddItem(new InfoDisplay() { Title = "---W Settings---" });
-            MenuTab.AddItem(new Switch() { Title = "Use W", IsOn = true });
-            MenuTab.AddItem(new Counter() { Title = "W Min Mana", MinValue = 0, MaxValue = 500, Value = 65, ValueFrequency = 10 });
-            MenuTab.AddItem(new Switch() { Title = "Polymorph", IsOn = true });
-            MenuTab.AddItem(new Switch() { Title = "W Buff ally", IsOn = true });
+            WSettings.AddItem(new Switch() { Title = "Use W", IsOn = true });
+            WSettings.AddItem(new Counter() { Title = "W Min Mana", MinValue = 0, MaxValue = 500, Value = 65, ValueFrequency = 10 });
+            WSettings.AddItem(new Switch() { Title = "Polymorph", IsOn = true });
+            WSettings.AddItem(new Switch() { Title = "W Buff ally", IsOn = true });
 
-            MenuTab.AddItem(new InfoDisplay() { Title = "---E Settings---" });
-            MenuTab.AddItem(new Switch() { Title = "Use E", IsOn = true });
-            MenuTab.AddItem(new Counter() { Title = "E Min Mana", MinValue = 0, MaxValue = 500, Value = 80, ValueFrequency = 10 });
-            MenuTab.AddItem(new Switch() { Title = "E Buff ally", IsOn = true });
-            MenuTab.AddItem(new Switch() { Title = "E Shield ally", IsOn = true });
-            MenuTab.AddItem(new Counter() { Title = "E Shield Health Percent", MinValue = 0, MaxValue = 100, Value = 70, ValueFrequency = 5 });
-            MenuTab.AddItem(new Switch() { Title = "E for damage on enemies", IsOn = false });
+            ESettings.AddItem(new Switch() { Title = "Use E", IsOn = true });
+            ESettings.AddItem(new Counter() { Title = "E Min Mana", MinValue = 0, MaxValue = 500, Value = 80, ValueFrequency = 10 });
+            ESettings.AddItem(new Switch() { Title = "E Buff ally", IsOn = true });
+            ESettings.AddItem(new Switch() { Title = "E Shield ally", IsOn = true });
+            ESettings.AddItem(new Counter() { Title = "E Shield Health Percent", MinValue = 0, MaxValue = 100, Value = 70, ValueFrequency = 5 });
+            ESettings.AddItem(new Switch() { Title = "E for damage on enemies", IsOn = false });
 
-            MenuTab.AddItem(new InfoDisplay() { Title = "---R Settings---" });
-            MenuTab.AddItem(new Switch() { Title = "Use R", IsOn = true });
-            MenuTab.AddItem(new Counter() { Title = "R Min Mana", MinValue = 0, MaxValue = 500, Value = 100, ValueFrequency = 10 });
-            MenuTab.AddItem(new Switch() { Title = "R Buff ally", IsOn = true });
-            MenuTab.AddItem(new Counter() { Title = "R Buff Health Percent", MinValue = 0, MaxValue = 100, Value = 20, ValueFrequency = 5 });
+            RSettings.AddItem(new Switch() { Title = "Use R", IsOn = true });
+            RSettings.AddItem(new Counter() { Title = "R Min Mana", MinValue = 0, MaxValue = 500, Value = 100, ValueFrequency = 10 });
+            RSettings.AddItem(new Switch() { Title = "R Buff ally", IsOn = true });
+            RSettings.AddItem(new Counter() { Title = "R Buff Health Percent", MinValue = 0, MaxValue = 100, Value = 20, ValueFrequency = 5 });
 
-            MenuTab.AddItem(new Switch() { Title = "R Knockup enemies", IsOn = true });
-            MenuTab.AddItem(new InfoDisplay() { Title = "-Min champs to knockup-" });
+            RSettings.AddItem(new Switch() { Title = "R Knockup enemies", IsOn = true });
+            RSettings.AddItem(new InfoDisplay() { Title = "-Min champs to knockup-" });
             foreach (var allyChampion in UnitManager.AllyChampions.Where(x => !x.IsTargetDummy))
             {
-                MenuTab.AddItem(new Counter() { Title = "Knockup - " + allyChampion.ModelName, MinValue = 1, MaxValue = 5, Value = 3, ValueFrequency = 1 });
+                RSettings.AddItem(new Counter() { Title = "Knockup - " + allyChampion.ModelName, MinValue = 1, MaxValue = 5, Value = 3, ValueFrequency = 1 });
             }
 
         }

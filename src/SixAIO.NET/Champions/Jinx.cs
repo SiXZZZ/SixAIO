@@ -137,68 +137,68 @@ namespace SixAIO.Champions
 
         private bool QPreferRockets
         {
-            get => MenuTab.GetItem<Switch>("Q prefer rockets").IsOn;
-            set => MenuTab.GetItem<Switch>("Q prefer rockets").IsOn = value;
+            get => QSettings.GetItem<Switch>("Q prefer rockets").IsOn;
+            set => QSettings.GetItem<Switch>("Q prefer rockets").IsOn = value;
         }
 
         private bool WOnlyOutsideOfAttackRange
         {
-            get => MenuTab.GetItem<Switch>("W only outside of attack range").IsOn;
-            set => MenuTab.GetItem<Switch>("W only outside of attack range").IsOn = value;
+            get => WSettings.GetItem<Switch>("W only outside of attack range").IsOn;
+            set => WSettings.GetItem<Switch>("W only outside of attack range").IsOn = value;
         }
 
         private int WMinimumRange
         {
-            get => MenuTab.GetItem<Counter>("W minimum range").Value;
-            set => MenuTab.GetItem<Counter>("W minimum range").Value = value;
+            get => WSettings.GetItem<Counter>("W minimum range").Value;
+            set => WSettings.GetItem<Counter>("W minimum range").Value = value;
         }
 
         private bool EOnlyHardCC
         {
-            get => MenuTab.GetItem<Switch>("E only hard CC").IsOn;
-            set => MenuTab.GetItem<Switch>("E only hard CC").IsOn = value;
+            get => ESettings.GetItem<Switch>("E only hard CC").IsOn;
+            set => ESettings.GetItem<Switch>("E only hard CC").IsOn = value;
         }
 
         private bool EOnSelf
         {
-            get => MenuTab.GetItem<Switch>("E on self").IsOn;
-            set => MenuTab.GetItem<Switch>("E on self").IsOn = value;
+            get => ESettings.GetItem<Switch>("E on self").IsOn;
+            set => ESettings.GetItem<Switch>("E on self").IsOn = value;
         }
 
         private bool EOnlyOnSelf
         {
-            get => MenuTab.GetItem<Switch>("E only on self").IsOn;
-            set => MenuTab.GetItem<Switch>("E only on self").IsOn = value;
+            get => ESettings.GetItem<Switch>("E only on self").IsOn;
+            set => ESettings.GetItem<Switch>("E only on self").IsOn = value;
         }
 
         private int EMaximumRange
         {
-            get => MenuTab.GetItem<Counter>("E enemy maximum range").Value;
-            set => MenuTab.GetItem<Counter>("E enemy maximum range").Value = value;
+            get => ESettings.GetItem<Counter>("E enemy maximum range").Value;
+            set => ESettings.GetItem<Counter>("E enemy maximum range").Value = value;
         }
 
         private bool ROnlyOutsideOfAttackRange
         {
-            get => MenuTab.GetItem<Switch>("R only outside of attack range").IsOn;
-            set => MenuTab.GetItem<Switch>("R only outside of attack range").IsOn = value;
+            get => RSettings.GetItem<Switch>("R only outside of attack range").IsOn;
+            set => RSettings.GetItem<Switch>("R only outside of attack range").IsOn = value;
         }
 
         private int RMinimumRange
         {
-            get => MenuTab.GetItem<Counter>("R minimum range").Value;
-            set => MenuTab.GetItem<Counter>("R minimum range").Value = value;
+            get => RSettings.GetItem<Counter>("R minimum range").Value;
+            set => RSettings.GetItem<Counter>("R minimum range").Value = value;
         }
 
         private int RMaximumRange
         {
-            get => MenuTab.GetItem<Counter>("R maximum range").Value;
-            set => MenuTab.GetItem<Counter>("R maximum range").Value = value;
+            get => RSettings.GetItem<Counter>("R maximum range").Value;
+            set => RSettings.GetItem<Counter>("R maximum range").Value = value;
         }
 
         private int RTargetMaxHPPercent
         {
-            get => MenuTab.GetItem<Counter>("R Target Max HP Percent").Value;
-            set => MenuTab.GetItem<Counter>("R Target Max HP Percent").Value = value;
+            get => RSettings.GetItem<Counter>("R Target Max HP Percent").Value;
+            set => RSettings.GetItem<Counter>("R Target Max HP Percent").Value = value;
         }
 
 
@@ -206,32 +206,28 @@ namespace SixAIO.Champions
         {
             MenuManager.AddTab(new Tab($"SIXAIO - {nameof(Jinx)}"));
 
-            MenuTab.AddItem(new InfoDisplay() { Title = "---Q Settings---" });
-            MenuTab.AddItem(new Switch() { Title = "Use Q", IsOn = true });
-            MenuTab.AddItem(new Switch() { Title = "Q prefer rockets", IsOn = false });
+            QSettings.AddItem(new Switch() { Title = "Use Q", IsOn = true });
+            QSettings.AddItem(new Switch() { Title = "Q prefer rockets", IsOn = false });
 
-            MenuTab.AddItem(new InfoDisplay() { Title = "---W Settings---" });
-            MenuTab.AddItem(new Switch() { Title = "Use W", IsOn = true });
-            MenuTab.AddItem(new ModeDisplay() { Title = "W HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
-            MenuTab.AddItem(new Switch() { Title = "W only outside of attack range", IsOn = false });
-            MenuTab.AddItem(new Counter() { Title = "W minimum range", MinValue = 0, MaxValue = 1500, Value = 0, ValueFrequency = 50 });
+            WSettings.AddItem(new Switch() { Title = "Use W", IsOn = true });
+            WSettings.AddItem(new ModeDisplay() { Title = "W HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
+            WSettings.AddItem(new Switch() { Title = "W only outside of attack range", IsOn = false });
+            WSettings.AddItem(new Counter() { Title = "W minimum range", MinValue = 0, MaxValue = 1500, Value = 0, ValueFrequency = 50 });
 
-            MenuTab.AddItem(new InfoDisplay() { Title = "---E Settings---" });
-            MenuTab.AddItem(new Switch() { Title = "Use E", IsOn = true });
-            MenuTab.AddItem(new Switch() { Title = "E only hard CC", IsOn = true });
-            MenuTab.AddItem(new InfoDisplay() { Title = "---E anti melee Settings---" });
-            MenuTab.AddItem(new Switch() { Title = "E on self", IsOn = true });
-            MenuTab.AddItem(new Switch() { Title = "E only on self", IsOn = false });
-            MenuTab.AddItem(new Counter() { Title = "E enemy maximum range", MinValue = 0, MaxValue = 900, Value = 250, ValueFrequency = 50 });
+            ESettings.AddItem(new Switch() { Title = "Use E", IsOn = true });
+            ESettings.AddItem(new Switch() { Title = "E only hard CC", IsOn = true });
+            ESettings.AddItem(new InfoDisplay() { Title = "---E anti melee Settings---" });
+            ESettings.AddItem(new Switch() { Title = "E on self", IsOn = true });
+            ESettings.AddItem(new Switch() { Title = "E only on self", IsOn = false });
+            ESettings.AddItem(new Counter() { Title = "E enemy maximum range", MinValue = 0, MaxValue = 900, Value = 250, ValueFrequency = 50 });
 
-            MenuTab.AddItem(new InfoDisplay() { Title = "---R Settings---" });
-            MenuTab.AddItem(new Switch() { Title = "Use R", IsOn = true });
-            MenuTab.AddItem(new ModeDisplay() { Title = "R HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
-            MenuTab.AddItem(new Switch() { Title = "Allow R cast on minimap", IsOn = true });
-            MenuTab.AddItem(new Switch() { Title = "R only outside of attack range", IsOn = false });
-            MenuTab.AddItem(new Counter() { Title = "R minimum range", MinValue = 0, MaxValue = 30_000, Value = 0, ValueFrequency = 50 });
-            MenuTab.AddItem(new Counter() { Title = "R maximum range", MinValue = 0, MaxValue = 30_000, Value = 30_000, ValueFrequency = 50 });
-            MenuTab.AddItem(new Counter() { Title = "R Target Max HP Percent", MinValue = 10, MaxValue = 100, Value = 50, ValueFrequency = 5 });
+            RSettings.AddItem(new Switch() { Title = "Use R", IsOn = true });
+            RSettings.AddItem(new ModeDisplay() { Title = "R HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
+            RSettings.AddItem(new Switch() { Title = "Allow R cast on minimap", IsOn = true });
+            RSettings.AddItem(new Switch() { Title = "R only outside of attack range", IsOn = false });
+            RSettings.AddItem(new Counter() { Title = "R minimum range", MinValue = 0, MaxValue = 30_000, Value = 0, ValueFrequency = 50 });
+            RSettings.AddItem(new Counter() { Title = "R maximum range", MinValue = 0, MaxValue = 30_000, Value = 30_000, ValueFrequency = 50 });
+            RSettings.AddItem(new Counter() { Title = "R Target Max HP Percent", MinValue = 10, MaxValue = 100, Value = 50, ValueFrequency = 5 });
         }
     }
 }

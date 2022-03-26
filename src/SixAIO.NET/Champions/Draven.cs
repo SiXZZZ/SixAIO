@@ -140,20 +140,20 @@ namespace SixAIO.Champions
 
         private bool UseQCatchRange
         {
-            get => MenuTab.GetItem<Switch>("Use Q Catch Range").IsOn;
-            set => MenuTab.GetItem<Switch>("Use Q Catch Range").IsOn = value;
+            get => QSettings.GetItem<Switch>("Use Q Catch Range").IsOn;
+            set => QSettings.GetItem<Switch>("Use Q Catch Range").IsOn = value;
         }
 
         private int QCatchRange
         {
-            get => MenuTab.GetItem<Counter>("Q Catch Range").Value;
-            set => MenuTab.GetItem<Counter>("Q Catch Range").Value = value;
+            get => QSettings.GetItem<Counter>("Q Catch Range").Value;
+            set => QSettings.GetItem<Counter>("Q Catch Range").Value = value;
         }
 
         private CatchMode QCatchMode
         {
-            get => (CatchMode)Enum.Parse(typeof(CatchMode), MenuTab.GetItem<ModeDisplay>("Q Catch Mode").SelectedModeName);
-            set => MenuTab.GetItem<ModeDisplay>("Q Catch Mode").SelectedModeName = value.ToString();
+            get => (CatchMode)Enum.Parse(typeof(CatchMode), QSettings.GetItem<ModeDisplay>("Q Catch Mode").SelectedModeName);
+            set => QSettings.GetItem<ModeDisplay>("Q Catch Mode").SelectedModeName = value.ToString();
         }
 
         private enum CatchMode
@@ -164,39 +164,34 @@ namespace SixAIO.Champions
 
         private int RMinimumRange
         {
-            get => MenuTab.GetItem<Counter>("R minimum range").Value;
-            set => MenuTab.GetItem<Counter>("R minimum range").Value = value;
+            get => RSettings.GetItem<Counter>("R minimum range").Value;
+            set => RSettings.GetItem<Counter>("R minimum range").Value = value;
         }
 
         private int RMaximumRange
         {
-            get => MenuTab.GetItem<Counter>("R maximum range").Value;
-            set => MenuTab.GetItem<Counter>("R maximum range").Value = value;
+            get => RSettings.GetItem<Counter>("R maximum range").Value;
+            set => RSettings.GetItem<Counter>("R maximum range").Value = value;
         }
 
         internal override void InitializeMenu()
         {
             MenuManager.AddTab(new Tab($"SIXAIO - {nameof(Draven)}"));
-            MenuTab.AddItem(new InfoDisplay() { Title = "---Q Settings---" });
-            MenuTab.AddItem(new Switch() { Title = "Use Q", IsOn = true });
-            //MenuTab.AddItem(new Switch() { Title = "Use Q Catch Range", IsOn = true });
-            //MenuTab.AddItem(new Counter() { Title = "Q Catch Range", MinValue = 0, MaxValue = 800, Value = 500, ValueFrequency = 50 });
-            //MenuTab.AddItem(new ModeDisplay() { Title = "Q Catch Mode", ModeNames = Enum.GetNames(typeof(CatchMode)).ToList(), SelectedModeName = "Mouse" });
+            QSettings.AddItem(new Switch() { Title = "Use Q", IsOn = true });
+            //QSettings.AddItem(new Switch() { Title = "Use Q Catch Range", IsOn = true });
+            //QSettings.AddItem(new Counter() { Title = "Q Catch Range", MinValue = 0, MaxValue = 800, Value = 500, ValueFrequency = 50 });
+            //QSettings.AddItem(new ModeDisplay() { Title = "Q Catch Mode", ModeNames = Enum.GetNames(typeof(CatchMode)).ToList(), SelectedModeName = "Mouse" });
 
-            MenuTab.AddItem(new InfoDisplay() { Title = "---W Settings---" });
-            MenuTab.AddItem(new Switch() { Title = "Use W", IsOn = true });
+            WSettings.AddItem(new Switch() { Title = "Use W", IsOn = true });
 
-            MenuTab.AddItem(new InfoDisplay() { Title = "---E Settings---" });
-            MenuTab.AddItem(new Switch() { Title = "Use E", IsOn = true });
-            MenuTab.AddItem(new ModeDisplay() { Title = "E HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
+            ESettings.AddItem(new Switch() { Title = "Use E", IsOn = true });
+            ESettings.AddItem(new ModeDisplay() { Title = "E HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
 
-
-            MenuTab.AddItem(new InfoDisplay() { Title = "---R Settings---" });
-            MenuTab.AddItem(new Switch() { Title = "Use R", IsOn = true });
-            MenuTab.AddItem(new ModeDisplay() { Title = "R HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
-            MenuTab.AddItem(new Switch() { Title = "Allow R cast on minimap", IsOn = true });
-            MenuTab.AddItem(new Counter() { Title = "R minimum range", MinValue = 0, MaxValue = 30_000, Value = 0, ValueFrequency = 50 });
-            MenuTab.AddItem(new Counter() { Title = "R maximum range", MinValue = 0, MaxValue = 30_000, Value = 30_000, ValueFrequency = 50 });
+            RSettings.AddItem(new Switch() { Title = "Use R", IsOn = true });
+            RSettings.AddItem(new ModeDisplay() { Title = "R HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
+            RSettings.AddItem(new Switch() { Title = "Allow R cast on minimap", IsOn = true });
+            RSettings.AddItem(new Counter() { Title = "R minimum range", MinValue = 0, MaxValue = 30_000, Value = 0, ValueFrequency = 50 });
+            RSettings.AddItem(new Counter() { Title = "R maximum range", MinValue = 0, MaxValue = 30_000, Value = 30_000, ValueFrequency = 50 });
         }
     }
 }
