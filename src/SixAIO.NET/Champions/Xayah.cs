@@ -1,20 +1,16 @@
 ﻿using Oasys.Common;
 using Oasys.Common.Enums.GameEnums;
 using Oasys.Common.GameObject.Clients;
-using Oasys.Common.GameObject.Clients.ExtendedInstances.Spells;
 using Oasys.Common.Menu;
 using Oasys.Common.Menu.ItemComponents;
 using Oasys.SDK;
 using Oasys.SDK.Menu;
 using Oasys.SDK.SpellCasting;
-using Oasys.SDK.Tools;
 using SharpDX;
-using SixAIO.Helpers;
 using SixAIO.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace SixAIO.Champions
 {
@@ -215,6 +211,10 @@ namespace SixAIO.Champions
         internal override void InitializeMenu()
         {
             MenuManager.AddTab(new Tab($"SIXAIO - {nameof(Xayah)}"));
+
+            MenuTab.AddGroup(new Group("Q Settings"));
+            MenuTab.AddGroup(new Group("W Settings"));
+            MenuTab.AddGroup(new Group("E Settings"));
 
             MenuTab.AddItem(new Switch() { Title = "Draw Feathers", IsOn = true });
             MenuTab.AddItem(new Counter() { Title = "Draw Thickness", MinValue = 0, MaxValue = 250, Value = 5, ValueFrequency = 1 });

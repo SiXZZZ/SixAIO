@@ -8,13 +8,10 @@ using Oasys.Common.Menu.ItemComponents;
 using Oasys.SDK;
 using Oasys.SDK.Menu;
 using Oasys.SDK.SpellCasting;
-using SharpDX;
 using SixAIO.Enums;
-using SixAIO.Helpers;
 using SixAIO.Models;
 using System;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace SixAIO.Champions
 {
@@ -182,6 +179,9 @@ namespace SixAIO.Champions
         internal override void InitializeMenu()
         {
             MenuManager.AddTab(new Tab($"SIXAIO - {nameof(Vayne)}"));
+            MenuTab.AddGroup(new Group("Q Settings"));
+            MenuTab.AddGroup(new Group("E Settings"));
+
             QSettings.AddItem(new Switch() { Title = "Use Q", IsOn = false });
             QSettings.AddItem(new ModeDisplay() { Title = "Dash Mode", ModeNames = DashHelper.ConstructDashModeTable(), SelectedModeName = "ToMouse" });
 

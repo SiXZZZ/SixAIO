@@ -63,6 +63,9 @@ namespace SixAIO.Champions
         internal override void InitializeMenu()
         {
             MenuManager.AddTab(new Tab($"SIXAIO - {nameof(MissFortune)}"));
+            MenuTab.AddGroup(new Group("Q Settings"));
+            MenuTab.AddGroup(new Group("E Settings"));
+
             QSettings.AddItem(new Switch() { Title = "Use Q", IsOn = true });
 
             ESettings.AddItem(new Switch() { Title = "Use E", IsOn = true });

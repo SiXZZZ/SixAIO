@@ -1,13 +1,10 @@
 ﻿using Oasys.Common.Enums.GameEnums;
-using Oasys.Common.Extensions;
 using Oasys.Common.Menu;
 using Oasys.Common.Menu.ItemComponents;
 using Oasys.SDK;
 using Oasys.SDK.Menu;
 using Oasys.SDK.SpellCasting;
-using Oasys.SDK.Tools;
 using SixAIO.Enums;
-using SixAIO.Helpers;
 using SixAIO.Models;
 using System;
 using System.Linq;
@@ -167,6 +164,12 @@ namespace SixAIO.Champions
         internal override void InitializeMenu()
         {
             MenuManager.AddTab(new Tab($"SIXAIO - {nameof(Zeri)}"));
+            MenuTab.AddGroup(new Group("Basic Attack Settings"));
+            MenuTab.AddGroup(new Group("Q Settings"));
+            MenuTab.AddGroup(new Group("W Settings"));
+            MenuTab.AddGroup(new Group("E Settings"));
+            MenuTab.AddGroup(new Group("R Settings"));
+
             BasicAttackSettings.AddItem(new Switch() { Title = "Only basic attack on full charge", IsOn = true });
             BasicAttackSettings.AddItem(new Switch() { Title = "Only basic attack on champions", IsOn = true });
 

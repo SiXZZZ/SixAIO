@@ -1,7 +1,6 @@
 ﻿using Oasys.Common.Enums.GameEnums;
 using Oasys.Common.Extensions;
 using Oasys.Common.GameObject;
-using Oasys.Common.GameObject.Clients;
 using Oasys.Common.GameObject.ObjectClass;
 using Oasys.Common.Menu;
 using Oasys.Common.Menu.ItemComponents;
@@ -10,7 +9,6 @@ using Oasys.SDK.Menu;
 using Oasys.SDK.SpellCasting;
 using SharpDX;
 using SixAIO.Enums;
-using SixAIO.Helpers;
 using SixAIO.Models;
 using System;
 using System.Linq;
@@ -113,6 +111,10 @@ namespace SixAIO.Champions
         {
             TabItem.OnTabItemChange += TabItem_OnTabItemChange;
             MenuManager.AddTab(new Tab($"SIXAIO - {nameof(Lucian)}"));
+            MenuTab.AddGroup(new Group("Q Settings"));
+            MenuTab.AddGroup(new Group("W Settings"));
+            MenuTab.AddGroup(new Group("E Settings"));
+
             QSettings.AddItem(new Switch() { Title = "Use Q", IsOn = true });
 
             WSettings.AddItem(new Switch() { Title = "Use W", IsOn = true });

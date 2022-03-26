@@ -49,6 +49,7 @@ namespace SixAIO.Champions
         internal override void InitializeMenu()
         {
             MenuManager.AddTab(new Tab($"SIXAIO - {nameof(Teemo)}"));
+            MenuTab.AddGroup(new Group("Q Settings"));
             QSettings.AddItem(new Switch() { Title = "Use Q", IsOn = true });
         }
     }

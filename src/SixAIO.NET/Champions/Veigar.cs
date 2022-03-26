@@ -1,16 +1,11 @@
 ﻿using Oasys.Common.Enums.GameEnums;
 using Oasys.Common.GameObject;
-using Oasys.Common.GameObject.ObjectClass;
 using Oasys.Common.Menu;
 using Oasys.Common.Menu.ItemComponents;
 using Oasys.SDK;
 using Oasys.SDK.Menu;
 using Oasys.SDK.SpellCasting;
-using Oasys.SDK.Tools;
-using SixAIO.Enums;
 using SixAIO.Models;
-using System;
-using System.Collections.Generic;
 using System.Linq;
 
 namespace SixAIO.Champions
@@ -23,7 +18,7 @@ namespace SixAIO.Champions
             {
                 IsTargetted = () => true,
                 IsEnabled = () => UseR,
-                TargetSelect = (mode) => UnitManager.EnemyChampions.Where(x => x.Distance <= 650 && 
+                TargetSelect = (mode) => UnitManager.EnemyChampions.Where(x => x.Distance <= 650 &&
                                             TargetSelector.IsAttackable(x) &&
                                             !TargetSelector.IsInvulnerable(x, Oasys.Common.Logic.DamageType.Magical, false))
                                             .FirstOrDefault(RCanKill)
@@ -62,6 +57,7 @@ namespace SixAIO.Champions
         internal override void InitializeMenu()
         {
             MenuManager.AddTab(new Tab($"SIXAIO - {nameof(Veigar)}"));
+            MenuTab.AddGroup(new Group("R Settings"));
             //MenuTab.AddItem(new Switch() { Title = "Use Q", IsOn = true });
             //MenuTab.AddItem(new Switch() { Title = "Use W", IsOn = true });
             //MenuTab.AddItem(new Switch() { Title = "Use E", IsOn = true });

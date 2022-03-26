@@ -2,13 +2,10 @@
 using Oasys.Common.GameObject;
 using Oasys.Common.Menu;
 using Oasys.Common.Menu.ItemComponents;
-using Oasys.Common.Tools.Devices;
 using Oasys.SDK;
 using Oasys.SDK.Menu;
 using Oasys.SDK.SpellCasting;
-using Oasys.SDK.Tools;
 using SharpDX;
-using SixAIO.Helpers;
 using SixAIO.Models;
 using System;
 using System.Collections.Generic;
@@ -177,6 +174,11 @@ namespace SixAIO.Champions
         internal override void InitializeMenu()
         {
             MenuManager.AddTab(new Tab($"SIXAIO - {nameof(Draven)}"));
+            MenuTab.AddGroup(new Group("Q Settings"));
+            MenuTab.AddGroup(new Group("W Settings"));
+            MenuTab.AddGroup(new Group("E Settings"));
+            MenuTab.AddGroup(new Group("R Settings"));
+
             QSettings.AddItem(new Switch() { Title = "Use Q", IsOn = true });
             //QSettings.AddItem(new Switch() { Title = "Use Q Catch Range", IsOn = true });
             //QSettings.AddItem(new Counter() { Title = "Q Catch Range", MinValue = 0, MaxValue = 800, Value = 500, ValueFrequency = 50 });

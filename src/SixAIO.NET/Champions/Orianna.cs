@@ -1,5 +1,4 @@
 ﻿using Oasys.Common.Enums.GameEnums;
-using Oasys.Common.Extensions;
 using Oasys.Common.GameObject;
 using Oasys.Common.GameObject.ObjectClass;
 using Oasys.Common.Menu;
@@ -8,10 +7,8 @@ using Oasys.SDK;
 using Oasys.SDK.Menu;
 using Oasys.SDK.SpellCasting;
 using SharpDX;
-using SixAIO.Helpers;
 using SixAIO.Models;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 
 namespace SixAIO.Champions
@@ -160,6 +157,11 @@ namespace SixAIO.Champions
         internal override void InitializeMenu()
         {
             MenuManager.AddTab(new Tab($"SIXAIO - {nameof(Orianna)}"));
+
+            MenuTab.AddGroup(new Group("Q Settings"));
+            MenuTab.AddGroup(new Group("W Settings"));
+            MenuTab.AddGroup(new Group("E Settings"));
+            MenuTab.AddGroup(new Group("R Settings"));
 
             MenuTab.AddItem(new InfoDisplay() { Title = "---Allies to buff - 0 to disable---" });
             foreach (var allyChampion in UnitManager.AllyChampions.Where(x => !x.IsTargetDummy))

@@ -1,6 +1,5 @@
 ﻿using Oasys.Common.Enums.GameEnums;
 using Oasys.Common.GameObject;
-using Oasys.Common.GameObject.Clients.ExtendedInstances.Spells;
 using Oasys.Common.GameObject.ObjectClass;
 using Oasys.Common.Menu;
 using Oasys.Common.Menu.ItemComponents;
@@ -92,6 +91,8 @@ namespace SixAIO.Champions
         internal override void InitializeMenu()
         {
             MenuManager.AddTab(new Tab($"SIXAIO - {nameof(Twitch)}"));
+            MenuTab.AddGroup(new Group("E Settings"));
+
             ESettings.AddItem(new Switch() { Title = "Use E", IsOn = true });
             foreach (var enemy in UnitManager.EnemyChampions.Where(x => !x.IsTargetDummy))
             {

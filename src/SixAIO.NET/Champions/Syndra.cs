@@ -8,7 +8,6 @@ using Oasys.SDK;
 using Oasys.SDK.Menu;
 using Oasys.SDK.SpellCasting;
 using SharpDX;
-using SixAIO.Helpers;
 using SixAIO.Models;
 using System;
 using System.Collections.Generic;
@@ -41,7 +40,7 @@ namespace SixAIO.Champions
                 Radius = () => 140,
                 Speed = () => 2500,
                 IsEnabled = () => UseE,
-                TargetSelect = (mode) => 
+                TargetSelect = (mode) =>
                 {
                     var targets = UnitManager.EnemyChampions
                                                 .Where(x => x.IsAlive && x.Distance <= 1000 &&
@@ -112,6 +111,10 @@ namespace SixAIO.Champions
         internal override void InitializeMenu()
         {
             MenuManager.AddTab(new Tab($"SIXAIO - {nameof(Syndra)}"));
+            MenuTab.AddGroup(new Group("Q Settings"));
+            MenuTab.AddGroup(new Group("E Settings"));
+            MenuTab.AddGroup(new Group("R Settings"));
+
             QSettings.AddItem(new Switch() { Title = "Use Q", IsOn = true });
             QSettings.AddItem(new ModeDisplay() { Title = "Q HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
 

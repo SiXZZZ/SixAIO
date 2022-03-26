@@ -1,18 +1,12 @@
-﻿using Oasys.Common;
-using Oasys.Common.GameObject;
-using Oasys.Common.GameObject.Clients;
+﻿using Oasys.Common.GameObject.Clients;
 using Oasys.Common.Menu;
 using Oasys.SDK;
 using Oasys.SDK.Events;
 using Oasys.SDK.Menu;
-using Oasys.SDK.Tools;
-using SharpDX;
-using SixAIO.Helpers;
 using SixAIO.Models;
 using SixAIO.Utilities;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace SixAIO

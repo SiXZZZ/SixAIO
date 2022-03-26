@@ -1,12 +1,11 @@
-﻿using Oasys.Common.Menu;
+﻿using Oasys.Common.EventsProvider;
+using Oasys.Common.Menu;
 using Oasys.Common.Menu.ItemComponents;
 using Oasys.SDK;
-using Oasys.SDK.Menu;
 using Oasys.SDK.SpellCasting;
 using System;
-using System.Threading.Tasks;
 using System.Linq;
-using Oasys.Common.EventsProvider;
+using System.Threading.Tasks;
 
 namespace SixAIO.Utilities
 {
