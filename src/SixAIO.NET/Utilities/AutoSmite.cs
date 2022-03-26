@@ -17,90 +17,91 @@ namespace SixAIO.Utilities
         public static SpellClass SmiteKey;
         public static CastSlot SmiteSlot;
 
-        private static Tab _menuTab => MenuManagerProvider.GetTab($"SIXAIO - Auto Smite");
+        private static Tab Tab => MenuManagerProvider.GetTab($"SIXAIO - Utilities");
+        private static Group AutoSmiteGroup => Tab.GetGroup("Auto Smite");
 
         private static bool UseSmite
         {
-            get => _menuTab.GetItem<Switch>("Use Smite").IsOn;
-            set => _menuTab.GetItem<Switch>("Use Smite").IsOn = value;
+            get => AutoSmiteGroup.GetItem<Switch>("Use Smite").IsOn;
+            set => AutoSmiteGroup.GetItem<Switch>("Use Smite").IsOn = value;
         }
 
         private static bool SmiteOnLaneclear
         {
-            get => _menuTab?.GetItem<Switch>("Smite On Laneclear")?.IsOn ?? false;
-            set => _menuTab.GetItem<Switch>("Smite On Laneclear").IsOn = value;
+            get => AutoSmiteGroup?.GetItem<Switch>("Smite On Laneclear")?.IsOn ?? false;
+            set => AutoSmiteGroup.GetItem<Switch>("Smite On Laneclear").IsOn = value;
         }
 
         private static bool SmiteOnLastHit
         {
-            get => _menuTab?.GetItem<Switch>("Smite On LastHit")?.IsOn ?? false;
-            set => _menuTab.GetItem<Switch>("Smite On LastHit").IsOn = value;
+            get => AutoSmiteGroup?.GetItem<Switch>("Smite On LastHit")?.IsOn ?? false;
+            set => AutoSmiteGroup.GetItem<Switch>("Smite On LastHit").IsOn = value;
         }
 
         private static bool SmiteOnTick
         {
-            get => _menuTab?.GetItem<Switch>("Smite On Tick")?.IsOn ?? false;
-            set => _menuTab.GetItem<Switch>("Smite On Tick").IsOn = value;
+            get => AutoSmiteGroup?.GetItem<Switch>("Smite On Tick")?.IsOn ?? false;
+            set => AutoSmiteGroup.GetItem<Switch>("Smite On Tick").IsOn = value;
         }
 
         private static bool Baron
         {
-            get => _menuTab.GetItem<Switch>("Baron").IsOn;
-            set => _menuTab.GetItem<Switch>("Baron").IsOn = value;
+            get => AutoSmiteGroup.GetItem<Switch>("Baron").IsOn;
+            set => AutoSmiteGroup.GetItem<Switch>("Baron").IsOn = value;
         }
 
         private static bool Dragon
         {
-            get => _menuTab.GetItem<Switch>("Dragon").IsOn;
-            set => _menuTab.GetItem<Switch>("Dragon").IsOn = value;
+            get => AutoSmiteGroup.GetItem<Switch>("Dragon").IsOn;
+            set => AutoSmiteGroup.GetItem<Switch>("Dragon").IsOn = value;
         }
 
         private static bool RiftHerald
         {
-            get => _menuTab.GetItem<Switch>("RiftHerald").IsOn;
-            set => _menuTab.GetItem<Switch>("RiftHerald").IsOn = value;
+            get => AutoSmiteGroup.GetItem<Switch>("RiftHerald").IsOn;
+            set => AutoSmiteGroup.GetItem<Switch>("RiftHerald").IsOn = value;
         }
 
         private static bool Blue
         {
-            get => _menuTab.GetItem<Switch>("Blue").IsOn;
-            set => _menuTab.GetItem<Switch>("Blue").IsOn = value;
+            get => AutoSmiteGroup.GetItem<Switch>("Blue").IsOn;
+            set => AutoSmiteGroup.GetItem<Switch>("Blue").IsOn = value;
         }
 
         private static bool Red
         {
-            get => _menuTab.GetItem<Switch>("Red").IsOn;
-            set => _menuTab.GetItem<Switch>("Red").IsOn = value;
+            get => AutoSmiteGroup.GetItem<Switch>("Red").IsOn;
+            set => AutoSmiteGroup.GetItem<Switch>("Red").IsOn = value;
         }
 
         private static bool Razorbeak
         {
-            get => _menuTab.GetItem<Switch>("Razorbeak").IsOn;
-            set => _menuTab.GetItem<Switch>("Razorbeak").IsOn = value;
+            get => AutoSmiteGroup.GetItem<Switch>("Razorbeak").IsOn;
+            set => AutoSmiteGroup.GetItem<Switch>("Razorbeak").IsOn = value;
         }
 
         private static bool MurkWolf
         {
-            get => _menuTab.GetItem<Switch>("MurkWolf").IsOn;
-            set => _menuTab.GetItem<Switch>("MurkWolf").IsOn = value;
+            get => AutoSmiteGroup.GetItem<Switch>("MurkWolf").IsOn;
+            set => AutoSmiteGroup.GetItem<Switch>("MurkWolf").IsOn = value;
         }
 
         private static bool Gromp
         {
-            get => _menuTab.GetItem<Switch>("Gromp").IsOn;
-            set => _menuTab.GetItem<Switch>("Gromp").IsOn = value;
+            get => AutoSmiteGroup.GetItem<Switch>("Gromp").IsOn;
+            set => AutoSmiteGroup.GetItem<Switch>("Gromp").IsOn = value;
         }
 
         private static bool Krug
         {
-            get => _menuTab.GetItem<Switch>("Krug").IsOn;
-            set => _menuTab.GetItem<Switch>("Krug").IsOn = value;
+            get => AutoSmiteGroup.GetItem<Switch>("Krug").IsOn;
+            set => AutoSmiteGroup.GetItem<Switch>("Krug").IsOn = value;
         }
 
         private static bool Crab
         {
-            get => _menuTab.GetItem<Switch>("Crab").IsOn;
-            set => _menuTab.GetItem<Switch>("Crab").IsOn = value;
+            get => AutoSmiteGroup.GetItem<Switch>("Crab").IsOn;
+            set => AutoSmiteGroup.GetItem<Switch>("Crab").IsOn = value;
         }
 
         internal static Task GameEvents_OnGameLoadComplete()
@@ -124,21 +125,21 @@ namespace SixAIO.Utilities
                 return Task.CompletedTask;
             }
 
-            MenuManager.AddTab(new Tab($"SIXAIO - Auto Smite"));
-            _menuTab.AddItem(new Switch() { Title = "Use Smite", IsOn = true });
-            _menuTab.AddItem(new Switch() { Title = "Smite On Laneclear", IsOn = true });
-            _menuTab.AddItem(new Switch() { Title = "Smite On LastHit", IsOn = true });
-            _menuTab.AddItem(new Switch() { Title = "Smite On Tick", IsOn = false });
-            _menuTab.AddItem(new Switch() { Title = "Baron", IsOn = true });
-            _menuTab.AddItem(new Switch() { Title = "Dragon", IsOn = true });
-            _menuTab.AddItem(new Switch() { Title = "RiftHerald", IsOn = true });
-            _menuTab.AddItem(new Switch() { Title = "Blue", IsOn = true });
-            _menuTab.AddItem(new Switch() { Title = "Red", IsOn = true });
-            _menuTab.AddItem(new Switch() { Title = "Razorbeak", IsOn = false });
-            _menuTab.AddItem(new Switch() { Title = "MurkWolf", IsOn = false });
-            _menuTab.AddItem(new Switch() { Title = "Gromp", IsOn = false });
-            _menuTab.AddItem(new Switch() { Title = "Krug", IsOn = false });
-            _menuTab.AddItem(new Switch() { Title = "Crab", IsOn = false });
+            Tab.AddGroup(new Group("Auto Smite"));
+            AutoSmiteGroup.AddItem(new Switch() { Title = "Use Smite", IsOn = true });
+            AutoSmiteGroup.AddItem(new Switch() { Title = "Smite On Laneclear", IsOn = true });
+            AutoSmiteGroup.AddItem(new Switch() { Title = "Smite On LastHit", IsOn = true });
+            AutoSmiteGroup.AddItem(new Switch() { Title = "Smite On Tick", IsOn = false });
+            AutoSmiteGroup.AddItem(new Switch() { Title = "Baron", IsOn = true });
+            AutoSmiteGroup.AddItem(new Switch() { Title = "Dragon", IsOn = true });
+            AutoSmiteGroup.AddItem(new Switch() { Title = "RiftHerald", IsOn = true });
+            AutoSmiteGroup.AddItem(new Switch() { Title = "Blue", IsOn = true });
+            AutoSmiteGroup.AddItem(new Switch() { Title = "Red", IsOn = true });
+            AutoSmiteGroup.AddItem(new Switch() { Title = "Razorbeak", IsOn = false });
+            AutoSmiteGroup.AddItem(new Switch() { Title = "MurkWolf", IsOn = false });
+            AutoSmiteGroup.AddItem(new Switch() { Title = "Gromp", IsOn = false });
+            AutoSmiteGroup.AddItem(new Switch() { Title = "Krug", IsOn = false });
+            AutoSmiteGroup.AddItem(new Switch() { Title = "Crab", IsOn = false });
 
             return Task.CompletedTask;
         }

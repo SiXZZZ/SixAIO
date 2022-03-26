@@ -22,42 +22,43 @@ namespace SixAIO.Utilities
         public static CastSlot CleanseCastSlot;
         public static SpellClass CleanseSpellClass;
 
-        private static Tab _menuTab => MenuManagerProvider.GetTab($"SIXAIO - Auto Cleanse");
+        private static Tab Tab => MenuManagerProvider.GetTab("SIXAIO - Utilities");
+        private static Group AutoCleanseGroup => Tab.GetGroup("Auto Cleanse");
 
         private static bool LogCleanseBuff
         {
-            get => _menuTab.GetItem<Switch>("Log Cleanse Buff").IsOn;
-            set => _menuTab.GetItem<Switch>("Log Cleanse Buff").IsOn = value;
+            get => AutoCleanseGroup.GetItem<Switch>("Log Cleanse Buff").IsOn;
+            set => AutoCleanseGroup.GetItem<Switch>("Log Cleanse Buff").IsOn = value;
         }
 
         private static bool UseCleanse
         {
-            get => _menuTab.GetItem<Switch>("Use Cleanse").IsOn;
-            set => _menuTab.GetItem<Switch>("Use Cleanse").IsOn = value;
+            get => AutoCleanseGroup.GetItem<Switch>("Use Cleanse").IsOn;
+            set => AutoCleanseGroup.GetItem<Switch>("Use Cleanse").IsOn = value;
         }
 
         private static bool UseItems
         {
-            get => _menuTab.GetItem<Switch>("Use Items").IsOn;
-            set => _menuTab.GetItem<Switch>("Use Items").IsOn = value;
+            get => AutoCleanseGroup.GetItem<Switch>("Use Items").IsOn;
+            set => AutoCleanseGroup.GetItem<Switch>("Use Items").IsOn = value;
         }
 
         private static bool CleanseOnCombo
         {
-            get => _menuTab?.GetItem<Switch>("Cleanse On Combo")?.IsOn ?? false;
-            set => _menuTab.GetItem<Switch>("Cleanse On Combo").IsOn = value;
+            get => AutoCleanseGroup?.GetItem<Switch>("Cleanse On Combo")?.IsOn ?? false;
+            set => AutoCleanseGroup.GetItem<Switch>("Cleanse On Combo").IsOn = value;
         }
 
         private static bool CleanseOnTick
         {
-            get => _menuTab?.GetItem<Switch>("Cleanse On Tick")?.IsOn ?? false;
-            set => _menuTab.GetItem<Switch>("Cleanse On Tick").IsOn = value;
+            get => AutoCleanseGroup?.GetItem<Switch>("Cleanse On Tick")?.IsOn ?? false;
+            set => AutoCleanseGroup.GetItem<Switch>("Cleanse On Tick").IsOn = value;
         }
 
         private static int ReactionDelay
         {
-            get => _menuTab?.GetItem<Counter>("Reaction Delay")?.Value ?? 100;
-            set => _menuTab.GetItem<Counter>("Reaction Delay").Value = value;
+            get => AutoCleanseGroup?.GetItem<Counter>("Reaction Delay")?.Value ?? 100;
+            set => AutoCleanseGroup.GetItem<Counter>("Reaction Delay").Value = value;
         }
 
         internal static Task GameEvents_OnGameLoadComplete()
@@ -76,26 +77,25 @@ namespace SixAIO.Utilities
                 CleanseSpellClass = spellBook.GetSpellClass(SpellSlot.Summoner2);
             }
 
-            MenuManager.AddTab(new Tab($"SIXAIO - Auto Cleanse"));
-            _menuTab.AddItem(new Switch() { Title = "Log Cleanse Buff", IsOn = false });
-            _menuTab.AddItem(new Switch() { Title = "Use Cleanse", IsOn = false });
-            _menuTab.AddItem(new Switch() { Title = "Use Items", IsOn = false });
-            _menuTab.AddItem(new Switch() { Title = "Cleanse On Combo", IsOn = false });
-            _menuTab.AddItem(new Switch() { Title = "Cleanse On Tick", IsOn = false });
-            _menuTab.AddItem(new Counter() { Title = "Reaction Delay", Value = 100, MinValue = 0, MaxValue = 5000, ValueFrequency = 50 });
+            Tab.AddGroup(new Group("Auto Cleanse"));
+            AutoCleanseGroup.AddItem(new Switch() { Title = "Log Cleanse Buff", IsOn = true });
+            AutoCleanseGroup.AddItem(new Switch() { Title = "Use Cleanse", IsOn = true });
+            AutoCleanseGroup.AddItem(new Switch() { Title = "Use Items", IsOn = true });
+            AutoCleanseGroup.AddItem(new Switch() { Title = "Cleanse On Combo", IsOn = true });
+            AutoCleanseGroup.AddItem(new Switch() { Title = "Cleanse On Tick", IsOn = false });
+            AutoCleanseGroup.AddItem(new Counter() { Title = "Reaction Delay", Value = 100, MinValue = 0, MaxValue = 5000, ValueFrequency = 50 });
 
-            _menuTab.AddItem(new InfoDisplay() { Title = "-Only cleanse debuffs longer than ms-" });
-            _menuTab.AddItem(new Counter() { Title = "Stun", Value = 500, MinValue = 0, MaxValue = 5000, ValueFrequency = 250 });
-            _menuTab.AddItem(new Counter() { Title = "Snare", Value = 500, MinValue = 0, MaxValue = 5000, ValueFrequency = 250 });
-            _menuTab.AddItem(new Counter() { Title = "Slow", Value = 5250, MinValue = 0, MaxValue = 10000, ValueFrequency = 250 });
-            _menuTab.AddItem(new Counter() { Title = "Blind", Value = 500, MinValue = 0, MaxValue = 5000, ValueFrequency = 250 });
-            _menuTab.AddItem(new Counter() { Title = "Charm", Value = 500, MinValue = 0, MaxValue = 5000, ValueFrequency = 250 });
-            _menuTab.AddItem(new Counter() { Title = "Taunt", Value = 500, MinValue = 0, MaxValue = 5000, ValueFrequency = 250 });
-            _menuTab.AddItem(new Counter() { Title = "Fear", Value = 500, MinValue = 0, MaxValue = 5000, ValueFrequency = 250 });
-            _menuTab.AddItem(new Counter() { Title = "Flee", Value = 500, MinValue = 0, MaxValue = 5000, ValueFrequency = 250 });
-            _menuTab.AddItem(new Counter() { Title = "Sleep", Value = 1250, MinValue = 0, MaxValue = 5000, ValueFrequency = 250 });
-            _menuTab.AddItem(new Counter() { Title = "Polymorph", Value = 1250, MinValue = 0, MaxValue = 5000, ValueFrequency = 250 });
-
+            AutoCleanseGroup.AddItem(new InfoDisplay() { Title = "-Only cleanse debuffs longer than ms-" });
+            AutoCleanseGroup.AddItem(new Counter() { Title = "Stun", Value = 500, MinValue = 0, MaxValue = 5000, ValueFrequency = 250 });
+            AutoCleanseGroup.AddItem(new Counter() { Title = "Snare", Value = 500, MinValue = 0, MaxValue = 5000, ValueFrequency = 250 });
+            AutoCleanseGroup.AddItem(new Counter() { Title = "Slow", Value = 5250, MinValue = 0, MaxValue = 10000, ValueFrequency = 250 });
+            AutoCleanseGroup.AddItem(new Counter() { Title = "Blind", Value = 500, MinValue = 0, MaxValue = 5000, ValueFrequency = 250 });
+            AutoCleanseGroup.AddItem(new Counter() { Title = "Charm", Value = 500, MinValue = 0, MaxValue = 5000, ValueFrequency = 250 });
+            AutoCleanseGroup.AddItem(new Counter() { Title = "Taunt", Value = 500, MinValue = 0, MaxValue = 5000, ValueFrequency = 250 });
+            AutoCleanseGroup.AddItem(new Counter() { Title = "Fear", Value = 500, MinValue = 0, MaxValue = 5000, ValueFrequency = 250 });
+            AutoCleanseGroup.AddItem(new Counter() { Title = "Flee", Value = 500, MinValue = 0, MaxValue = 5000, ValueFrequency = 250 });
+            AutoCleanseGroup.AddItem(new Counter() { Title = "Sleep", Value = 1250, MinValue = 0, MaxValue = 5000, ValueFrequency = 250 });
+            AutoCleanseGroup.AddItem(new Counter() { Title = "Polymorph", Value = 1250, MinValue = 0, MaxValue = 5000, ValueFrequency = 250 });
 
             return Task.CompletedTask;
         }
@@ -104,7 +104,7 @@ namespace SixAIO.Utilities
         {
             try
             {
-                if (tabName == "SIXAIO - Auto Cleanse")
+                if (tabItem.TabName == "SIXAIO - Utilities" && tabItem.GroupName == "Auto Cleanse")
                 {
                     if (tabItem.Title == "Cleanse On Tick" && tabItem is Switch itemSwitchOnTick)
                     {
@@ -135,14 +135,9 @@ namespace SixAIO.Utilities
             }
         }
 
-        //private static int _cycles = 0;
         private static async Task OnTick()
         {
-            //_cycles++;
-            //if (_cycles % 10 == 0)
-            {
-                await InputHandler(true).ConfigureAwait(false);
-            }
+            await InputHandler(true).ConfigureAwait(false);
         }
 
         private static async Task OnCombo()
@@ -213,7 +208,7 @@ namespace SixAIO.Utilities
                                     ? BuffChecker.IsCrowdControllButCanQss
                                     : BuffChecker.IsCrowdControllButCanCleanse).FirstOrDefault(buff =>
                                (float)buff.StartTime + (float)((float)ReactionDelay / 1000f) < GameEngine.GameTime && buff.DurationMs < 10_000 &&
-                                buff.DurationMs >= _menuTab.GetItem<Counter>(x => x.Title.Contains(buff.EntryType.ToString(), StringComparison.OrdinalIgnoreCase))?.Value);
+                                buff.DurationMs >= AutoCleanseGroup.GetItem<Counter>(x => x.Title.Contains(buff.EntryType.ToString(), StringComparison.OrdinalIgnoreCase))?.Value);
                 //return cc != null;
 
                 if (cc != null && !cc.Name.Contains("Unknown", StringComparison.OrdinalIgnoreCase))

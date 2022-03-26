@@ -1,7 +1,6 @@
 ﻿using Oasys.Common.Menu;
 using Oasys.Common.Menu.ItemComponents;
 using Oasys.SDK;
-using Oasys.SDK.Menu;
 using Oasys.SDK.SpellCasting;
 using System;
 using System.Threading.Tasks;
@@ -19,24 +18,25 @@ namespace SixAIO.Utilities
         public static CastSlot ExhaustSlot;
         private static TargetSelection _targetSelection;
 
-        private static Tab _menuTab => MenuManagerProvider.GetTab($"SIXAIO - Auto Exhaust");
+        private static Tab Tab => MenuManagerProvider.GetTab($"SIXAIO - Utilities");
+        private static Group AutoExhaustGroup => Tab.GetGroup("Auto Exhaust");
 
         private static bool UseExhaust
         {
-            get => _menuTab?.GetItem<Switch>("Use Exhaust").IsOn ?? false;
-            set => _menuTab.GetItem<Switch>("Use Exhaust").IsOn = value;
+            get => AutoExhaustGroup?.GetItem<Switch>("Use Exhaust").IsOn ?? false;
+            set => AutoExhaustGroup.GetItem<Switch>("Use Exhaust").IsOn = value;
         }
 
         private static bool ExhaustOnCombo
         {
-            get => _menuTab?.GetItem<Switch>("Exhaust On Combo")?.IsOn ?? false;
-            set => _menuTab.GetItem<Switch>("Exhaust On Combo").IsOn = value;
+            get => AutoExhaustGroup?.GetItem<Switch>("Exhaust On Combo")?.IsOn ?? false;
+            set => AutoExhaustGroup.GetItem<Switch>("Exhaust On Combo").IsOn = value;
         }
 
         private static int ExhaustTargetRange
         {
-            get => _menuTab.GetItem<Counter>("Exhaust target range").Value;
-            set => _menuTab.GetItem<Counter>("Exhaust target range").Value = value;
+            get => AutoExhaustGroup.GetItem<Counter>("Exhaust target range").Value;
+            set => AutoExhaustGroup.GetItem<Counter>("Exhaust target range").Value = value;
         }
 
         internal static Task GameEvents_OnGameLoadComplete()
@@ -55,10 +55,10 @@ namespace SixAIO.Utilities
                 return Task.CompletedTask;
             }
 
-            MenuManager.AddTab(new Tab($"SIXAIO - Auto Exhaust"));
-            _menuTab.AddItem(new Switch() { Title = "Use Exhaust", IsOn = true });
-            _menuTab.AddItem(new Switch() { Title = "Exhaust On Combo", IsOn = true });
-            _menuTab.AddItem(new Counter() { Title = "Exhaust target range", Value = 650, MinValue = 0, MaxValue = 2000, ValueFrequency = 50 });
+            Tab.AddGroup(new Group("Auto Exhaust"));
+            AutoExhaustGroup.AddItem(new Switch() { Title = "Use Exhaust", IsOn = true });
+            AutoExhaustGroup.AddItem(new Switch() { Title = "Exhaust On Combo", IsOn = true });
+            AutoExhaustGroup.AddItem(new Counter() { Title = "Exhaust target range", Value = 650, MinValue = 0, MaxValue = 2000, ValueFrequency = 50 });
 
             LoadTargetPrioValues();
 
@@ -71,12 +71,12 @@ namespace SixAIO.Utilities
         {
             try
             {
-                _menuTab.AddItem(new InfoDisplay() { Title = "-Exhaust target if ally health percent is lower than-" });
+                AutoExhaustGroup.AddItem(new InfoDisplay() { Title = "-Exhaust target if ally health percent is lower than-" });
                 foreach (var ally in UnitManager.AllyChampions)
                 {
                     var prio = _targetSelection.TargetPrioritizations.FirstOrDefault(x => ally.ModelName.Equals(x.Champion, StringComparison.OrdinalIgnoreCase));
                     var percent = prio.Prioritization * 10;
-                    _menuTab.AddItem(new Counter() { Title = "Ally - " + prio.Champion, MinValue = 0, MaxValue = 100, Value = percent, ValueFrequency = 5 });
+                    AutoExhaustGroup.AddItem(new Counter() { Title = "Ally - " + prio.Champion, MinValue = 0, MaxValue = 100, Value = percent, ValueFrequency = 5 });
                 }
             }
             catch (Exception)
@@ -108,11 +108,11 @@ namespace SixAIO.Utilities
             {
                 if (targetPrioritizations.Any())
                 {
-                    _menuTab.AddItem(new InfoDisplay() { Title = "-Exhaust target prio-" });
+                    AutoExhaustGroup.AddItem(new InfoDisplay() { Title = "-Exhaust target prio-" });
                 }
                 foreach (var targetPrioritization in targetPrioritizations)
                 {
-                    _menuTab.AddItem(new Counter() { Title = targetPrioritization.Champion, MinValue = 0, MaxValue = 5, Value = targetPrioritization.Prioritization, ValueFrequency = 1 });
+                    AutoExhaustGroup.AddItem(new Counter() { Title = targetPrioritization.Champion, MinValue = 0, MaxValue = 5, Value = targetPrioritization.Prioritization, ValueFrequency = 1 });
                 }
             }
             catch (Exception)
@@ -151,7 +151,7 @@ namespace SixAIO.Utilities
                 {
                     try
                     {
-                        var targetPrio = _menuTab.GetItem<Counter>(x => x.Title == hero.ModelName)?.Value ?? 0;
+                        var targetPrio = AutoExhaustGroup.GetItem<Counter>(x => x.Title == hero.ModelName)?.Value ?? 0;
                         if (targetPrio > tempPrio)
                         {
                             tempPrio = targetPrio;
@@ -177,7 +177,7 @@ namespace SixAIO.Utilities
             {
                 return UnitManager.AllyChampions.Where(x => x.Distance <= ExhaustTargetRange)
                         .Any(ally =>
-                            ally.IsAlive && ally.HealthPercent <= _menuTab.GetItem<Counter>(item => item.Title == "Ally - " + ally.ModelName).Value);
+                            ally.IsAlive && ally.HealthPercent <= AutoExhaustGroup.GetItem<Counter>(item => item.Title == "Ally - " + ally.ModelName).Value);
             }
             catch (Exception)
             {

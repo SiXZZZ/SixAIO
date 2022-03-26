@@ -1,8 +1,10 @@
 ﻿using Oasys.Common;
 using Oasys.Common.GameObject;
 using Oasys.Common.GameObject.Clients;
+using Oasys.Common.Menu;
 using Oasys.SDK;
 using Oasys.SDK.Events;
+using Oasys.SDK.Menu;
 using Oasys.SDK.Tools;
 using SharpDX;
 using SixAIO.Helpers;
@@ -60,6 +62,8 @@ namespace SixAIO
         private static Task GameEvents_OnGameLoadComplete()
         {
             LoadChampion();
+
+            MenuManager.AddTab(new Tab("SIXAIO - Utilities"));
             _currentChampion?.InitializeMenu();
             CoreEvents.OnCoreRender += CoreEvents_OnCoreRender;
             CoreEvents.OnCoreMainTick += CoreEvents_OnCoreMainTick;

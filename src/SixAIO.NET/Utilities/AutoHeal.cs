@@ -14,24 +14,25 @@ namespace SixAIO.Utilities
     {
         public static CastSlot HealSlot;
 
-        private static Tab _menuTab => MenuManagerProvider.GetTab($"SIXAIO - Auto Heal");
+        private static Tab Tab => MenuManagerProvider.GetTab($"SIXAIO - Utilities");
+        private static Group AutoHealGroup => Tab.GetGroup("Auto Heal");
 
         private static bool UseHeal
         {
-            get => _menuTab.GetItem<Switch>("Use Heal").IsOn;
-            set => _menuTab.GetItem<Switch>("Use Heal").IsOn = value;
+            get => AutoHealGroup.GetItem<Switch>("Use Heal").IsOn;
+            set => AutoHealGroup.GetItem<Switch>("Use Heal").IsOn = value;
         }
 
         private static bool HealOnCombo
         {
-            get => _menuTab?.GetItem<Switch>("Heal On Combo")?.IsOn ?? false;
-            set => _menuTab.GetItem<Switch>("Heal On Combo").IsOn = value;
+            get => AutoHealGroup?.GetItem<Switch>("Heal On Combo")?.IsOn ?? false;
+            set => AutoHealGroup.GetItem<Switch>("Heal On Combo").IsOn = value;
         }
 
         private static bool HealOnTick
         {
-            get => _menuTab?.GetItem<Switch>("Heal On Tick")?.IsOn ?? false;
-            set => _menuTab.GetItem<Switch>("Heal On Tick").IsOn = value;
+            get => AutoHealGroup?.GetItem<Switch>("Heal On Tick")?.IsOn ?? false;
+            set => AutoHealGroup.GetItem<Switch>("Heal On Tick").IsOn = value;
         }
 
         internal static Task GameEvents_OnGameLoadComplete()
@@ -51,10 +52,10 @@ namespace SixAIO.Utilities
                 return Task.CompletedTask;
             }
 
-            MenuManager.AddTab(new Tab($"SIXAIO - Auto Heal"));
-            _menuTab.AddItem(new Switch() { Title = "Use Heal", IsOn = true });
-            _menuTab.AddItem(new Switch() { Title = "Heal On Combo", IsOn = false });
-            _menuTab.AddItem(new Switch() { Title = "Heal On Tick", IsOn = false });
+            Tab.AddGroup(new Group("Auto Heal"));
+            AutoHealGroup.AddItem(new Switch() { Title = "Use Heal", IsOn = true });
+            AutoHealGroup.AddItem(new Switch() { Title = "Heal On Combo", IsOn = false });
+            AutoHealGroup.AddItem(new Switch() { Title = "Heal On Tick", IsOn = false });
 
             LoadAllyHealthPercents();
 
@@ -65,10 +66,10 @@ namespace SixAIO.Utilities
         {
             try
             {
-                _menuTab.AddItem(new InfoDisplay() { Title = "-Heal ally health percent is lower than-" });
+                AutoHealGroup.AddItem(new InfoDisplay() { Title = "-Heal ally health percent is lower than-" });
                 foreach (var ally in UnitManager.AllyChampions)
                 {
-                    _menuTab.AddItem(new Counter() { Title = "Ally - " + ally.ModelName, MinValue = 0, MaxValue = 100, Value = 20, ValueFrequency = 5 });
+                    AutoHealGroup.AddItem(new Counter() { Title = "Ally - " + ally.ModelName, MinValue = 0, MaxValue = 100, Value = 20, ValueFrequency = 5 });
                 }
             }
             catch (Exception)
@@ -112,7 +113,7 @@ namespace SixAIO.Utilities
             {
                 return UnitManager.AllyChampions.Where(x => x.Distance <= 850)
                         .Any(ally =>
-                            ally.IsAlive && ally.HealthPercent <= _menuTab.GetItem<Counter>(item => item.Title == "Ally - " + ally.ModelName).Value);
+                            ally.IsAlive && ally.HealthPercent <= AutoHealGroup.GetItem<Counter>(item => item.Title == "Ally - " + ally.ModelName).Value);
             }
             catch (Exception)
             {

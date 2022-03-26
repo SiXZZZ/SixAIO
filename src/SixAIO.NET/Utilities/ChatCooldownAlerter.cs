@@ -3,8 +3,6 @@ using Oasys.Common.Menu;
 using Oasys.Common.Menu.ItemComponents;
 using Oasys.Common.Tools.Devices;
 using Oasys.SDK;
-using Oasys.SDK.Menu;
-using Oasys.SDK.Tools;
 using System;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -23,7 +21,8 @@ namespace SixAIO.Utilities
         [DllImport("user32.dll")]
         internal static extern IntPtr GetForegroundWindow();
 
-        private static Tab OrbInputTab => MenuManagerProvider.GetTab("Orbwalker Input");
+        private static Tab OrbTab => MenuManagerProvider.GetTab("Orbwalker");
+        private static Group OrbInputTab => OrbTab.GetGroup("Input");
 
         public static Keys GetOverrideKey()
         {
@@ -55,27 +54,27 @@ namespace SixAIO.Utilities
             return Keyboard.GetKeyBoardScanCode(OrbInputTab.GetItem<KeyBinding>("Target Champs Only Key").SelectedKey);
         }
 
-        private static int _index;
-        private static Tab _menuTab => MenuManagerProvider.GetTab(_index);
+        private static Tab Tab => MenuManagerProvider.GetTab($"SIXAIO - Utilities");
+        private static Group ChatCDAlerterGroup => Tab.GetGroup("Chat CD Alerter");
 
         private static bool Use
         {
-            get => _menuTab?.GetItem<Switch>("Use")?.IsOn ?? false;
-            set => _menuTab.GetItem<Switch>("Use").IsOn = value;
+            get => ChatCDAlerterGroup?.GetItem<Switch>("Use")?.IsOn ?? false;
+            set => ChatCDAlerterGroup.GetItem<Switch>("Use").IsOn = value;
         }
 
         public static Keys GetKeybinding()
         {
-            return _menuTab.GetItem<KeyBinding>("Key binding").SelectedKey;
+            return ChatCDAlerterGroup.GetItem<KeyBinding>("Key binding").SelectedKey;
         }
 
         internal static Task GameEvents_OnGameLoadComplete()
         {
-            _index = MenuManager.AddTab(new Tab($"SIXAIO - Chat CD Alerter"));
-            _menuTab.AddItem(new Switch() { Title = "Use", IsOn = false });
-            _menuTab.AddItem(new KeyBinding() { Title = "Key binding", SelectedKey = Keys.M });
+            Tab.AddGroup(new Group("Chat CD Alerter"));
+            ChatCDAlerterGroup.AddItem(new Switch() { Title = "Use", IsOn = false });
+            ChatCDAlerterGroup.AddItem(new KeyBinding() { Title = "Key binding", SelectedKey = Keys.M });
 
-            _menuTab.AddItem(new InfoDisplay() { Title = "-Only alert enabled summoners-" });
+            ChatCDAlerterGroup.AddItem(new InfoDisplay() { Title = "-Only alert enabled summoners-" });
             foreach (var enemy in UnitManager.EnemyChampions.Where(x => !x.IsTargetDummy))
             {
                 var spellBook = enemy.GetSpellBook();
@@ -84,14 +83,14 @@ namespace SixAIO.Utilities
 
                 var sum1 = enemy.ModelName + " " + GetSummonerText(summoner1.SpellData.SpellName);
                 var sum2 = enemy.ModelName + " " + GetSummonerText(summoner2.SpellData.SpellName);
-                _menuTab.AddItem(new InfoDisplay() { Title = $"-{enemy.ModelName}-" });
+                ChatCDAlerterGroup.AddItem(new InfoDisplay() { Title = $"-{enemy.ModelName}-" });
                 if (!string.IsNullOrEmpty(sum1))
                 {
-                    _menuTab.AddItem(new Switch() { Title = sum1, IsOn = !string.IsNullOrEmpty(sum1) });
+                    ChatCDAlerterGroup.AddItem(new Switch() { Title = sum1, IsOn = !string.IsNullOrEmpty(sum1) });
                 }
                 if (!string.IsNullOrEmpty(sum2))
                 {
-                    _menuTab.AddItem(new Switch() { Title = sum2, IsOn = !string.IsNullOrEmpty(sum2) });
+                    ChatCDAlerterGroup.AddItem(new Switch() { Title = sum2, IsOn = !string.IsNullOrEmpty(sum2) });
                 }
             }
             return Task.CompletedTask;
@@ -187,7 +186,7 @@ namespace SixAIO.Utilities
 
         private static bool ShouldSend(Hero hero, Oasys.Common.GameObject.Clients.ExtendedInstances.Spells.SpellClass spellClass)
         {
-            return !spellClass.IsSpellReady && _menuTab.GetItem<Switch>(hero.ModelName + " " + GetSummonerText(spellClass.SpellData.SpellName)).IsOn;
+            return !spellClass.IsSpellReady && ChatCDAlerterGroup.GetItem<Switch>(hero.ModelName + " " + GetSummonerText(spellClass.SpellData.SpellName)).IsOn;
         }
 
         private static void Send(string message)
