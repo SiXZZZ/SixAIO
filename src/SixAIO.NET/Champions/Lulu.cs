@@ -150,13 +150,19 @@ namespace SixAIO.Champions
 
         private bool IsCastingSpellOnEnemy(Hero ally)
         {
-            if (ally.IsAlive && ally.IsCastingSpell)
+            try
             {
-                var spell = ally.GetCurrentCastingSpell();
-                var target = spell.Targets.FirstOrDefault(x => x.IsAlive && x.IsVisible && x.IsTargetable);
-                return spell is not null &&
-                       ((target is not null && spell.IsBasicAttack && UnitManager.EnemyChampions.Any(x => x.IsAlive && x.NetworkID == target.NetworkID) && target.IsAlive) ||
-                       (ally.ModelName == "Zeri" && spell.SpellSlot == SpellSlot.Q));
+                if (ally.IsAlive && ally.IsCastingSpell)
+                {
+                    var spell = ally.GetCurrentCastingSpell();
+                    var target = spell.Targets.FirstOrDefault(x => x.IsAlive && x.IsVisible && x.IsTargetable);
+
+                    return (spell.IsBasicAttack && target.IsAlive && UnitManager.EnemyChampions.Any(x => x.IsAlive && x.NetworkID == target.NetworkID)) ||
+                           (ally.ModelName == "Zeri" && spell.SpellSlot == SpellSlot.Q);
+                }
+            }
+            catch (Exception)
+            {
             }
 
             return false;
