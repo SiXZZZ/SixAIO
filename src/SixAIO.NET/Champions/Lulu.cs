@@ -35,24 +35,23 @@ namespace SixAIO.Champions
                 {
                     Hero target = null;
 
-                    if (target == null && Polymorph)
+                    if (target == null && Polymorph && IsCastingSpellOnAlly())
                     {
                         target = UnitManager.EnemyChampions
-                                .OrderBy(x => x.Health)
-                                // and some enemy is casting a spell/attack with targetindex == ally.index
-                                .FirstOrDefault(enemy => enemy.IsAlive && enemy.Distance <= 650 && TargetSelector.IsAttackable(enemy) &&
-                                                         !TargetSelector.IsInvulnerable(enemy, Oasys.Common.Logic.DamageType.Magical, false) &&
-                                                         enemy.IsCastingSpell);
+                                            .OrderBy(x => x.Health)
+                                            .FirstOrDefault(enemy => enemy.IsAlive && enemy.Distance <= 650 &&
+                                                                     TargetSelector.IsAttackable(enemy) &&
+                                                                     !TargetSelector.IsInvulnerable(enemy, Oasys.Common.Logic.DamageType.Magical, false));
                     }
 
                     if (target == null && WBuffAlly)
                     {
                         target = UnitManager.AllyChampions
-                        .Where(ally => MenuTab.GetItem<Counter>("Buff Ally Prio- " + ally.ModelName).Value > 0)
-                        .OrderByDescending(ally => MenuTab.GetItem<Counter>("Buff Ally Prio- " + ally.ModelName).Value)
-                                .FirstOrDefault(ally => ally.IsAlive && ally.Distance <= 650 && TargetSelector.IsAttackable(ally, false) &&
-                                                ally.IsCastingSpell && ally.GetCurrentCastingSpell().IsBasicAttack &&
-                                                UnitManager.EnemyChampions.Any(enemy => enemy.DistanceTo(ally.Position) <= ally.TrueAttackRange));
+                                            .Where(ally => MenuTab.GetItem<Counter>("Buff Ally Prio- " + ally.ModelName).Value > 0)
+                                            .OrderByDescending(ally => MenuTab.GetItem<Counter>("Buff Ally Prio- " + ally.ModelName).Value)
+                                                    .FirstOrDefault(ally => ally.IsAlive && ally.Distance <= 650 &&
+                                                                            TargetSelector.IsAttackable(ally, false) &&
+                                                                            IsCastingSpellOnEnemy(ally));
                     }
 
                     return target;
@@ -70,28 +69,27 @@ namespace SixAIO.Champions
                     if (target == null && EBuffAlly)
                     {
                         target = UnitManager.AllyChampions
-                        .Where(ally => MenuTab.GetItem<Counter>("Buff Ally Prio- " + ally.ModelName).Value > 0)
-                        .OrderByDescending(ally => MenuTab.GetItem<Counter>("Buff Ally Prio- " + ally.ModelName).Value)
-                                .FirstOrDefault(ally => ally.IsAlive && ally.Distance <= 650 && TargetSelector.IsAttackable(ally, false) &&
-                                                ally.IsCastingSpell && ally.GetCurrentCastingSpell().IsBasicAttack &&
-                                                UnitManager.EnemyChampions.Any(enemy => enemy.DistanceTo(ally.Position) <= ally.TrueAttackRange));
+                                            .Where(ally => MenuTab.GetItem<Counter>("Buff Ally Prio- " + ally.ModelName).Value > 0)
+                                            .OrderByDescending(ally => MenuTab.GetItem<Counter>("Buff Ally Prio- " + ally.ModelName).Value)
+                                                    .FirstOrDefault(ally => ally.IsAlive && ally.Distance <= 650 && TargetSelector.IsAttackable(ally, false) &&
+                                                                            IsCastingSpellOnEnemy(ally));
                     }
 
                     if (target == null && EShieldAlly)
                     {
                         target = UnitManager.AllyChampions
-                        .Where(ally => MenuTab.GetItem<Counter>("Buff Ally Prio- " + ally.ModelName).Value > 0)
-                        .OrderByDescending(ally => MenuTab.GetItem<Counter>("Buff Ally Prio- " + ally.ModelName).Value)
-                        .FirstOrDefault(ally => ally.IsAlive && ally.Distance <= 650 && TargetSelector.IsAttackable(ally, false) &&
-                                        // and some enemy is casting a spell/attack with targetindex == ally.index
-                                        (ally.Health / ally.MaxHealth * 100) < EShieldHealthPercent);
+                                            .Where(ally => MenuTab.GetItem<Counter>("Buff Ally Prio- " + ally.ModelName).Value > 0)
+                                            .OrderByDescending(ally => MenuTab.GetItem<Counter>("Buff Ally Prio- " + ally.ModelName).Value)
+                                            .FirstOrDefault(ally => ally.IsAlive && ally.Distance <= 650 && TargetSelector.IsAttackable(ally, false) &&
+                                                                    AnyEnemyIsCastingSpell() &&
+                                                                    ally.HealthPercent < EShieldHealthPercent);
                     }
 
                     if (target == null && EOnEnemies)
                     {
                         target = UnitManager.EnemyChampions
-                                .OrderBy(x => x.Health)
-                                .FirstOrDefault(enemy => enemy.IsAlive && enemy.Distance <= 650 && TargetSelector.IsAttackable(enemy));
+                                            .OrderBy(x => x.Health)
+                                            .FirstOrDefault(enemy => enemy.IsAlive && enemy.Distance <= 650 && TargetSelector.IsAttackable(enemy));
                     }
 
                     return target;
@@ -105,25 +103,63 @@ namespace SixAIO.Champions
                 TargetSelect = (mode) =>
                 {
                     Hero target = null;
+
                     if (target == null && RKnockupEnemies)
                     {
                         target = UnitManager.AllyChampions
-                                .FirstOrDefault(allyChamp => allyChamp.IsAlive && allyChamp.Distance <= 900 && TargetSelector.IsAttackable(allyChamp, false) &&
-                                                UnitManager.EnemyChampions.Count(enemyChamp => enemyChamp.IsAlive && enemyChamp.DistanceTo(allyChamp.Position) < 400 && TargetSelector.IsAttackable(enemyChamp))
-                                                >= RSettings.GetItem<Counter>("Knockup - " + allyChamp.ModelName).Value);
+                                            .FirstOrDefault(allyChamp => allyChamp.IsAlive && allyChamp.Distance <= 900 && TargetSelector.IsAttackable(allyChamp, false) &&
+                                                            UnitManager.EnemyChampions.Count(enemyChamp => enemyChamp.IsAlive && enemyChamp.DistanceTo(allyChamp.Position) < 400 && TargetSelector.IsAttackable(enemyChamp))
+                                                            >= RSettings.GetItem<Counter>("Knockup - " + allyChamp.ModelName).Value);
                     }
+
                     if (target == null && RBuffAlly)
                     {
                         target = UnitManager.AllyChampions
-                        .Where(ally => MenuTab.GetItem<Counter>("Buff Ally Prio- " + ally.ModelName).Value > 0)
-                        .OrderByDescending(ally => MenuTab.GetItem<Counter>("Buff Ally Prio- " + ally.ModelName).Value)
-                        .FirstOrDefault(ally => ally.IsAlive && ally.Distance <= 900 && TargetSelector.IsAttackable(ally, false) &&
-                                                (ally.Health / ally.MaxHealth * 100) < RBuffHealthPercent);
+                                            .Where(ally => MenuTab.GetItem<Counter>("Buff Ally Prio- " + ally.ModelName).Value > 0)
+                                            .OrderByDescending(ally => MenuTab.GetItem<Counter>("Buff Ally Prio- " + ally.ModelName).Value)
+                                            .FirstOrDefault(ally => ally.IsAlive && ally.Distance <= 900 &&
+                                                                    TargetSelector.IsAttackable(ally, false) &&
+                                                                    ally.HealthPercent < RBuffHealthPercent);
                     }
 
                     return target;
                 }
             };
+        }
+
+        private bool AnyEnemyIsCastingSpell()
+        {
+            return UnitManager.EnemyChampions.Any(x => x.IsAlive && x.Distance <= 1000 && x.IsCastingSpell);
+        }
+
+        private bool IsCastingSpellOnAlly(Hero ally = null)
+        {
+            foreach (var enemy in UnitManager.EnemyChampions.Where(x => x.IsAlive && x.IsCastingSpell))
+            {
+                var spell = enemy.GetCurrentCastingSpell();
+                var target = spell.Targets.FirstOrDefault(x => x.IsAlive && x.IsVisible && x.IsTargetable);
+                if (target.Distance <= 650 && target.IsAlive &&
+                    (ally is null ? UnitManager.AllyChampions.Any(x => x.NetworkID == target.NetworkID) : ally.NetworkID == target.NetworkID))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private bool IsCastingSpellOnEnemy(Hero ally)
+        {
+            if (ally.IsAlive && ally.IsCastingSpell)
+            {
+                var spell = ally.GetCurrentCastingSpell();
+                var target = spell.Targets.FirstOrDefault(x => x.IsAlive && x.IsVisible && x.IsTargetable);
+                return spell is not null &&
+                       ((target is not null && spell.IsBasicAttack && UnitManager.EnemyChampions.Any(x => x.IsAlive && x.NetworkID == target.NetworkID) && target.IsAlive) ||
+                       (ally.ModelName == "Zeri" && spell.SpellSlot == SpellSlot.Q));
+            }
+
+            return false;
         }
 
         internal override void OnCoreMainInput()
