@@ -99,7 +99,9 @@ namespace SixAIO.Champions
                 physicalDamage *= 0.5;
             }
             physicalDamage *= armorMod;
-            return (float)(physicalDamage - enemy.NeutralShield - enemy.PhysicalShield);
+            var result = (float)(physicalDamage - enemy.NeutralShield - enemy.PhysicalShield);
+            //Logger.Log($"Kalista dmg on {enemy.UnitComponentInfo.SkinName}: {result}");
+            return result;
         }
 
         internal static float GetAdditionalSpearLevelAttackDamageMod()
