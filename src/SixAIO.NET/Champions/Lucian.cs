@@ -39,7 +39,7 @@ namespace SixAIO.Champions
                     {
                         foreach (var target in targets)
                         {
-                            var targetMinion = GetMinionBetweenMeAndEnemy(target, 100);
+                            var targetMinion = GetMinionBetweenMeAndEnemy(target, 120);
                             if (targetMinion != null)
                             {
                                 return targetMinion;
@@ -73,7 +73,7 @@ namespace SixAIO.Champions
         private GameObjectBase GetMinionBetweenMeAndEnemy(Hero enemy, int width)
         {
             return UnitManager.EnemyMinions.FirstOrDefault(minion => minion.IsAlive && minion.Distance <= 500 && TargetSelector.IsAttackable(minion) &&
-                        Geometry.DistanceFromPointToLine(enemy.W2S, new Vector2[] { UnitManager.MyChampion.W2S, minion.W2S }) <= width &&
+                        Geometry.DistanceFromPointToLine(enemy.W2S, new Vector2[] { UnitManager.MyChampion.W2S, minion.W2S }) <= width / 2 &&
                         minion.W2S.Distance(enemy.W2S) < UnitManager.MyChampion.W2S.Distance(enemy.W2S));
         }
 
