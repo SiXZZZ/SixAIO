@@ -36,12 +36,12 @@ namespace SixAIO.Champions
                 TargetSelect = (mode) =>
                 {
                     var bestTarget = TargetSelector.GetBestChampionTarget(Orbwalker.SelectedHero);
-                    if (bestTarget != null && ESettings.GetItem<Switch>("E - " + bestTarget.ModelName).IsOn)
+                    if (bestTarget != null && (bestTarget.IsTargetDummy || ESettings.GetItem<Switch>("E - " + bestTarget.ModelName).IsOn))
                     {
                         return bestTarget;
                     }
 
-                    var targets = UnitManager.EnemyChampions.Where(x => x.Distance <= UnitManager.MyChampion.TrueAttackRange &&
+                    var targets = UnitManager.EnemyChampions.Where(x => !x.IsTargetDummy).Where(x => x.Distance <= UnitManager.MyChampion.TrueAttackRange &&
                                                                      TargetSelector.IsAttackable(x) &&
                                                                      !TargetSelector.IsInvulnerable(x, Oasys.Common.Logic.DamageType.Physical, false) &&
                                                                      ESettings.GetItem<Switch>("E - " + x.ModelName).IsOn)
@@ -63,7 +63,7 @@ namespace SixAIO.Champions
 
         private Hero TargetSelectR()
         {
-            var targets = UnitManager.EnemyChampions.Where(x => x.Distance <= UnitManager.MyChampion.TrueAttackRange &&
+            var targets = UnitManager.EnemyChampions.Where(x => !x.IsTargetDummy).Where(x => x.Distance <= UnitManager.MyChampion.TrueAttackRange &&
                                                                 TargetSelector.IsAttackable(x) &&
                                                                 !TargetSelector.IsInvulnerable(x, Oasys.Common.Logic.DamageType.Magical, false) &&
                                                                 RSettings.GetItem<Switch>("R - " + x.ModelName).IsOn)

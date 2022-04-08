@@ -26,9 +26,9 @@ namespace SixAIO.Champions
         {
             return mode switch
             {
-                Orbwalker.OrbWalkingModeType.Combo => UnitManager.EnemyChampions.Count(IsValidHero) >= 1,
+                Orbwalker.OrbWalkingModeType.Combo => UnitManager.EnemyChampions.Where(x => !x.IsTargetDummy).Count(IsValidHero) >= 1,
                 Orbwalker.OrbWalkingModeType.LaneClear =>
-                            (UnitManager.EnemyChampions.Count(IsValidHero) >= 1) ||
+                            (UnitManager.EnemyChampions.Where(x => !x.IsTargetDummy).Count(IsValidHero) >= 1) ||
                             (UnitManager.EnemyJungleMobs.Count(x => IsValidTarget(x) && IsEpicJungleMonster(x)) >= 1) ||
                             (UnitManager.EnemyJungleMobs.Count(IsValidTarget) >= 3) ||
                             (UnitManager.EnemyMinions.Count(IsValidTarget) >= 6),

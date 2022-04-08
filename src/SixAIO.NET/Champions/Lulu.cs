@@ -108,7 +108,7 @@ namespace SixAIO.Champions
                     {
                         target = UnitManager.AllyChampions
                                             .FirstOrDefault(allyChamp => allyChamp.IsAlive && allyChamp.Distance <= 900 && TargetSelector.IsAttackable(allyChamp, false) &&
-                                                            UnitManager.EnemyChampions.Count(enemyChamp => enemyChamp.IsAlive && enemyChamp.DistanceTo(allyChamp.Position) < 400 && TargetSelector.IsAttackable(enemyChamp))
+                                                            UnitManager.EnemyChampions.Where(x => !x.IsTargetDummy).Count(enemyChamp => enemyChamp.IsAlive && enemyChamp.DistanceTo(allyChamp.Position) < 400 && TargetSelector.IsAttackable(enemyChamp))
                                                             >= RSettings.GetItem<Counter>("Knockup - " + allyChamp.ModelName).Value);
                     }
 
