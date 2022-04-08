@@ -204,9 +204,9 @@ namespace SixAIO.Champions
             return GetGunType() switch
             {
                 GunType.ApheliosSeverumQ => UseSeverum && UnitManager.MyChampion.HealthPercent <= SeverumHealthPercentLessThan && UnitManager.EnemyChampions.Any(enemy => enemy.IsAlive && enemy.Distance <= SpellQ.Range()),
-                GunType.ApheliosInfernumQ => UseInfernum && target != null && spellClass.IsSpellReady,
+                GunType.ApheliosInfernumQ => UseInfernum && target != null && (CalibrumOnlyOutsideOfAttackRange ? UnitManager.EnemyChampions.All(x => x.Distance >= UnitManager.MyChampion.TrueAttackRange) : true) && spellClass.IsSpellReady,
                 GunType.ApheliosCrescendumQ => UseCrescendum && target != null && spellClass.IsSpellReady,
-                GunType.ApheliosCalibrumQ => UseCalibrum && target != null && spellClass.IsSpellReady,
+                GunType.ApheliosCalibrumQ => UseCalibrum && target != null && target.Distance <= CrescendumEnemyIsCloserThan && spellClass.IsSpellReady,
                 GunType.ApheliosGravitumQ => UseGravitum && UnitManager.EnemyChampions.Count(HasGravitum) >= GravitumCanRoot,
                 _ => false
             };
@@ -315,7 +315,7 @@ namespace SixAIO.Champions
 
 
             CrescendumSettings.AddItem(new Switch() { Title = "Use Crescendum", IsOn = true });
-            CrescendumSettings.AddItem(new Counter() { Title = "Crescendum enemy is closer than", MinValue = 0, MaxValue = 100, Value = 50, ValueFrequency = 5 });
+            CrescendumSettings.AddItem(new Counter() { Title = "Crescendum enemy is closer than", MinValue = 0, MaxValue = 900, Value = 500, ValueFrequency = 50 });
 
 
             CalibrumSettings.AddItem(new Switch() { Title = "Use Calibrum", IsOn = true });
