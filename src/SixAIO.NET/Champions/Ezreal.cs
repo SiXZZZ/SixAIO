@@ -16,7 +16,9 @@ namespace SixAIO.Champions
         {
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
-                AllowCollision = (target, collisions) => target.IsObject(ObjectTypeFlag.AIMinionClient) || !collisions.Any(),
+                AllowCollision = (target, collisions) => target.IsObject(ObjectTypeFlag.AIMinionClient)
+                                                        ? QAllowLaneclearMinionCollision
+                                                        : !collisions.Any(),
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
                 MinimumHitChance = () => QHitChance,
                 Range = () => 1200,
@@ -110,6 +112,12 @@ namespace SixAIO.Champions
             }
         }
 
+        internal bool QAllowLaneclearMinionCollision
+        {
+            get => QSettings.GetItem<Switch>("Q Allow Laneclear minion collision").IsOn;
+            set => QSettings.GetItem<Switch>("Q Allow Laneclear minion collision").IsOn = value;
+        }
+
         private int RTargetMaxHPPercent
         {
             get => RSettings.GetItem<Counter>("R Target Max HP Percent").Value;
@@ -134,8 +142,9 @@ namespace SixAIO.Champions
             MenuTab.AddGroup(new Group("Q Settings"));
             MenuTab.AddGroup(new Group("W Settings"));
             MenuTab.AddGroup(new Group("R Settings"));
-            
+
             QSettings.AddItem(new Switch() { Title = "Use Q", IsOn = true });
+            QSettings.AddItem(new Switch() { Title = "Q Allow Laneclear minion collision", IsOn = true });
             QSettings.AddItem(new Counter() { Title = "Q Min Mana", MinValue = 0, MaxValue = 500, Value = 40, ValueFrequency = 10 });
             QSettings.AddItem(new ModeDisplay() { Title = "Q HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
 
