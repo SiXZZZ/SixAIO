@@ -22,7 +22,7 @@ namespace SixAIO.Champions
                 Speed = () => 5000,
                 Radius = () => 140,
                 IsEnabled = () => UseQ,
-                TargetSelect = (mode) => SpellQ.GetTargets(mode).OrderBy(x => x.BuffManager.HasActiveBuff("ZileanQ")).FirstOrDefault()
+                TargetSelect = (mode) => SpellQ.GetTargets(mode).OrderBy(x => x.BuffManager.HasActiveBuff("ZileanQEnemyBomb")).FirstOrDefault()
             };
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
             {
@@ -30,7 +30,7 @@ namespace SixAIO.Champions
                 ShouldCast = (mode, target, spellClass, damage) =>
                             !SpellQ.SpellClass.IsSpellReady &&
                             (!SpellE.SpellClass.IsSpellReady ||
-                              UnitManager.EnemyChampions.FirstOrDefault(x => x.Distance <= 900 && x.IsAlive && x.BuffManager.HasActiveBuff("ZileanQ")) != null)
+                              UnitManager.EnemyChampions.Any(x => x.Distance <= 900 && x.IsAlive && x.BuffManager.HasActiveBuff("ZileanQEnemyBomb")))
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
