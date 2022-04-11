@@ -15,7 +15,7 @@ namespace SixAIO
     {
         private static Champion _currentChampion;
 
-        [Oasys.SDK.OasysModuleEntryPoint]
+        [OasysModuleEntryPoint]
         public static void Execute()
         {
             GameEvents.OnGameLoadComplete += GameEvents_OnGameLoadComplete;
@@ -24,6 +24,11 @@ namespace SixAIO
             GameEvents.OnGameLoadComplete += AutoCleanse.GameEvents_OnGameLoadComplete;
             GameEvents.OnGameLoadComplete += AutoExhaust.GameEvents_OnGameLoadComplete;
             GameEvents.OnGameLoadComplete += ChatCooldownAlerter.GameEvents_OnGameLoadComplete;
+            GameEvents.OnGameLoadComplete += AutoRanduins.GameEvents_OnGameLoadComplete;
+            GameEvents.OnGameLoadComplete += AutoIronSpikeWhip.GameEvents_OnGameLoadComplete;
+            GameEvents.OnGameLoadComplete += AutoGoreDrinker.GameEvents_OnGameLoadComplete;
+            GameEvents.OnGameLoadComplete += AutoStrideBreaker.GameEvents_OnGameLoadComplete;
+            GameEvents.OnGameLoadComplete += AutoMikaelsBlessing.GameEvents_OnGameLoadComplete;
             GameEvents.OnGameMatchComplete += GameEvents_OnGameMatchComplete;
             Oasys.Common.EventsProvider.GameEvents.OnCreateObject += GameEvents_OnCreateObject;
             Oasys.Common.EventsProvider.GameEvents.OnDeleteObject += GameEvents_OnDeleteObject;
