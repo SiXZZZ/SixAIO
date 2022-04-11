@@ -29,6 +29,7 @@ namespace SixAIO
             GameEvents.OnGameLoadComplete += AutoGoreDrinker.GameEvents_OnGameLoadComplete;
             GameEvents.OnGameLoadComplete += AutoStrideBreaker.GameEvents_OnGameLoadComplete;
             GameEvents.OnGameLoadComplete += AutoMikaelsBlessing.GameEvents_OnGameLoadComplete;
+            GameEvents.OnGameLoadComplete += AutoPotion.GameEvents_OnGameLoadComplete;
             GameEvents.OnGameMatchComplete += GameEvents_OnGameMatchComplete;
             Oasys.Common.EventsProvider.GameEvents.OnCreateObject += GameEvents_OnCreateObject;
             Oasys.Common.EventsProvider.GameEvents.OnDeleteObject += GameEvents_OnDeleteObject;

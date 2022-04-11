@@ -108,7 +108,7 @@ namespace SixAIO.Utilities
 
                     if (target is not null)
                     {
-                        ItemCastProvider.CastItem(ItemID.Mikaels_Blessing);
+                        ItemCastProvider.CastItem(ItemID.Mikaels_Blessing, target);
                         _lastCleanse = GameEngine.GameTime;
                     }
                 }
