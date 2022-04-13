@@ -15,8 +15,8 @@ namespace SixAIO.Champions
     {
         private static bool IsQActive()
         {
-            var buff = UnitManager.MyChampion.BuffManager.GetBuffByName("JinxQ", false, true);
-            return buff != null && buff.IsActive && buff.Stacks >= 1;
+            var buff = UnitManager.MyChampion.BuffManager.GetBuffByName("qicon", false, true);
+            return buff != null && buff.IsActive;//&& buff.Stacks >= 1;
         }
 
         public Jinx()
@@ -26,7 +26,7 @@ namespace SixAIO.Champions
                 IsEnabled = () => UseQ,
                 ShouldCast = (mode, target, spellClass, damage) =>
                 {
-                    var usingRockets = IsQActive();
+                    var usingRockets = !IsQActive();
                     var extraRange = 50 + (30 * UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot.Q).Level);
                     var minigunRange = usingRockets
                                         ? UnitManager.MyChampion.TrueAttackRange - extraRange

@@ -202,7 +202,7 @@ namespace SixAIO.Utilities
 
         public static GameObjectBase GetJungleTarget(float dist)
         {
-            foreach (var enemy in UnitManager.Enemies)
+            foreach (var enemy in UnitManager.EnemyJungleMobs)
             {
                 if (enemy.IsJungle && enemy.IsAlive &&
                     enemy.DistanceTo(UnitManager.MyChampion.Position) <= dist &&
