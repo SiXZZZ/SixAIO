@@ -32,13 +32,13 @@ namespace SixAIO.Champions
                     {
                         if (target is null)
                         {
-                            target = UnitManager.EnemyTowers.FirstOrDefault(x => x.IsAlive && x.Distance <= SpellQ.Range());
+                            target = UnitManager.EnemyTowers.FirstOrDefault(x => TargetSelector.IsAttackable(x) && x.Distance <= SpellQ.Range()+x.UnitComponentInfo.UnitBoundingRadius);
                         }
                         if (target is null)
                         {
-                            target = UnitManager.EnemyInhibitors.FirstOrDefault(x => x.IsAlive && x.Distance <= SpellQ.Range());
+                            target = UnitManager.EnemyInhibitors.FirstOrDefault(x => TargetSelector.IsAttackable(x) && x.Distance <= SpellQ.Range() + x.UnitComponentInfo.UnitBoundingRadius);
                         }
-                        if (target is null && UnitManager.EnemyNexus.IsAlive && UnitManager.EnemyNexus.Distance <= SpellQ.Range())
+                        if (target is null && TargetSelector.IsAttackable(UnitManager.EnemyNexus) && UnitManager.EnemyNexus.Distance <= SpellQ.Range() + UnitManager.EnemyNexus.UnitComponentInfo.UnitBoundingRadius)
                         {
                             target = UnitManager.EnemyNexus;
                         }
