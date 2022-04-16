@@ -27,13 +27,14 @@ namespace SixAIO.Champions
                 IsEnabled = () => UseQ,
                 TargetSelect = (mode) =>
                 {
+                    var range = 500 + UnitManager.MyChampion.UnitComponentInfo.UnitBoundingRadius;
                     var targets = UnitManager.EnemyChampions
                                                 .Where(x => x.IsAlive && x.Distance <= 1000 &&
                                                             TargetSelector.IsAttackable(x) &&
                                                             !TargetSelector.IsInvulnerable(x, Oasys.Common.Logic.DamageType.Physical, false));
-                    if (targets.Any(x => x.Distance <= 550))
+                    if (targets.Any(x => x.Distance <= range + x.UnitComponentInfo.UnitBoundingRadius))
                     {
-                        return targets.FirstOrDefault(x => x.Distance <= 550);
+                        return targets.FirstOrDefault(x => x.Distance <= range + x.UnitComponentInfo.UnitBoundingRadius);
                     }
                     if (!Orbwalker.TargetChampionsOnly)
                     {
@@ -47,7 +48,7 @@ namespace SixAIO.Champions
                         }
                     }
 
-                    return targets.FirstOrDefault(x => x.Distance <= 550);
+                    return targets.FirstOrDefault(x => x.Distance <= range + x.UnitComponentInfo.UnitBoundingRadius);
                 }
             };
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
