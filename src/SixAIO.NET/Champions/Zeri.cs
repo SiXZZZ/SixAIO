@@ -4,6 +4,7 @@ using Oasys.Common.Menu.ItemComponents;
 using Oasys.SDK;
 using Oasys.SDK.Menu;
 using Oasys.SDK.SpellCasting;
+using Oasys.SDK.Tools;
 using SixAIO.Enums;
 using SixAIO.Models;
 using System;
@@ -24,7 +25,26 @@ namespace SixAIO.Champions
                 Speed = () => 2600,
                 Delay = () => 0f,
                 IsEnabled = () => UseQ,
-                TargetSelect = (mode) => SpellQ.GetTargets(mode).FirstOrDefault()//Orbwalker.GetTarget(mode, SpellQ.Range())
+                TargetSelect = (mode) =>
+                {
+                    var target = SpellQ.GetTargets(mode).FirstOrDefault();
+                    if (mode != Orbwalker.OrbWalkingModeType.Combo)
+                    {
+                        if (target is null)
+                        {
+                            target = UnitManager.EnemyTowers.FirstOrDefault(x => x.IsAlive && x.Distance <= SpellQ.Range());
+                        }
+                        if (target is null)
+                        {
+                            target = UnitManager.EnemyInhibitors.FirstOrDefault(x => x.IsAlive && x.Distance <= SpellQ.Range());
+                        }
+                        if (target is null && UnitManager.EnemyNexus.IsAlive && UnitManager.EnemyNexus.Distance <= SpellQ.Range())
+                        {
+                            target = UnitManager.EnemyNexus;
+                        }
+                    }
+                    return target;
+                }
             };
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
             {
