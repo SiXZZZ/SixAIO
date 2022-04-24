@@ -207,7 +207,7 @@ namespace SixAIO.Utilities
                 if (enemy.IsJungle && enemy.IsAlive &&
                     enemy.DistanceTo(UnitManager.MyChampion.Position) <= dist &&
                     ((Baron && enemy.UnitComponentInfo.SkinName.Contains("SRU_Baron")) ||
-                    (Dragon && enemy.UnitComponentInfo.SkinName.StartsWith("SRU_Dragon")) ||
+                    (Dragon && enemy.UnitComponentInfo.SkinName.Contains("SRU_Dragon")) ||
                     (RiftHerald && enemy.UnitComponentInfo.SkinName.Contains("SRU_RiftHerald")) ||
                     (Red && enemy.UnitComponentInfo.SkinName.Contains("SRU_Red")) ||
                     (Blue && enemy.UnitComponentInfo.SkinName.Contains("SRU_Blue")) ||
@@ -215,7 +215,7 @@ namespace SixAIO.Utilities
                     (Krug && enemy.UnitComponentInfo.SkinName.Contains("SRU_Krug")) ||
                     (Gromp && enemy.UnitComponentInfo.SkinName.Contains("SRU_Gromp")) ||
                     (MurkWolf && enemy.UnitComponentInfo.SkinName.Contains("SRU_MurkWolf")) ||
-                    (Razorbeak && enemy.UnitComponentInfo.SkinName.Contains("SRU_Razorbeak"))))
+                    (Razorbeak && enemy.UnitComponentInfo.SkinName.Equals("SRU_Razorbeak"))))
                 {
                     return enemy;
                 }
