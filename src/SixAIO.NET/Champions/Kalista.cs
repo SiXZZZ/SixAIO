@@ -46,14 +46,19 @@ namespace SixAIO.Champions
 
         internal bool ShouldCastE(Orbwalker.OrbWalkingModeType mode)
         {
+            if (ESlowIfCanReset && UnitManager.EnemyChampions.Any(x => GetEDamage(x) > 0) && UnitManager.EnemyMinions.Any(IsValidTarget))
+            {
+                return true;
+            }
+
             return mode switch
             {
-                Orbwalker.OrbWalkingModeType.Combo => UnitManager.EnemyChampions.Count(IsValidHero) >= 1,
+                Orbwalker.OrbWalkingModeType.Combo => UnitManager.EnemyChampions.Count(IsValidHero) >= EKillChampions,
                 Orbwalker.OrbWalkingModeType.LaneClear =>
-                            (UnitManager.EnemyChampions.Count(IsValidHero) >= 1) ||
-                            (UnitManager.EnemyJungleMobs.Count(x => IsValidTarget(x) && IsEpicJungleMonster(x)) >= 1) ||
-                            (UnitManager.EnemyJungleMobs.Count(IsValidTarget) >= 3) ||
-                            (UnitManager.EnemyMinions.Count(IsValidTarget) >= 3),
+                            (UnitManager.EnemyChampions.Count(IsValidHero) >= EKillChampions) ||
+                            (UnitManager.EnemyJungleMobs.Count(x => IsValidTarget(x) && IsEpicJungleMonster(x)) >= EKillEpicMonsters) ||
+                            (UnitManager.EnemyJungleMobs.Count(IsValidTarget) >= EKillMonsters) ||
+                            (UnitManager.EnemyMinions.Count(IsValidTarget) >= EKillMinions),
                 _ => false
             };
         }
@@ -74,12 +79,12 @@ namespace SixAIO.Champions
 
         private static bool IsValidTarget(GameObjectBase target)
         {
-            return target.Distance <= 1100 && target.IsAlive && TargetSelector.IsAttackable(target) && target.Health < GetEDamage(target);
+            return target.Distance <= 1100 && TargetSelector.IsAttackable(target) && target.Health < GetEDamage(target);
         }
 
         internal static float GetEDamage(GameObjectBase enemy)
         {
-            var kalistaE = enemy.BuffManager.GetBuffByName("kalistaexpungemarker");
+            var kalistaE = enemy.BuffManager.GetActiveBuff("kalistaexpungemarker");
             if (kalistaE == null || !kalistaE.IsActive)
             {
                 return 0;
@@ -147,6 +152,36 @@ namespace SixAIO.Champions
             }
         }
 
+        internal bool ESlowIfCanReset
+        {
+            get => ESettings.GetItem<Switch>("E Slow If Can Reset").IsOn;
+            set => ESettings.GetItem<Switch>("E Slow If Can Reset").IsOn = value;
+        }
+
+        private int EKillMinions
+        {
+            get => ESettings.GetItem<Counter>("E Kill Minions").Value;
+            set => ESettings.GetItem<Counter>("E Kill Minions").Value = value;
+        }
+
+        private int EKillMonsters
+        {
+            get => ESettings.GetItem<Counter>("E Kill Monsters").Value;
+            set => ESettings.GetItem<Counter>("E Kill Monsters").Value = value;
+        }
+
+        private int EKillEpicMonsters
+        {
+            get => ESettings.GetItem<Counter>("E Kill Epic Monsters").Value;
+            set => ESettings.GetItem<Counter>("E Kill Epic Monsters").Value = value;
+        }
+
+        private int EKillChampions
+        {
+            get => ESettings.GetItem<Counter>("E Kill Champions").Value;
+            set => ESettings.GetItem<Counter>("E Kill Champions").Value = value;
+        }
+
         private int RHealthPercent
         {
             get => RSettings.GetItem<Counter>("R Health Percent").Value;
@@ -166,6 +201,11 @@ namespace SixAIO.Champions
 
 
             ESettings.AddItem(new Switch() { Title = "Use E", IsOn = true });
+            ESettings.AddItem(new Switch() { Title = "E Slow If Can Reset", IsOn = true });
+            ESettings.AddItem(new Counter() { Title = "E Kill Minions", MinValue = 0, MaxValue = 10, Value = 3, ValueFrequency = 1 });
+            ESettings.AddItem(new Counter() { Title = "E Kill Monsters", MinValue = 0, MaxValue = 10, Value = 3, ValueFrequency = 1 });
+            ESettings.AddItem(new Counter() { Title = "E Kill Epic Monsters", MinValue = 0, MaxValue = 10, Value = 1, ValueFrequency = 1 });
+            ESettings.AddItem(new Counter() { Title = "E Kill Champions", MinValue = 0, MaxValue = 10, Value = 1, ValueFrequency = 1 });
             foreach (var enemy in UnitManager.EnemyChampions.Where(x => !x.IsTargetDummy))
             {
                 ESettings.AddItem(new Switch() { Title = "E - " + enemy.ModelName, IsOn = true });
