@@ -61,7 +61,7 @@ namespace SixAIO.Champions
         private int GetFeathersBetweenMeAndEnemy(AIBaseClient enemy)
         {
             return _feathers.ToList().Count(feather =>
-                    Geometry.DistanceFromPointToLine(enemy.W2S, new Vector2[] { UnitManager.MyChampion.W2S, feather.W2S }) <= 160 + enemy.UnitComponentInfo.UnitBoundingRadius &&
+                    Geometry.DistanceFromPointToLine(enemy.W2S, new Vector2[] { UnitManager.MyChampion.W2S, feather.W2S }) <= enemy.UnitComponentInfo.UnitBoundingRadius &&
                     feather.Distance > enemy.Distance);
         }
 
@@ -102,6 +102,14 @@ namespace SixAIO.Champions
             if (SpellE.ExecuteCastSpell() || SpellW.ExecuteCastSpell() || SpellQ.ExecuteCastSpell())
             {
                 return;
+            }
+        }
+
+        internal override void OnCoreMainTick()
+        {
+            foreach (var feather in _feathers.ToList().Where(x => !IsFeather(x)))
+            {
+                _feathers.Remove(feather);
             }
         }
 
