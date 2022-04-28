@@ -5,8 +5,10 @@ using Oasys.Common.Menu;
 using Oasys.Common.Menu.ItemComponents;
 using Oasys.SDK;
 using Oasys.SDK.Menu;
+using Oasys.SDK.Rendering;
 using Oasys.SDK.SpellCasting;
 using Oasys.SDK.Tools;
+using SharpDX;
 using SixAIO.Models;
 using System;
 using System.Linq;
@@ -46,7 +48,13 @@ namespace SixAIO.Champions
 
         internal bool ShouldCastE(Orbwalker.OrbWalkingModeType mode)
         {
-            if (ESlowIfCanReset && UnitManager.EnemyChampions.Any(x => GetEDamage(x) > 0) && UnitManager.EnemyMinions.Any(IsValidTarget))
+            var champs = UnitManager.EnemyChampions.Where(x => GetEDamage(x) > 0);
+            var minions = UnitManager.EnemyMinions.Where(IsValidTarget);
+            if (ESlowIfCanReset && champs.Any() && minions.Any())
+            {
+                return true;
+            }
+            if (EBelowHPPercent >= UnitManager.MyChampion.HealthPercent && (champs.Any() || minions.Any()))
             {
                 return true;
             }
@@ -138,6 +146,19 @@ namespace SixAIO.Champions
             }
         }
 
+        internal override void OnCoreRender()
+        {
+            if (DrawEDamage && SpellE.SpellClass.IsSpellReady)
+            {
+                var champs = UnitManager.EnemyChampions.Where(x => GetEDamage(x) > 0);
+                foreach (var champ in champs)
+                {
+                    var pos = new Vector2(champ.HealthBarScreenPosition.X + 40, champ.HealthBarScreenPosition.Y - 40);
+                    RenderFactory.DrawText($"{(int)GetEDamage(champ)}", 12, pos, Color.White);
+                }
+            }
+        }
+
         private int _cycles = 0;
         internal override void OnCoreMainTick()
         {
@@ -152,10 +173,22 @@ namespace SixAIO.Champions
             }
         }
 
+        internal bool DrawEDamage
+        {
+            get => ESettings.GetItem<Switch>("Draw E Damage").IsOn;
+            set => ESettings.GetItem<Switch>("Draw E Damage").IsOn = value;
+        }
+
         internal bool ESlowIfCanReset
         {
             get => ESettings.GetItem<Switch>("E Slow If Can Reset").IsOn;
             set => ESettings.GetItem<Switch>("E Slow If Can Reset").IsOn = value;
+        }
+
+        private int EBelowHPPercent
+        {
+            get => ESettings.GetItem<Counter>("E Below HP Percent").Value;
+            set => ESettings.GetItem<Counter>("E Below HP Percent").Value = value;
         }
 
         private int EKillMinions
@@ -201,6 +234,8 @@ namespace SixAIO.Champions
 
 
             ESettings.AddItem(new Switch() { Title = "Use E", IsOn = true });
+            ESettings.AddItem(new Switch() { Title = "Draw E Damage", IsOn = false });
+            ESettings.AddItem(new Counter() { Title = "E Below HP Percent", MinValue = 0, MaxValue = 100, Value = 5, ValueFrequency = 5 });
             ESettings.AddItem(new Switch() { Title = "E Slow If Can Reset", IsOn = true });
             ESettings.AddItem(new Counter() { Title = "E Kill Minions", MinValue = 0, MaxValue = 10, Value = 3, ValueFrequency = 1 });
             ESettings.AddItem(new Counter() { Title = "E Kill Monsters", MinValue = 0, MaxValue = 10, Value = 3, ValueFrequency = 1 });
