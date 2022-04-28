@@ -38,9 +38,8 @@ namespace SixAIO.Champions
             {
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Circle,
                 MinimumHitChance = () => WHitChance,
-                Speed = () => 10_000,
+                IsTargetted = () => true,
                 Range = () => 780,
-                Radius = () => 20,
                 IsEnabled = () => UseW,
                 MinimumCharges = () => 1,
                 TargetSelect = (mode) => SpellW.GetTargets(mode, x => BuffChecker.IsCrowdControlled(x)).FirstOrDefault()
