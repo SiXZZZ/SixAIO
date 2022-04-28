@@ -30,7 +30,9 @@ namespace SixAIO.Champions
                             (UnitManager.MyChampion.UnitStats.TotalAttackDamage * (1.15f + 0.15f * spellClass.Level)))
                             : 0,
                 IsEnabled = () => UseQ,
-                TargetSelect = (mode) => SpellQ.GetTargets(mode).FirstOrDefault()
+                TargetSelect = (mode) => QOnlyOnHeadshotTargets
+                        ? SpellQ.GetTargets(mode, x => x.BuffManager.ActiveBuffs.Any(b => b.Name == "CaitlynWSnare" || b.Name == "CaitlynEMissile")).FirstOrDefault()
+                        : SpellQ.GetTargets(mode).FirstOrDefault()
             };
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
             {
@@ -81,6 +83,12 @@ namespace SixAIO.Champions
             }
         }
 
+        internal bool QOnlyOnHeadshotTargets
+        {
+            get => QSettings.GetItem<Switch>("Q Only On Headshot Targets").IsOn;
+            set => QSettings.GetItem<Switch>("Q Only On Headshot Targets").IsOn = value;
+        }
+
         internal override void InitializeMenu()
         {
             MenuManager.AddTab(new Tab($"SIXAIO - {nameof(Caitlyn)}"));
@@ -90,6 +98,7 @@ namespace SixAIO.Champions
             MenuTab.AddGroup(new Group("R Settings"));
 
             QSettings.AddItem(new Switch() { Title = "Use Q", IsOn = true });
+            QSettings.AddItem(new Switch() { Title = "Q Only On Headshot Targets", IsOn = true });
             QSettings.AddItem(new ModeDisplay() { Title = "Q HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
 
             WSettings.AddItem(new Switch() { Title = "Use W", IsOn = true });
