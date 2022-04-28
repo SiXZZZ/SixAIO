@@ -4,6 +4,7 @@ using Oasys.Common.Menu.ItemComponents;
 using Oasys.SDK;
 using Oasys.SDK.Menu;
 using Oasys.SDK.SpellCasting;
+using SixAIO.Enums;
 using SixAIO.Models;
 using System;
 using System.Linq;
@@ -48,14 +49,12 @@ namespace SixAIO.Champions
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
-                Delay = () => 1f,
                 IsEnabled = () => UseE,
                 MinimumMana = () => EMinMana,
-                TargetSelect = (mode) =>
-                            UnitManager.EnemyChampions
-                            .Where(x => TargetSelector.IsAttackable(x))
-                            .Where(x => x.Distance <= 800 && x.IsAlive)
-                            .FirstOrDefault()
+                ShouldCast = (mode, target, spellClass, damage) =>
+                            DashModeSelected == DashMode.ToMouse &&
+                            TargetSelector.IsAttackable(Orbwalker.TargetHero) &&
+                            TargetSelector.IsInRange(Orbwalker.TargetHero),
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
@@ -82,7 +81,7 @@ namespace SixAIO.Champions
 
         internal override void OnCoreMainInput()
         {
-            if (SpellW.ExecuteCastSpell() || SpellQ.ExecuteCastSpell() || SpellR.ExecuteCastSpell())
+            if (SpellW.ExecuteCastSpell() || SpellQ.ExecuteCastSpell() || SpellR.ExecuteCastSpell() || SpellE.ExecuteCastSpell())
             {
                 return;
             }
@@ -118,6 +117,12 @@ namespace SixAIO.Champions
             set => QSettings.GetItem<Switch>("Q Allow Laneclear minion collision").IsOn = value;
         }
 
+        private DashMode DashModeSelected
+        {
+            get => (DashMode)Enum.Parse(typeof(DashMode), ESettings.GetItem<ModeDisplay>("Dash Mode").SelectedModeName);
+            set => ESettings.GetItem<ModeDisplay>("Dash Mode").SelectedModeName = value.ToString();
+        }
+
         private int RTargetMaxHPPercent
         {
             get => RSettings.GetItem<Counter>("R Target Max HP Percent").Value;
@@ -141,6 +146,7 @@ namespace SixAIO.Champions
             MenuManager.AddTab(new Tab($"SIXAIO - {nameof(Ezreal)}"));
             MenuTab.AddGroup(new Group("Q Settings"));
             MenuTab.AddGroup(new Group("W Settings"));
+            MenuTab.AddGroup(new Group("E Settings"));
             MenuTab.AddGroup(new Group("R Settings"));
 
             QSettings.AddItem(new Switch() { Title = "Use Q", IsOn = true });
@@ -152,8 +158,9 @@ namespace SixAIO.Champions
             WSettings.AddItem(new Counter() { Title = "W Min Mana", MinValue = 0, MaxValue = 500, Value = 80, ValueFrequency = 10 });
             WSettings.AddItem(new ModeDisplay() { Title = "W HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
 
-            //ESettings.AddItem(new Switch() { Title = "Use E", IsOn = false });
-            //ESettings.AddItem(new Counter() { Title = "E Min Mana", MinValue = 0, MaxValue = 500, Value = 150, ValueFrequency = 10 });
+            ESettings.AddItem(new Switch() { Title = "Use E", IsOn = false });
+            ESettings.AddItem(new Counter() { Title = "E Min Mana", MinValue = 0, MaxValue = 500, Value = 150, ValueFrequency = 10 });
+            ESettings.AddItem(new ModeDisplay() { Title = "Dash Mode", ModeNames = DashHelper.ConstructDashModeTable(), SelectedModeName = "ToMouse" });
 
             RSettings.AddItem(new Switch() { Title = "Use R", IsOn = true });
             RSettings.AddItem(new Counter() { Title = "R Min Mana", MinValue = 0, MaxValue = 500, Value = 150, ValueFrequency = 10 });
