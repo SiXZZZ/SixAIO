@@ -31,7 +31,7 @@ namespace SixAIO.Champions
                             : 0,
                 IsEnabled = () => UseQ,
                 TargetSelect = (mode) => QOnlyOnHeadshotTargets
-                        ? SpellQ.GetTargets(mode, x => x.BuffManager.ActiveBuffs.Any(b => b.Name == "CaitlynWSnare" || b.Name == "CaitlynEMissile")).FirstOrDefault()
+                        ? SpellQ.GetTargets(mode, x => x.BuffManager.ActiveBuffs.Any(b => b.Stacks >= 1 && b.Name == "CaitlynWSnare" || b.Name == "CaitlynEMissile")).FirstOrDefault()
                         : SpellQ.GetTargets(mode).FirstOrDefault()
             };
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
@@ -52,8 +52,8 @@ namespace SixAIO.Champions
                 Range = () => 750,
                 Radius = () => 140,
                 Speed = () => 1600,
-                IsEnabled = () => UseE,
-                TargetSelect = (mode) => SpellE.GetTargets(mode).FirstOrDefault()
+                IsEnabled = () => UseE && (OnlyEIfCanQ ? SpellQ.SpellClass.IsSpellReady : true),
+                TargetSelect = (mode) => SpellE.GetTargets(mode, x => x.Distance <= EMaximumRange).FirstOrDefault()
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
@@ -68,7 +68,7 @@ namespace SixAIO.Champions
                             (UnitManager.MyChampion.UnitStats.BonusAttackDamage * 2f))
                             : 0,
                 IsEnabled = () => UseR,
-                IsSpellReady = (spellClass, minimumMana, minimumCharges) => spellClass.IsSpellReady && UnitManager.MyChampion.Mana >= spellClass.SpellData.ResourceCost && !UnitManager.EnemyChampions.Any(x => x.Distance < 1000),
+                IsSpellReady = (spellClass, minimumMana, minimumCharges) => spellClass.IsSpellReady && UnitManager.MyChampion.Mana >= spellClass.SpellData.ResourceCost && !UnitManager.EnemyChampions.Any(x => x.Distance < RSafeRange),
                 ShouldCast = (mode, target, spellClass, damage) => target != null && target.Health < damage,
                 TargetSelect = (mode) => SpellR.GetTargets(mode).FirstOrDefault()
             };
@@ -88,6 +88,24 @@ namespace SixAIO.Champions
             set => QSettings.GetItem<Switch>("Q Only On Headshot Targets").IsOn = value;
         }
 
+        internal bool OnlyEIfCanQ
+        {
+            get => ESettings.GetItem<Switch>("Only E If Can Q").IsOn;
+            set => ESettings.GetItem<Switch>("Only E If Can Q").IsOn = value;
+        }
+
+        private int EMaximumRange
+        {
+            get => ESettings.GetItem<Counter>("E Maximum Range").Value;
+            set => ESettings.GetItem<Counter>("E Maximum Range").Value = value;
+        }
+
+        private int RSafeRange
+        {
+            get => RSettings.GetItem<Counter>("R Safe Range").Value;
+            set => RSettings.GetItem<Counter>("R Safe Range").Value = value;
+        }
+
         internal override void InitializeMenu()
         {
             MenuManager.AddTab(new Tab($"SIXAIO - {nameof(Caitlyn)}"));
@@ -104,10 +122,13 @@ namespace SixAIO.Champions
             WSettings.AddItem(new ModeDisplay() { Title = "W HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "Immobile" });
 
             ESettings.AddItem(new Switch() { Title = "Use E", IsOn = true });
+            ESettings.AddItem(new Switch() { Title = "Only E If Can Q", IsOn = false });
             ESettings.AddItem(new ModeDisplay() { Title = "E HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
+            ESettings.AddItem(new Counter() { Title = "E Maximum Range", MinValue = 0, MaxValue = 800, Value = 750, ValueFrequency = 50 });
 
             RSettings.AddItem(new Switch() { Title = "Use R", IsOn = true });
             RSettings.AddItem(new Switch() { Title = "Allow R cast on minimap", IsOn = false });
+            RSettings.AddItem(new Counter() { Title = "R Safe Range", MinValue = 0, MaxValue = 3500, Value = 1000, ValueFrequency = 50 });
         }
     }
 }
