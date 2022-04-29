@@ -1,4 +1,5 @@
 ﻿using Oasys.Common.Enums.GameEnums;
+using Oasys.Common.GameObject;
 using Oasys.Common.Menu;
 using Oasys.Common.Menu.ItemComponents;
 using Oasys.SDK;
@@ -13,8 +14,21 @@ namespace SixAIO.Champions
 {
     internal class Caitlyn : Champion
     {
+        internal Spell SpellEQ;
         public Caitlyn()
         {
+            SDKSpell.OnSpellCast += Spell_OnSpellCast;
+            SpellEQ = new Spell(CastSlot.Q, SpellSlot.Q)
+            {
+                PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
+                MinimumHitChance = () => QHitChance,
+                Range = () => 1300,
+                Radius = () => 120,
+                Speed = () => 2200,
+                Delay = () => 0.6f,
+                IsEnabled = () => UseQ && UseE,
+                TargetSelect = (mode) => SpellE.GetTargets(mode).FirstOrDefault()
+            };
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
@@ -22,7 +36,7 @@ namespace SixAIO.Champions
                 Range = () => 1300,
                 Radius = () => 120,
                 Speed = () => 2200,
-                Delay = () => 0.8f,
+                Delay = () => 0.6f,
                 Damage = (target, spellClass) =>
                             target != null
                             ? DamageCalculator.GetArmorMod(UnitManager.MyChampion, target) *
@@ -52,7 +66,7 @@ namespace SixAIO.Champions
                 Range = () => 750,
                 Radius = () => 140,
                 Speed = () => 1600,
-                IsEnabled = () => UseE && (OnlyEIfCanQ ? SpellQ.SpellClass.IsSpellReady : true),
+                IsEnabled = () => UseE && (OnlyEWithQ ? SpellQ.SpellClass.IsSpellReady : true),
                 TargetSelect = (mode) => SpellE.GetTargets(mode, x => x.Distance <= EMaximumRange).FirstOrDefault()
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
@@ -74,6 +88,14 @@ namespace SixAIO.Champions
             };
         }
 
+        private void Spell_OnSpellCast(SDKSpell spell, GameObjectBase target)
+        {
+            if (OnlyEWithQ && spell.SpellSlot == SpellSlot.E)
+            {
+                SpellEQ.ExecuteCastSpell();
+            }
+        }
+
         internal override void OnCoreMainInput()
         {
             if (SpellW.ExecuteCastSpell() || SpellE.ExecuteCastSpell() || SpellQ.ExecuteCastSpell() || SpellR.ExecuteCastSpell())
@@ -88,10 +110,10 @@ namespace SixAIO.Champions
             set => QSettings.GetItem<Switch>("Q Only On Headshot Targets").IsOn = value;
         }
 
-        internal bool OnlyEIfCanQ
+        internal bool OnlyEWithQ
         {
-            get => ESettings.GetItem<Switch>("Only E If Can Q").IsOn;
-            set => ESettings.GetItem<Switch>("Only E If Can Q").IsOn = value;
+            get => ESettings.GetItem<Switch>("Only E With Q").IsOn;
+            set => ESettings.GetItem<Switch>("Only E With Q").IsOn = value;
         }
 
         private int EMaximumRange
@@ -122,7 +144,7 @@ namespace SixAIO.Champions
             WSettings.AddItem(new ModeDisplay() { Title = "W HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "Immobile" });
 
             ESettings.AddItem(new Switch() { Title = "Use E", IsOn = true });
-            ESettings.AddItem(new Switch() { Title = "Only E If Can Q", IsOn = false });
+            ESettings.AddItem(new Switch() { Title = "Only E With Q", IsOn = false });
             ESettings.AddItem(new ModeDisplay() { Title = "E HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
             ESettings.AddItem(new Counter() { Title = "E Maximum Range", MinValue = 0, MaxValue = 800, Value = 750, ValueFrequency = 50 });
 
