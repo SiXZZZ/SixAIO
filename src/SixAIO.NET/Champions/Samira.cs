@@ -4,6 +4,7 @@ using Oasys.Common.Menu.ItemComponents;
 using Oasys.SDK;
 using Oasys.SDK.Menu;
 using Oasys.SDK.SpellCasting;
+using Oasys.SDK.Tools;
 using SixAIO.Enums;
 using SixAIO.Models;
 using System;
@@ -15,6 +16,7 @@ namespace SixAIO.Champions
     {
         public Samira()
         {
+            Orbwalker.OnOrbwalkerAfterBasicAttack += Orbwalker_OnOrbwalkerAfterBasicAttack;
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
                 AllowCollision = (target, collisions) => target.IsObject(ObjectTypeFlag.AIMinionClient)
@@ -31,6 +33,7 @@ namespace SixAIO.Champions
             };
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
             {
+                IsCharge = () => true,
                 IsEnabled = () => UseW,
                 ShouldCast = (mode, target, spellClass, damage) => UnitManager.EnemyChampions.Any(x => TargetSelector.IsAttackable(x) && x.Distance < 325),
             };
@@ -48,9 +51,14 @@ namespace SixAIO.Champions
             };
         }
 
+        private void Orbwalker_OnOrbwalkerAfterBasicAttack(float gameTime, Oasys.Common.GameObject.GameObjectBase target)
+        {
+            SpellW.ExecuteCastSpell();
+        }
+
         internal override void OnCoreMainInput()
         {
-            if (SpellW.ExecuteCastSpell() || SpellQ.ExecuteCastSpell() || SpellR.ExecuteCastSpell() || SpellE.ExecuteCastSpell())
+            if (SpellQ.ExecuteCastSpell() || SpellR.ExecuteCastSpell() || SpellE.ExecuteCastSpell())
             {
                 return;
             }
