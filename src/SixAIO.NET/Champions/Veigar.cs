@@ -6,6 +6,7 @@ using Oasys.SDK;
 using Oasys.SDK.Menu;
 using Oasys.SDK.SpellCasting;
 using SixAIO.Models;
+using System;
 using System.Linq;
 
 namespace SixAIO.Champions
@@ -14,6 +15,36 @@ namespace SixAIO.Champions
     {
         public Veigar()
         {
+            SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
+            {
+                AllowCollision = (target, collisions) => target.IsObject(ObjectTypeFlag.AIMinionClient)
+                                                        ? QAllowLaneclearMinionCollision
+                                                        : !collisions.Any(),
+                PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
+                MinimumHitChance = () => QHitChance,
+                Range = () => 950,
+                Radius = () => 140,
+                Speed = () => 2200,
+                //Damage = (target, spellClass) =>
+                //            target != null
+                //            ? DamageCalculator.GetArmorMod(UnitManager.MyChampion, target) *
+                //            ((-5 + spellClass.Level * 25) +
+                //            (UnitManager.MyChampion.UnitStats.TotalAttackDamage * 1.3f) +
+                //            (UnitManager.MyChampion.UnitStats.TotalAbilityPower * 0.15f))
+                //            : 0,
+                IsEnabled = () => UseQ,
+                TargetSelect = (mode) => SpellQ.GetTargets(mode).FirstOrDefault()
+            };
+            SpellW = new Spell(CastSlot.W, SpellSlot.W)
+            {
+                PredictionMode = () => Prediction.MenuSelected.PredictionType.Circle,
+                MinimumHitChance = () => WHitChance,
+                Range = () => 900,
+                Speed = () => 5000,
+                Radius = () => 240,
+                IsEnabled = () => UseW,
+                TargetSelect = (mode) => SpellW.GetTargets(mode).FirstOrDefault()
+            };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
                 IsTargetted = () => true,
@@ -48,19 +79,34 @@ namespace SixAIO.Champions
 
         internal override void OnCoreMainInput()
         {
-            if (SpellR.ExecuteCastSpell())
+            if (SpellR.ExecuteCastSpell() || SpellQ.ExecuteCastSpell() || SpellW.ExecuteCastSpell())
             {
                 return;
             }
         }
 
+        internal bool QAllowLaneclearMinionCollision
+        {
+            get => QSettings.GetItem<Switch>("Q Allow Laneclear minion collision").IsOn;
+            set => QSettings.GetItem<Switch>("Q Allow Laneclear minion collision").IsOn = value;
+        }
+
         internal override void InitializeMenu()
         {
             MenuManager.AddTab(new Tab($"SIXAIO - {nameof(Veigar)}"));
+            MenuTab.AddGroup(new Group("Q Settings"));
+            MenuTab.AddGroup(new Group("W Settings"));
             MenuTab.AddGroup(new Group("R Settings"));
-            //MenuTab.AddItem(new Switch() { Title = "Use Q", IsOn = true });
-            //MenuTab.AddItem(new Switch() { Title = "Use W", IsOn = true });
-            //MenuTab.AddItem(new Switch() { Title = "Use E", IsOn = true });
+
+            QSettings.AddItem(new Switch() { Title = "Use Q", IsOn = true });
+            QSettings.AddItem(new Switch() { Title = "Q Allow Laneclear minion collision", IsOn = true });
+            QSettings.AddItem(new ModeDisplay() { Title = "Q HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
+
+            WSettings.AddItem(new Switch() { Title = "Use W", IsOn = true });
+            WSettings.AddItem(new ModeDisplay() { Title = "W HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
+
+            //ESettings.AddItem(new Switch() { Title = "Use E", IsOn = true });
+
             RSettings.AddItem(new Switch() { Title = "Use R", IsOn = true });
         }
     }
