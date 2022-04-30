@@ -5,6 +5,7 @@ using Oasys.Common.GameObject.Clients;
 using Oasys.Common.GameObject.ObjectClass;
 using Oasys.Common.Menu;
 using Oasys.Common.Menu.ItemComponents;
+using Oasys.Common.Tools;
 using Oasys.SDK;
 using Oasys.SDK.Menu;
 using Oasys.SDK.Rendering;
@@ -22,12 +23,26 @@ namespace SixAIO.Champions
     internal class Katarina : Champion
     {
         private const string KatarinaQDagger = "Dagger";
+        internal Spell PokeSpellQ;
+        internal Spell PokeSpellW;
 
         private static List<GameObjectBase> _daggers = new();
 
         public Katarina()
         {
             SDKSpell.OnSpellCast += Spell_OnSpellCast;
+            PokeSpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
+            {
+                IsTargetted = () => true,
+                Range = () => 625,
+                IsEnabled = () => UseQ && !SpellE.SpellClass.IsSpellReady,
+                TargetSelect = (mode) => SpellQ.GetTargets(mode).FirstOrDefault()
+            };
+            PokeSpellW = new Spell(CastSlot.W, SpellSlot.W)
+            {
+                IsEnabled = () => UseW,
+                ShouldCast = (mode, target, spellClass, damage) => !SpellE.SpellClass.IsSpellReady && UnitManager.EnemyChampions.Any(x => TargetSelector.IsAttackable(x) && x.Distance < REnemiesCloserThan),
+            };
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
                 IsTargetted = () => true,
@@ -60,7 +75,18 @@ namespace SixAIO.Champions
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
                 IsEnabled = () => UseR,
-                ShouldCast = (mode, target, spellClass, damage) => UnitManager.EnemyChampions.Count(x => TargetSelector.IsAttackable(x) && x.Distance < REnemiesCloserThan) > RIfMoreThanEnemiesNear,
+                ShouldCast = (mode, target, spellClass, damage) =>
+                {
+                    if (OnlyRIfCantE)
+                    {
+                        var daggerAvailable = _daggers.Any(x => x.Distance <= 775 && x.IsAlive && UnitManager.EnemyChampions.Any(enemy => enemy.DistanceTo(x.Position) <= 640));
+                        return !daggerAvailable && UnitManager.EnemyChampions.Count(x => TargetSelector.IsAttackable(x) && x.Distance < REnemiesCloserThan) > RIfMoreThanEnemiesNear;
+                    }
+                    else
+                    {
+                        return UnitManager.EnemyChampions.Count(x => TargetSelector.IsAttackable(x) && x.Distance < REnemiesCloserThan) > RIfMoreThanEnemiesNear;
+                    }
+                },
             };
         }
 
@@ -69,12 +95,14 @@ namespace SixAIO.Champions
             if (spell.CastSlot == CastSlot.E)
             {
                 SpellW.ExecuteCastSpell();
+                SpellQ.ExecuteCastSpell();
+                SpellR.ExecuteCastSpell();
             }
         }
 
         internal override void OnCoreMainInput()
         {
-            if (SpellQ.ExecuteCastSpell() || SpellW.ExecuteCastSpell() || SpellE.ExecuteCastSpell() || SpellR.ExecuteCastSpell())
+            if (PokeSpellQ.ExecuteCastSpell() || PokeSpellW.ExecuteCastSpell() || SpellE.ExecuteCastSpell() || SpellR.ExecuteCastSpell())
             {
                 return;
             }
@@ -91,6 +119,12 @@ namespace SixAIO.Champions
             {
                 _daggers.Add(obj);
             }
+        }
+
+        internal bool OnlyRIfCantE
+        {
+            get => RSettings.GetItem<Switch>("Only R if cant E").IsOn;
+            set => RSettings.GetItem<Switch>("Only R if cant E").IsOn = value;
         }
 
         private int RIfMoreThanEnemiesNear
@@ -122,6 +156,7 @@ namespace SixAIO.Champions
             ESettings.AddItem(new Switch() { Title = "Use E", IsOn = true });
 
             RSettings.AddItem(new Switch() { Title = "Use R", IsOn = true });
+            RSettings.AddItem(new Switch() { Title = "Only R if cant E", IsOn = true });
             RSettings.AddItem(new Counter() { Title = "R If More Than Enemies Near", MinValue = 0, MaxValue = 5, Value = 0, ValueFrequency = 1 });
             RSettings.AddItem(new Counter() { Title = "R Enemies Closer Than", MinValue = 50, MaxValue = 550, Value = 550, ValueFrequency = 50 });
         }
