@@ -83,7 +83,7 @@ namespace SixAIO.Champions
 
         private static bool IsFeather(AIBaseClient obj)
         {
-            return obj.IsAlive && obj.Health == 100 && obj.Mana == 500 && obj.OnMyTeam &&
+            return obj is not null && obj.IsAlive && obj.Health == 100 && obj.Mana == 500 && obj.OnMyTeam &&
                 (obj.Name.Contains("Feather", StringComparison.OrdinalIgnoreCase) ||
                  obj.UnitComponentInfo.SkinName.Contains("testcuberender", StringComparison.OrdinalIgnoreCase) ||
                  obj.ModelName.Contains("testcuberender", StringComparison.OrdinalIgnoreCase));
