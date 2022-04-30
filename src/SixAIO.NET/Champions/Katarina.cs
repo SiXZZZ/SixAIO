@@ -43,6 +43,7 @@ namespace SixAIO.Champions
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
                 IsTargetted = () => true,
+                Range = () => 775,
                 IsEnabled = () => UseE,
                 TargetSelect = (mode) =>
                 {
