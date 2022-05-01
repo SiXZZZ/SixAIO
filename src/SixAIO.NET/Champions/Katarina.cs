@@ -59,13 +59,13 @@ namespace SixAIO.Champions
             {
                 IsTargetted = () => true,
                 Range = () => 775,
+                Delay = () => 0.5f,
                 IsEnabled = () => UseE,
                 TargetSelect = (mode) =>
                 {
-                    var dagger = _daggers.FirstOrDefault(x => x.Distance <= 775 && x.IsAlive && UnitManager.EnemyChampions.Any(enemy => enemy.DistanceTo(x.Position) <= 640));
+                    var dagger = _daggers.FirstOrDefault(x => x.Distance <= 775 && x.IsAlive && UnitManager.EnemyChampions.Any(enemy => enemy.DistanceTo(x.Position) <= 440));
                     if (dagger is not null)
                     {
-                        _daggers.Remove(dagger);
                         return dagger;
                     }
 
@@ -79,7 +79,7 @@ namespace SixAIO.Champions
                 {
                     if (OnlyRIfCantE)
                     {
-                        var daggerAvailable = _daggers.Any(x => x.Distance <= 775 && x.IsAlive && UnitManager.EnemyChampions.Any(enemy => enemy.DistanceTo(x.Position) <= 640));
+                        var daggerAvailable = _daggers.Any(x => x.Distance <= 775 && x.IsAlive && UnitManager.EnemyChampions.Any(enemy => enemy.DistanceTo(x.Position) <= 440));
                         return !daggerAvailable && UnitManager.EnemyChampions.Count(x => TargetSelector.IsAttackable(x) && x.Distance < REnemiesCloserThan) > RIfMoreThanEnemiesNear;
                     }
                     else
@@ -94,6 +94,7 @@ namespace SixAIO.Champions
         {
             if (spell.CastSlot == CastSlot.E)
             {
+                _daggers.Remove(target);
                 SpellW.ExecuteCastSpell();
                 SpellQ.ExecuteCastSpell();
                 SpellR.ExecuteCastSpell();
@@ -113,11 +114,32 @@ namespace SixAIO.Champions
             SpellQ.ExecuteCastSpell(Orbwalker.OrbWalkingModeType.LaneClear);
         }
 
-        internal override void OnCreateObject(AIBaseClient obj)
+        internal override void OnCreateObject(AIBaseClient x)
         {
-            if (obj is not null && obj.IsAlive && obj.Name.Contains(KatarinaQDagger, StringComparison.OrdinalIgnoreCase))
+            if (x is not null && x.IsAlive && x.Name.Contains(KatarinaQDagger, StringComparison.OrdinalIgnoreCase))
             {
-                _daggers.Add(obj);
+                _daggers.Add(x);
+            }
+        }
+
+        private static bool IsDagger(GameObjectBase x)
+        {
+            return x is not null && x.IsAlive && x.Name.Contains(KatarinaQDagger, StringComparison.OrdinalIgnoreCase);
+        }
+
+        internal override void OnDeleteObject(AIBaseClient obj)
+        {
+            _daggers.Remove(obj);
+        }
+
+        internal override void OnCoreMainTick()
+        {
+            foreach (var item in _daggers)
+            {
+                if (!IsDagger(item))
+                {
+                    _daggers.Remove(item);
+                }
             }
         }
 

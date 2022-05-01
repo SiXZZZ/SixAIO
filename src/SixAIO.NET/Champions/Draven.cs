@@ -1,9 +1,11 @@
 ﻿using Oasys.Common.Enums.GameEnums;
 using Oasys.Common.GameObject;
+using Oasys.Common.GameObject.Clients;
 using Oasys.Common.Menu;
 using Oasys.Common.Menu.ItemComponents;
 using Oasys.SDK;
 using Oasys.SDK.Menu;
+using Oasys.SDK.Rendering;
 using Oasys.SDK.SpellCasting;
 using SharpDX;
 using SixAIO.Models;
@@ -15,8 +17,13 @@ namespace SixAIO.Champions
 {
     internal class Draven : Champion
     {
-        private static IEnumerable<GameObjectBase> Axes() => UnitManager.AllNativeObjects.Where(x => x.IsAlive && x.Distance <= 2000 &&
-                                                        x.Name.Contains("Draven") && x.Name.Contains("Q") && x.Name.Contains("reticle"));
+        private static List<GameObjectBase> _axes = new();
+        private static IEnumerable<GameObjectBase> Axes() => _axes.Where(x => x.Distance <= 2000).Where(IsAxe);
+
+        private static bool IsAxe(GameObjectBase x)
+        {
+            return x.Name.Contains("reticle_self", StringComparison.OrdinalIgnoreCase);
+        }
 
         private static int PassiveStacks()
         {
@@ -91,30 +98,7 @@ namespace SixAIO.Champions
 
         internal override void OnCoreMainInput()
         {
-            //if (UseQCatchRange)
-            //{
-            //    var axes = Axes();
-            //    if (axes.Any())
-            //    {
-            //        var catchAxe = axes.Where(x => (QCatchMode == CatchMode.Mouse && x.DistanceTo(GameEngine.WorldMousePosition) <= QCatchRange) ||
-            //                                       (QCatchMode == CatchMode.Self && x.Distance <= QCatchRange))
-            //                           .OrderBy(x => x.DistanceTo(GameEngine.WorldMousePosition))
-            //                           .FirstOrDefault();
-            //        if (catchAxe != null)
-            //        {
-            //            Orbwalker.ForceMovePosition = catchAxe.W2S;
-            //        }
-            //        else
-            //        {
-            //            Orbwalker.ForceMovePosition = Vector2.Zero;
-            //        }
-            //    }
-            //    else
-            //    {
-            //        Orbwalker.ForceMovePosition = Vector2.Zero;
-            //    }
-            //}
-            //try something with if w is ready =/= axe is catched and store the current axe to catch to filter it out from the rest
+            CatchAxe();
 
             if (SpellQ.ExecuteCastSpell() || SpellE.ExecuteCastSpell() || SpellW.ExecuteCastSpell() || SpellR.ExecuteCastSpell())
             {
@@ -122,13 +106,108 @@ namespace SixAIO.Champions
             }
         }
 
+        private void CatchAxe()
+        {
+            if (UseQCatchRange)
+            {
+                var axes = Axes();
+                if (axes.Any())
+                {
+                    var catchAxe = axes.Where(x => (QCatchMode == CatchMode.Mouse && x.DistanceTo(GameEngine.WorldMousePosition) <= QCatchRange) ||
+                                                   (QCatchMode == CatchMode.Self && x.Distance <= QCatchRange))
+                                       .OrderBy(x => x.DistanceTo(GameEngine.WorldMousePosition))
+                                       .FirstOrDefault();
+                    if (catchAxe != null)
+                    {
+                        Orbwalker.ForceMovePosition = catchAxe.W2S;
+                    }
+                    else
+                    {
+                        Orbwalker.ForceMovePosition = Vector2.Zero;
+                    }
+                }
+                else
+                {
+                    Orbwalker.ForceMovePosition = Vector2.Zero;
+                }
+            }
+            //try something with if w is ready =/= axe is catched and store the current axe to catch to filter it out from the rest
+        }
+
+        internal override void OnCreateObject(AIBaseClient obj)
+        {
+            if (IsAxe(obj))
+            {
+                _axes.Add(obj);
+            }
+        }
+
+        internal override void OnDeleteObject(AIBaseClient obj)
+        {
+            _axes.Remove(obj);
+        }
+
         internal override void OnCoreMainInputRelease()
         {
             Orbwalker.ForceMovePosition = Vector2.Zero;
         }
 
+        private int _cycle = 0;
+        internal override void OnCoreMainTick()
+        {
+            _cycle++;
+            if (_cycle % 10 != 0)
+            {
+                return;
+            }
+
+            if (!Oasys.SDK.InputProviders.KeyboardProvider.IsKeyPressed(Oasys.Common.Settings.Orbwalker.GetComboKey()) &&
+                !Oasys.SDK.InputProviders.KeyboardProvider.IsKeyPressed(Oasys.Common.Settings.Orbwalker.GetHarassKey()) &&
+                !Oasys.SDK.InputProviders.KeyboardProvider.IsKeyPressed(Oasys.Common.Settings.Orbwalker.GetLaneclearKey()) &&
+                !Oasys.SDK.InputProviders.KeyboardProvider.IsKeyPressed(Oasys.Common.Settings.Orbwalker.GetLasthitKey()))
+            {
+                Orbwalker.ForceMovePosition = Vector2.Zero;
+            }
+        }
+
+        internal override void OnCoreRender()
+        {
+            try
+            {
+                if (DrawQCatchRange && !Oasys.Common.Tools.Devices.Mouse.InUse)
+                {
+                    switch (QCatchMode)
+                    {
+                        case CatchMode.Mouse:
+                            RenderFactory.DrawNativeCircle(GameEngine.WorldMousePosition, QCatchRange, Color.White, 2);
+                            break;
+                        case CatchMode.Self:
+                            RenderFactory.DrawNativeCircle(UnitManager.MyChampion.Position, QCatchRange, Color.White, 2);
+                            break;
+                    }
+                }
+
+                //foreach (var item in Axes())
+                //{
+                //    try
+                //    {
+                //        RenderFactory.DrawNativeCircle(item.Position, 50, Color.White, 2);
+                //        RenderFactory.DrawText(item.Name, 18, item.W2S, Color.White);
+                //    }
+                //    catch (Exception)
+                //    {
+                //    }
+                //}
+            }
+            catch (Exception)
+            {
+            }
+        }
+
         internal override void OnCoreLaneClearInput()
         {
+            CatchAxe();
+
             if (SpellQ.ExecuteCastSpell())
             {
                 return;
@@ -139,6 +218,12 @@ namespace SixAIO.Champions
         {
             get => QSettings.GetItem<Switch>("Use Q Catch Range").IsOn;
             set => QSettings.GetItem<Switch>("Use Q Catch Range").IsOn = value;
+        }
+
+        private bool DrawQCatchRange
+        {
+            get => QSettings.GetItem<Switch>("Draw Q Catch Range").IsOn;
+            set => QSettings.GetItem<Switch>("Draw Q Catch Range").IsOn = value;
         }
 
         private int QCatchRange
@@ -180,9 +265,10 @@ namespace SixAIO.Champions
             MenuTab.AddGroup(new Group("R Settings"));
 
             QSettings.AddItem(new Switch() { Title = "Use Q", IsOn = true });
-            //QSettings.AddItem(new Switch() { Title = "Use Q Catch Range", IsOn = true });
-            //QSettings.AddItem(new Counter() { Title = "Q Catch Range", MinValue = 0, MaxValue = 800, Value = 500, ValueFrequency = 50 });
-            //QSettings.AddItem(new ModeDisplay() { Title = "Q Catch Mode", ModeNames = Enum.GetNames(typeof(CatchMode)).ToList(), SelectedModeName = "Mouse" });
+            QSettings.AddItem(new Switch() { Title = "Use Q Catch Range", IsOn = true });
+            QSettings.AddItem(new Switch() { Title = "Draw Q Catch Range", IsOn = true });
+            QSettings.AddItem(new Counter() { Title = "Q Catch Range", MinValue = 0, MaxValue = 800, Value = 500, ValueFrequency = 50 });
+            QSettings.AddItem(new ModeDisplay() { Title = "Q Catch Mode", ModeNames = Enum.GetNames(typeof(CatchMode)).ToList(), SelectedModeName = "Mouse" });
 
             WSettings.AddItem(new Switch() { Title = "Use W", IsOn = true });
 

@@ -63,15 +63,15 @@ namespace SixAIO.Champions
                     var predictResult = SpellW.GetPrediction(target);
                     var castPos = targetPos.Extend(targetPos + (predictResult.CastPosition - targetPos).Normalized(), 50).ToW2S();
 
-                    Mouse.ClickAndBounce((int)castPos.X, (int)castPos.Y, false, () =>
+                    Mouse.ClickAndBounce((int)castPos.X, (int)castPos.Y, 0, false, () =>
                     {
                         Keyboard.SendKeyDown((short)SpellW.CastSlot);
                     });
                     var secondCast = UnitManager.MyChampion.W2S;
-                    Mouse.ClickAndBounce((int)secondCast.X, (int)secondCast.Y, false, () =>
-                    {
-                        Keyboard.SendKeyUp((short)SpellW.CastSlot);
-                    });
+                    Mouse.ClickAndBounce((int)secondCast.X, (int)secondCast.Y, 0, false, () =>
+                     {
+                         Keyboard.SendKeyUp((short)SpellW.CastSlot);
+                     });
                 }
             }
             if (SpellQ.ExecuteCastSpell() || SpellE.ExecuteCastSpell())
