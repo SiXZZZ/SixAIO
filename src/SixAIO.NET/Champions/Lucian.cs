@@ -18,13 +18,21 @@ namespace SixAIO.Champions
     internal class Lucian : Champion
     {
         private bool _originalTargetChampsOnlySetting;
+        private static bool IsPassiveActive
+        {
+            get
+            {
+                var buff = UnitManager.MyChampion.BuffManager.ActiveBuffs.FirstOrDefault(x => x.Name.Equals("LucianPassiveBuff", StringComparison.OrdinalIgnoreCase));
+                return buff != null && buff.IsActive && buff.Stacks >= 1;
+            }
+        }
 
         public Lucian()
         {
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
                 IsTargetted = () => true,
-                IsEnabled = () => UseQ,
+                IsEnabled = () => UseQ && !IsPassiveActive,
                 TargetSelect = (mode) =>
                 {
                     var range = 500 + UnitManager.MyChampion.UnitComponentInfo.UnitBoundingRadius;
@@ -58,12 +66,12 @@ namespace SixAIO.Champions
                 Range = () => 900,
                 Radius = () => 110,
                 Speed = () => 1600,
-                IsEnabled = () => UseW,
+                IsEnabled = () => UseW && !IsPassiveActive,
                 TargetSelect = (mode) => SpellW.GetTargets(mode).FirstOrDefault()
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
-                IsEnabled = () => UseE,
+                IsEnabled = () => UseE && !IsPassiveActive,
                 ShouldCast = (mode, target, spellClass, damage) =>
                             DashModeSelected == DashMode.ToMouse &&
                             TargetSelector.IsAttackable(Orbwalker.TargetHero) &&
