@@ -8,6 +8,7 @@ using Oasys.Common.Menu.ItemComponents;
 using Oasys.SDK;
 using Oasys.SDK.Menu;
 using Oasys.SDK.SpellCasting;
+using SharpDX;
 using SixAIO.Enums;
 using SixAIO.Models;
 using System;
@@ -123,33 +124,33 @@ namespace SixAIO.Champions
 
         internal override void OnCoreRender()
         {
-            //foreach (var target in UnitManager.EnemyChampions.Where(x => TargetSelector.IsAttackable(x) &&
-            //                                                             x.Distance <= 550 + x.UnitComponentInfo.UnitBoundingRadius + UnitManager.MyChampion.UnitComponentInfo.UnitBoundingRadius &&
-            //                                                             x.IsAlive))
-            //{
-            //    var myPoint = UnitManager.MyChampion.W2S;
-            //    var targetPoint = UnitManager.MyChampion.Position.Extend(target.Position, target.Distance + CondemnRange);
-            //    var targetPointW2S = targetPoint.ToW2S();
-            //    if (targetPointW2S.IsValid() && myPoint.IsValid())
-            //    {
-            //        if (CanStun(target))
-            //        {
-            //            Oasys.SDK.Rendering.RenderFactory.DrawText("Can stun " + target.UnitComponentInfo.SkinName, 12, target.W2S, Color.Blue);
-            //        }
-            //        if (EngineManager.IsWall(targetPoint))
-            //        {
-            //            Oasys.SDK.Rendering.RenderFactory.DrawText("Is wall ", 12, targetPointW2S, Color.Blue);
-            //        }
-
-            //        Oasys.SDK.Rendering.RenderFactory.DrawLine(myPoint.X, myPoint.Y, targetPointW2S.X, targetPointW2S.Y, 5, Color.Black);
-            //    }
-            //}
+            if (DrawE && SpellE.SpellClass.IsSpellReady)
+            {
+                foreach (var target in UnitManager.EnemyChampions.Where(x => TargetSelector.IsAttackable(x) &&
+                                                                         x.Distance <= 550 + x.UnitComponentInfo.UnitBoundingRadius + UnitManager.MyChampion.UnitComponentInfo.UnitBoundingRadius &&
+                                                                         x.IsAlive))
+                {
+                    var myPoint = UnitManager.MyChampion.W2S;
+                    var targetPoint = UnitManager.MyChampion.Position.Extend(target.Position, target.Distance + CondemnRange);
+                    var targetPointW2S = targetPoint.ToW2S();
+                    if (targetPointW2S.IsValid() && myPoint.IsValid())
+                    {
+                        Oasys.SDK.Rendering.RenderFactory.DrawLine(target.W2S.X, target.W2S.Y, targetPointW2S.X, targetPointW2S.Y, 5, Color.Black);
+                    }
+                }
+            }
         }
 
         private DashMode DashModeSelected
         {
             get => (DashMode)Enum.Parse(typeof(DashMode), QSettings.GetItem<ModeDisplay>("Dash Mode").SelectedModeName);
             set => QSettings.GetItem<ModeDisplay>("Dash Mode").SelectedModeName = value.ToString();
+        }
+
+        private bool DrawE
+        {
+            get => ESettings.GetItem<Switch>("Draw E").IsOn;
+            set => ESettings.GetItem<Switch>("Draw E").IsOn = value;
         }
 
         private bool UsePushAway
@@ -186,6 +187,7 @@ namespace SixAIO.Champions
             QSettings.AddItem(new ModeDisplay() { Title = "Dash Mode", ModeNames = DashHelper.ConstructDashModeTable(), SelectedModeName = "ToMouse" });
 
             ESettings.AddItem(new Switch() { Title = "Use E", IsOn = true });
+            ESettings.AddItem(new Switch() { Title = "Draw E", IsOn = false });
             ESettings.AddItem(new Counter() { Title = "Condemn Range", MinValue = 50, MaxValue = 475, Value = 450, ValueFrequency = 25 });
             ESettings.AddItem(new Switch() { Title = "Use Push Away", IsOn = false });
             ESettings.AddItem(new Counter() { Title = "Push Away Range", MinValue = 50, MaxValue = 550, Value = 150, ValueFrequency = 25 });
