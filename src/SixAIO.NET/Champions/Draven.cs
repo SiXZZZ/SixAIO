@@ -267,7 +267,7 @@ namespace SixAIO.Champions
             QSettings.AddItem(new Switch() { Title = "Use Q", IsOn = true });
             QSettings.AddItem(new Switch() { Title = "Use Q Catch Range", IsOn = true });
             QSettings.AddItem(new Switch() { Title = "Draw Q Catch Range", IsOn = true });
-            QSettings.AddItem(new Counter() { Title = "Q Catch Range", MinValue = 0, MaxValue = 800, Value = 500, ValueFrequency = 50 });
+            QSettings.AddItem(new Counter() { Title = "Q Catch Range", MinValue = 0, MaxValue = 800, Value = 500, ValueFrequency = 10 });
             QSettings.AddItem(new ModeDisplay() { Title = "Q Catch Mode", ModeNames = Enum.GetNames(typeof(CatchMode)).ToList(), SelectedModeName = "Mouse" });
 
             WSettings.AddItem(new Switch() { Title = "Use W", IsOn = true });
