@@ -18,6 +18,8 @@ namespace SixAIO.Champions
     {
         private List<AIBaseClient> _feathers = new List<AIBaseClient>();
 
+        private List<AIBaseClient> Feathers => _feathers.Where(IsFeather).ToList();
+
         public Xayah()
         {
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
@@ -60,7 +62,7 @@ namespace SixAIO.Champions
 
         private int GetFeathersBetweenMeAndEnemy(AIBaseClient enemy)
         {
-            return _feathers.ToList().Count(feather =>
+            return Feathers.Count(feather =>
                     Geometry.DistanceFromPointToLine(enemy.W2S, new Vector2[] { UnitManager.MyChampion.W2S, feather.W2S }) <= enemy.UnitComponentInfo.UnitBoundingRadius &&
                     feather.Distance > enemy.Distance);
         }
@@ -120,7 +122,7 @@ namespace SixAIO.Champions
                 var w2s = LeagueNativeRendererManager.WorldToScreenSpell(UnitManager.MyChampion.Position);
                 var color = Oasys.Common.Tools.ColorConverter.GetColor(DrawColor);
 
-                foreach (var feather in _feathers.ToList().Where(IsFeather))
+                foreach (var feather in Feathers)
                 {
                     var featherW2s = LeagueNativeRendererManager.WorldToScreenSpell(feather.Position);
                     if (!featherW2s.IsZero)

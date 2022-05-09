@@ -1,4 +1,5 @@
 ﻿using Oasys.Common.Enums.GameEnums;
+using Oasys.Common.GameObject;
 using Oasys.Common.Menu;
 using Oasys.Common.Menu.ItemComponents;
 using Oasys.SDK;
@@ -14,6 +15,7 @@ namespace SixAIO.Champions
     {
         public Kaisa()
         {
+            Orbwalker.OnOrbwalkerAfterBasicAttack += Orbwalker_OnOrbwalkerAfterBasicAttack;
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
                 IsEnabled = () => UseQ,
@@ -40,12 +42,23 @@ namespace SixAIO.Champions
             };
         }
 
+        private void Orbwalker_OnOrbwalkerAfterBasicAttack(float gameTime, GameObjectBase target)
+        {
+            SpellQ.ExecuteCastSpell();
+        }
+
         internal override void OnCoreMainInput()
         {
-            if (SpellQ.ExecuteCastSpell() || SpellW.ExecuteCastSpell())
+            if ((!OnlyQAfterAA && SpellQ.ExecuteCastSpell()) || SpellW.ExecuteCastSpell())
             {
                 return;
             }
+        }
+
+        private bool OnlyQAfterAA
+        {
+            get => QSettings.GetItem<Switch>("Only Q After AA").IsOn;
+            set => QSettings.GetItem<Switch>("Only Q After AA").IsOn = value;
         }
 
         internal override void InitializeMenu()
@@ -55,6 +68,7 @@ namespace SixAIO.Champions
             MenuTab.AddGroup(new Group("W Settings"));
 
             QSettings.AddItem(new Switch() { Title = "Use Q", IsOn = true });
+            QSettings.AddItem(new Switch() { Title = "Only Q After AA", IsOn = false });
 
             WSettings.AddItem(new Switch() { Title = "Use W", IsOn = true });
             WSettings.AddItem(new ModeDisplay() { Title = "W HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
