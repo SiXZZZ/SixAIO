@@ -1,4 +1,5 @@
-﻿using Oasys.Common.Enums.GameEnums;
+﻿using Newtonsoft.Json;
+using Oasys.Common.Enums.GameEnums;
 using Oasys.Common.GameObject;
 using Oasys.Common.GameObject.ObjectClass;
 using Oasys.Common.Menu;
@@ -8,14 +9,18 @@ using Oasys.SDK.Menu;
 using Oasys.SDK.SpellCasting;
 using SixAIO.Enums;
 using SixAIO.Models;
+using SixAIO.Utilities;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 
 namespace SixAIO.Champions
 {
     internal class Tristana : Champion
     {
+        private static TargetSelection _targetSelection;
+
         private static float GetRDamage(GameObjectBase target)
         {
             return DamageCalculator.GetMagicResistMod(UnitManager.MyChampion, target) *
@@ -33,21 +38,7 @@ namespace SixAIO.Champions
             {
                 IsTargetted = () => true,
                 IsEnabled = () => UseE,
-                TargetSelect = (mode) =>
-                {
-                    var bestTarget = TargetSelector.GetBestChampionTarget(Orbwalker.SelectedHero);
-                    if (bestTarget != null && (bestTarget.IsTargetDummy || ESettings.GetItem<Switch>("E - " + bestTarget.ModelName).IsOn))
-                    {
-                        return bestTarget;
-                    }
-
-                    var targets = UnitManager.EnemyChampions.Where(x => !x.IsTargetDummy).Where(x => x.Distance <= UnitManager.MyChampion.TrueAttackRange &&
-                                                                     TargetSelector.IsAttackable(x) &&
-                                                                     !TargetSelector.IsInvulnerable(x, Oasys.Common.Logic.DamageType.Physical, false) &&
-                                                                     ESettings.GetItem<Switch>("E - " + x.ModelName).IsOn)
-                                                         .OrderBy(x => x.Health);
-                    return targets.FirstOrDefault();
-                }
+                TargetSelect = (mode) => GetPrioritizationTarget()
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
@@ -127,6 +118,80 @@ namespace SixAIO.Champions
             set => RSettings.GetItem<ModeDisplay>("Push Away Mode").SelectedModeName = value.ToString();
         }
 
+        internal void LoadTargetPrioValues()
+        {
+            try
+            {
+                using var stream = AppDomain.CurrentDomain.GetAssemblies().SingleOrDefault(assembly => assembly.GetName().Name == "Oasys.Core").GetManifestResourceStream("Oasys.Core.Dependencies.TargetSelection.json");
+                using var reader = new StreamReader(stream);
+                var jsonText = reader.ReadToEnd();
+
+                _targetSelection = JsonConvert.DeserializeObject<TargetSelection>(jsonText);
+                var enemies = UnitManager.EnemyChampions.Where(x => !x.IsTargetDummy);
+
+                InitializeSettings(_targetSelection.TargetPrioritizations.Where(x => enemies.Any(e => e.ModelName.Equals(x.Champion, StringComparison.OrdinalIgnoreCase))));
+            }
+            catch (Exception)
+            {
+            }
+        }
+
+        internal void InitializeSettings(IEnumerable<TargetPrioritization> targetPrioritizations)
+        {
+            try
+            {
+                if (targetPrioritizations.Any())
+                {
+                    ESettings.AddItem(new InfoDisplay() { Title = "-E target prio-" });
+                }
+                foreach (var targetPrioritization in targetPrioritizations)
+                {
+                    ESettings.AddItem(new Counter() { Title = targetPrioritization.Champion, MinValue = 0, MaxValue = 5, Value = targetPrioritization.Prioritization, ValueFrequency = 1 });
+                }
+            }
+            catch (Exception)
+            {
+            }
+        }
+
+        private GameObjectBase GetPrioritizationTarget()
+        {
+            try
+            {
+                GameObjectBase tempTarget = null;
+                var tempPrio = 0;
+
+                foreach (var hero in UnitManager.EnemyChampions.Where(x => x.Distance <= ETargetRange && TargetSelector.IsAttackable(x)))
+                {
+                    try
+                    {
+                        var targetPrio = ESettings.GetItem<Counter>(x => x.Title == hero.ModelName)?.Value ?? 1;
+                        if (targetPrio > tempPrio)
+                        {
+                            tempPrio = targetPrio;
+                            tempTarget = hero;
+                        }
+                    }
+                    catch (Exception)
+                    {
+                    }
+                }
+
+                return tempTarget;
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+        }
+
+        private int ETargetRange
+        {
+            get => ESettings.GetItem<Counter>("E target range").Value;
+            set => ESettings.GetItem<Counter>("E target range").Value = value;
+        }
+
+
         internal override void InitializeMenu()
         {
             MenuManager.AddTab(new Tab($"SIXAIO - {nameof(Tristana)}"));
@@ -138,11 +203,8 @@ namespace SixAIO.Champions
             QSettings.AddItem(new Switch() { Title = "Use Q", IsOn = true });
 
             ESettings.AddItem(new Switch() { Title = "Use E", IsOn = true });
-            foreach (var enemy in UnitManager.EnemyChampions.Where(x => !x.IsTargetDummy))
-            {
-                ESettings.AddItem(new Switch() { Title = "E - " + enemy.ModelName, IsOn = true });
-            }
-
+            ESettings.AddItem(new Counter() { Title = "E target range", Value = 1000, MinValue = 0, MaxValue = 2000, ValueFrequency = 50 });
+            LoadTargetPrioValues();
 
             RSettings.AddItem(new Switch() { Title = "Use R", IsOn = true });
             foreach (var enemy in UnitManager.EnemyChampions.Where(x => !x.IsTargetDummy))

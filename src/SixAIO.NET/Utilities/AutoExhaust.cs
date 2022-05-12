@@ -147,7 +147,7 @@ namespace SixAIO.Utilities
                 GameObjectBase tempTarget = null;
                 var tempPrio = 0;
 
-                foreach (var hero in UnitManager.Enemies.Where(x => x.Distance <= ExhaustTargetRange))
+                foreach (var hero in UnitManager.EnemyChampions.Where(x => x.Distance <= ExhaustTargetRange && TargetSelector.IsAttackable(x)))
                 {
                     try
                     {
