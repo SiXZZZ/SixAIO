@@ -25,6 +25,12 @@ namespace SixAIO.Models
             set => QSettings.GetItem<Switch>("Use Q").IsOn = value;
         }
 
+        internal bool UseQLaneclear
+        {
+            get => QSettings.GetItem<Switch>("Use Q Laneclear").IsOn;
+            set => QSettings.GetItem<Switch>("Use Q Laneclear").IsOn = value;
+        }
+
         internal Oasys.SDK.Prediction.MenuSelected.HitChance QHitChance
         {
             get => (Oasys.SDK.Prediction.MenuSelected.HitChance)Enum.Parse(typeof(Oasys.SDK.Prediction.MenuSelected.HitChance), QSettings.GetItem<ModeDisplay>("Q HitChance").SelectedModeName);
@@ -48,6 +54,12 @@ namespace SixAIO.Models
         {
             get => WSettings.GetItem<Switch>("Use W").IsOn;
             set => WSettings.GetItem<Switch>("Use W").IsOn = value;
+        }
+
+        internal bool UseWLaneclear
+        {
+            get => WSettings.GetItem<Switch>("Use W Laneclear").IsOn;
+            set => WSettings.GetItem<Switch>("Use W Laneclear").IsOn = value;
         }
 
         internal Oasys.SDK.Prediction.MenuSelected.HitChance WHitChance
@@ -74,6 +86,12 @@ namespace SixAIO.Models
             set => ESettings.GetItem<Switch>("Use E").IsOn = value;
         }
 
+        internal bool UseELaneclear
+        {
+            get => ESettings.GetItem<Switch>("Use E Laneclear").IsOn;
+            set => ESettings.GetItem<Switch>("Use E Laneclear").IsOn = value;
+        }
+
         internal Oasys.SDK.Prediction.MenuSelected.HitChance EHitChance
         {
             get => (Oasys.SDK.Prediction.MenuSelected.HitChance)Enum.Parse(typeof(Oasys.SDK.Prediction.MenuSelected.HitChance), ESettings.GetItem<ModeDisplay>("E HitChance").SelectedModeName);
@@ -96,6 +114,12 @@ namespace SixAIO.Models
         {
             get => RSettings.GetItem<Switch>("Use R").IsOn;
             set => RSettings.GetItem<Switch>("Use R").IsOn = value;
+        }
+
+        internal bool UseRLaneclear
+        {
+            get => RSettings.GetItem<Switch>("Use R Laneclear").IsOn;
+            set => RSettings.GetItem<Switch>("Use R Laneclear").IsOn = value;
         }
 
         internal Oasys.SDK.Prediction.MenuSelected.HitChance RHitChance
