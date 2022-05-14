@@ -58,7 +58,9 @@ namespace SixAIO.Champions
 
         private static bool CanKill(GameObjectBase target)
         {
-            return target.Health < GetEDamage(target);
+            var dmg = GetEDamage(target);
+            return target.Health <= dmg ||
+                   (UnitManager.MyChampion.Inventory.HasItem(ItemID.The_Collector) && (target.Health - dmg) / target.MaxHealth * 100f < 5f);
         }
 
         internal override void OnCoreMainInput()
