@@ -38,7 +38,7 @@ namespace SixAIO.Champions
                 MinimumHitChance = () => WHitChance,
                 Range = () => 1000,
                 Radius = () => 250,
-                Speed = () => 10000,
+                Speed = () => 2500,
                 IsEnabled = () => UseW,
                 TargetSelect = (mode) => SpellW.GetTargets(mode).FirstOrDefault()
             };

@@ -33,7 +33,7 @@ namespace SixAIO.Champions
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Circle,
                 MinimumHitChance = () => WHitChance,
                 Range = () => 900,
-                Speed = () => 5000,
+                Speed = () => 1500,
                 Radius = () => 260,
                 IsEnabled = () => UseW,
                 TargetSelect = (mode) => SpellW.GetTargets(mode).FirstOrDefault()

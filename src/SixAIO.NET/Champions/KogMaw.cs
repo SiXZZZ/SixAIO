@@ -49,7 +49,7 @@ namespace SixAIO.Champions
                 MinimumHitChance = () => RHitChance,
                 Range = () => UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot.R).Level * 250 + 1050,
                 Radius = () => 240,
-                Speed = () => 5000,
+                Speed = () => 1500,
                 Delay = () => 0.9f,
                 Damage = (target, spellClass) =>
                             target != null

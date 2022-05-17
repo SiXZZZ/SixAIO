@@ -19,7 +19,7 @@ namespace SixAIO.Champions
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Circle,
                 MinimumHitChance = () => QHitChance,
                 Range = () => 900,
-                Speed = () => 5000,
+                Speed = () => 1500,
                 Radius = () => 140,
                 IsEnabled = () => UseQ,
                 TargetSelect = (mode) => SpellQ.GetTargets(mode).OrderBy(x => x.BuffManager.HasActiveBuff("ZileanQEnemyBomb")).FirstOrDefault()
