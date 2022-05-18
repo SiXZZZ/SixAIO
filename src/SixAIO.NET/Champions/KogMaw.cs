@@ -19,7 +19,7 @@ namespace SixAIO.Champions
                 AllowCollision = (target, collisions) => !collisions.Any(),
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
                 MinimumHitChance = () => QHitChance,
-                Range = () => 1200,
+                Range = () => QMaxRange,
                 Radius = () => 140,
                 Speed = () => 1650,
                 IsEnabled = () => UseQ,
@@ -36,7 +36,7 @@ namespace SixAIO.Champions
             {
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
                 MinimumHitChance = () => EHitChance,
-                Range = () => 1360,
+                Range = () => EMaxRange,
                 Radius = () => 240,
                 Speed = () => 1400,
                 IsEnabled = () => UseE,
@@ -60,7 +60,7 @@ namespace SixAIO.Champions
                             : 0,
                 IsEnabled = () => UseR,
                 MinimumMana = () => RMinMana,
-                TargetSelect = (mode) => SpellR.GetTargets(mode, x => x.HealthPercent < RTargetMaxHPPercent).FirstOrDefault()
+                TargetSelect = (mode) => SpellR.GetTargets(mode, x => x.HealthPercent <= RTargetMaxHPPercent && (ROnlyOutsideOfAttackRange ? !TargetSelector.IsInRange(x) : x.Distance > RMinimumRange) && x.Distance <= RMaximumRange).FirstOrDefault()
             };
         }
 
@@ -77,10 +77,40 @@ namespace SixAIO.Champions
             }
         }
 
+        private int QMaxRange
+        {
+            get => QSettings.GetItem<Counter>("Q Max Range").Value;
+            set => QSettings.GetItem<Counter>("Q Max Range").Value = value;
+        }
+
+        private int EMaxRange
+        {
+            get => ESettings.GetItem<Counter>("E Max Range").Value;
+            set => ESettings.GetItem<Counter>("E Max Range").Value = value;
+        }
+
         private int RTargetMaxHPPercent
         {
             get => RSettings.GetItem<Counter>("R Target Max HP Percent").Value;
             set => RSettings.GetItem<Counter>("R Target Max HP Percent").Value = value;
+        }
+
+        private bool ROnlyOutsideOfAttackRange
+        {
+            get => RSettings.GetItem<Switch>("R only outside of attack range").IsOn;
+            set => RSettings.GetItem<Switch>("R only outside of attack range").IsOn = value;
+        }
+
+        private int RMinimumRange
+        {
+            get => RSettings.GetItem<Counter>("R minimum range").Value;
+            set => RSettings.GetItem<Counter>("R minimum range").Value = value;
+        }
+
+        private int RMaximumRange
+        {
+            get => RSettings.GetItem<Counter>("R maximum range").Value;
+            set => RSettings.GetItem<Counter>("R maximum range").Value = value;
         }
 
         internal override void InitializeMenu()
@@ -92,21 +122,26 @@ namespace SixAIO.Champions
             MenuTab.AddGroup(new Group("E Settings"));
             MenuTab.AddGroup(new Group("R Settings"));
 
-            QSettings.AddItem(new Switch() { Title = "Use Q", IsOn = false });
+            QSettings.AddItem(new Switch() { Title = "Use Q", IsOn = true });
             QSettings.AddItem(new Counter() { Title = "Q Min Mana", MinValue = 0, MaxValue = 500, Value = 40, ValueFrequency = 10 });
-            QSettings.AddItem(new ModeDisplay() { Title = "Q HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
+            QSettings.AddItem(new Counter() { Title = "Q Max Range", MinValue = 0, MaxValue = 1200, Value = 1000, ValueFrequency = 25 });
+            QSettings.AddItem(new ModeDisplay() { Title = "Q HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "VeryHigh" });
 
             WSettings.AddItem(new Switch() { Title = "Use W", IsOn = true });
             WSettings.AddItem(new Counter() { Title = "W Min Mana", MinValue = 0, MaxValue = 500, Value = 0, ValueFrequency = 10 });
 
-            ESettings.AddItem(new Switch() { Title = "Use E", IsOn = false });
+            ESettings.AddItem(new Switch() { Title = "Use E", IsOn = true });
             ESettings.AddItem(new Counter() { Title = "E Min Mana", MinValue = 0, MaxValue = 500, Value = 150, ValueFrequency = 10 });
-            ESettings.AddItem(new ModeDisplay() { Title = "E HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
+            ESettings.AddItem(new Counter() { Title = "E Max Range", MinValue = 0, MaxValue = 1350, Value = 1000, ValueFrequency = 25 });
+            ESettings.AddItem(new ModeDisplay() { Title = "E HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "VeryHigh" });
 
-            RSettings.AddItem(new Switch() { Title = "Use R", IsOn = false });
+            RSettings.AddItem(new Switch() { Title = "Use R", IsOn = true });
             RSettings.AddItem(new Counter() { Title = "R Min Mana", MinValue = 0, MaxValue = 500, Value = 150, ValueFrequency = 10 });
-            RSettings.AddItem(new Counter() { Title = "R Target Max HP Percent", MinValue = 10, MaxValue = 100, Value = 50, ValueFrequency = 5 });
-            RSettings.AddItem(new ModeDisplay() { Title = "R HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
+            RSettings.AddItem(new Counter() { Title = "R Target Max HP Percent", MinValue = 10, MaxValue = 100, Value = 40, ValueFrequency = 5 });
+            RSettings.AddItem(new Switch() { Title = "R only outside of attack range", IsOn = true });
+            RSettings.AddItem(new Counter() { Title = "R minimum range", MinValue = 0, MaxValue = 1800, Value = 0, ValueFrequency = 50 });
+            RSettings.AddItem(new Counter() { Title = "R maximum range", MinValue = 0, MaxValue = 1800, Value = 1800, ValueFrequency = 50 });
+            RSettings.AddItem(new ModeDisplay() { Title = "R HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "Immobile" });
 
         }
     }
