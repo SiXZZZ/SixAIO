@@ -1,19 +1,25 @@
 ﻿using Oasys.Common.Enums.GameEnums;
 using Oasys.Common.GameObject;
+using Oasys.Common.GameObject.Clients;
 using Oasys.Common.GameObject.Clients.ExtendedInstances.Spells;
 using Oasys.Common.Menu;
 using Oasys.Common.Menu.ItemComponents;
 using Oasys.SDK;
 using Oasys.SDK.Menu;
 using Oasys.SDK.SpellCasting;
+using Oasys.SDK.Tools;
 using SixAIO.Helpers;
 using SixAIO.Models;
+using System;
 using System.Linq;
 
 namespace SixAIO.Champions
 {
     internal class Irelia : Champion
     {
+        private bool _originalTargetChampsOnlySetting;
+        private AIBaseClient _ireliaE;
+
         private static bool AllSpellsOnCooldown()
         {
             var q = UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot.Q);
@@ -67,13 +73,13 @@ namespace SixAIO.Champions
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
+                Speed = () => 2000,
+                Range = () => IsCastingE ? 30_000 : 775,
+                Radius = () => 80,
+                Delay = () => 0.1f,
                 IsEnabled = () => UseE,
-                MinimumCharges = () => 1,
-                TargetSelect = (mode) =>
-                {
-                    //do stuff
-                    return null;
-                }
+                From = () => IsCastingE ? _ireliaE.Position : UnitManager.MyChampion.AIManager.ServerPosition,
+                TargetSelect = (mode) => SpellE.GetTargets(mode).FirstOrDefault()
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
@@ -88,6 +94,8 @@ namespace SixAIO.Champions
                                                                  BuffChecker.IsCrowdControlledOrSlowed(x))
             };
         }
+
+        private bool IsCastingE => UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot.E).SpellData.SpellName.Equals("IreliaE", StringComparison.OrdinalIgnoreCase) && _ireliaE is not null;
 
         private float GetMissingHealthPercent(GameObjectBase target)
         {
@@ -150,7 +158,6 @@ namespace SixAIO.Champions
         private void Orbwalker_OnOrbwalkerAfterBasicAttack(float gameTime, GameObjectBase target)
         {
             SpellQ.ExecuteCastSpell();
-            //SpellW.ExecuteCastSpell();
         }
 
         internal override void OnCoreMainInput()
@@ -169,17 +176,76 @@ namespace SixAIO.Champions
             }
         }
 
+        internal override void OnCreateObject(AIBaseClient obj)
+        {
+            if (obj.Name.Contains("IreliaE", StringComparison.OrdinalIgnoreCase))
+            {
+                _ireliaE = obj;
+            }
+        }
+
         internal override void InitializeMenu()
         {
+            TabItem.OnTabItemChange += TabItem_OnTabItemChange;
             MenuManager.AddTab(new Tab($"SIXAIO - {nameof(Irelia)}"));
             MenuTab.AddGroup(new Group("Q Settings"));
             MenuTab.AddGroup(new Group("W Settings"));
             MenuTab.AddGroup(new Group("E Settings"));
             MenuTab.AddGroup(new Group("R Settings"));
+
             QSettings.AddItem(new Switch() { Title = "Use Q", IsOn = true });
+
             WSettings.AddItem(new Switch() { Title = "Use W", IsOn = true });
+
             ESettings.AddItem(new Switch() { Title = "Use E", IsOn = true });
+
             RSettings.AddItem(new Switch() { Title = "Use R", IsOn = true });
+
+            SetTargetChampsOnly();
+        }
+
+        private void SetTargetChampsOnly()
+        {
+            try
+            {
+                var orbTab = MenuManagerProvider.GetTab("Orbwalker");
+                var orbGroup = orbTab.GetGroup("Input");
+                _originalTargetChampsOnlySetting = orbGroup.GetItem<Switch>("Hold Target Champs Only").IsOn;
+                orbGroup.GetItem<Switch>("Hold Target Champs Only").IsOn = false;
+            }
+            catch (Exception ex)
+            {
+                //Logger.Log(ex.Message);
+            }
+        }
+
+        private void TabItem_OnTabItemChange(string tabName, TabItem tabItem)
+        {
+            if (tabItem.TabName == "Orbwalker" &&
+                tabItem.GroupName == "Input" &&
+                tabItem.Title == "Hold Target Champs Only" &&
+                tabItem is Switch itemSwitch &&
+                itemSwitch.IsOn)
+            {
+                SetTargetChampsOnly();
+            }
+        }
+
+        internal override void OnGameMatchComplete()
+        {
+            try
+            {
+                TabItem.OnTabItemChange -= TabItem_OnTabItemChange;
+
+                var orbTab = MenuManagerProvider.GetTab("Orbwalker");
+                var orbGroup = orbTab.GetGroup("Input");
+                orbGroup.GetItem<Switch>("Hold Target Champs Only")
+                        .IsOn = _originalTargetChampsOnlySetting;
+            }
+            catch (Exception ex)
+            {
+                //Logger.Log(ex.Message);
+            }
         }
     }
 }
