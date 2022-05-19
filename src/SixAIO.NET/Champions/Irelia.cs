@@ -41,31 +41,31 @@ namespace SixAIO.Champions
                 IsEnabled = () => UseQ,
                 TargetSelect = (mode) =>
                 {
-                    var champReset = UnitManager.EnemyChampions.FirstOrDefault(x => x.Distance <= SpellQ.Range() && TargetSelector.IsAttackable(x) && CanQResetOnTarget(x));
+                    if (mode == Orbwalker.OrbWalkingModeType.Combo)
+                    {
+                        var champ = UnitManager.EnemyChampions.FirstOrDefault(x => ShouldQ(x, mode));
+                        if (champ != null)
+                        {
+                            return champ;
+                        }
+                    }
+
+                    var champReset = UnitManager.EnemyChampions.FirstOrDefault(x => ShouldQ(x, mode));
                     if (champReset != null)
                     {
                         return champReset;
                     }
 
-                    var minionReset = UnitManager.EnemyMinions.FirstOrDefault(x => x.Distance <= SpellQ.Range() && TargetSelector.IsAttackable(x) && CanQResetOnTarget(x));
+                    var minionReset = UnitManager.EnemyMinions.FirstOrDefault(x => ShouldQ(x, mode));
                     if (minionReset != null)
                     {
                         return minionReset;
                     }
 
-                    var jungleReset = UnitManager.EnemyJungleMobs.FirstOrDefault(x => x.Distance <= SpellQ.Range() && TargetSelector.IsAttackable(x) && CanQResetOnTarget(x));
+                    var jungleReset = UnitManager.EnemyJungleMobs.FirstOrDefault(x => ShouldQ(x, mode));
                     if (jungleReset != null)
                     {
                         return jungleReset;
-                    }
-
-                    if (mode == Orbwalker.OrbWalkingModeType.Combo)
-                    {
-                        var champ = UnitManager.EnemyChampions.FirstOrDefault(x => x.Distance <= SpellQ.Range() && TargetSelector.IsAttackable(x) && CanQResetOnTarget(x));
-                        if (champ != null)
-                        {
-                            return champ;
-                        }
                     }
 
                     return null;
@@ -93,6 +93,21 @@ namespace SixAIO.Champions
                                                                  TargetSelector.IsAttackable(x) &&
                                                                  BuffChecker.IsCrowdControlledOrSlowed(x))
             };
+        }
+
+        private bool ShouldQ(GameObjectBase target, Orbwalker.OrbWalkingModeType mode)
+        {
+            if (mode == Orbwalker.OrbWalkingModeType.Combo)
+            {
+                if (target.IsObject(ObjectTypeFlag.AIHeroClient))
+                {
+                    return target.Distance <= SpellQ.Range() && TargetSelector.IsAttackable(target) && CanQResetOnTarget(target);
+                }
+
+                return target.Distance <= SpellQ.Range() && UnitManager.EnemyChampions.Any(enemy => target.DistanceTo(enemy.Position) <= SpellQ.Range()) && TargetSelector.IsAttackable(target) && CanQResetOnTarget(target);
+            }
+
+            return target.Distance <= SpellQ.Range() && TargetSelector.IsAttackable(target) && CanQResetOnTarget(target);
         }
 
         private bool IsCastingE => UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot.E).SpellData.SpellName.Equals("IreliaE", StringComparison.OrdinalIgnoreCase) && _ireliaE is not null;
@@ -137,9 +152,10 @@ namespace SixAIO.Champions
             {
                 return 0;
             }
+            var minionDmg = target.IsObject(ObjectTypeFlag.AIMinionClient) ? 43 + 12 * UnitManager.MyChampion.Level : 0;
             var nextAA = DamageCalculator.GetNextBasicAttackDamage(UnitManager.MyChampion, target);
-            return nextAA + (DamageCalculator.GetArmorMod(UnitManager.MyChampion, target) *
-                   ((UnitManager.MyChampion.UnitStats.TotalAttackDamage * 0.60f) + (UnitManager.MyChampion.UnitStats.TotalAbilityPower * 0.60f) + (-15) + 20 * spellClass.Level));
+            return (DamageCalculator.GetArmorMod(UnitManager.MyChampion, target) *
+                   (nextAA + minionDmg + (UnitManager.MyChampion.UnitStats.TotalAttackDamage * 0.60f) + (-15) + 20 * spellClass.Level));
         }
 
         private void Spell_OnSpellCast(SDKSpell spell, GameObjectBase target)

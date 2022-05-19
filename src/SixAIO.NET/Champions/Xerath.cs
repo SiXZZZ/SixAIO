@@ -55,15 +55,18 @@ namespace SixAIO.Champions
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
+                IsCharge = () => true,
                 AllowCastOnMap = () => AllowRCastOnMinimap,
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Circle,
                 MinimumHitChance = () => RHitChance,
+                MinimumCharges = () => 1,
                 Range = () => 5000,
                 Radius = () => 200,
                 Speed = () => 1500,
-                Delay = () => 0f,
-                IsEnabled = () => UseR,
-                TargetSelect = (mode) => SpellR.GetTargets(mode).FirstOrDefault()
+                Delay = () => 0.63f,
+                IsEnabled = () => UseR && !SpellQ.ChargeTimer.IsRunning,
+                IsSpellReady = (spellClass, minMana, minCharges) => spellClass.IsToggled && spellClass.Charges > minCharges || UnitManager.MyChampion.Mana > minMana,
+                TargetSelect = (mode) => SpellR.GetTargets(mode).OrderBy(x => x.DistanceTo(GameEngine.WorldMousePosition)).FirstOrDefault()
             };
         }
 
@@ -89,30 +92,27 @@ namespace SixAIO.Champions
             set => QSettings.GetItem<Counter>("Q start charge range").Value = value;
         }
 
-
         internal override void InitializeMenu()
         {
             MenuManager.AddTab(new Tab($"SIXAIO - {nameof(Xerath)}"));
             MenuTab.AddGroup(new Group("Q Settings"));
             MenuTab.AddGroup(new Group("W Settings"));
             MenuTab.AddGroup(new Group("E Settings"));
+            //MenuTab.AddGroup(new Group("R Settings"));
 
             QSettings.AddItem(new Switch() { Title = "Use Q", IsOn = true });
             QSettings.AddItem(new ModeDisplay() { Title = "Q HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
             QSettings.AddItem(new Counter() { Title = "Q start charge range", MinValue = 0, MaxValue = 2000, Value = 1450, ValueFrequency = 50 });
 
-
             WSettings.AddItem(new Switch() { Title = "Use W", IsOn = true });
             WSettings.AddItem(new ModeDisplay() { Title = "W HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
-
 
             ESettings.AddItem(new Switch() { Title = "Use E", IsOn = true });
             ESettings.AddItem(new ModeDisplay() { Title = "E HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
 
-            //MenuTab.AddItem(new InfoDisplay() { Title = "---R Settings---" });
-            //MenuTab.AddItem(new Switch() { Title = "Use R", IsOn = true });
-            //MenuTab.AddItem(new Counter() { Title = "Use only R if x <= HP percent", MinValue = 0, MaxValue = 100, Value = 50, ValueFrequency = 5 });
-            //MenuTab.AddItem(new Switch() { Title = "Allow R cast on minimap", IsOn = true });
+            //RSettings.AddItem(new Switch() { Title = "Use R", IsOn = true });
+            //RSettings.AddItem(new Switch() { Title = "Allow R cast on minimap", IsOn = true });
+            //RSettings.AddItem(new ModeDisplay() { Title = "R HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
         }
     }
 }

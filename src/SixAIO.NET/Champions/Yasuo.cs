@@ -21,6 +21,8 @@ namespace SixAIO.Champions
     {
         private bool _originalTargetChampsOnlySetting;
 
+        internal Spell SpellEQ;
+
         private static int GetQState() => UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot.Q).SpellData.SpellName switch
         {
             "YasuoQ1Wrapper" => 1,
@@ -41,6 +43,26 @@ namespace SixAIO.Champions
         {
             SDKSpell.OnSpellCast += Spell_OnSpellCast;
             Orbwalker.OnOrbwalkerAfterBasicAttack += Orbwalker_OnOrbwalkerAfterBasicAttack;
+            SpellEQ = new Spell(CastSlot.Q, SpellSlot.Q)
+            {
+                PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
+                MinimumHitChance = () => QHitChance,
+                Speed = () => 1200,
+                Radius = () => 200,
+                Range = () => 200,
+                IsEnabled = () => UseQ,
+                ShouldCast = (mode, target, spellClass, damage) => target != null && (target.IsObject(ObjectTypeFlag.AIHeroClient) || GetQState() < 3),
+                TargetSelect = (mode) =>
+                {
+                    var champ = UnitManager.EnemyChampions.FirstOrDefault(x => x.Distance <= SpellEQ.Range() && TargetSelector.IsAttackable(x));
+                    if (champ != null)
+                    {
+                        return champ;
+                    }
+
+                    return null;
+                }
+            };
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
@@ -95,9 +117,9 @@ namespace SixAIO.Champions
                             {
                                 return enemyChamps.FirstOrDefault(x => x.Distance <= 450);
                             }
-                            if (!Orbwalker.TargetChampionsOnly)
+                            else if (!Orbwalker.TargetChampionsOnly)
                             {
-                                foreach (var target in enemyChamps)
+                                foreach (var target in UnitManager.EnemyChampions.Where(x => x.IsAlive && x.Distance <= 1500))
                                 {
                                     var targetMinion = GetMinionBetweenMeAndEnemy(UnitManager.EnemyMinions.Where(CanEOnTarget), target, 600, 450);
                                     if (targetMinion != null)
@@ -142,9 +164,11 @@ namespace SixAIO.Champions
 
         private GameObjectBase GetMinionBetweenMeAndEnemy(IEnumerable<GameObjectBase> targets, Hero enemy, int width, int distance)
         {
-            return targets.FirstOrDefault(minion => minion.IsAlive && minion.Distance <= distance && TargetSelector.IsAttackable(minion) &&
-                        Geometry.DistanceFromPointToLine(enemy.W2S, new Vector2[] { UnitManager.MyChampion.W2S, minion.W2S }) <= width &&
-                        minion.W2S.Distance(enemy.W2S) < UnitManager.MyChampion.W2S.Distance(enemy.W2S));
+            return targets.FirstOrDefault(minion =>
+                        minion.IsAlive && minion.Distance <= distance &&
+                        TargetSelector.IsAttackable(minion) &&
+                        Geometry.DistanceFromPointToLine(enemy.W2S, new Vector2[] { UnitManager.MyChampion.W2S, enemy.W2S }) <= width &&
+                        minion.Distance(enemy) < UnitManager.MyChampion.Distance(enemy));
         }
 
         private float GetMissingHealthPercent(GameObjectBase target)
@@ -192,7 +216,7 @@ namespace SixAIO.Champions
         {
             if (spell.SpellSlot == SpellSlot.E && (UnitManager.EnemyChampions.Any(x => x.Distance <= UnitManager.MyChampion.AttackRange && TargetSelector.IsAttackable(x)) || GetQState() < 3))
             {
-                SpellQ.ExecuteCastSpell();
+                SpellEQ.ExecuteCastSpell();
                 SpellR.ExecuteCastSpell();
             }
 
