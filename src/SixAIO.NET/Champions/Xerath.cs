@@ -23,13 +23,13 @@ namespace SixAIO.Champions
                                         ? SpellQ.SpellClass.IsSpellReady
                                             ? 735 + SpellQ.ChargeTimer.ElapsedMilliseconds / 1000 / 0.25f * 102f
                                             : 0
-                                        : 1450,
+                                        : QStartChargeRange,
                 Radius = () => 140,
                 Speed = () => 1900,
                 IsEnabled = () => UseQ,
                 MinimumMana = () => 120,
                 IsSpellReady = (spellClass, minMana, minCharges) => SpellQ.ChargeTimer.IsRunning || UnitManager.MyChampion.Mana > minMana,
-                ShouldCast = (mode, target, spellClass, damage) => target != null && target.Distance < SpellQ.Range(),
+                ShouldCast = (mode, target, spellClass, damage) => target != null && (target.Distance < SpellQ.Range() || (!SpellQ.ChargeTimer.IsRunning && target.Distance <= QStartChargeRange)),
                 TargetSelect = (mode) => SpellQ.GetTargets(mode).FirstOrDefault()
             };
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
@@ -75,6 +75,21 @@ namespace SixAIO.Champions
             }
         }
 
+        internal override void OnCoreHarassInput()
+        {
+            if (SpellW.ExecuteCastSpell() || SpellQ.ExecuteCastSpell())
+            {
+                return;
+            }
+        }
+
+        private int QStartChargeRange
+        {
+            get => QSettings.GetItem<Counter>("Q start charge range").Value;
+            set => QSettings.GetItem<Counter>("Q start charge range").Value = value;
+        }
+
+
         internal override void InitializeMenu()
         {
             MenuManager.AddTab(new Tab($"SIXAIO - {nameof(Xerath)}"));
@@ -84,6 +99,7 @@ namespace SixAIO.Champions
 
             QSettings.AddItem(new Switch() { Title = "Use Q", IsOn = true });
             QSettings.AddItem(new ModeDisplay() { Title = "Q HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
+            QSettings.AddItem(new Counter() { Title = "Q start charge range", MinValue = 0, MaxValue = 2000, Value = 1450, ValueFrequency = 50 });
 
 
             WSettings.AddItem(new Switch() { Title = "Use W", IsOn = true });
