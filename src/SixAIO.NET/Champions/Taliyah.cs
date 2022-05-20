@@ -32,11 +32,12 @@ namespace SixAIO.Champions
             };
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
             {
-                PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
+                PredictionMode = () => Prediction.MenuSelected.PredictionType.Circle,
                 MinimumHitChance = () => WHitChance,
-                Range = () => 1000,
-                Radius = () => 160,
-                Speed = () => 1700,
+                Delay = () => 0.55f,
+                Range = () => 900,
+                Radius = () => 225,
+                Speed = () => 1500,
                 IsEnabled = () => UseW,
                 MinimumMana = () => WMinMana,
             };
@@ -44,7 +45,7 @@ namespace SixAIO.Champions
             {
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Cone,
                 MinimumHitChance = () => EHitChance,
-                Range = () => 700,
+                Range = () => 800,
                 Radius = () => 80f,
                 Speed = () => 2000,
                 IsEnabled = () => UseE,
@@ -54,29 +55,39 @@ namespace SixAIO.Champions
 
         internal override void OnCoreMainInput()
         {
-            if (SpellW.IsSpellReady(SpellW.SpellClass, SpellW.MinimumMana(), SpellW.MinimumCharges()))
+            if (UseWOnlyInComboWithE)
             {
-                var target = SpellW.GetTargets(Orbwalker.OrbWalkingModeType.Combo).FirstOrDefault();
-                if (target != null)
+                if (SpellW.IsSpellReady(SpellW.SpellClass, SpellW.MinimumMana(), SpellW.MinimumCharges()) &&
+                    SpellE.IsSpellReady(SpellE.SpellClass, SpellE.MinimumMana(), SpellE.MinimumCharges()))
                 {
-                    var targetPos = target.Position;
-                    var predictResult = SpellW.GetPrediction(target);
-                    var castPos = targetPos.Extend(targetPos + (predictResult.CastPosition - targetPos).Normalized(), 50).ToW2S();
-
-                    Mouse.ClickAndBounce((int)castPos.X, (int)castPos.Y, 0, false, () =>
-                    {
-                        Keyboard.SendKeyDown((short)SpellW.CastSlot);
-                    });
-                    var secondCast = UnitManager.MyChampion.W2S;
-                    Mouse.ClickAndBounce((int)secondCast.X, (int)secondCast.Y, 0, false, () =>
-                     {
-                         Keyboard.SendKeyUp((short)SpellW.CastSlot);
-                     });
+                    SpellE.ExecuteCastSpell();
+                    CastW();
+                    SpellQ.ExecuteCastSpell();
                 }
             }
+            else if (SpellW.IsSpellReady(SpellW.SpellClass, SpellW.MinimumMana(), SpellW.MinimumCharges()))
+            {
+                CastW();
+            }
+
             if (SpellQ.ExecuteCastSpell() || SpellE.ExecuteCastSpell())
             {
                 return;
+            }
+        }
+
+        internal void CastW()
+        {
+            var target = SpellW.GetTargets(Orbwalker.OrbWalkingModeType.Combo).FirstOrDefault();
+            if (target != null)
+            {
+                var targetPos = target.Position;
+                var predictResult = SpellW.GetPrediction(target);
+                var castPos = targetPos.Extend(targetPos + (predictResult.CastPosition - targetPos).Normalized(), 50).ToW2S();
+
+                Mouse.ClickAndBounce((int)castPos.X, (int)castPos.Y, 0, false, () => Keyboard.SendKeyDown((short)SpellW.CastSlot));
+                var secondCast = UnitManager.MyChampion.W2S;
+                Mouse.ClickAndBounce((int)secondCast.X, (int)secondCast.Y, 0, false, () => Keyboard.SendKeyUp((short)SpellW.CastSlot));
             }
         }
 
@@ -110,6 +121,12 @@ namespace SixAIO.Champions
             set => QSettings.GetItem<Switch>("Q Allow Laneclear minion collision").IsOn = value;
         }
 
+        internal bool UseWOnlyInComboWithE
+        {
+            get => WSettings.GetItem<Switch>("Use W only in combo with E").IsOn;
+            set => WSettings.GetItem<Switch>("Use W only in combo with E").IsOn = value;
+        }
+
         internal override void InitializeMenu()
         {
             MenuManager.AddTab(new Tab($"SIXAIO - {nameof(Taliyah)}"));
@@ -123,13 +140,13 @@ namespace SixAIO.Champions
             QSettings.AddItem(new ModeDisplay() { Title = "Q HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
 
             WSettings.AddItem(new Switch() { Title = "Use W", IsOn = true });
+            WSettings.AddItem(new Switch() { Title = "Use W only in combo with E", IsOn = true });
             WSettings.AddItem(new Counter() { Title = "W Min Mana", MinValue = 0, MaxValue = 500, Value = 80, ValueFrequency = 10 });
             WSettings.AddItem(new ModeDisplay() { Title = "W HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
 
             ESettings.AddItem(new Switch() { Title = "Use E", IsOn = true });
             ESettings.AddItem(new Counter() { Title = "E Min Mana", MinValue = 0, MaxValue = 500, Value = 150, ValueFrequency = 10 });
             ESettings.AddItem(new ModeDisplay() { Title = "E HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
-
         }
     }
 }
