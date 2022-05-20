@@ -7,6 +7,7 @@ using Oasys.SDK.SpellCasting;
 using SixAIO.Models;
 using System;
 using System.Linq;
+using System.Windows.Forms;
 
 namespace SixAIO.Champions
 {
@@ -14,6 +15,7 @@ namespace SixAIO.Champions
     {
         public KogMaw()
         {
+            Oasys.SDK.InputProviders.KeyboardProvider.OnKeyPress += KeyboardProvider_OnKeyPress;
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
                 AllowCollision = (target, collisions) => !collisions.Any(),
@@ -62,6 +64,26 @@ namespace SixAIO.Champions
                 MinimumMana = () => RMinMana,
                 TargetSelect = (mode) => SpellR.GetTargets(mode, x => x.HealthPercent <= RTargetMaxHPPercent && (ROnlyOutsideOfAttackRange ? !TargetSelector.IsInRange(x) : x.Distance > RMinimumRange) && x.Distance <= RMaximumRange).FirstOrDefault()
             };
+            SpellRSemiAuto = new Spell(CastSlot.R, SpellSlot.R)
+            {
+                AllowCastOnMap = () => AllowRCastOnMinimap,
+                PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
+                MinimumHitChance = () => SemiAutoRHitChance,
+                Range = () => UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot.R).Level * 250 + 1050,
+                Radius = () => 240,
+                Speed = () => 1500,
+                Delay = () => 0.9f,
+                IsEnabled = () => UseSemiAutoR,
+                TargetSelect = (mode) => SpellRSemiAuto.GetTargets(mode, x => x.Distance > RMinimumRange && x.Distance <= RMaximumRange).FirstOrDefault()
+            };
+        }
+
+        private void KeyboardProvider_OnKeyPress(Keys keyBeingPressed, Oasys.Common.Tools.Devices.Keyboard.KeyPressState pressState)
+        {
+            if (keyBeingPressed == SemiAutoRKey && pressState == Oasys.Common.Tools.Devices.Keyboard.KeyPressState.Down)
+            {
+                SpellRSemiAuto.ExecuteCastSpell();
+            }
         }
 
         private static float GetAttackRangeWithWActive()
@@ -142,6 +164,10 @@ namespace SixAIO.Champions
             RSettings.AddItem(new Counter() { Title = "R minimum range", MinValue = 0, MaxValue = 1800, Value = 0, ValueFrequency = 50 });
             RSettings.AddItem(new Counter() { Title = "R maximum range", MinValue = 0, MaxValue = 1800, Value = 1800, ValueFrequency = 50 });
             RSettings.AddItem(new ModeDisplay() { Title = "R HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "Immobile" });
+
+            RSettings.AddItem(new Switch() { Title = "Use Semi Auto R", IsOn = true });
+            RSettings.AddItem(new KeyBinding() { Title = "Semi Auto R Key", SelectedKey = Keys.T });
+            RSettings.AddItem(new ModeDisplay() { Title = "Semi Auto R HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
 
         }
     }

@@ -7,6 +7,7 @@ using Oasys.SDK.SpellCasting;
 using SixAIO.Models;
 using System;
 using System.Linq;
+using System.Windows.Forms;
 
 namespace SixAIO.Champions
 {
@@ -14,6 +15,7 @@ namespace SixAIO.Champions
     {
         public Ashe()
         {
+            Oasys.SDK.InputProviders.KeyboardProvider.OnKeyPress += KeyboardProvider_OnKeyPress;
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
                 IsEnabled = () => UseQ,
@@ -42,6 +44,25 @@ namespace SixAIO.Champions
                 IsEnabled = () => UseR,
                 TargetSelect = (mode) => SpellR.GetTargets(mode, x => x.Distance > RMinimumRange && x.Distance <= RMaximumRange).FirstOrDefault()
             };
+            SpellRSemiAuto = new Spell(CastSlot.R, SpellSlot.R)
+            {
+                AllowCastOnMap = () => AllowRCastOnMinimap,
+                PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
+                MinimumHitChance = () => SemiAutoRHitChance,
+                Range = () => 30_000,
+                Radius = () => 350,
+                Speed = () => 1600,
+                IsEnabled = () => UseSemiAutoR,
+                TargetSelect = (mode) => SpellRSemiAuto.GetTargets(mode, x => x.Distance > RMinimumRange && x.Distance <= RMaximumRange).FirstOrDefault()
+            };
+        }
+
+        private void KeyboardProvider_OnKeyPress(Keys keyBeingPressed, Oasys.Common.Tools.Devices.Keyboard.KeyPressState pressState)
+        {
+            if (keyBeingPressed == SemiAutoRKey && pressState == Oasys.Common.Tools.Devices.Keyboard.KeyPressState.Down)
+            {
+                SpellRSemiAuto.ExecuteCastSpell();
+            }
         }
 
         internal override void OnCoreMainInput()
@@ -87,6 +108,11 @@ namespace SixAIO.Champions
             //MenuTab.AddItem(new Switch() { Title = "Use E", IsOn = true });
             RSettings.AddItem(new Switch() { Title = "Use R", IsOn = true });
             RSettings.AddItem(new ModeDisplay() { Title = "R HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
+
+            RSettings.AddItem(new Switch() { Title = "Use Semi Auto R", IsOn = true });
+            RSettings.AddItem(new KeyBinding() { Title = "Semi Auto R Key", SelectedKey = Keys.T });
+            RSettings.AddItem(new ModeDisplay() { Title = "Semi Auto R HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
+
             RSettings.AddItem(new Switch() { Title = "Allow R cast on minimap", IsOn = true });
             RSettings.AddItem(new Counter() { Title = "R minimum range", MinValue = 0, MaxValue = 30_000, Value = 0, ValueFrequency = 50 });
             RSettings.AddItem(new Counter() { Title = "R maximum range", MinValue = 0, MaxValue = 30_000, Value = 2500, ValueFrequency = 50 });

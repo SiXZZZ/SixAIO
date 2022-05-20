@@ -2,6 +2,7 @@
 using Oasys.Common.Menu;
 using Oasys.Common.Menu.ItemComponents;
 using System;
+using System.Windows.Forms;
 
 namespace SixAIO.Models
 {
@@ -11,6 +12,7 @@ namespace SixAIO.Models
         internal Spell SpellW;
         internal Spell SpellE;
         internal Spell SpellR;
+        internal Spell SpellRSemiAuto;
 
         internal Tab MenuTab => MenuManagerProvider.GetTab($"SIXAIO - {GetType().Name}");
         internal Group BasicAttackSettings => MenuTab.GetGroup("Basic Attack Settings");
@@ -126,6 +128,20 @@ namespace SixAIO.Models
         {
             get => (Oasys.SDK.Prediction.MenuSelected.HitChance)Enum.Parse(typeof(Oasys.SDK.Prediction.MenuSelected.HitChance), RSettings.GetItem<ModeDisplay>("R HitChance").SelectedModeName);
             set => RSettings.GetItem<ModeDisplay>("R HitChance").SelectedModeName = value.ToString();
+        }
+
+        internal bool UseSemiAutoR
+        {
+            get => RSettings.GetItem<Switch>("Use Semi Auto R").IsOn;
+            set => RSettings.GetItem<Switch>("Use Semi Auto R").IsOn = value;
+        }
+
+        public Keys SemiAutoRKey => RSettings.GetItem<KeyBinding>("Semi Auto R Key").SelectedKey;
+
+        internal Oasys.SDK.Prediction.MenuSelected.HitChance SemiAutoRHitChance
+        {
+            get => (Oasys.SDK.Prediction.MenuSelected.HitChance)Enum.Parse(typeof(Oasys.SDK.Prediction.MenuSelected.HitChance), RSettings.GetItem<ModeDisplay>("Semi Auto R HitChance").SelectedModeName);
+            set => RSettings.GetItem<ModeDisplay>("Semi Auto R HitChance").SelectedModeName = value.ToString();
         }
 
         internal bool AllowRCastOnMinimap

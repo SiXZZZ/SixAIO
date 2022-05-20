@@ -7,6 +7,7 @@ using Oasys.SDK.SpellCasting;
 using SixAIO.Models;
 using System;
 using System.Linq;
+using System.Windows.Forms;
 
 namespace SixAIO.Champions
 {
@@ -14,6 +15,7 @@ namespace SixAIO.Champions
     {
         public Xerath()
         {
+            Oasys.SDK.InputProviders.KeyboardProvider.OnKeyPress += KeyboardProvider_OnKeyPress;
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
                 IsCharge = () => true,
@@ -67,6 +69,26 @@ namespace SixAIO.Champions
                 IsSpellReady = (spellClass, minMana, minCharges) => spellClass.IsToggled && spellClass.Charges > minCharges || UnitManager.MyChampion.Mana > minMana,
                 TargetSelect = (mode) => SpellR.GetTargets(mode).OrderBy(x => x.DistanceTo(GameEngine.WorldMousePosition)).FirstOrDefault()
             };
+            SpellRSemiAuto = new Spell(CastSlot.R, SpellSlot.R)
+            {
+                AllowCastOnMap = () => AllowRCastOnMinimap,
+                PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
+                MinimumHitChance = () => SemiAutoRHitChance,
+                Range = () => 5000,
+                Radius = () => 200,
+                Speed = () => 1500,
+                Delay = () => 0.63f,
+                IsEnabled = () => UseR && !SpellQ.ChargeTimer.IsRunning && UnitManager.MyChampion.BuffManager.ActiveBuffs.Any(x => x.Name == "xerathrshots" && x.Stacks >= 1),
+                TargetSelect = (mode) => SpellRSemiAuto.GetTargets(mode).OrderBy(x => x.DistanceTo(GameEngine.WorldMousePosition)).FirstOrDefault()
+            };
+        }
+
+        private void KeyboardProvider_OnKeyPress(Keys keyBeingPressed, Oasys.Common.Tools.Devices.Keyboard.KeyPressState pressState)
+        {
+            if (keyBeingPressed == SemiAutoRKey && pressState == Oasys.Common.Tools.Devices.Keyboard.KeyPressState.Down)
+            {
+                SpellRSemiAuto.ExecuteCastSpell();
+            }
         }
 
         internal override void OnCoreMainInput()
@@ -112,6 +134,11 @@ namespace SixAIO.Champions
             RSettings.AddItem(new Switch() { Title = "Use R", IsOn = true });
             RSettings.AddItem(new Switch() { Title = "Allow R cast on minimap", IsOn = true });
             RSettings.AddItem(new ModeDisplay() { Title = "R HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
+
+            RSettings.AddItem(new Switch() { Title = "Use Semi Auto R", IsOn = true });
+            RSettings.AddItem(new KeyBinding() { Title = "Semi Auto R Key", SelectedKey = Keys.T });
+            RSettings.AddItem(new ModeDisplay() { Title = "Semi Auto R HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
+
         }
     }
 }
