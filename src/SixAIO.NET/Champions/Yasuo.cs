@@ -21,8 +21,6 @@ namespace SixAIO.Champions
     {
         private bool _originalTargetChampsOnlySetting;
 
-        internal Spell SpellEQ;
-
         private static int GetQState() => UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot.Q).SpellData.SpellName switch
         {
             "YasuoQ1Wrapper" => 1,
@@ -31,45 +29,16 @@ namespace SixAIO.Champions
             _ => 1
         };
 
-        private static bool AllSpellsOnCooldown()
-        {
-            var q = UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot.Q);
-            var w = UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot.W);
-            var e = UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot.E);
-            return !q.IsSpellReady && !w.IsSpellReady && !e.IsSpellReady;
-        }
-
         public Yasuo()
         {
-            SDKSpell.OnSpellCast += Spell_OnSpellCast;
-            Orbwalker.OnOrbwalkerAfterBasicAttack += Orbwalker_OnOrbwalkerAfterBasicAttack;
-            SpellEQ = new Spell(CastSlot.Q, SpellSlot.Q)
-            {
-                PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
-                MinimumHitChance = () => QHitChance,
-                Speed = () => 1200,
-                Radius = () => 200,
-                Range = () => 200,
-                IsEnabled = () => UseQ,
-                ShouldCast = (mode, target, spellClass, damage) => target != null && (target.IsObject(ObjectTypeFlag.AIHeroClient) || GetQState() < 3),
-                TargetSelect = (mode) =>
-                {
-                    var champ = UnitManager.EnemyChampions.FirstOrDefault(x => x.Distance <= SpellEQ.Range() && TargetSelector.IsAttackable(x));
-                    if (champ != null)
-                    {
-                        return champ;
-                    }
-
-                    return null;
-                }
-            };
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
                 MinimumHitChance = () => QHitChance,
                 Speed = () => 1200,
                 Radius = () => GetQState() == 3 ? 180 : 80,
-                Range = () => GetQState() == 3 ? 1150 : 450,
+                Range = () => UnitManager.MyChampion.AIManager.IsDashing ? 200 : GetQState() == 3 ? 1150 : 450,
+                From = () => UnitManager.MyChampion.AIManager.IsDashing ? UnitManager.MyChampion.AIManager.NavEndPosition : UnitManager.MyChampion.AIManager.ServerPosition,
                 IsEnabled = () => UseQ,
                 ShouldCast = (mode, target, spellClass, damage) => target != null && (target.IsObject(ObjectTypeFlag.AIHeroClient) || GetQState() < 3),
                 TargetSelect = (mode) =>
@@ -101,6 +70,7 @@ namespace SixAIO.Champions
             {
                 IsTargetted = () => true,
                 IsEnabled = () => UseE,
+                ShouldCast = (mode, target, spellClass, damage) => target != null && !UnitManager.EnemyChampions.Any(x => TargetSelector.IsInRange(x) && TargetSelector.IsAttackable(x)),
                 TargetSelect = (mode) =>
                 {
                     if (mode == Orbwalker.OrbWalkingModeType.Combo)
@@ -158,7 +128,8 @@ namespace SixAIO.Champions
             {
                 IsTargetted = () => true,
                 IsEnabled = () => UseR,
-                TargetSelect = (mode) => UnitManager.EnemyChampions.FirstOrDefault(x => x.Distance <= 1400 && TargetSelector.IsAttackable(x) && BuffChecker.IsKnockedUpOrBack(x))
+                ShouldCast = (mode, target, spellClass, damage) =>
+                    RUltEnemies <= UnitManager.EnemyChampions.Count(x => x.Distance <= 1400 && TargetSelector.IsAttackable(x) && BuffChecker.IsKnockedUpOrBack(x))
             };
         }
 
@@ -212,26 +183,6 @@ namespace SixAIO.Champions
                    ((UnitManager.MyChampion.UnitStats.BonusAttackDamage * 0.20f) + (UnitManager.MyChampion.UnitStats.TotalAbilityPower * 0.60f) + 50 + 10 * spellClass.Level);
         }
 
-        private void Spell_OnSpellCast(SDKSpell spell, GameObjectBase target)
-        {
-            if (spell.SpellSlot == SpellSlot.E && (UnitManager.EnemyChampions.Any(x => x.Distance <= UnitManager.MyChampion.AttackRange && TargetSelector.IsAttackable(x)) || GetQState() < 3))
-            {
-                SpellEQ.ExecuteCastSpell();
-                SpellR.ExecuteCastSpell();
-            }
-
-            if (spell.SpellSlot == SpellSlot.Q)
-            {
-                SpellR.ExecuteCastSpell();
-            }
-        }
-
-        private void Orbwalker_OnOrbwalkerAfterBasicAttack(float gameTime, GameObjectBase target)
-        {
-            SpellQ.ExecuteCastSpell();
-            SpellE.ExecuteCastSpell();
-        }
-
         internal override void OnCoreMainInput()
         {
             if (SpellR.ExecuteCastSpell() || SpellQ.ExecuteCastSpell() || SpellE.ExecuteCastSpell())
@@ -246,6 +197,12 @@ namespace SixAIO.Champions
             {
                 return;
             }
+        }
+
+        private int RUltEnemies
+        {
+            get => RSettings.GetItem<Counter>("R Ult enemies").Value;
+            set => RSettings.GetItem<Counter>("R Ult enemies").Value = value;
         }
 
         internal override void InitializeMenu()
@@ -264,6 +221,7 @@ namespace SixAIO.Champions
             ESettings.AddItem(new Switch() { Title = "Use E", IsOn = true });
 
             RSettings.AddItem(new Switch() { Title = "Use R", IsOn = true });
+            RSettings.AddItem(new Counter() { Title = "R Ult enemies", MinValue = 1, MaxValue = 5, Value = 1, ValueFrequency = 1 });
             SetTargetChampsOnly();
         }
 

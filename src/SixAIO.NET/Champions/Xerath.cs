@@ -55,16 +55,15 @@ namespace SixAIO.Champions
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
-                IsCharge = () => true,
+                IsChannel = () => true,
                 AllowCastOnMap = () => AllowRCastOnMinimap,
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Circle,
                 MinimumHitChance = () => RHitChance,
-                MinimumCharges = () => 1,
                 Range = () => 5000,
                 Radius = () => 200,
                 Speed = () => 1500,
                 Delay = () => 0.63f,
-                IsEnabled = () => UseR && !SpellQ.ChargeTimer.IsRunning,
+                IsEnabled = () => UseR && !SpellQ.ChargeTimer.IsRunning && UnitManager.MyChampion.BuffManager.ActiveBuffs.Any(x => x.Name == "xerathrshots" && x.Stacks >= 1),
                 IsSpellReady = (spellClass, minMana, minCharges) => spellClass.IsToggled && spellClass.Charges > minCharges || UnitManager.MyChampion.Mana > minMana,
                 TargetSelect = (mode) => SpellR.GetTargets(mode).OrderBy(x => x.DistanceTo(GameEngine.WorldMousePosition)).FirstOrDefault()
             };
@@ -72,7 +71,7 @@ namespace SixAIO.Champions
 
         internal override void OnCoreMainInput()
         {
-            if (SpellW.ExecuteCastSpell() || SpellE.ExecuteCastSpell() || SpellQ.ExecuteCastSpell() /*|| SpellR.ExecuteCastSpell()*/)
+            if (SpellW.ExecuteCastSpell() || SpellE.ExecuteCastSpell() || SpellQ.ExecuteCastSpell() || SpellR.ExecuteCastSpell())
             {
                 return;
             }
@@ -98,7 +97,7 @@ namespace SixAIO.Champions
             MenuTab.AddGroup(new Group("Q Settings"));
             MenuTab.AddGroup(new Group("W Settings"));
             MenuTab.AddGroup(new Group("E Settings"));
-            //MenuTab.AddGroup(new Group("R Settings"));
+            MenuTab.AddGroup(new Group("R Settings"));
 
             QSettings.AddItem(new Switch() { Title = "Use Q", IsOn = true });
             QSettings.AddItem(new ModeDisplay() { Title = "Q HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
@@ -110,9 +109,9 @@ namespace SixAIO.Champions
             ESettings.AddItem(new Switch() { Title = "Use E", IsOn = true });
             ESettings.AddItem(new ModeDisplay() { Title = "E HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
 
-            //RSettings.AddItem(new Switch() { Title = "Use R", IsOn = true });
-            //RSettings.AddItem(new Switch() { Title = "Allow R cast on minimap", IsOn = true });
-            //RSettings.AddItem(new ModeDisplay() { Title = "R HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
+            RSettings.AddItem(new Switch() { Title = "Use R", IsOn = true });
+            RSettings.AddItem(new Switch() { Title = "Allow R cast on minimap", IsOn = true });
+            RSettings.AddItem(new ModeDisplay() { Title = "R HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
         }
     }
 }
