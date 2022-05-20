@@ -28,7 +28,7 @@ namespace SixAIO.Champions
                                         : QStartChargeRange,
                 Radius = () => 140,
                 Speed = () => 1900,
-                IsEnabled = () => UseQ,
+                IsEnabled = () => UseQ && !UnitManager.MyChampion.BuffManager.ActiveBuffs.Any(x => x.Name == "XerathLocusOfPower2" && x.Stacks >= 1),
                 MinimumMana = () => 120,
                 IsSpellReady = (spellClass, minMana, minCharges) => SpellQ.ChargeTimer.IsRunning || UnitManager.MyChampion.Mana > minMana,
                 ShouldCast = (mode, target, spellClass, damage) => target != null && (target.Distance < SpellQ.Range() || (!SpellQ.ChargeTimer.IsRunning && target.Distance <= QStartChargeRange)),
@@ -65,24 +65,26 @@ namespace SixAIO.Champions
                 Radius = () => 200,
                 Speed = () => 1500,
                 Delay = () => 0.63f,
-                IsEnabled = () => UseR && !SpellQ.ChargeTimer.IsRunning && UnitManager.MyChampion.BuffManager.ActiveBuffs.Any(x => x.Name == "xerathrshots" && x.Stacks >= 1),
-                IsSpellReady = (spellClass, minMana, minCharges) => spellClass.IsToggled && spellClass.Charges > minCharges || UnitManager.MyChampion.Mana > minMana,
+                IsEnabled = () => UseR && UnitManager.MyChampion.BuffManager.ActiveBuffs.Any(x => x.Name == "xerathrshots" && x.Stacks >= 1),
+                IsSpellReady = (spellClass, minMana, minCharges) => UnitManager.MyChampion.BuffManager.ActiveBuffs.Any(x => x.Name == "XerathLocusOfPower2" && x.Stacks >= 1) && spellClass.Charges > minCharges || UnitManager.MyChampion.Mana > minMana,
                 TargetSelect = (mode) => SpellR.GetTargets(mode).OrderBy(x => x.DistanceTo(GameEngine.WorldMousePosition)).FirstOrDefault()
             };
             SpellRSemiAuto = new Spell(CastSlot.R, SpellSlot.R)
             {
+                IsChannel = () => true,
                 AllowCastOnMap = () => AllowRCastOnMinimap,
-                PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
+                PredictionMode = () => Prediction.MenuSelected.PredictionType.Circle,
                 MinimumHitChance = () => SemiAutoRHitChance,
                 Range = () => 5000,
                 Radius = () => 200,
                 Speed = () => 1500,
                 Delay = () => 0.63f,
-                IsEnabled = () => UseR && !SpellQ.ChargeTimer.IsRunning && UnitManager.MyChampion.BuffManager.ActiveBuffs.Any(x => x.Name == "xerathrshots" && x.Stacks >= 1),
+                IsEnabled = () => UseSemiAutoR && UnitManager.MyChampion.BuffManager.ActiveBuffs.Any(x => x.Name == "xerathrshots" && x.Stacks >= 1),
+                IsSpellReady = (spellClass, minMana, minCharges) => UnitManager.MyChampion.BuffManager.ActiveBuffs.Any(x => x.Name == "XerathLocusOfPower2" && x.Stacks >= 1) && spellClass.Charges > minCharges || UnitManager.MyChampion.Mana > minMana,
                 TargetSelect = (mode) => SpellRSemiAuto.GetTargets(mode).OrderBy(x => x.DistanceTo(GameEngine.WorldMousePosition)).FirstOrDefault()
             };
         }
-
+        //XerathLocusOfPower2
         private void KeyboardProvider_OnKeyPress(Keys keyBeingPressed, Oasys.Common.Tools.Devices.Keyboard.KeyPressState pressState)
         {
             if (keyBeingPressed == SemiAutoRKey && pressState == Oasys.Common.Tools.Devices.Keyboard.KeyPressState.Down)

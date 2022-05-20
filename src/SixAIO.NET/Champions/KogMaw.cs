@@ -67,7 +67,7 @@ namespace SixAIO.Champions
             SpellRSemiAuto = new Spell(CastSlot.R, SpellSlot.R)
             {
                 AllowCastOnMap = () => AllowRCastOnMinimap,
-                PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
+                PredictionMode = () => Prediction.MenuSelected.PredictionType.Circle,
                 MinimumHitChance = () => SemiAutoRHitChance,
                 Range = () => UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot.R).Level * 250 + 1050,
                 Radius = () => 240,
