@@ -32,13 +32,14 @@ namespace SixAIO.Champions
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
                 IsEnabled = () => UseQ,
-                TargetSelect = (mode) => GetETarget(UnitManager.EnemyChampions)
+                ShouldCast = (mode, target, spellClass, damage) => GetETarget(UnitManager.EnemyChampions) is not null
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
                 IsTargetted = () => true,
                 IsEnabled = () => UseE,
-                TargetSelect = (mode) => GetPrioritizationTarget()
+                TargetSelect = (mode) => GetPrioritizationTarget(),
+                ShouldCast = (mode, target, spellClass, damage) => target is not null && target.Distance <= 517 + 8 * UnitManager.MyChampion.Level
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
