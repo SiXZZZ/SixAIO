@@ -15,6 +15,7 @@ namespace SixAIO.Champions
 {
     internal class Pyke : Champion
     {
+        private bool IsChargingQ => UnitManager.MyChampion.BuffManager.ActiveBuffs.Any(x => x.Name == "PykeQ" && x.Stacks >= 1);
         public Pyke()
         {
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
@@ -32,20 +33,18 @@ namespace SixAIO.Champions
                 Speed = () => 1500,
                 IsEnabled = () => UseQ,
                 MinimumMana = () => 90,
-                IsSpellReady = (spellClass, minMana, minCharges) => SpellQ.ChargeTimer.IsRunning || UnitManager.MyChampion.Mana > minMana,
                 ShouldCast = (mode, target, spellClass, damage) => target != null && target.Distance < SpellQ.Range(),
                 TargetSelect = (mode) => SpellQ.GetTargets(mode).FirstOrDefault()
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
-                AllowCollision = (target, collisions) => !collisions.Any(),
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
                 MinimumHitChance = () => EHitChance,
                 Delay = () => 0f,
                 Range = () => ERange,
                 Radius = () => 110,
                 Speed = () => 3000,
-                IsEnabled = () => UseE && !SpellQ.ChargeTimer.IsRunning,
+                IsEnabled = () => UseE && !IsChargingQ,
                 TargetSelect = (mode) => SpellE.GetTargets(mode).FirstOrDefault()
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
