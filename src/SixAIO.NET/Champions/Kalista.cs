@@ -73,9 +73,9 @@ namespace SixAIO.Champions
 
         private bool IsValidHero(Hero target)
         {
-            return !target.IsTargetDummy && IsValidTarget(target) &&
-                    !TargetSelector.IsInvulnerable(target, Oasys.Common.Logic.DamageType.Physical, false) &&
-                    (ESettings.GetItem<Switch>("E - " + target.ModelName)?.IsOn ?? false);
+            return IsValidTarget(target) &&
+                   !TargetSelector.IsInvulnerable(target, Oasys.Common.Logic.DamageType.Physical, false) &&
+                   (target.IsTargetDummy || (ESettings.GetItem<Switch>("E - " + target.ModelName)?.IsOn ?? false));
         }
 
         private static bool IsEpicJungleMonster(JungleMob target)
@@ -87,13 +87,13 @@ namespace SixAIO.Champions
 
         private static bool IsValidTarget(GameObjectBase target)
         {
-            return target.Distance <= 1100 && TargetSelector.IsAttackable(target) && target.Health < GetEDamage(target);
+            return target.Distance <= 1100 && TargetSelector.IsAttackable(target) && target.Health <= GetEDamage(target);
         }
 
         internal static float GetEDamage(GameObjectBase enemy)
         {
             var kalistaE = enemy.BuffManager.GetActiveBuff("kalistaexpungemarker");
-            if (kalistaE == null || !kalistaE.IsActive)
+            if (!enemy.IsAlive || kalistaE == null || !kalistaE.IsActive)
             {
                 return 0;
             }
@@ -155,6 +155,12 @@ namespace SixAIO.Champions
                 {
                     var pos = new Vector2(champ.HealthBarScreenPosition.X + 40, champ.HealthBarScreenPosition.Y - 40);
                     RenderFactory.DrawText($"{(int)GetEDamage(champ)}", 12, pos, Color.White);
+                }
+                var minions = UnitManager.EnemyMinions.Where(x => GetEDamage(x) > 0);
+                foreach (var minion in minions)
+                {
+                    var pos = new Vector2(minion.HealthBarScreenPosition.X + 40, minion.HealthBarScreenPosition.Y - 40);
+                    RenderFactory.DrawText($"{(int)GetEDamage(minion)}", 12, pos, Color.White);
                 }
             }
         }
