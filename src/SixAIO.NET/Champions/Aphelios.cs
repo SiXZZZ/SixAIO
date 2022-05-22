@@ -39,10 +39,6 @@ namespace SixAIO.Champions
         {
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
-                AllowCastInDirection = () => false,
-                AllowCastOnMap = () => false,
-                MinimumCharges = () => 1,
-                IsTargetted = () => false,
                 ShouldCast = QShouldCast,
                 AllowCollision = QAllowCollision,
                 PredictionMode = QPredictionMode,
@@ -203,11 +199,11 @@ namespace SixAIO.Champions
 
             return GetGunType() switch
             {
-                GunType.ApheliosSeverumQ => UseSeverum && UnitManager.MyChampion.HealthPercent <= SeverumHealthPercentLessThan && UnitManager.EnemyChampions.Any(enemy => enemy.IsAlive && enemy.Distance <= SpellQ.Range()),
-                GunType.ApheliosInfernumQ => UseInfernum && target != null && (CalibrumOnlyOutsideOfAttackRange ? UnitManager.EnemyChampions.All(x => x.Distance >= UnitManager.MyChampion.TrueAttackRange) : true) && spellClass.IsSpellReady,
-                GunType.ApheliosCrescendumQ => UseCrescendum && target != null && spellClass.IsSpellReady,
-                GunType.ApheliosCalibrumQ => UseCalibrum && target != null && target.Distance <= CrescendumEnemyIsCloserThan && spellClass.IsSpellReady,
-                GunType.ApheliosGravitumQ => UseGravitum && UnitManager.EnemyChampions.Count(HasGravitum) >= GravitumCanRoot,
+                GunType.ApheliosSeverumQ => UnitManager.MyChampion.HealthPercent <= SeverumHealthPercentLessThan && UnitManager.EnemyChampions.Any(enemy => enemy.IsAlive && enemy.Distance <= SpellQ.Range()),
+                GunType.ApheliosInfernumQ => target != null,
+                GunType.ApheliosCrescendumQ => target != null && target.Distance <= CrescendumEnemyIsCloserThan && spellClass.IsSpellReady,
+                GunType.ApheliosCalibrumQ => target != null && (!CalibrumOnlyOutsideOfAttackRange || UnitManager.EnemyChampions.All(x => x.Distance >= UnitManager.MyChampion.TrueAttackRange)) && spellClass.IsSpellReady,
+                GunType.ApheliosGravitumQ => UnitManager.EnemyChampions.Count(HasGravitum) >= GravitumCanRoot,
                 _ => false
             };
         }

@@ -40,7 +40,7 @@ namespace SixAIO.Champions
                 Radius = () => 160,
                 IsEnabled = () => UseQ,
                 MinimumMana = () => QMinMana,
-                TargetSelect = (mode) => SpellQ.GetTargets(mode).FirstOrDefault()
+                TargetSelect = (mode) => SpellQ.GetTargets(mode, x => x.Distance <= 800).FirstOrDefault()
             };
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
             {

@@ -49,7 +49,7 @@ namespace SixAIO.Champions
                 AllowCollision = (target, collisions) => !collisions.Any(),
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
                 MinimumHitChance = () => EHitChance,
-                Range = () => 1125,
+                Range = () => EMaximumRange,
                 Radius = () => 120,
                 Speed = () => 1400,
                 IsEnabled = () => UseE,
@@ -115,6 +115,12 @@ namespace SixAIO.Champions
             set => QSettings.GetItem<Counter>("Q start charge range").Value = value;
         }
 
+        private int EMaximumRange
+        {
+            get => ESettings.GetItem<Counter>("E maximum range").Value;
+            set => ESettings.GetItem<Counter>("E maximum range").Value = value;
+        }
+
         internal override void InitializeMenu()
         {
             MenuManager.AddTab(new Tab($"SIXAIO - {nameof(Xerath)}"));
@@ -132,6 +138,7 @@ namespace SixAIO.Champions
 
             ESettings.AddItem(new Switch() { Title = "Use E", IsOn = true });
             ESettings.AddItem(new ModeDisplay() { Title = "E HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
+            ESettings.AddItem(new Counter() { Title = "E maximum range", MinValue = 0, MaxValue = 1125, Value = 1100, ValueFrequency = 25 });
 
             RSettings.AddItem(new Switch() { Title = "Use R", IsOn = true });
             RSettings.AddItem(new Switch() { Title = "Allow R cast on minimap", IsOn = true });
