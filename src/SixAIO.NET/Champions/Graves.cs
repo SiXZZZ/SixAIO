@@ -32,8 +32,8 @@ namespace SixAIO.Champions
                 Speed = () => 2000,
                 IsEnabled = () => UseQ,
                 TargetSelect = (mode) => QOnlyOnWallBang
-                                        ? SpellQ.GetTargets(mode, CanWallBang).OrderBy(x => x.Health).FirstOrDefault()
-                                        : SpellQ.GetTargets(mode).OrderBy(x => x.Health).ThenBy(CanWallBang).FirstOrDefault()
+                                        ? SpellQ.GetTargets(mode, x => mode != Orbwalker.OrbWalkingModeType.LaneClear || x.IsJungle && CanWallBang(x)).OrderBy(x => x.Health).FirstOrDefault()
+                                        : SpellQ.GetTargets(mode, x => mode != Orbwalker.OrbWalkingModeType.LaneClear || x.IsJungle).OrderBy(x => x.Health).ThenBy(CanWallBang).FirstOrDefault()
             };
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
             {
@@ -52,8 +52,8 @@ namespace SixAIO.Champions
                             DashModeSelected == DashMode.ToMouse &&
                             !Orbwalker.CanBasicAttack &&
                             !UnitManager.MyChampion.BuffManager.ActiveBuffs.Any(x => x.Name == "gravesbasicattackammo2" && x.Stacks >= 1) &&
-                            TargetSelector.IsAttackable(Orbwalker.TargetHero) &&
-                            TargetSelector.IsInRange(Orbwalker.TargetHero),
+                            (mode != Orbwalker.OrbWalkingModeType.Combo || TargetSelector.IsAttackable(Orbwalker.TargetHero) && TargetSelector.IsInRange(Orbwalker.TargetHero)) &&
+                            (mode != Orbwalker.OrbWalkingModeType.LaneClear || UnitManager.EnemyJungleMobs.Any(x => TargetSelector.IsInRange(x) && TargetSelector.IsAttackable(x))),
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
@@ -105,6 +105,14 @@ namespace SixAIO.Champions
         internal override void OnCoreMainInput()
         {
             if (SpellW.ExecuteCastSpell() || SpellQ.ExecuteCastSpell() || SpellR.ExecuteCastSpell())
+            {
+                return;
+            }
+        }
+
+        internal override void OnCoreLaneClearInput()
+        {
+            if (SpellQ.ExecuteCastSpell(Orbwalker.OrbWalkingModeType.LaneClear) || SpellE.ExecuteCastSpell(Orbwalker.OrbWalkingModeType.LaneClear))
             {
                 return;
             }
