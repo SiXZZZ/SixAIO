@@ -49,7 +49,7 @@ namespace SixAIO.Champions
             var targets = UnitManager.EnemyChampions.Where(x => x.IsAlive &&
                                                                 x.Distance <= 550 + x.UnitComponentInfo.UnitBoundingRadius + UnitManager.MyChampion.UnitComponentInfo.UnitBoundingRadius &&
                                                                 TargetSelector.IsAttackable(x) &&
-                                                                !TargetSelector.IsInvulnerable(x, Oasys.Common.Logic.DamageType.Physical, false))
+                                                                !TargetSelector.IsInvulnerable(x, Oasys.Common.Logic.DamageType.Magical, false))
                                                     .OrderBy(x => x.Health);
             var target = targets.FirstOrDefault(CanStun);
             if (target != null)

@@ -1,0 +1,168 @@
+﻿using Oasys.Common;
+using Oasys.Common.Enums.GameEnums;
+using Oasys.Common.Extensions;
+using Oasys.Common.GameObject;
+using Oasys.Common.GameObject.Clients.ExtendedInstances.Spells;
+using Oasys.Common.Menu;
+using Oasys.Common.Menu.ItemComponents;
+using Oasys.SDK;
+using Oasys.SDK.Menu;
+using Oasys.SDK.SpellCasting;
+using SharpDX;
+using SixAIO.Enums;
+using SixAIO.Models;
+using System;
+using System.Linq;
+
+namespace SixAIO.Champions
+{
+    internal class Graves : Champion
+    {
+        private float _lastAATime;
+
+        public Graves()
+        {
+            Orbwalker.OnOrbwalkerAfterBasicAttack += Orbwalker_OnOrbwalkerAfterBasicAttack;
+            SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
+            {
+                PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
+                MinimumHitChance = () => QHitChance,
+                Range = () => 800,
+                Radius = () => 80,
+                Speed = () => 2000,
+                IsEnabled = () => UseQ,
+                TargetSelect = (mode) => QOnlyOnWallBang
+                                        ? SpellQ.GetTargets(mode, CanWallBang).OrderBy(x => x.Health).FirstOrDefault()
+                                        : SpellQ.GetTargets(mode).OrderBy(x => x.Health).ThenBy(CanWallBang).FirstOrDefault()
+            };
+            SpellW = new Spell(CastSlot.W, SpellSlot.W)
+            {
+                PredictionMode = () => Prediction.MenuSelected.PredictionType.Circle,
+                MinimumHitChance = () => WHitChance,
+                Range = () => WMaximumRange,
+                Speed = () => 1500,
+                Radius = () => 200,
+                IsEnabled = () => UseW,
+                TargetSelect = (mode) => SpellW.GetTargets(mode).FirstOrDefault()
+            };
+            SpellE = new Spell(CastSlot.E, SpellSlot.E)
+            {
+                IsEnabled = () => UseE,
+                ShouldCast = (mode, target, spellClass, damage) =>
+                            DashModeSelected == DashMode.ToMouse &&
+                            !Orbwalker.CanBasicAttack &&
+                            !UnitManager.MyChampion.BuffManager.ActiveBuffs.Any(x => x.Name == "gravesbasicattackammo2" && x.Stacks >= 1) &&
+                            TargetSelector.IsAttackable(Orbwalker.TargetHero) &&
+                            TargetSelector.IsInRange(Orbwalker.TargetHero),
+            };
+            SpellR = new Spell(CastSlot.R, SpellSlot.R)
+            {
+                PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
+                MinimumHitChance = () => RHitChance,
+                Range = () => RMaximumRange,
+                Radius = () => 200,
+                Speed = () => 2100,
+                Damage = (target, spellClass) =>
+                            target != null
+                            ? DamageCalculator.GetArmorMod(UnitManager.MyChampion, target) *
+                                ((100 + spellClass.Level * 150) + UnitManager.MyChampion.UnitStats.BonusAttackDamage * 1.5f)
+                            : 0,
+                ShouldCast = (mode, target, spellClass, damage) => target is not null && target.Distance > 1100 ? damage * 0.8f >= target.Health : damage >= target.Health,
+                IsEnabled = () => UseR,
+                TargetSelect = (mode) => SpellR.GetTargets(mode).FirstOrDefault()
+            };
+        }
+
+        private int DistanceToWall(GameObjectBase target)
+        {
+            for (var i = 0; i < 800; i += 5)
+            {
+                var pos = UnitManager.MyChampion.Position.Extend(target.Position, target.Distance + i);
+                if (pos.IsValid() && EngineManager.IsWall(pos))
+                {
+                    return i;
+                }
+            }
+
+            return int.MaxValue;
+        }
+
+        private bool CanWallBang(GameObjectBase target)
+        {
+            var distance = DistanceToWall(target);
+            return distance <= 800 && distance > 0;
+        }
+
+        private void Orbwalker_OnOrbwalkerAfterBasicAttack(float gameTime, GameObjectBase target)
+        {
+            _lastAATime = gameTime;
+            if (target != null)
+            {
+                SpellE.ExecuteCastSpell();
+            }
+        }
+
+        internal override void OnCoreMainInput()
+        {
+            if (SpellW.ExecuteCastSpell() || SpellQ.ExecuteCastSpell() || SpellR.ExecuteCastSpell())
+            {
+                return;
+            }
+        }
+
+        internal bool QOnlyOnWallBang
+        {
+            get => QSettings.GetItem<Switch>("Q Only on wall bang").IsOn;
+            set => QSettings.GetItem<Switch>("Q Only on wall bang").IsOn = value;
+        }
+
+        private DashMode DashModeSelected
+        {
+            get => (DashMode)Enum.Parse(typeof(DashMode), ESettings.GetItem<ModeDisplay>("Dash Mode").SelectedModeName);
+            set => ESettings.GetItem<ModeDisplay>("Dash Mode").SelectedModeName = value.ToString();
+        }
+
+        private int WMaximumRange
+        {
+            get => WSettings.GetItem<Counter>("W maximum range").Value;
+            set => WSettings.GetItem<Counter>("W maximum range").Value = value;
+        }
+
+        private int RMaximumRange
+        {
+            get => RSettings.GetItem<Counter>("R maximum range").Value;
+            set => RSettings.GetItem<Counter>("R maximum range").Value = value;
+        }
+
+        internal bool ROnlyWhenCanKill
+        {
+            get => RSettings.GetItem<Switch>("R only when can kill").IsOn;
+            set => RSettings.GetItem<Switch>("R only when can kill").IsOn = value;
+        }
+
+        internal override void InitializeMenu()
+        {
+            MenuManager.AddTab(new Tab($"SIXAIO - {nameof(Graves)}"));
+            MenuTab.AddGroup(new Group("Q Settings"));
+            MenuTab.AddGroup(new Group("W Settings"));
+            MenuTab.AddGroup(new Group("E Settings"));
+            MenuTab.AddGroup(new Group("R Settings"));
+
+            QSettings.AddItem(new Switch() { Title = "Use Q", IsOn = true });
+            QSettings.AddItem(new Switch() { Title = "Q Only on wall bang", IsOn = false });
+            QSettings.AddItem(new ModeDisplay() { Title = "Q HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
+
+            WSettings.AddItem(new Switch() { Title = "Use W", IsOn = true });
+            WSettings.AddItem(new ModeDisplay() { Title = "W HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
+            WSettings.AddItem(new Counter() { Title = "W maximum range", MinValue = 0, MaxValue = 950, Value = 950, ValueFrequency = 50 });
+
+            ESettings.AddItem(new Switch() { Title = "Use E", IsOn = true });
+            ESettings.AddItem(new ModeDisplay() { Title = "Dash Mode", ModeNames = DashHelper.ConstructDashModeTable(), SelectedModeName = "ToMouse" });
+
+            RSettings.AddItem(new Switch() { Title = "Use R", IsOn = true });
+            RSettings.AddItem(new Switch() { Title = "R only when can kill", IsOn = false });
+            RSettings.AddItem(new ModeDisplay() { Title = "R HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
+            RSettings.AddItem(new Counter() { Title = "R maximum range", MinValue = 0, MaxValue = 1600, Value = 1600, ValueFrequency = 50 });
+        }
+    }
+}
