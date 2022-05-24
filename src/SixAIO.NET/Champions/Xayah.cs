@@ -1,5 +1,6 @@
 ﻿using Oasys.Common;
 using Oasys.Common.Enums.GameEnums;
+using Oasys.Common.Extensions;
 using Oasys.Common.GameObject.Clients;
 using Oasys.Common.Menu;
 using Oasys.Common.Menu.ItemComponents;
@@ -85,7 +86,7 @@ namespace SixAIO.Champions
 
         private static bool IsFeather(AIBaseClient obj)
         {
-            return obj is not null && obj.IsAlive && obj.Health == 100 && obj.Mana == 500 && obj.OnMyTeam &&
+            return obj is not null && obj.IsAlive && obj.Health == 100 && obj.Mana == 500 && obj.OnMyTeam && obj.Position.IsValid() &&
                 (obj.Name.Contains("Feather", StringComparison.OrdinalIgnoreCase) ||
                  obj.UnitComponentInfo.SkinName.Contains("testcuberender", StringComparison.OrdinalIgnoreCase) ||
                  obj.ModelName.Contains("testcuberender", StringComparison.OrdinalIgnoreCase));
@@ -117,7 +118,7 @@ namespace SixAIO.Champions
 
         internal override void OnCoreRender()
         {
-            if (DrawFeathers && DrawThickness > 0 && UnitManager.MyChampion.IsAlive && UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot.E).Charges >= 1 && !UnitManager.MyChampion.W2S.IsZero)
+            if (DrawFeathers && DrawThickness > 0 && UnitManager.MyChampion.IsAlive && UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot.E).Charges >= 1)
             {
                 var w2s = LeagueNativeRendererManager.WorldToScreenSpell(UnitManager.MyChampion.Position);
                 var color = Oasys.Common.Tools.ColorConverter.GetColor(DrawColor);
@@ -134,7 +135,8 @@ namespace SixAIO.Champions
 
             //foreach (var obj in UnitManager.AllNativeObjects.Where(x => x.Distance <= 1500 && IsFeather(x)))
             //{
-            //    Oasys.SDK.Rendering.RenderFactory.DrawText(obj.Health + " " + obj.Mana + " " + obj.UnitComponentInfo.SkinName + " " + obj.Name + " " + obj.ModelName, 12, obj.W2S, Color.Blue);
+            //    var w2s = LeagueNativeRendererManager.WorldToScreenSpell(obj.Position);
+            //    Oasys.SDK.Rendering.RenderFactory.DrawText(obj.Health + " " + obj.Mana + " " + obj.UnitComponentInfo.SkinName + " " + obj.Name + " " + obj.ModelName, 12, w2s, Color.Blue);
             //}
         }
 
