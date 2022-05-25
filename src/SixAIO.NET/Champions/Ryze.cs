@@ -52,25 +52,9 @@ namespace SixAIO.Champions
             }
         }
 
-        internal override void OnCoreHarassInput()
-        {
-            if (SpellQ.ExecuteCastSpell(Orbwalker.OrbWalkingModeType.Mixed))
-            {
-                return;
-            }
-        }
-
         internal override void OnCoreLaneClearInput()
         {
             if (SpellQ.ExecuteCastSpell(Orbwalker.OrbWalkingModeType.LaneClear) || SpellE.ExecuteCastSpell(Orbwalker.OrbWalkingModeType.LaneClear))
-            {
-                return;
-            }
-        }
-
-        internal override void OnCoreLastHitInput()
-        {
-            if (SpellQ.ExecuteCastSpell(Orbwalker.OrbWalkingModeType.LastHit))
             {
                 return;
             }

@@ -76,7 +76,7 @@ namespace SixAIO.Champions
                 Speed = () => 2000,
                 Range = () => IsCastingE ? 30_000 : 775,
                 Radius = () => 80,
-                Delay = () => 0.1f,
+                Delay = () => 0.5f,
                 IsEnabled = () => UseE,
                 MinimumHitChance = () => Prediction.MenuSelected.HitChance.VeryHigh,
                 From = () => IsCastingE ? _ireliaE.Position : UnitManager.MyChampion.AIManager.ServerPosition,

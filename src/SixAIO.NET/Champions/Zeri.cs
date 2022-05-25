@@ -94,18 +94,6 @@ namespace SixAIO.Champions
             }
         }
 
-        internal override void OnCoreHarassInput()
-        {
-            if (OnlyBasicAttackOnChampions)
-            {
-                Orbwalker.AllowAttacking = false;
-            }
-            if (SpellQ.ExecuteCastSpell(Orbwalker.OrbWalkingModeType.Mixed))
-            {
-                return;
-            }
-        }
-
         internal override void OnCoreLaneClearInput()
         {
             if (OnlyBasicAttackOnChampions)
@@ -113,18 +101,6 @@ namespace SixAIO.Champions
                 Orbwalker.AllowAttacking = false;
             }
             if (SpellQ.ExecuteCastSpell(Orbwalker.OrbWalkingModeType.LaneClear))
-            {
-                return;
-            }
-        }
-
-        internal override void OnCoreLastHitInput()
-        {
-            if (OnlyBasicAttackOnChampions)
-            {
-                Orbwalker.AllowAttacking = false;
-            }
-            if (SpellQ.ExecuteCastSpell(Orbwalker.OrbWalkingModeType.LastHit))
             {
                 return;
             }

@@ -134,14 +134,6 @@ namespace SixAIO.Champions
             }
         }
 
-        internal override void OnCoreLastHitInput()
-        {
-            if (SpellE.ExecuteCastSpell(Orbwalker.OrbWalkingModeType.LastHit) || SpellQ.ExecuteCastSpell(Orbwalker.OrbWalkingModeType.LastHit))
-            {
-                return;
-            }
-        }
-
         internal override void InitializeMenu()
         {
             MenuManager.AddTab(new Tab($"SIXAIO - {nameof(Cassiopeia)}"));
