@@ -78,6 +78,7 @@ namespace SixAIO.Champions
                 Radius = () => 80,
                 Delay = () => 0.1f,
                 IsEnabled = () => UseE,
+                MinimumHitChance = () => Prediction.MenuSelected.HitChance.VeryHigh,
                 From = () => IsCastingE ? _ireliaE.Position : UnitManager.MyChampion.AIManager.ServerPosition,
                 TargetSelect = (mode) => SpellE.GetTargets(mode).FirstOrDefault()
             };
@@ -153,7 +154,7 @@ namespace SixAIO.Champions
                 return 0;
             }
             var minionDmg = target.IsObject(ObjectTypeFlag.AIMinionClient) ? 43 + 12 * UnitManager.MyChampion.Level : 0;
-            var nextAA = DamageCalculator.GetNextBasicAttackDamage(UnitManager.MyChampion, target);
+            var nextAA = DamageCalculator.GetNextBasicAttackDamage(UnitManager.MyChampion, target) - UnitManager.MyChampion.UnitStats.TotalAttackDamage;
             return (DamageCalculator.GetArmorMod(UnitManager.MyChampion, target) *
                    (nextAA + minionDmg + (UnitManager.MyChampion.UnitStats.TotalAttackDamage * 0.60f) + (-15) + 20 * spellClass.Level));
         }
