@@ -81,18 +81,17 @@ namespace SixAIO.Champions
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
-                IsTargetted = () => true,
-                Range = () => 850,
-                MinimumHitChance = () => Prediction.MenuSelected.HitChance.Immobile,
+                PredictionMode = () => Prediction.MenuSelected.PredictionType.Circle,
+                MinimumHitChance = () => EHitChance,
+                Radius = () => 120,
+                Speed = () => 1500,
+                Range = () => 925,
                 IsEnabled = () => UseE,
-                TargetSelect = (mode) =>
-                {
-                    return EOnSelf && UnitManager.EnemyChampions.Any(x => x.Distance <= EMaximumRange)
-                            ? UnitManager.MyChampion
-                            : EOnlyOnSelf
-                                ? null
-                                : SpellE.GetTargets(mode, x => !EOnlyHardCC || !BuffChecker.IsCrowdControlledButCanQss(x)).FirstOrDefault();
-                }
+                TargetSelect = (mode) => EOnSelf && UnitManager.EnemyChampions.Any(x => x.Distance <= EMaximumRange)
+                                        ? UnitManager.MyChampion
+                                        : EOnlyOnSelf
+                                            ? null
+                                            : SpellE.GetTargets(mode).FirstOrDefault()
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
@@ -175,12 +174,6 @@ namespace SixAIO.Champions
             set => WSettings.GetItem<Counter>("W minimum range").Value = value;
         }
 
-        private bool EOnlyHardCC
-        {
-            get => ESettings.GetItem<Switch>("E only hard CC").IsOn;
-            set => ESettings.GetItem<Switch>("E only hard CC").IsOn = value;
-        }
-
         private bool EOnSelf
         {
             get => ESettings.GetItem<Switch>("E on self").IsOn;
@@ -242,7 +235,7 @@ namespace SixAIO.Champions
             WSettings.AddItem(new Counter() { Title = "W minimum range", MinValue = 0, MaxValue = 1500, Value = 0, ValueFrequency = 50 });
 
             ESettings.AddItem(new Switch() { Title = "Use E", IsOn = true });
-            ESettings.AddItem(new Switch() { Title = "E only hard CC", IsOn = true });
+            ESettings.AddItem(new ModeDisplay() { Title = "E HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "Immobile" });
             ESettings.AddItem(new InfoDisplay() { Title = "---E anti melee Settings---" });
             ESettings.AddItem(new Switch() { Title = "E on self", IsOn = true });
             ESettings.AddItem(new Switch() { Title = "E only on self", IsOn = false });
