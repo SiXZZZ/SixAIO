@@ -73,26 +73,26 @@ namespace SixAIO.Champions
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
+                PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
+                MinimumHitChance = () => EHitChance,
                 Speed = () => 2000,
                 Range = () => IsCastingE ? 30_000 : 775,
                 Radius = () => 80,
                 Delay = () => 0.5f,
                 IsEnabled = () => UseE,
-                MinimumHitChance = () => Prediction.MenuSelected.HitChance.VeryHigh,
                 From = () => IsCastingE ? _ireliaE.Position : UnitManager.MyChampion.AIManager.ServerPosition,
                 TargetSelect = (mode) => SpellE.GetTargets(mode).FirstOrDefault()
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
+                PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
+                MinimumHitChance = () => RHitChance,
                 Speed = () => 2000,
                 Range = () => 1000f,
                 Radius = () => 320,
                 Delay = () => 0.4f,
                 IsEnabled = () => UseR,
-                TargetSelect = (mode) => UnitManager.EnemyChampions
-                                            .FirstOrDefault(x => x.Distance <= SpellR.Range() &&
-                                                                 TargetSelector.IsAttackable(x) &&
-                                                                 BuffChecker.IsCrowdControlledOrSlowed(x))
+                TargetSelect = (mode) => SpellR.GetTargets(mode).FirstOrDefault()
             };
         }
 
@@ -216,8 +216,10 @@ namespace SixAIO.Champions
             WSettings.AddItem(new Switch() { Title = "Use W", IsOn = true });
 
             ESettings.AddItem(new Switch() { Title = "Use E", IsOn = true });
+            ESettings.AddItem(new ModeDisplay() { Title = "E HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "VeryHigh" });
 
             RSettings.AddItem(new Switch() { Title = "Use R", IsOn = true });
+            RSettings.AddItem(new ModeDisplay() { Title = "R HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "VeryHigh" });
 
             SetTargetChampsOnly();
         }
