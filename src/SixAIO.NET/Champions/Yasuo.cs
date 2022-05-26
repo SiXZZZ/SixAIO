@@ -193,7 +193,11 @@ namespace SixAIO.Champions
 
         internal override void OnCoreLaneClearInput()
         {
-            if (SpellQ.ExecuteCastSpell(Orbwalker.OrbWalkingModeType.LaneClear) || SpellE.ExecuteCastSpell(Orbwalker.OrbWalkingModeType.LaneClear))
+            if (UseQLaneclear && SpellQ.ExecuteCastSpell(Orbwalker.OrbWalkingModeType.LaneClear))
+            {
+                return;
+            }
+            if (UseELaneclear && SpellE.ExecuteCastSpell(Orbwalker.OrbWalkingModeType.LaneClear))
             {
                 return;
             }
@@ -214,11 +218,13 @@ namespace SixAIO.Champions
             MenuTab.AddGroup(new Group("R Settings"));
 
             QSettings.AddItem(new Switch() { Title = "Use Q", IsOn = true });
+            QSettings.AddItem(new Switch() { Title = "Use Q Laneclear", IsOn = true });
             QSettings.AddItem(new ModeDisplay() { Title = "Q HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
 
             //MenuTab.AddItem(new Switch() { Title = "Use W", IsOn = true });
 
             ESettings.AddItem(new Switch() { Title = "Use E", IsOn = true });
+            ESettings.AddItem(new Switch() { Title = "Use E Laneclear", IsOn = true });
 
             RSettings.AddItem(new Switch() { Title = "Use R", IsOn = true });
             RSettings.AddItem(new Counter() { Title = "R Ult enemies", MinValue = 1, MaxValue = 5, Value = 1, ValueFrequency = 1 });

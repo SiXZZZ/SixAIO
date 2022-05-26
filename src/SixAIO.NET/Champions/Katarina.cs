@@ -111,7 +111,10 @@ namespace SixAIO.Champions
 
         internal override void OnCoreLaneClearInput()
         {
-            SpellQ.ExecuteCastSpell(Orbwalker.OrbWalkingModeType.LaneClear);
+            if (UseQLaneclear && SpellQ.ExecuteCastSpell(Orbwalker.OrbWalkingModeType.LaneClear))
+            {
+                return;
+            }
         }
 
         internal override void OnCreateObject(AIBaseClient x)
@@ -172,6 +175,7 @@ namespace SixAIO.Champions
             MenuTab.AddGroup(new Group("R Settings"));
 
             QSettings.AddItem(new Switch() { Title = "Use Q", IsOn = true });
+            QSettings.AddItem(new Switch() { Title = "Use Q Laneclear", IsOn = true });
 
             WSettings.AddItem(new Switch() { Title = "Use W", IsOn = true });
 

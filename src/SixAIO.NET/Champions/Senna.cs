@@ -78,7 +78,7 @@ namespace SixAIO.Champions
 
         internal override void OnCoreLaneClearInput()
         {
-            if (SpellQ.ExecuteCastSpell(Orbwalker.OrbWalkingModeType.LaneClear))
+            if (UseQLaneclear && SpellQ.ExecuteCastSpell(Orbwalker.OrbWalkingModeType.LaneClear))
             {
                 return;
             }
@@ -109,6 +109,7 @@ namespace SixAIO.Champions
             MenuTab.AddGroup(new Group("R Settings"));
 
             QSettings.AddItem(new Switch() { Title = "Use Q", IsOn = true });
+            QSettings.AddItem(new Switch() { Title = "Use Q Laneclear", IsOn = true });
 
             WSettings.AddItem(new Switch() { Title = "Use W", IsOn = true });
             WSettings.AddItem(new Counter() { Title = "W Min Mana", MinValue = 0, MaxValue = 500, Value = 80, ValueFrequency = 10 });

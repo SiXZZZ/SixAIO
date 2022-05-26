@@ -100,7 +100,8 @@ namespace SixAIO.Champions
             {
                 Orbwalker.AllowAttacking = false;
             }
-            if (SpellQ.ExecuteCastSpell(Orbwalker.OrbWalkingModeType.LaneClear))
+
+            if (UseQLaneclear && SpellQ.ExecuteCastSpell(Orbwalker.OrbWalkingModeType.LaneClear))
             {
                 return;
             }
@@ -170,6 +171,7 @@ namespace SixAIO.Champions
             BasicAttackSettings.AddItem(new Switch() { Title = "Only basic attack on champions", IsOn = true });
 
             QSettings.AddItem(new Switch() { Title = "Use Q", IsOn = true });
+            QSettings.AddItem(new Switch() { Title = "Use Q Laneclear", IsOn = true });
             QSettings.AddItem(new ModeDisplay() { Title = "Q HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
             QSettings.AddItem(new Switch() { Title = "Show Q range", IsOn = true });
             QSettings.AddItem(new ModeDisplay() { Title = "Q range color", ModeNames = Oasys.Common.Tools.ColorConverter.GetColors(), SelectedModeName = "Blue" });

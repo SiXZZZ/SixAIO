@@ -73,7 +73,7 @@ namespace SixAIO.Champions
 
         internal override void OnCoreLaneClearInput()
         {
-            if (!UseELaneclear || SpellE.ExecuteCastSpell(Orbwalker.OrbWalkingModeType.LaneClear))
+            if (UseELaneclear && SpellE.ExecuteCastSpell(Orbwalker.OrbWalkingModeType.LaneClear))
             {
                 return;
             }
