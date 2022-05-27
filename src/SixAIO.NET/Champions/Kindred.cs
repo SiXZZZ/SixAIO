@@ -1,4 +1,5 @@
-﻿using Oasys.Common.Enums.GameEnums;
+﻿using Newtonsoft.Json;
+using Oasys.Common.Enums.GameEnums;
 using Oasys.Common.GameObject;
 using Oasys.Common.Menu;
 using Oasys.Common.Menu.ItemComponents;
@@ -7,13 +8,18 @@ using Oasys.SDK.Menu;
 using Oasys.SDK.SpellCasting;
 using SixAIO.Enums;
 using SixAIO.Models;
+using SixAIO.Utilities;
 using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 
 namespace SixAIO.Champions
 {
     internal class Kindred : Champion
     {
+        private static TargetSelection _targetSelection;
+
         private static int PassiveStacks()
         {
             var buff = UnitManager.MyChampion.BuffManager.GetBuffByName("kindredmarkofthekindredstackcounter", false, true);
@@ -130,7 +136,45 @@ namespace SixAIO.Champions
             WSettings.AddItem(new Switch() { Title = "Use W", IsOn = true });
 
             ESettings.AddItem(new Switch() { Title = "Use E", IsOn = true });
+            ESettings.AddItem(new Counter() { Title = "E target range", Value = 1000, MinValue = 0, MaxValue = 2000, ValueFrequency = 50 });
+            LoadTargetPrioValues();
             //RSettings.AddItem(new Switch() { Title = "Use R", IsOn = true });
+        }
+
+        internal void LoadTargetPrioValues()
+        {
+            try
+            {
+                using var stream = AppDomain.CurrentDomain.GetAssemblies().SingleOrDefault(assembly => assembly.GetName().Name == "Oasys.Core").GetManifestResourceStream("Oasys.Core.Dependencies.TargetSelection.json");
+                using var reader = new StreamReader(stream);
+                var jsonText = reader.ReadToEnd();
+
+                _targetSelection = JsonConvert.DeserializeObject<TargetSelection>(jsonText);
+                var enemies = UnitManager.EnemyChampions.Where(x => !x.IsTargetDummy);
+
+                InitializeSettings(_targetSelection.TargetPrioritizations.Where(x => enemies.Any(e => e.ModelName.Equals(x.Champion, StringComparison.OrdinalIgnoreCase))));
+            }
+            catch (Exception)
+            {
+            }
+        }
+
+        internal void InitializeSettings(IEnumerable<TargetPrioritization> targetPrioritizations)
+        {
+            try
+            {
+                if (targetPrioritizations.Any())
+                {
+                    ESettings.AddItem(new InfoDisplay() { Title = "-E target prio-" });
+                }
+                foreach (var targetPrioritization in targetPrioritizations)
+                {
+                    ESettings.AddItem(new Counter() { Title = targetPrioritization.Champion, MinValue = 0, MaxValue = 5, Value = targetPrioritization.Prioritization, ValueFrequency = 1 });
+                }
+            }
+            catch (Exception)
+            {
+            }
         }
     }
 }
