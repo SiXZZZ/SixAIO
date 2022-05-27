@@ -7,8 +7,6 @@ using Oasys.Common.Menu.ItemComponents;
 using Oasys.SDK;
 using Oasys.SDK.Menu;
 using Oasys.SDK.SpellCasting;
-using Oasys.SDK.Tools;
-using SixAIO.Helpers;
 using SixAIO.Models;
 using System;
 using System.Linq;
@@ -76,11 +74,10 @@ namespace SixAIO.Champions
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
                 MinimumHitChance = () => EHitChance,
                 Speed = () => 2000,
-                Range = () => IsCastingE ? 30_000 : 775,
+                Range = () => 775,
                 Radius = () => 80,
                 Delay = () => 0.5f,
                 IsEnabled = () => UseE,
-                From = () => IsCastingE ? _ireliaE.Position : UnitManager.MyChampion.AIManager.ServerPosition,
                 TargetSelect = (mode) => SpellE.GetTargets(mode).FirstOrDefault()
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)

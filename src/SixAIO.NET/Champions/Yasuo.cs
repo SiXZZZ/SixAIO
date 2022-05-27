@@ -108,7 +108,7 @@ namespace SixAIO.Champions
                     }
                     if (!Orbwalker.TargetChampionsOnly)
                     {
-                        var minion = UnitManager.EnemyMinions.FirstOrDefault(x => CanEOnTarget(x) && x.Health <= GetEDamage(x, UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot.E)));
+                        var minion = UnitManager.EnemyMinions.Where(EndDistinationOutOfTower).FirstOrDefault(x => CanEOnTarget(x) && x.Health <= GetEDamage(x, UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot.E)));
                         if (minion != null)
                         {
                             return minion;
@@ -131,6 +131,15 @@ namespace SixAIO.Champions
                 ShouldCast = (mode, target, spellClass, damage) =>
                     RUltEnemies <= UnitManager.EnemyChampions.Count(x => x.Distance <= 1400 && TargetSelector.IsAttackable(x) && BuffChecker.IsKnockedUpOrBack(x))
             };
+        }
+
+        private bool EndDistinationOutOfTower(Minion minion)
+        {
+            var targetPos = minion.Position;
+            var myPos = UnitManager.MyChampion.Position;
+            var endPos = myPos.Extend(targetPos, 475);
+
+            return !UnitManager.EnemyTowers.Any(x => x.DistanceTo(endPos) <= 850);
         }
 
         private GameObjectBase GetMinionBetweenMeAndEnemy(IEnumerable<GameObjectBase> targets, Hero enemy, int width, int distance)
