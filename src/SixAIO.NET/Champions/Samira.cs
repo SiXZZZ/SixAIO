@@ -1,4 +1,6 @@
 ﻿using Oasys.Common.Enums.GameEnums;
+using Oasys.Common.Extensions;
+using Oasys.Common.GameObject;
 using Oasys.Common.Menu;
 using Oasys.Common.Menu.ItemComponents;
 using Oasys.SDK;
@@ -42,7 +44,8 @@ namespace SixAIO.Champions
                 IsTargetted = () => true,
                 Range = () => 600,
                 IsEnabled = () => UseE,
-                TargetSelect = (mode) => SpellE.GetTargets(mode).FirstOrDefault()
+                ShouldCast = (mode, target, spellClass, damage) => ShouldE(target),
+                TargetSelect = (mode) => SpellE.GetTargets(mode, ShouldE).FirstOrDefault()
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
@@ -51,7 +54,12 @@ namespace SixAIO.Champions
             };
         }
 
-        private void Orbwalker_OnOrbwalkerAfterBasicAttack(float gameTime, Oasys.Common.GameObject.GameObjectBase target)
+        private bool ShouldE(GameObjectBase target)
+        {
+            return AllowEInTowerRange || UnitManager.EnemyTowers.All(x => x.Position.Distance(target.Position) >= 850);
+        }
+
+        private void Orbwalker_OnOrbwalkerAfterBasicAttack(float gameTime, GameObjectBase target)
         {
             SpellW.ExecuteCastSpell();
         }
@@ -78,6 +86,12 @@ namespace SixAIO.Champions
             set => QSettings.GetItem<Switch>("Q Allow Laneclear minion collision").IsOn = value;
         }
 
+        internal bool AllowEInTowerRange
+        {
+            get => ESettings.GetItem<Switch>("Allow E in tower range").IsOn;
+            set => ESettings.GetItem<Switch>("Allow E in tower range").IsOn = value;
+        }
+
         internal override void InitializeMenu()
         {
             MenuManager.AddTab(new Tab($"SIXAIO - {nameof(Samira)}"));
@@ -95,6 +109,7 @@ namespace SixAIO.Champions
             WSettings.AddItem(new Switch() { Title = "Use W", IsOn = true });
 
             ESettings.AddItem(new Switch() { Title = "Use E", IsOn = true });
+            ESettings.AddItem(new Switch() { Title = "Allow E in tower range", IsOn = true });
 
             RSettings.AddItem(new Switch() { Title = "Use R", IsOn = true });
 
