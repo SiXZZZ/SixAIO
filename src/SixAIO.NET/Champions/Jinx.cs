@@ -87,7 +87,7 @@ namespace SixAIO.Champions
                 Speed = () => 1500,
                 Range = () => 925,
                 IsEnabled = () => UseE,
-                TargetSelect = (mode) => EOnSelf && UnitManager.EnemyChampions.Any(x => x.Distance <= EMaximumRange)
+                TargetSelect = (mode) => EOnSelf && UnitManager.EnemyChampions.Any(x => x.Distance <= EMaximumRange && TargetSelector.IsAttackable(x))
                                         ? UnitManager.MyChampion
                                         : EOnlyOnSelf
                                             ? null
