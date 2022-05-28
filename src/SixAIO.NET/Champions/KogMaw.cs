@@ -1,4 +1,5 @@
 ﻿using Oasys.Common.Enums.GameEnums;
+using Oasys.Common.GameObject;
 using Oasys.Common.Menu;
 using Oasys.Common.Menu.ItemComponents;
 using Oasys.SDK;
@@ -62,11 +63,10 @@ namespace SixAIO.Champions
                             : 0,
                 IsEnabled = () => UseR,
                 MinimumMana = () => RMinMana,
-                TargetSelect = (mode) => SpellR.GetTargets(mode, x => x.HealthPercent <= RTargetMaxHPPercent && (ROnlyOutsideOfAttackRange ? !TargetSelector.IsInRange(x) : x.Distance > RMinimumRange) && x.Distance <= RMaximumRange).FirstOrDefault()
+                TargetSelect = (mode) => SpellR.GetTargets(mode, x => x.HealthPercent <= RTargetMaxHPPercent && ROnlyOutSideAttackRange(x) && x.Distance <= RMaximumRange).FirstOrDefault()
             };
             SpellRSemiAuto = new Spell(CastSlot.R, SpellSlot.R)
             {
-                AllowCastOnMap = () => AllowRCastOnMinimap,
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Circle,
                 MinimumHitChance = () => SemiAutoRHitChance,
                 Range = () => UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot.R).Level * 250 + 1050,
@@ -76,6 +76,13 @@ namespace SixAIO.Champions
                 IsEnabled = () => UseSemiAutoR,
                 TargetSelect = (mode) => SpellRSemiAuto.GetTargets(mode, x => x.Distance > RMinimumRange && x.Distance <= RMaximumRange).FirstOrDefault()
             };
+        }
+
+        private bool ROnlyOutSideAttackRange(GameObjectBase x)
+        {
+            return ROnlyOutsideOfAttackRange
+                ? !TargetSelector.IsInRange(x)
+                : x.Distance > RMinimumRange;
         }
 
         private void KeyboardProvider_OnKeyPress(Keys keyBeingPressed, Oasys.Common.Tools.Devices.Keyboard.KeyPressState pressState)
