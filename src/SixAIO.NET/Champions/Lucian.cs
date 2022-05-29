@@ -27,19 +27,31 @@ namespace SixAIO.Champions
             }
         }
 
+        private static bool AllSpellsOnCooldown()
+        {
+            var q = UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot.Q);
+            var w = UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot.W);
+            var e = UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot.E);
+            return !q.IsSpellReady && !w.IsSpellReady && !e.IsSpellReady;
+        }
+
+        private static bool QEOnCooldown()
+        {
+            var q = UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot.Q);
+            var e = UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot.E);
+            return !q.IsSpellReady && !e.IsSpellReady;
+        }
+
         public Lucian()
         {
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
                 IsTargetted = () => true,
-                IsEnabled = () => UseQ && !IsPassiveActive,
+                IsEnabled = () => UseQ && !IsPassiveActive && !IsUltActive(),
                 TargetSelect = (mode) =>
                 {
                     var range = 500 + UnitManager.MyChampion.UnitComponentInfo.UnitBoundingRadius;
-                    var targets = UnitManager.EnemyChampions
-                                                .Where(x => x.IsAlive && x.Distance <= 1000 &&
-                                                            TargetSelector.IsAttackable(x) &&
-                                                            !TargetSelector.IsInvulnerable(x, Oasys.Common.Logic.DamageType.Physical, false));
+                    var targets = UnitManager.EnemyChampions.Where(x => x.IsAlive && x.Distance <= 1000 && TargetSelector.IsAttackable(x));
                     if (targets.Any(x => x.Distance <= range + x.UnitComponentInfo.UnitBoundingRadius))
                     {
                         return targets.FirstOrDefault(x => x.Distance <= range + x.UnitComponentInfo.UnitBoundingRadius);
@@ -66,17 +78,34 @@ namespace SixAIO.Champions
                 Range = () => 900,
                 Radius = () => 110,
                 Speed = () => 1600,
-                IsEnabled = () => UseW && !IsPassiveActive,
+                IsEnabled = () => UseW && !IsPassiveActive && !IsUltActive() && (!OnlyWIfQENotReady || QEOnCooldown()),
                 TargetSelect = (mode) => SpellW.GetTargets(mode).FirstOrDefault()
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
-                IsEnabled = () => UseE && !IsPassiveActive,
+                IsEnabled = () => UseE && !IsPassiveActive && !IsUltActive(),
                 ShouldCast = (mode, target, spellClass, damage) =>
                             DashModeSelected == DashMode.ToMouse &&
                             TargetSelector.IsAttackable(Orbwalker.TargetHero) &&
                             TargetSelector.IsInRange(Orbwalker.TargetHero),
             };
+            SpellR = new Spell(CastSlot.R, SpellSlot.R)
+            {
+                PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
+                MinimumHitChance = () => RHitChance,
+                Range = () => 1200,
+                Radius = () => 220,
+                Speed = () => 2200,
+                Delay = () => 0f,
+                IsEnabled = () => UseR && !IsPassiveActive && !IsUltActive(),
+                ShouldCast = (mode, target, spellClass, damage) => target is not null && AllSpellsOnCooldown(),
+                TargetSelect = (mode) => SpellR.GetTargets(mode).FirstOrDefault()
+            };
+        }
+
+        private static bool IsUltActive()
+        {
+            return UnitManager.MyChampion.BuffManager.ActiveBuffs.Any(x => x.Name == "LucianR" && x.Stacks >= 1);
         }
 
         private GameObjectBase GetMinionBetweenMeAndEnemy(Hero enemy, int width)
@@ -88,7 +117,7 @@ namespace SixAIO.Champions
 
         internal override void OnCoreMainInput()
         {
-            if (SpellQ.ExecuteCastSpell() || SpellE.ExecuteCastSpell() || SpellW.ExecuteCastSpell())
+            if (SpellQ.ExecuteCastSpell() || SpellE.ExecuteCastSpell() || SpellW.ExecuteCastSpell() || SpellR.ExecuteCastSpell())
             {
                 return;
             }
@@ -116,6 +145,12 @@ namespace SixAIO.Champions
             set => ESettings.GetItem<ModeDisplay>("Dash Mode").SelectedModeName = value.ToString();
         }
 
+        internal bool OnlyWIfQENotReady
+        {
+            get => WSettings.GetItem<Switch>("Only W if QE not ready").IsOn;
+            set => WSettings.GetItem<Switch>("Only W if QE not ready").IsOn = value;
+        }
+
         internal override void InitializeMenu()
         {
             TabItem.OnTabItemChange += TabItem_OnTabItemChange;
@@ -123,16 +158,19 @@ namespace SixAIO.Champions
             MenuTab.AddGroup(new Group("Q Settings"));
             MenuTab.AddGroup(new Group("W Settings"));
             MenuTab.AddGroup(new Group("E Settings"));
+            MenuTab.AddGroup(new Group("R Settings"));
 
             QSettings.AddItem(new Switch() { Title = "Use Q", IsOn = true });
 
             WSettings.AddItem(new Switch() { Title = "Use W", IsOn = true });
+            WSettings.AddItem(new Switch() { Title = "Only W if QE not ready", IsOn = true });
             WSettings.AddItem(new ModeDisplay() { Title = "W HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
 
             ESettings.AddItem(new Switch() { Title = "Use E", IsOn = false });
             ESettings.AddItem(new ModeDisplay() { Title = "Dash Mode", ModeNames = DashHelper.ConstructDashModeTable(), SelectedModeName = "ToMouse" });
 
-            //RSettings.AddItem(new Switch() { Title = "Use R", IsOn = true });
+            RSettings.AddItem(new Switch() { Title = "Use R", IsOn = true });
+            RSettings.AddItem(new ModeDisplay() { Title = "R HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
             SetTargetChampsOnly();
         }
 

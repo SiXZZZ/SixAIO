@@ -108,7 +108,7 @@ namespace SixAIO.Champions
 
         internal override void OnCoreMainInput()
         {
-            if (SpellE.ExecuteCastSpell() || SpellQ.ExecuteCastSpell())
+            if (SpellE.ExecuteCastSpell())
             {
                 return;
             }

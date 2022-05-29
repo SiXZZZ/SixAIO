@@ -1,9 +1,13 @@
 ﻿using Oasys.Common.Enums.GameEnums;
+using Oasys.Common.Extensions;
+using Oasys.Common.GameObject;
+using Oasys.Common.GameObject.ObjectClass;
 using Oasys.Common.Menu;
 using Oasys.Common.Menu.ItemComponents;
 using Oasys.SDK;
 using Oasys.SDK.Menu;
 using Oasys.SDK.SpellCasting;
+using SharpDX;
 using SixAIO.Models;
 using System;
 using System.Linq;
@@ -12,6 +16,7 @@ namespace SixAIO.Champions
 {
     internal class Senna : Champion
     {
+        private bool _originalTargetChampsOnlySetting;
         public float PassiveStacks()
         {
             var passiveStacks = UnitManager.MyChampion.BuffManager.GetActiveBuff("SennaPassiveStacks");
@@ -23,10 +28,30 @@ namespace SixAIO.Champions
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
                 IsTargetted = () => true,
-                Delay = () => 0.6f,
                 IsEnabled = () => UseQ,
-                Range = () => UnitManager.MyChampion.TrueAttackRange,
-                TargetSelect = (mode) => SpellQ.GetTargets(mode, x => !TargetSelector.IsInvulnerable(x, Oasys.Common.Logic.DamageType.Physical, false)).FirstOrDefault()
+                TargetSelect = (mode) =>
+                {
+
+                    var range = 600 + 25 * (PassiveStacks() % 20);
+                    var targets = UnitManager.EnemyChampions.Where(x => x.IsAlive && x.Distance <= 1300 && TargetSelector.IsAttackable(x));
+                    if (targets.Any(x => x.Distance <= range + x.UnitComponentInfo.UnitBoundingRadius))
+                    {
+                        return targets.FirstOrDefault(x => x.Distance <= range + x.UnitComponentInfo.UnitBoundingRadius);
+                    }
+                    if (!Orbwalker.TargetChampionsOnly)
+                    {
+                        foreach (var target in targets)
+                        {
+                            var targetMinion = GetMinionBetweenMeAndEnemy(target, 100);
+                            if (targetMinion != null)
+                            {
+                                return targetMinion;
+                            }
+                        }
+                    }
+
+                    return targets.FirstOrDefault(x => x.Distance <= range + x.UnitComponentInfo.UnitBoundingRadius);
+                }
             };
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
             {
@@ -60,6 +85,13 @@ namespace SixAIO.Champions
                 ShouldCast = (mode, target, spellClass, damage) => target != null && target.Health < damage,
                 TargetSelect = (mode) => SpellR.GetTargets(mode, x => x.Distance > RMinimumRange && x.Distance <= RMaximumRange && x.Health <= SpellR.Damage(x, SpellR.SpellClass)).FirstOrDefault()
             };
+        }
+
+        private GameObjectBase GetMinionBetweenMeAndEnemy(Hero enemy, int width)
+        {
+            return UnitManager.EnemyMinions.FirstOrDefault(minion => minion.IsAlive && minion.Distance <= 500 && TargetSelector.IsAttackable(minion) &&
+                        Geometry.DistanceFromPointToLine(enemy.W2S, new Vector2[] { UnitManager.MyChampion.W2S, minion.W2S }) <= width / 2 &&
+                        minion.W2S.Distance(enemy.W2S) < UnitManager.MyChampion.W2S.Distance(enemy.W2S));
         }
 
         private static void TargetSoulsWithOrbwalker()
@@ -103,6 +135,7 @@ namespace SixAIO.Champions
 
         internal override void InitializeMenu()
         {
+            TabItem.OnTabItemChange += TabItem_OnTabItemChange;
             MenuManager.AddTab(new Tab($"SIXAIO - {nameof(Senna)}"));
             MenuTab.AddGroup(new Group("Q Settings"));
             MenuTab.AddGroup(new Group("W Settings"));
@@ -122,6 +155,51 @@ namespace SixAIO.Champions
             RSettings.AddItem(new Switch() { Title = "Allow R cast on minimap", IsOn = true });
             RSettings.AddItem(new Counter() { Title = "R minimum range", MinValue = 0, MaxValue = 30_000, Value = 0, ValueFrequency = 50 });
             RSettings.AddItem(new Counter() { Title = "R maximum range", MinValue = 0, MaxValue = 30_000, Value = 30_000, ValueFrequency = 50 });
+            SetTargetChampsOnly();
+        }
+
+        private void SetTargetChampsOnly()
+        {
+            try
+            {
+                var orbTab = MenuManagerProvider.GetTab("Orbwalker");
+                var orbGroup = orbTab.GetGroup("Input");
+                _originalTargetChampsOnlySetting = orbGroup.GetItem<Switch>("Hold Target Champs Only").IsOn;
+                orbGroup.GetItem<Switch>("Hold Target Champs Only").IsOn = false;
+            }
+            catch (Exception ex)
+            {
+                //Logger.Log(ex.Message);
+            }
+        }
+
+        private void TabItem_OnTabItemChange(string tabName, TabItem tabItem)
+        {
+            if (tabItem.TabName == "Orbwalker" &&
+                tabItem.GroupName == "Input" &&
+                tabItem.Title == "Hold Target Champs Only" &&
+                tabItem is Switch itemSwitch &&
+                itemSwitch.IsOn)
+            {
+                SetTargetChampsOnly();
+            }
+        }
+
+        internal override void OnGameMatchComplete()
+        {
+            try
+            {
+                TabItem.OnTabItemChange -= TabItem_OnTabItemChange;
+
+                var orbTab = MenuManagerProvider.GetTab("Orbwalker");
+                var orbGroup = orbTab.GetGroup("Input");
+                orbGroup.GetItem<Switch>("Hold Target Champs Only")
+                        .IsOn = _originalTargetChampsOnlySetting;
+            }
+            catch (Exception ex)
+            {
+                //Logger.Log(ex.Message);
+            }
         }
     }
 }
