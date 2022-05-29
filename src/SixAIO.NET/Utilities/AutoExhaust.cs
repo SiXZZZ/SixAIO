@@ -177,7 +177,7 @@ namespace SixAIO.Utilities
             {
                 return UnitManager.AllyChampions.Where(x => x.Distance <= ExhaustTargetRange)
                         .Any(ally =>
-                            ally.IsAlive && ally.HealthPercent <= AutoExhaustGroup.GetItem<Counter>(item => item.Title == "Ally - " + ally.ModelName).Value);
+                            ally.IsAlive && ally.HealthPercent <= AutoExhaustGroup.GetItem<Counter>(item => item.Title == "Ally - " + ally?.ModelName)?.Value);
             }
             catch (Exception)
             {

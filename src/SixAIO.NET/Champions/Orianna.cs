@@ -63,8 +63,8 @@ namespace SixAIO.Champions
                     if (target == null && EShieldAlly)
                     {
                         target = UnitManager.AllyChampions
-                        .Where(ally => MenuTab.GetItem<Counter>("Buff Ally Prio- " + ally.ModelName).Value > 0)
-                        .OrderByDescending(ally => MenuTab.GetItem<Counter>("Buff Ally Prio- " + ally.ModelName).Value)
+                        .Where(ally => MenuTab.GetItem<Counter>("Buff Ally Prio- " + ally?.ModelName)?.Value > 0)
+                        .OrderByDescending(ally => MenuTab.GetItem<Counter>("Buff Ally Prio- " + ally?.ModelName)?.Value)
                         .FirstOrDefault(ally => ally.IsAlive && ally.Distance <= 1100 && TargetSelector.IsAttackable(ally, false) &&
                                         (ally.Health / ally.MaxHealth * 100) < EShieldHealthPercent);
                     }

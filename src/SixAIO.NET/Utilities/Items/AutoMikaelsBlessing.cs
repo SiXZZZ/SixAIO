@@ -102,8 +102,8 @@ namespace SixAIO.Utilities
                     UnitManager.MyChampion.Inventory.GetItemByID(ItemID.Mikaels_Blessing)?.IsReady == true)
                 {
                     var target = UnitManager.AllyChampions
-                                            .Where(ally => AutoMikaelsBlessingGroup.GetItem<Counter>("Mikaels Ally Prio- " + ally.ModelName).Value > 0)
-                                            .OrderByDescending(ally => AutoMikaelsBlessingGroup.GetItem<Counter>("Mikaels Ally Prio- " + ally.ModelName).Value)
+                                            .Where(ally => AutoMikaelsBlessingGroup.GetItem<Counter>("Mikaels Ally Prio- " + ally?.ModelName)?.Value > 0)
+                                            .OrderByDescending(ally => AutoMikaelsBlessingGroup.GetItem<Counter>("Mikaels Ally Prio- " + ally?.ModelName)?.Value)
                                             .FirstOrDefault(IsCrowdControlled);
 
                     if (target is not null)

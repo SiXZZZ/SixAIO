@@ -112,7 +112,7 @@ namespace SixAIO.Utilities
             {
                 return UnitManager.AllyChampions.Where(x => x.Distance <= 850)
                         .Any(ally =>
-                            ally.IsAlive && ally.HealthPercent <= AutoHealGroup.GetItem<Counter>(item => item.Title == "Ally - " + ally.ModelName).Value);
+                            ally.IsAlive && ally.HealthPercent <= AutoHealGroup.GetItem<Counter>(item => item.Title == "Ally - " + ally?.ModelName)?.Value);
             }
             catch (Exception)
             {

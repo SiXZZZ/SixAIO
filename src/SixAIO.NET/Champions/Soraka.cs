@@ -30,7 +30,7 @@ namespace SixAIO.Champions
                 IsTargetted = () => true,
                 IsEnabled = () => UseW,
                 TargetSelect = (mode) => UnitManager.AllyChampions.Where(x => !x.IsTargetDummy && !x.IsMe)
-                                        .OrderByDescending(x => WSettings.GetItem<Counter>("Heal Ally Prio- " + x.ModelName).Value)
+                                        .OrderByDescending(x => WSettings.GetItem<Counter>("Heal Ally Prio- " + x?.ModelName)?.Value)
                                         .FirstOrDefault(x => x.Distance <= 550 && TargetSelector.IsAttackable(x, false) && x.HealthPercent <= WHealthPercent)
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)

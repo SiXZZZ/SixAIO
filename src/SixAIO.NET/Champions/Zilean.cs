@@ -46,8 +46,8 @@ namespace SixAIO.Champions
                 IsEnabled = () => UseR,
                 TargetSelect = (mode) =>
                 UnitManager.AllyChampions
-                        .Where(ally => RSettings.GetItem<Counter>("Ult Ally - " + ally.ModelName).Value > 0)
-                        .OrderByDescending(ally => RSettings.GetItem<Counter>("Ult Ally - " + ally.ModelName).Value)
+                        .Where(ally => RSettings.GetItem<Counter>("Ult Ally - " + ally?.ModelName)?.Value > 0)
+                        .OrderByDescending(ally => RSettings.GetItem<Counter>("Ult Ally - " + ally?.ModelName)?.Value)
                         .FirstOrDefault(ally => ally.IsAlive && ally.Distance <= 900 && TargetSelector.IsAttackable(ally, false) && ally.HealthPercent < RBuffHealthPercent)
             };
         }
