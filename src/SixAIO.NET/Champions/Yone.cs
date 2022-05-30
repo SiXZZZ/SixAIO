@@ -14,6 +14,7 @@ using SixAIO.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Windows.Forms;
 
 namespace SixAIO.Champions
 {
@@ -28,6 +29,7 @@ namespace SixAIO.Champions
 
         public Yone()
         {
+            Oasys.SDK.InputProviders.KeyboardProvider.OnKeyPress += KeyboardProvider_OnKeyPress;
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
@@ -83,6 +85,25 @@ namespace SixAIO.Champions
                 IsEnabled = () => UseR,
                 TargetSelect = (mode) => SpellR.GetTargets(mode).FirstOrDefault()
             };
+            SpellRSemiAuto = new Spell(CastSlot.R, SpellSlot.R)
+            {
+                PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
+                MinimumHitChance = () => SemiAutoRHitChance,
+                Range = () => 1000,
+                Radius = () => 225,
+                Speed = () => 10000,
+                Delay = () => 0.75f,
+                IsEnabled = () => UseSemiAutoR,
+                TargetSelect = (mode) => SpellRSemiAuto.GetTargets(mode).FirstOrDefault()
+            };
+        }
+
+        private void KeyboardProvider_OnKeyPress(Keys keyBeingPressed, Oasys.Common.Tools.Devices.Keyboard.KeyPressState pressState)
+        {
+            if (keyBeingPressed == SemiAutoRKey && pressState == Oasys.Common.Tools.Devices.Keyboard.KeyPressState.Down)
+            {
+                SpellRSemiAuto.ExecuteCastSpell();
+            }
         }
 
         internal override void OnCoreMainInput()
@@ -117,6 +138,11 @@ namespace SixAIO.Champions
 
             RSettings.AddItem(new Switch() { Title = "Use R", IsOn = true });
             RSettings.AddItem(new ModeDisplay() { Title = "R HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
+
+            RSettings.AddItem(new Switch() { Title = "Use Semi Auto R", IsOn = true });
+            RSettings.AddItem(new KeyBinding() { Title = "Semi Auto R Key", SelectedKey = Keys.T });
+            RSettings.AddItem(new ModeDisplay() { Title = "Semi Auto R HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
+
         }
     }
 }
