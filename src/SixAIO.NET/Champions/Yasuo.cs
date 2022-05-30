@@ -37,26 +37,26 @@ namespace SixAIO.Champions
                 MinimumHitChance = () => QHitChance,
                 Speed = () => 1200,
                 Radius = () => GetQState() == 3 ? 180 : 80,
-                Range = () => UnitManager.MyChampion.AIManager.IsDashing ? 200 : GetQState() == 3 ? 1150 : 450,
+                Range = () => UnitManager.MyChampion.AIManager.IsDashing ? 250 : GetQState() == 3 ? 1150 : 450,
                 From = () => UnitManager.MyChampion.AIManager.IsDashing ? UnitManager.MyChampion.AIManager.NavEndPosition : UnitManager.MyChampion.AIManager.ServerPosition,
                 IsEnabled = () => UseQ,
-                ShouldCast = (mode, target, spellClass, damage) => target != null && (target.IsObject(ObjectTypeFlag.AIHeroClient) || GetQState() < 3),
+                ShouldCast = (mode, target, spellClass, damage) => target != null || (UnitManager.MyChampion.AIManager.IsDashing && (UnitManager.EnemyChampions.Any(x => SpellQ.From().Distance(x.Position) <= SpellQ.Range() && TargetSelector.IsAttackable(x)) || GetQState() < 3)),
                 TargetSelect = (mode) =>
                 {
-                    var champ = UnitManager.EnemyChampions.FirstOrDefault(x => x.Distance <= SpellQ.Range() && TargetSelector.IsAttackable(x));
+                    var champ = UnitManager.EnemyChampions.FirstOrDefault(x => SpellQ.From().Distance(x.Position) <= SpellQ.Range() && TargetSelector.IsAttackable(x));
                     if (champ != null)
                     {
                         return champ;
                     }
                     if (GetQState() < 3)
                     {
-                        var minion = UnitManager.EnemyMinions.FirstOrDefault(x => x.Distance <= SpellQ.Range() && TargetSelector.IsAttackable(x));
+                        var minion = UnitManager.EnemyMinions.FirstOrDefault(x => SpellQ.From().Distance(x.Position) <= SpellQ.Range() && TargetSelector.IsAttackable(x));
                         if (minion != null)
                         {
                             return minion;
                         }
 
-                        var jungle = UnitManager.EnemyJungleMobs.FirstOrDefault(x => x.Distance <= SpellQ.Range() && TargetSelector.IsAttackable(x));
+                        var jungle = UnitManager.EnemyJungleMobs.FirstOrDefault(x => SpellQ.From().Distance(x.Position) <= SpellQ.Range() && TargetSelector.IsAttackable(x));
                         if (jungle != null)
                         {
                             return jungle;
@@ -194,7 +194,15 @@ namespace SixAIO.Champions
 
         internal override void OnCoreMainInput()
         {
-            if (SpellR.ExecuteCastSpell() || SpellQ.ExecuteCastSpell() || SpellE.ExecuteCastSpell())
+            if (SpellR.ExecuteCastSpell() || SpellE.ExecuteCastSpell() || SpellQ.ExecuteCastSpell())
+            {
+                return;
+            }
+        }
+
+        internal override void OnCoreHarassInput()
+        {
+            if (SpellR.ExecuteCastSpell() || SpellE.ExecuteCastSpell(Orbwalker.OrbWalkingModeType.LaneClear) || SpellQ.ExecuteCastSpell())
             {
                 return;
             }
