@@ -7,6 +7,7 @@ using Oasys.Common.Menu.ItemComponents;
 using Oasys.SDK;
 using Oasys.SDK.Menu;
 using Oasys.SDK.SpellCasting;
+using Oasys.SDK.Tools;
 using SharpDX;
 using SixAIO.Models;
 using System;
@@ -87,9 +88,7 @@ namespace SixAIO.Champions
         private static bool IsFeather(AIBaseClient obj)
         {
             return obj is not null && obj.IsAlive && obj.Health == 100 && obj.Mana == 500 && obj.OnMyTeam && obj.Position.IsValid() &&
-                (obj.Name.Contains("Feather", StringComparison.OrdinalIgnoreCase) ||
-                 obj.UnitComponentInfo.SkinName.Contains("testcuberender", StringComparison.OrdinalIgnoreCase) ||
-                 obj.ModelName.Contains("testcuberender", StringComparison.OrdinalIgnoreCase));
+                (obj.Name.Contains("Feather", StringComparison.OrdinalIgnoreCase));
         }
 
         internal override void OnDeleteObject(AIBaseClient obj)
