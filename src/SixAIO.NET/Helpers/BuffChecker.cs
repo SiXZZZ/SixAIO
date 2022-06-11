@@ -38,19 +38,19 @@ namespace SixAIO.Helpers
         internal static bool IsCrowdControllButCanCleanse(this BuffEntry buff)
         {
             return buff.IsActive && buff.Stacks >= 1 &&
-                   ((buff.EntryType == BuffType.Slow || buff.Name == "landslidedebuff")) ||
+                   ((buff.EntryType == BuffType.Slow || buff.Name == "landslidedebuff") ||
                    buff.EntryType == BuffType.Stun || buff.EntryType == BuffType.Taunt ||
                    buff.EntryType == BuffType.Snare || buff.EntryType == BuffType.Charm ||
                    buff.EntryType == BuffType.Silence || buff.EntryType == BuffType.Blind ||
                    buff.EntryType == BuffType.Fear || buff.EntryType == BuffType.Polymorph ||
-                   buff.EntryType == BuffType.Flee || (buff.EntryType == BuffType.Sleep && buff.Name != "landslidedebuff") &&
+                   buff.EntryType == BuffType.Flee || (buff.EntryType == BuffType.Sleep && buff.Name != "landslidedebuff")) &&
                    !buff.Name.Equals("CassiopeiaWSlow", System.StringComparison.OrdinalIgnoreCase) &&
                    !buff.Name.Equals("megaadhesiveslow", System.StringComparison.OrdinalIgnoreCase);
         }
 
         internal static bool IsCrowdControlledOrSlowed<T>(T obj) where T : GameObjectBase
         {
-            return IsCrowdControlled(obj) || obj.BuffManager.GetBuffList().Any(buff => buff.IsActive && buff.EntryType == BuffType.Slow);
+            return IsCrowdControlled(obj) || obj.BuffManager.GetBuffList().Any(buff => buff.IsActive && buff.Stacks >= 1 && buff.EntryType == BuffType.Slow);
         }
 
         internal static bool IsKnockedUpOrBack<T>(T obj) where T : GameObjectBase

@@ -214,7 +214,7 @@ namespace SixAIO.Utilities
                 {
                     if (LogCleanseBuff)
                     {
-                        Logger.Log($"[AutoCleanse] {cc.Name} {cc.IsActive} {cc.DurationMs} {cc.EntryType}");
+                        Logger.Log($"[AutoCleanse] Name:{cc.Name} - Active:{cc.IsActive} - Duration:{cc.DurationMs} - Type:{cc.EntryType} - Stacks:{cc.Stacks}");
                     }
                     return true;
                 }
