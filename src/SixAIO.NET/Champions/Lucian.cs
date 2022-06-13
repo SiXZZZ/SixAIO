@@ -49,7 +49,7 @@ namespace SixAIO.Champions
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
                 IsTargetted = () => true,
-                IsEnabled = () => UseQ && !IsPassiveActive && !IsUltActive(),
+                IsEnabled = () => UseQ && !IsPassiveActive && !IsUltActive() && !UnitManager.MyChampion.AIManager.IsDashing,
                 TargetSelect = (mode) =>
                 {
                     var range = 500 + UnitManager.MyChampion.UnitComponentInfo.UnitBoundingRadius;
@@ -80,7 +80,7 @@ namespace SixAIO.Champions
                 Range = () => 900,
                 Radius = () => 110,
                 Speed = () => 1600,
-                IsEnabled = () => UseW && !IsPassiveActive && !IsUltActive() && (!OnlyWIfQENotReady || QEOnCooldown()),
+                IsEnabled = () => UseW && !IsPassiveActive && !IsUltActive() && !UnitManager.MyChampion.AIManager.IsDashing && (!OnlyWIfQENotReady || QEOnCooldown()),
                 TargetSelect = (mode) => SpellW.GetTargets(mode).FirstOrDefault()
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
