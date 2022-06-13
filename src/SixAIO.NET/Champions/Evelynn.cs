@@ -1,4 +1,5 @@
 ﻿using Oasys.Common.Enums.GameEnums;
+using Oasys.Common.GameObject;
 using Oasys.Common.Menu;
 using Oasys.Common.Menu.ItemComponents;
 using Oasys.SDK;
@@ -19,6 +20,8 @@ namespace SixAIO.Champions
             return UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot.Q).SpellData.SpellName == "EvelynnQ";
         }
 
+        private bool IsWActive(GameObjectBase gameObject) => gameObject.BuffManager.ActiveBuffs.Any(x => x.IsActive && x.Stacks >= 1 && x.Name.Equals("EvelynnW", StringComparison.OrdinalIgnoreCase) && x.StartTime + 2.5f <= GameEngine.GameTime);
+
         public Evelynn()
         {
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
@@ -30,7 +33,13 @@ namespace SixAIO.Champions
                 Radius = () => 100,
                 Speed = () => 2400,
                 IsEnabled = () => UseQ,
-                TargetSelect = (mode) => SpellQ.GetTargets(mode).FirstOrDefault()
+                TargetSelect = (mode) => SpellQ.GetTargets(mode).OrderBy(x => IsWActive(x)).FirstOrDefault(x => !OnlyQOnWTargets || IsWActive(x) || !IsQLine())
+            };
+            SpellE = new Spell(CastSlot.E, SpellSlot.E)
+            {
+                IsTargetted = () => true,
+                IsEnabled = () => UseE,
+                TargetSelect = (mode) => UnitManager.EnemyChampions.Where(x => x.Distance <= 350 && TargetSelector.IsAttackable(x)).OrderBy(x => IsWActive(x)).FirstOrDefault(x => !OnlyEOnWTargets || IsWActive(x))
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
@@ -61,7 +70,7 @@ namespace SixAIO.Champions
 
         internal override void OnCoreMainInput()
         {
-            if (SpellQ.ExecuteCastSpell() || SpellR.ExecuteCastSpell())
+            if (SpellQ.ExecuteCastSpell() || SpellE.ExecuteCastSpell() || SpellR.ExecuteCastSpell())
             {
                 return;
             }
@@ -75,15 +84,32 @@ namespace SixAIO.Champions
             }
         }
 
+        internal bool OnlyQOnWTargets
+        {
+            get => QSettings.GetItem<Switch>("Only Q On W Targets").IsOn;
+            set => QSettings.GetItem<Switch>("Only Q On W Targets").IsOn = value;
+        }
+
+        internal bool OnlyEOnWTargets
+        {
+            get => ESettings.GetItem<Switch>("Only E On W Targets").IsOn;
+            set => ESettings.GetItem<Switch>("Only E On W Targets").IsOn = value;
+        }
+
         internal override void InitializeMenu()
         {
             MenuManager.AddTab(new Tab($"SIXAIO - {nameof(Evelynn)}"));
             MenuTab.AddGroup(new Group("Q Settings"));
+            MenuTab.AddGroup(new Group("E Settings"));
             MenuTab.AddGroup(new Group("R Settings"));
 
             QSettings.AddItem(new Switch() { Title = "Use Q", IsOn = true });
             QSettings.AddItem(new Switch() { Title = "Use Q Laneclear", IsOn = true });
+            QSettings.AddItem(new Switch() { Title = "Only Q On W Targets", IsOn = true });
             QSettings.AddItem(new ModeDisplay() { Title = "Q HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
+
+            ESettings.AddItem(new Switch() { Title = "Use E", IsOn = true });
+            ESettings.AddItem(new Switch() { Title = "Only E On W Targets", IsOn = true });
 
             RSettings.AddItem(new Switch() { Title = "Use R", IsOn = true });
             RSettings.AddItem(new ModeDisplay() { Title = "R HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });

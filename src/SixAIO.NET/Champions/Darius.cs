@@ -14,11 +14,13 @@ namespace SixAIO.Champions
 {
     internal class Darius : Champion
     {
+        private bool IsQActive => UnitManager.MyChampion.BuffManager.ActiveBuffs.Any(x => x.IsActive && x.Stacks >= 1 && x.Name.Equals("dariusqcast", StringComparison.OrdinalIgnoreCase));
+        
         public Darius()
         {
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
-                IsEnabled = () => UseQ,
+                IsEnabled = () => UseQ && !IsQActive,
                 ShouldCast = (mode, target, spellClass, damage) => UnitManager.EnemyChampions.Any(x => x.Distance <= 460 && TargetSelector.IsAttackable(x)),
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
@@ -28,13 +30,13 @@ namespace SixAIO.Champions
                 Range = () => 500,
                 Radius = () => 50,
                 Speed = () => 2000,
-                IsEnabled = () => UseE,
+                IsEnabled = () => UseE && !IsQActive,
                 TargetSelect = (mode) => SpellE.GetTargets(mode).FirstOrDefault()
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
                 IsTargetted = () => true,
-                IsEnabled = () => UseR,
+                IsEnabled = () => UseR && !IsQActive,
                 TargetSelect = (mode) => UnitManager.EnemyChampions.Where(x => x.Distance <= 475 && TargetSelector.IsAttackable(x)).FirstOrDefault(RCanKill)
             };
         }

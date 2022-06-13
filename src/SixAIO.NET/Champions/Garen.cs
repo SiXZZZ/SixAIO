@@ -17,12 +17,16 @@ namespace SixAIO.Champions
         private float _lastAATime = 0f;
         private float _lastQTime = 0f;
 
+        private bool IsQActive => UnitManager.MyChampion.BuffManager.ActiveBuffs.Any(x => x.IsActive && x.Name.Equals("GarenQ", StringComparison.OrdinalIgnoreCase) && x.Stacks >= 1);
+
+        private bool IsEActive => SpellE.SpellClass.SpellData.SpellName.Equals("GarenECancel", StringComparison.OrdinalIgnoreCase);
+
         public Garen()
         {
             Orbwalker.OnOrbwalkerAfterBasicAttack += Orbwalker_OnOrbwalkerAfterBasicAttack;
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
-                IsEnabled = () => UseQ,
+                IsEnabled = () => UseQ && !IsQActive,
                 ShouldCast = (mode, target, spellClass, damage) =>
                             _lastAATime > _lastQTime &&
                             !Orbwalker.CanBasicAttack &&
@@ -31,7 +35,7 @@ namespace SixAIO.Champions
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
-                IsEnabled = () => UseE,
+                IsEnabled = () => UseE && !IsEActive && !IsQActive,
                 ShouldCast = (mode, target, spellClass, damage) =>
                             TargetSelector.IsAttackable(Orbwalker.TargetHero) &&
                             TargetSelector.IsInRange(Orbwalker.TargetHero),
