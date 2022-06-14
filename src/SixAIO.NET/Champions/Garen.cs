@@ -1,4 +1,5 @@
-﻿using Oasys.Common.Enums.GameEnums;
+﻿using Newtonsoft.Json;
+using Oasys.Common.Enums.GameEnums;
 using Oasys.Common.GameObject;
 using Oasys.Common.GameObject.ObjectClass;
 using Oasys.Common.Menu;
@@ -7,13 +8,17 @@ using Oasys.SDK;
 using Oasys.SDK.Menu;
 using Oasys.SDK.SpellCasting;
 using SixAIO.Models;
+using SixAIO.Utilities;
 using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 
 namespace SixAIO.Champions
 {
     internal class Garen : Champion
     {
+        private static TargetSelection _targetSelection;
         private float _lastAATime = 0f;
         private float _lastQTime = 0f;
 
@@ -44,7 +49,8 @@ namespace SixAIO.Champions
             {
                 IsTargetted = () => true,
                 IsEnabled = () => UseR,
-                TargetSelect = (mode) => UnitManager.EnemyChampions.Where(x => x.Distance <= 400 && TargetSelector.IsAttackable(x)).FirstOrDefault(RCanKill)
+                TargetSelect = (mode) => GetPrioritizationTarget(),
+                ShouldCast = (mode, target, spellClass, damage) => target is not null && target.Distance <= 400 && RCanKill(target)
             };
         }
 
@@ -82,6 +88,26 @@ namespace SixAIO.Champions
             }
         }
 
+        internal override void OnCoreMainTick()
+        {
+            if (UseROnTick)
+            {
+                SpellR.ExecuteCastSpell();
+            }
+        }
+
+        private int RTargetRange
+        {
+            get => RSettings.GetItem<Counter>("R target range").Value;
+            set => RSettings.GetItem<Counter>("R target range").Value = value;
+        }
+
+        internal bool UseROnTick
+        {
+            get => RSettings.GetItem<Switch>("Use R On Tick").IsOn;
+            set => RSettings.GetItem<Switch>("Use R On Tick").IsOn = value;
+        }
+
         internal override void InitializeMenu()
         {
             MenuManager.AddTab(new Tab($"SIXAIO - {nameof(Garen)}"));
@@ -94,6 +120,75 @@ namespace SixAIO.Champions
             ESettings.AddItem(new Switch() { Title = "Use E", IsOn = true });
 
             RSettings.AddItem(new Switch() { Title = "Use R", IsOn = true });
+            RSettings.AddItem(new Switch() { Title = "Use R On Tick", IsOn = true });
+            RSettings.AddItem(new Counter() { Title = "R target range", Value = 1000, MinValue = 0, MaxValue = 2000, ValueFrequency = 50 });
+            LoadTargetPrioValues();
+        }
+
+        internal void LoadTargetPrioValues()
+        {
+            try
+            {
+                using var stream = AppDomain.CurrentDomain.GetAssemblies().SingleOrDefault(assembly => assembly.GetName().Name == "Oasys.Core").GetManifestResourceStream("Oasys.Core.Dependencies.TargetSelection.json");
+                using var reader = new StreamReader(stream);
+                var jsonText = reader.ReadToEnd();
+
+                _targetSelection = JsonConvert.DeserializeObject<TargetSelection>(jsonText);
+                var enemies = UnitManager.EnemyChampions.Where(x => !x.IsTargetDummy);
+
+                InitializeSettings(_targetSelection.TargetPrioritizations.Where(x => enemies.Any(e => e.ModelName.Equals(x.Champion, StringComparison.OrdinalIgnoreCase))));
+            }
+            catch (Exception)
+            {
+            }
+        }
+
+        internal void InitializeSettings(IEnumerable<TargetPrioritization> targetPrioritizations)
+        {
+            try
+            {
+                if (targetPrioritizations.Any())
+                {
+                    RSettings.AddItem(new InfoDisplay() { Title = "-R target prio-" });
+                }
+                foreach (var targetPrioritization in targetPrioritizations)
+                {
+                    RSettings.AddItem(new Counter() { Title = targetPrioritization.Champion, MinValue = 0, MaxValue = 5, Value = targetPrioritization.Prioritization, ValueFrequency = 1 });
+                }
+            }
+            catch (Exception)
+            {
+            }
+        }
+
+        private GameObjectBase GetPrioritizationTarget()
+        {
+            try
+            {
+                GameObjectBase tempTarget = null;
+                var tempPrio = 0;
+                foreach (var hero in UnitManager.EnemyChampions.Where(x => x.Distance <= RTargetRange && TargetSelector.IsAttackable(x)))
+                {
+                    try
+                    {
+                        var targetPrio = RSettings.GetItem<Counter>(x => x.Title == hero.ModelName)?.Value ?? 1;
+                        if (targetPrio > tempPrio)
+                        {
+                            tempPrio = targetPrio;
+                            tempTarget = hero;
+                        }
+                    }
+                    catch (Exception)
+                    {
+                    }
+                }
+
+                return tempTarget;
+            }
+            catch (Exception)
+            {
+                return null;
+            }
         }
     }
 }
