@@ -1,6 +1,7 @@
 ﻿using Oasys.Common.GameObject.Clients;
 using Oasys.Common.Menu;
 using Oasys.Common.Menu.ItemComponents;
+using Oasys.SDK.Tools;
 using System;
 using System.Windows.Forms;
 
@@ -158,6 +159,7 @@ namespace SixAIO.Models
 
         internal static Champion GetChampion(string champion)
         {
+            Logger.Log($"Creating: {champion}");
             var type = Type.GetType($"SixAIO.Champions.{champion}");
             return (Champion)Activator.CreateInstance(type);
         }

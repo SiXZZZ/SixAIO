@@ -2,34 +2,30 @@
 using Oasys.Common.Enums.GameEnums;
 using Oasys.Common.Extensions;
 using Oasys.Common.GameObject;
-using Oasys.Common.GameObject.Clients.ExtendedInstances.Spells;
 using Oasys.Common.Menu;
 using Oasys.Common.Menu.ItemComponents;
 using Oasys.SDK;
 using Oasys.SDK.Menu;
 using Oasys.SDK.SpellCasting;
+using Oasys.SDK.Tools;
 using SharpDX;
 using SixAIO.Enums;
 using SixAIO.Models;
 using System;
 using System.Linq;
+using System.Windows.Forms;
 
 namespace SixAIO.Champions
 {
     internal class Vayne : Champion
     {
-        private float _lastAATime = 0f;
-        private float _lastQTime = 0f;
-        private static GameObjectBase _eTarget;
-
         public Vayne()
         {
-            Orbwalker.OnOrbwalkerAfterBasicAttack += Orbwalker_OnOrbwalkerAfterBasicAttack;
+            //Orbwalker.OnOrbwalkerAfterBasicAttack += Orbwalker_OnOrbwalkerAfterBasicAttack;
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
                 IsEnabled = () => UseQ,
                 ShouldCast = (mode, target, spellClass, damage) =>
-                            _lastAATime > _lastQTime &&
                             DashModeSelected == DashMode.ToMouse &&
                             !Orbwalker.CanBasicAttack &&
                             TargetSelector.IsAttackable(Orbwalker.TargetHero) &&
@@ -39,10 +35,17 @@ namespace SixAIO.Champions
             {
                 IsTargetted = () => true,
                 IsEnabled = () => UseE,
-                ShouldCast = ShouldCastE,
-                TargetSelect = (mode) => _eTarget
+                TargetSelect = (mode) => TargetSelectE()
             };
         }
+
+        //private void KeyboardProvider_OnKeyPress(Keys keyBeingPressed, Oasys.Common.Tools.Devices.Keyboard.KeyPressState pressState)
+        //{
+        //    if (keyBeingPressed == Keys.T && pressState == Oasys.Common.Tools.Devices.Keyboard.KeyPressState.Down)
+        //    {
+        //        SpellE.ExecuteCastSpell();
+        //    }
+        //}
 
         private GameObjectBase TargetSelectE()
         {
@@ -72,19 +75,24 @@ namespace SixAIO.Champions
             return null;
         }
 
-        private bool ShouldCastE(Orbwalker.OrbWalkingModeType mode, GameObjectBase target, SpellClass spellClass, float damage)
-        {
-            return UseE && spellClass.IsSpellReady && UnitManager.MyChampion.Mana > 90 && target != null;
-        }
-
         private int DistanceToWall(GameObjectBase target)
         {
-            for (var i = 0; i < CondemnRange; i += 5)
+            for (var i = 0; i < CondemnRange; i += 10)
             {
-                var pos = UnitManager.MyChampion.Position.Extend(target.Position, target.Distance + i);
-                if (pos.IsValid() && EngineManager.IsWall(pos))
+                if (UseAdvancedE)
                 {
-                    return i;
+                    if (CheckPositions(target.Position, target.Distance + i).Count(x => x.IsValid() && EngineManager.IsWall(x)) >= 3)
+                    {
+                        return i;
+                    }
+                }
+                else
+                {
+                    var pos = UnitManager.MyChampion.Position.Extend(target.Position, target.Distance + i);
+                    if (pos.IsValid() && EngineManager.IsWall(pos))
+                    {
+                        return i;
+                    }
                 }
             }
 
@@ -99,7 +107,6 @@ namespace SixAIO.Champions
 
         private void Orbwalker_OnOrbwalkerAfterBasicAttack(float gameTime, GameObjectBase target)
         {
-            _lastAATime = gameTime;
             if (target != null)
             {
                 SpellQ.ExecuteCastSpell();
@@ -114,12 +121,42 @@ namespace SixAIO.Champions
             }
         }
 
-        internal override void OnCoreMainTick()
+        private Vector3[] CheckPositions(Vector3 targetPos, float range)
         {
-            if (UseE && SpellE.SpellClass.IsSpellReady && UnitManager.MyChampion.Mana > 90)
+            var endDirection = UnitManager.MyChampion.Position + (targetPos - UnitManager.MyChampion.Position).Normalized();
+            var extendedSpellEndPos = UnitManager.MyChampion.Position.Extend(endDirection, range);
+
+            var result = new Vector3[] { targetPos, extendedSpellEndPos };
+
+            var bSquared = Math.Pow(range, 2) + Math.Pow(range, 2) - (2 * range * range * Math.Cos(12));
+            var b = Math.Sqrt(bSquared);
+
+            if (!targetPos.IsZero && !extendedSpellEndPos.IsZero)
             {
-                _eTarget = TargetSelectE();
+                var sWidth = (float)(b / 1.5f);
+                var posDir = new float[2] { (targetPos.X - extendedSpellEndPos.X), (targetPos.Z - extendedSpellEndPos.Z) };
+
+                posDir[0] /= (float)range; //dirX  /= Dist
+                posDir[1] /= (float)range; //dirY /= Dist
+
+                var eLeft = new Vector3(extendedSpellEndPos.X + (sWidth / 2) * posDir[1], targetPos.Y, extendedSpellEndPos.Z - (sWidth / 2) * posDir[0]);
+                var eRight = new Vector3(extendedSpellEndPos.X - (sWidth / 2) * posDir[1], targetPos.Y, extendedSpellEndPos.Z + (sWidth / 2) * posDir[0]);
+                result = new Vector3[] { targetPos, eLeft, eRight, extendedSpellEndPos };
             }
+
+            return result;
+        }
+
+        private static void DrawVaynePositions(Vector3 start, Vector3 eLeft, Vector3 eRight)
+        {
+            var startW2S = LeagueNativeRendererManager.WorldToScreenSpell(start);
+            var eLeftW2S = LeagueNativeRendererManager.WorldToScreenSpell(eLeft);
+            var eRightW2S = LeagueNativeRendererManager.WorldToScreenSpell(eRight);
+            var leftColor = EngineManager.IsWall(eLeft) ? Color.Blue : Color.Red;
+            var rightColor = EngineManager.IsWall(eRight) ? Color.Blue : Color.Red;
+            Oasys.SDK.Rendering.RenderFactory.DrawLine(eLeftW2S.X, eLeftW2S.Y, eRightW2S.X, eRightW2S.Y, 3, Color.Blue); //Base end
+            Oasys.SDK.Rendering.RenderFactory.DrawLine(startW2S.X, startW2S.Y, eLeftW2S.X, eLeftW2S.Y, 3, leftColor); // Left line
+            Oasys.SDK.Rendering.RenderFactory.DrawLine(startW2S.X, startW2S.Y, eRightW2S.X, eRightW2S.Y, 3, rightColor); //Right line
         }
 
         internal override void OnCoreRender()
@@ -130,6 +167,14 @@ namespace SixAIO.Champions
                                                                          x.Distance <= 550 + x.UnitComponentInfo.UnitBoundingRadius + UnitManager.MyChampion.UnitComponentInfo.UnitBoundingRadius &&
                                                                          x.IsAlive))
                 {
+                    //for (var i = 0; i < CondemnRange; i += 5)
+                    //{
+                    //    var positions = CheckPositions(target.Position, target.Distance + i);
+                    //    DrawVaynePositions(positions[0], positions[1], positions[2]);
+                    //    Logger.Log($"{i} = {EngineManager.IsWall(positions[0])} - {EngineManager.IsWall(positions[1])} - {EngineManager.IsWall(positions[2])} - {EngineManager.IsWall(positions[3])}");
+                    //}
+                    //var positions = CheckPositions(target.Position, target.Distance + CondemnRange);
+                    //DrawVaynePositions(positions[0], positions[1], positions[2]);
                     var myPoint = UnitManager.MyChampion.W2S;
                     var targetPoint = UnitManager.MyChampion.Position.Extend(target.Position, target.Distance + CondemnRange);
                     var targetPointW2S = targetPoint.ToW2S();
@@ -151,6 +196,12 @@ namespace SixAIO.Champions
         {
             get => ESettings.GetItem<Switch>("Draw E").IsOn;
             set => ESettings.GetItem<Switch>("Draw E").IsOn = value;
+        }
+
+        private bool UseAdvancedE
+        {
+            get => ESettings.GetItem<Switch>("Use Advanced E").IsOn;
+            set => ESettings.GetItem<Switch>("Use Advanced E").IsOn = value;
         }
 
         private bool UsePushAway
@@ -187,6 +238,7 @@ namespace SixAIO.Champions
             QSettings.AddItem(new ModeDisplay() { Title = "Dash Mode", ModeNames = DashHelper.ConstructDashModeTable(), SelectedModeName = "ToMouse" });
 
             ESettings.AddItem(new Switch() { Title = "Use E", IsOn = true });
+            ESettings.AddItem(new Switch() { Title = "Use Advanced E", IsOn = false });
             ESettings.AddItem(new Switch() { Title = "Draw E", IsOn = false });
             ESettings.AddItem(new Counter() { Title = "Condemn Range", MinValue = 50, MaxValue = 475, Value = 450, ValueFrequency = 25 });
             ESettings.AddItem(new Switch() { Title = "Use Push Away", IsOn = false });

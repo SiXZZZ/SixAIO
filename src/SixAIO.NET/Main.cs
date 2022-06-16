@@ -3,6 +3,7 @@ using Oasys.Common.Menu;
 using Oasys.SDK;
 using Oasys.SDK.Events;
 using Oasys.SDK.Menu;
+using Oasys.SDK.Tools;
 using SixAIO.Models;
 using SixAIO.Utilities;
 using System;
@@ -67,6 +68,7 @@ namespace SixAIO
             LoadChampion();
 
             MenuManager.AddTab(new Tab("SIXAIO - Utilities"));
+            Logger.Log($"Initialize Menu [{_currentChampion.GetType().Name}]");
             _currentChampion?.InitializeMenu();
             CoreEvents.OnCoreRender += CoreEvents_OnCoreRender;
             CoreEvents.OnCoreMainTick += CoreEvents_OnCoreMainTick;
