@@ -85,7 +85,7 @@ namespace SixAIO.Champions
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
                 MinimumHitChance = () => RHitChance,
                 Speed = () => 2000,
-                Range = () => 1000f,
+                Range = () => RMaximumRange,
                 Radius = () => 320,
                 Delay = () => 0.4f,
                 IsEnabled = () => UseR,
@@ -198,6 +198,12 @@ namespace SixAIO.Champions
             }
         }
 
+        private int RMaximumRange
+        {
+            get => RSettings.GetItem<Counter>("R maximum range").Value;
+            set => RSettings.GetItem<Counter>("R maximum range").Value = value;
+        }
+
         internal override void InitializeMenu()
         {
             TabItem.OnTabItemChange += TabItem_OnTabItemChange;
@@ -217,7 +223,7 @@ namespace SixAIO.Champions
 
             RSettings.AddItem(new Switch() { Title = "Use R", IsOn = true });
             RSettings.AddItem(new ModeDisplay() { Title = "R HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "VeryHigh" });
-
+            RSettings.AddItem(new Counter() { Title = "R maximum range", MinValue = 0, MaxValue = 1000, Value = 950, ValueFrequency = 50 });
             SetTargetChampsOnly();
         }
 

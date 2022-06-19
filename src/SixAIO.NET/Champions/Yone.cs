@@ -78,7 +78,7 @@ namespace SixAIO.Champions
             {
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
                 MinimumHitChance = () => RHitChance,
-                Range = () => 1000,
+                Range = () => RMaximumRange,
                 Radius = () => 225,
                 Speed = () => 10000,
                 Delay = () => 0.75f,
@@ -89,7 +89,7 @@ namespace SixAIO.Champions
             {
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
                 MinimumHitChance = () => SemiAutoRHitChance,
-                Range = () => 1000,
+                Range = () => RMaximumRange,
                 Radius = () => 225,
                 Speed = () => 10000,
                 Delay = () => 0.75f,
@@ -122,6 +122,12 @@ namespace SixAIO.Champions
             }
         }
 
+        private int RMaximumRange
+        {
+            get => RSettings.GetItem<Counter>("R maximum range").Value;
+            set => RSettings.GetItem<Counter>("R maximum range").Value = value;
+        }
+
         internal override void InitializeMenu()
         {
             MenuManager.AddTab(new Tab($"SIXAIO - {nameof(Yone)}"));
@@ -142,6 +148,7 @@ namespace SixAIO.Champions
             RSettings.AddItem(new Switch() { Title = "Use Semi Auto R", IsOn = true });
             RSettings.AddItem(new KeyBinding() { Title = "Semi Auto R Key", SelectedKey = Keys.T });
             RSettings.AddItem(new ModeDisplay() { Title = "Semi Auto R HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
+            RSettings.AddItem(new Counter() { Title = "R maximum range", MinValue = 0, MaxValue = 1000, Value = 950, ValueFrequency = 50 });
 
         }
     }

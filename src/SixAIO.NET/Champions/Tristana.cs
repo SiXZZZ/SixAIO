@@ -38,7 +38,9 @@ namespace SixAIO.Champions
             {
                 IsTargetted = () => true,
                 IsEnabled = () => UseE,
-                TargetSelect = (mode) => GetPrioritizationTarget(),
+                TargetSelect = (mode) => UseTargetselector
+                ? Orbwalker.TargetHero
+                : GetPrioritizationTarget(),
                 ShouldCast = (mode, target, spellClass, damage) => target is not null && target.Distance <= 517 + 8 * UnitManager.MyChampion.Level
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
@@ -186,6 +188,12 @@ namespace SixAIO.Champions
             }
         }
 
+        private bool UseTargetselector
+        {
+            get => ESettings.GetItem<Switch>("Use Targetselector").IsOn;
+            set => ESettings.GetItem<Switch>("Use Targetselector").IsOn = value;
+        }
+
         private int ETargetRange
         {
             get => ESettings.GetItem<Counter>("E target range").Value;
@@ -204,6 +212,7 @@ namespace SixAIO.Champions
             QSettings.AddItem(new Switch() { Title = "Use Q", IsOn = true });
 
             ESettings.AddItem(new Switch() { Title = "Use E", IsOn = true });
+            ESettings.AddItem(new Switch() { Title = "Use Targetselector", IsOn = false });
             ESettings.AddItem(new Counter() { Title = "E target range", Value = 1000, MinValue = 0, MaxValue = 2000, ValueFrequency = 50 });
             LoadTargetPrioValues();
 

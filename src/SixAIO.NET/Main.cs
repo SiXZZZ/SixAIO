@@ -66,10 +66,14 @@ namespace SixAIO
         private static Task GameEvents_OnGameLoadComplete()
         {
             LoadChampion();
-
             MenuManager.AddTab(new Tab("SIXAIO - Utilities"));
-            Logger.Log($"Initialize Menu [{_currentChampion.GetType().Name}]");
-            _currentChampion?.InitializeMenu();
+
+            if (_currentChampion is not null)
+            {
+                Logger.Log($"Initialize Menu [{_currentChampion?.GetType().Name}]");
+                _currentChampion?.InitializeMenu();
+            }
+
             CoreEvents.OnCoreRender += CoreEvents_OnCoreRender;
             CoreEvents.OnCoreMainTick += CoreEvents_OnCoreMainTick;
             CoreEvents.OnCoreMainInputAsync += CoreEvents_OnCoreMainInputAsync;
