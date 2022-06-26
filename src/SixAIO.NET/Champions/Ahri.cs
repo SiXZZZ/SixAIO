@@ -23,7 +23,12 @@ namespace SixAIO.Champions
                 Radius = () => 200,
                 Speed = () => 1550,
                 IsEnabled = () => UseQ,
-                TargetSelect = (mode) => SpellQ.GetTargets(mode, x => !TargetSelector.IsInvulnerable(x, Oasys.Common.Logic.DamageType.Magical, false)).FirstOrDefault(),
+                TargetSelect = (mode) => QPrioTargetsWithCharm
+                                            ? SpellQ.GetTargets(mode)
+                                                    .OrderByDescending(x => x.BuffManager.ActiveBuffs.Any(buff => buff.IsActive && buff.Name == "AhriSeduce"))
+                                                    .FirstOrDefault()
+                                            : SpellQ.GetTargets(mode)
+                                                    .FirstOrDefault(),
             };
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
             {
@@ -59,6 +64,20 @@ namespace SixAIO.Champions
             }
         }
 
+        internal override void OnCoreMainTick()
+        {
+            if (QPrioTargetsWithCharm)
+            {
+                Orbwalker.SelectedTarget = UnitManager.EnemyChampions.FirstOrDefault(x => x.BuffManager.ActiveBuffs.Any(buff => buff.IsActive && buff.Name == "AhriSeduce"));
+            }
+        }
+
+        internal bool QPrioTargetsWithCharm
+        {
+            get => QSettings.GetItem<Switch>("Q Prio Targets With Charm").IsOn;
+            set => QSettings.GetItem<Switch>("Q Prio Targets With Charm").IsOn = value;
+        }
+
         private DashMode DashModeSelected
         {
             get => (DashMode)Enum.Parse(typeof(DashMode), RSettings.GetItem<ModeDisplay>("R Dash Mode").SelectedModeName);
@@ -72,8 +91,10 @@ namespace SixAIO.Champions
             MenuTab.AddGroup(new Group("W Settings"));
             MenuTab.AddGroup(new Group("E Settings"));
             MenuTab.AddGroup(new Group("R Settings"));
+
             QSettings.AddItem(new Switch() { Title = "Use Q", IsOn = true });
             QSettings.AddItem(new ModeDisplay() { Title = "Q HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
+            QSettings.AddItem(new Switch() { Title = "Q Prio Targets With Charm", IsOn = true });
 
             WSettings.AddItem(new Switch() { Title = "Use W", IsOn = true });
 

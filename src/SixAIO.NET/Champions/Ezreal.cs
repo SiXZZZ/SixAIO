@@ -36,7 +36,12 @@ namespace SixAIO.Champions
                 //            : 0,
                 IsEnabled = () => UseQ,
                 MinimumMana = () => QMinMana,
-                TargetSelect = (mode) => SpellQ.GetTargets(mode).FirstOrDefault()
+                TargetSelect = (mode) => PrioTargetsWithW
+                                                ? SpellQ.GetTargets(mode)
+                                                        .OrderByDescending(x => x.BuffManager.ActiveBuffs.Any(buff => buff.IsActive && buff.Stacks >= 1 && buff.Name == "ezrealwattach"))
+                                                        .FirstOrDefault()
+                                                : SpellQ.GetTargets(mode)
+                                                        .FirstOrDefault()
             };
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
             {
@@ -77,7 +82,12 @@ namespace SixAIO.Champions
                 IsEnabled = () => UseR,
                 MinimumMana = () => RMinMana,
                 ShouldCast = (mode, target, spellClass, damage) => target != null && target.Health < damage,
-                TargetSelect = (mode) => SpellR.GetTargets(mode, x => x.HealthPercent <= RTargetMaxHPPercent && x.Distance > RMinimumRange && x.Distance <= RMaximumRange).FirstOrDefault()
+                TargetSelect = (mode) => PrioTargetsWithW
+                                            ? SpellR.GetTargets(mode, x => x.HealthPercent <= RTargetMaxHPPercent && x.Distance > RMinimumRange && x.Distance <= RMaximumRange)
+                                                    .OrderByDescending(x => x.BuffManager.ActiveBuffs.Any(buff => buff.IsActive && buff.Stacks >= 1 && buff.Name == "ezrealwattach"))
+                                                    .FirstOrDefault()
+                                            : SpellR.GetTargets(mode, x => x.HealthPercent <= RTargetMaxHPPercent && x.Distance > RMinimumRange && x.Distance <= RMaximumRange)
+                                                    .FirstOrDefault()
             };
             SpellRSemiAuto = new Spell(CastSlot.R, SpellSlot.R)
             {
@@ -90,7 +100,12 @@ namespace SixAIO.Champions
                 Delay = () => 1f,
                 IsEnabled = () => UseSemiAutoR,
                 MinimumMana = () => RMinMana,
-                TargetSelect = (mode) => SpellRSemiAuto.GetTargets(mode, x => x.Distance > RMinimumRange && x.Distance <= RMaximumRange).FirstOrDefault()
+                TargetSelect = (mode) => PrioTargetsWithW
+                                            ? SpellRSemiAuto.GetTargets(mode, x => x.Distance > RMinimumRange && x.Distance <= RMaximumRange)
+                                                            .OrderByDescending(x => x.BuffManager.ActiveBuffs.Any(buff => buff.IsActive && buff.Stacks >= 1 && buff.Name == "ezrealwattach"))
+                                                            .FirstOrDefault()
+                                            : SpellRSemiAuto.GetTargets(mode, x => x.Distance > RMinimumRange && x.Distance <= RMaximumRange)
+                                                            .FirstOrDefault()
             };
         }
 
@@ -110,6 +125,14 @@ namespace SixAIO.Champions
             }
         }
 
+        internal override void OnCoreMainTick()
+        {
+            if (PrioTargetsWithW)
+            {
+                Orbwalker.SelectedTarget = UnitManager.EnemyChampions.FirstOrDefault(x => x.BuffManager.ActiveBuffs.Any(buff => buff.IsActive && buff.Stacks >= 1 && buff.Name == "ezrealwattach"));
+            }
+        }
+
         internal override void OnCoreLaneClearInput()
         {
             if (UseQLaneclear && SpellQ.ExecuteCastSpell(Orbwalker.OrbWalkingModeType.LaneClear))
@@ -122,6 +145,12 @@ namespace SixAIO.Champions
         {
             get => QSettings.GetItem<Switch>("Q Allow Laneclear minion collision").IsOn;
             set => QSettings.GetItem<Switch>("Q Allow Laneclear minion collision").IsOn = value;
+        }
+
+        internal bool PrioTargetsWithW
+        {
+            get => WSettings.GetItem<Switch>("Prio Targets With W").IsOn;
+            set => WSettings.GetItem<Switch>("Prio Targets With W").IsOn = value;
         }
 
         private DashMode DashModeSelected
@@ -155,7 +184,7 @@ namespace SixAIO.Champions
             MenuTab.AddGroup(new Group("W Settings"));
             MenuTab.AddGroup(new Group("E Settings"));
             MenuTab.AddGroup(new Group("R Settings"));
-            
+
             QSettings.AddItem(new Switch() { Title = "Use Q", IsOn = true });
             QSettings.AddItem(new Switch() { Title = "Use Q Laneclear", IsOn = true });
             QSettings.AddItem(new Switch() { Title = "Q Allow Laneclear minion collision", IsOn = true });
@@ -165,6 +194,7 @@ namespace SixAIO.Champions
             WSettings.AddItem(new Switch() { Title = "Use W", IsOn = true });
             WSettings.AddItem(new Counter() { Title = "W Min Mana", MinValue = 0, MaxValue = 500, Value = 80, ValueFrequency = 10 });
             WSettings.AddItem(new ModeDisplay() { Title = "W HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
+            WSettings.AddItem(new Switch() { Title = "Prio Targets With W", IsOn = true });
 
             ESettings.AddItem(new Switch() { Title = "Use E", IsOn = false });
             ESettings.AddItem(new Counter() { Title = "E Min Mana", MinValue = 0, MaxValue = 500, Value = 150, ValueFrequency = 10 });
