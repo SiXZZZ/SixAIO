@@ -33,7 +33,7 @@ namespace SixAIO.Champions
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
-                AllowCancelBasicAttack = () => true,
+                AllowCancelBasicAttack = () => EAllowCancelBasicAttack,
                 IsTargetted = () => true,
                 IsEnabled = () => UseE,
                 TargetSelect = (mode) => TargetSelectE()
@@ -172,7 +172,7 @@ namespace SixAIO.Champions
                     //{
                     //    var positionses = CheckPositions(target.Position, target.Distance + i);
                     //    DrawVaynePositions(positionses[0], positionses[1], positionses[2]);
-                    //    Logger.Log($"{i} = {EngineManager.IsWall(positionses[0])} - {EngineManager.IsWall(positionses[1])} - {EngineManager.IsWall(positionses[2])} - {EngineManager.IsWall(positionses[3])}");
+                    //    //Logger.Log($"{i} = {EngineManager.IsWall(positionses[0])} - {EngineManager.IsWall(positionses[1])} - {EngineManager.IsWall(positionses[2])} - {EngineManager.IsWall(positionses[3])}");
                     //}
                     //var positions = CheckPositions(target.Position, target.Distance + CondemnRange);
                     //DrawVaynePositions(positions[0], positions[1], positions[2]);
@@ -203,6 +203,12 @@ namespace SixAIO.Champions
         {
             get => ESettings.GetItem<Switch>("Use Advanced E").IsOn;
             set => ESettings.GetItem<Switch>("Use Advanced E").IsOn = value;
+        }
+
+        private bool EAllowCancelBasicAttack
+        {
+            get => ESettings.GetItem<Switch>("E Allow Cancel Basic Attack").IsOn;
+            set => ESettings.GetItem<Switch>("E Allow Cancel Basic Attack").IsOn = value;
         }
 
         private bool UsePushAway
@@ -240,6 +246,7 @@ namespace SixAIO.Champions
 
             ESettings.AddItem(new Switch() { Title = "Use E", IsOn = true });
             ESettings.AddItem(new Switch() { Title = "Use Advanced E", IsOn = false });
+            ESettings.AddItem(new Switch() { Title = "E Allow Cancel Basic Attack", IsOn = true });
             ESettings.AddItem(new Switch() { Title = "Draw E", IsOn = false });
             ESettings.AddItem(new Counter() { Title = "Condemn Range", MinValue = 50, MaxValue = 475, Value = 450, ValueFrequency = 25 });
             ESettings.AddItem(new Switch() { Title = "Use Push Away", IsOn = false });
