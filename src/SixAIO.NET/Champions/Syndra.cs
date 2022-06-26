@@ -32,6 +32,8 @@ namespace SixAIO.Champions
                    obj.Name.Contains("_Q_", StringComparison.OrdinalIgnoreCase);
         }
 
+        private bool IsWActive => UnitManager.MyChampion.BuffManager.ActiveBuffs.Any(x => x.Name == "syndrawtooltip" && x.Stacks >= 1);
+
         public Syndra()
         {
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
@@ -43,6 +45,14 @@ namespace SixAIO.Champions
                 Radius = () => 180,
                 IsEnabled = () => UseQ,
                 TargetSelect = (mode) => SpellQ.GetTargets(mode).FirstOrDefault()
+            };
+            SpellW = new Spell(CastSlot.W, SpellSlot.W)
+            {
+                IsTargetted = () => true,
+                IsEnabled = () => UseW,
+                TargetSelect = (mode) => !IsWActive && SpellQ.GetTargets(mode).FirstOrDefault() is not null
+                                            ? Orbs.FirstOrDefault(x => x.Distance <= 925) ?? (GameObjectBase)UnitManager.EnemyMinions.FirstOrDefault(x => x.Distance <= 925)
+                                            : SpellQ.GetTargets(mode).FirstOrDefault()
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
@@ -132,34 +142,34 @@ namespace SixAIO.Champions
             }
         }
 
-        internal override void OnCoreRender()
-        {
-            try
-            {
-                if (UnitManager.MyChampion.IsAlive)
-                {
-                    var w2s = LeagueNativeRendererManager.WorldToScreenSpell(UnitManager.MyChampion.Position);
-                    var color = Color.Blue;
+        //internal override void OnCoreRender()
+        //{
+        //    try
+        //    {
+        //        if (UnitManager.MyChampion.IsAlive)
+        //        {
+        //            var w2s = LeagueNativeRendererManager.WorldToScreenSpell(UnitManager.MyChampion.Position);
+        //            var color = Color.Blue;
 
-                    foreach (var orb in Orbs)
-                    {
-                        var orbW2S = LeagueNativeRendererManager.WorldToScreenSpell(orb.Position);
-                        if (!orbW2S.IsZero)
-                        {
-                            Oasys.SDK.Rendering.RenderFactory.DrawLine(w2s.X, w2s.Y, orbW2S.X, orbW2S.Y, 2, color);
-                            Oasys.SDK.Rendering.RenderFactory.DrawText(orb.Name, 12, orbW2S, color);
-                        }
-                    }
-                }
-            }
-            catch (Exception)
-            {
-            }
-        }
+        //            foreach (var orb in Orbs)
+        //            {
+        //                var orbW2S = LeagueNativeRendererManager.WorldToScreenSpell(orb.Position);
+        //                if (!orbW2S.IsZero)
+        //                {
+        //                    Oasys.SDK.Rendering.RenderFactory.DrawLine(w2s.X, w2s.Y, orbW2S.X, orbW2S.Y, 2, color);
+        //                    Oasys.SDK.Rendering.RenderFactory.DrawText(orb.Name, 12, orbW2S, color);
+        //                }
+        //            }
+        //        }
+        //    }
+        //    catch (Exception)
+        //    {
+        //    }
+        //}
 
         internal override void OnCoreMainInput()
         {
-            if (SpellR.ExecuteCastSpell() || SpellE.ExecuteCastSpell() || /*SpellW.ExecuteCastSpell() ||*/ SpellQ.ExecuteCastSpell())
+            if (SpellR.ExecuteCastSpell() || SpellE.ExecuteCastSpell() || SpellW.ExecuteCastSpell() || SpellQ.ExecuteCastSpell())
             {
                 return;
             }
@@ -187,13 +197,14 @@ namespace SixAIO.Champions
         {
             MenuManager.AddTab(new Tab($"SIXAIO - {nameof(Syndra)}"));
             MenuTab.AddGroup(new Group("Q Settings"));
+            MenuTab.AddGroup(new Group("W Settings"));
             MenuTab.AddGroup(new Group("E Settings"));
             MenuTab.AddGroup(new Group("R Settings"));
 
             QSettings.AddItem(new Switch() { Title = "Use Q", IsOn = true });
             QSettings.AddItem(new ModeDisplay() { Title = "Q HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
 
-            //WSettings.AddItem(new Switch() { Title = "Use W", IsOn = true });
+            WSettings.AddItem(new Switch() { Title = "Use W", IsOn = true });
 
             ESettings.AddItem(new Switch() { Title = "Use E", IsOn = true });
             ESettings.AddItem(new Switch() { Title = "Use Push Away", IsOn = true });
