@@ -16,6 +16,9 @@ namespace SixAIO.Champions
     internal class Pyke : Champion
     {
         private bool IsChargingQ => UnitManager.MyChampion.BuffManager.ActiveBuffs.Any(x => x.Name == "PykeQ" && x.Stacks >= 1);
+
+        private bool IsCastingE => GameEngine.GameTime + SpellE.SpellClass.Cooldown - SpellE.SpellClass.CooldownExpire < 1;
+
         public Pyke()
         {
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
@@ -31,9 +34,9 @@ namespace SixAIO.Champions
                                         : 1100,
                 Radius = () => 140,
                 Speed = () => 1500,
-                IsEnabled = () => UseQ,
+                IsEnabled = () => UseQ && !IsCastingE,
                 MinimumMana = () => 90,
-                ShouldCast = (mode, target, spellClass, damage) => target != null && target.Distance < SpellQ.Range(),
+                ShouldCast = (mode, target, spellClass, damage) => target != null && target.Distance < SpellQ.Range() && SpellQ.Range() >= QMinimumChargeRange,
                 TargetSelect = (mode) => SpellQ.GetTargets(mode).FirstOrDefault()
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
@@ -106,6 +109,12 @@ namespace SixAIO.Champions
             }
         }
 
+        private int QMinimumChargeRange
+        {
+            get => QSettings.GetItem<Counter>("Q Minimum Charge Range").Value;
+            set => QSettings.GetItem<Counter>("Q Minimum Charge Range").Value = value;
+        }
+
         private int ERange
         {
             get => ESettings.GetItem<Counter>("E range").Value;
@@ -120,8 +129,8 @@ namespace SixAIO.Champions
             MenuTab.AddGroup(new Group("R Settings"));
 
             QSettings.AddItem(new Switch() { Title = "Use Q", IsOn = true });
+            QSettings.AddItem(new Counter() { Title = "Q Minimum Charge Range", MinValue = 50, MaxValue = 1000, Value = 400, ValueFrequency = 25 });
             QSettings.AddItem(new ModeDisplay() { Title = "Q HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
-
 
             ESettings.AddItem(new Switch() { Title = "Use E", IsOn = true });
             ESettings.AddItem(new ModeDisplay() { Title = "E HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
