@@ -21,7 +21,7 @@ namespace SixAIO.Champions
     {
         public Vayne()
         {
-            //Orbwalker.OnOrbwalkerAfterBasicAttack += Orbwalker_OnOrbwalkerAfterBasicAttack;
+            Orbwalker.OnOrbwalkerAfterBasicAttack += Orbwalker_OnOrbwalkerAfterBasicAttack;
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
                 IsEnabled = () => UseQ,
@@ -33,6 +33,7 @@ namespace SixAIO.Champions
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
+                AllowCancelBasicAttack = () => true,
                 IsTargetted = () => true,
                 IsEnabled = () => UseE,
                 TargetSelect = (mode) => TargetSelectE()
@@ -169,9 +170,9 @@ namespace SixAIO.Champions
                 {
                     //for (var i = 0; i < CondemnRange; i += 5)
                     //{
-                    //    var positions = CheckPositions(target.Position, target.Distance + i);
-                    //    DrawVaynePositions(positions[0], positions[1], positions[2]);
-                    //    Logger.Log($"{i} = {EngineManager.IsWall(positions[0])} - {EngineManager.IsWall(positions[1])} - {EngineManager.IsWall(positions[2])} - {EngineManager.IsWall(positions[3])}");
+                    //    var positionses = CheckPositions(target.Position, target.Distance + i);
+                    //    DrawVaynePositions(positionses[0], positionses[1], positionses[2]);
+                    //    Logger.Log($"{i} = {EngineManager.IsWall(positionses[0])} - {EngineManager.IsWall(positionses[1])} - {EngineManager.IsWall(positionses[2])} - {EngineManager.IsWall(positionses[3])}");
                     //}
                     //var positions = CheckPositions(target.Position, target.Distance + CondemnRange);
                     //DrawVaynePositions(positions[0], positions[1], positions[2]);
