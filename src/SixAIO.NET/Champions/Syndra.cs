@@ -1,13 +1,17 @@
-﻿using Oasys.Common.Enums.GameEnums;
+﻿using Oasys.Common;
+using Oasys.Common.Enums.GameEnums;
 using Oasys.Common.Extensions;
 using Oasys.Common.GameObject;
+using Oasys.Common.GameObject.Clients;
 using Oasys.Common.GameObject.ObjectClass;
 using Oasys.Common.Menu;
 using Oasys.Common.Menu.ItemComponents;
 using Oasys.SDK;
 using Oasys.SDK.Menu;
 using Oasys.SDK.SpellCasting;
+using Oasys.SDK.Tools;
 using SharpDX;
+using SixAIO.Enums;
 using SixAIO.Models;
 using System;
 using System.Collections.Generic;
@@ -17,7 +21,16 @@ namespace SixAIO.Champions
 {
     internal class Syndra : Champion
     {
-        private static IEnumerable<GameObjectBase> GetOrbs() => UnitManager.AllNativeObjects.Where(x => x.UnitComponentInfo.SkinName == "SyndraOrbs");
+        private List<AIBaseClient> _orbs = new List<AIBaseClient>();
+
+        private List<AIBaseClient> Orbs => _orbs.Where(IsOrb).ToList();
+
+        private static bool IsOrb(AIBaseClient obj)
+        {
+            return obj is not null && obj.Distance <= 2000 && obj.IsAlive && obj.Position.IsValid() &&
+                   obj.Name.Contains("Syndra_", StringComparison.OrdinalIgnoreCase) &&
+                   obj.Name.Contains("_Q_", StringComparison.OrdinalIgnoreCase);
+        }
 
         public Syndra()
         {
@@ -25,7 +38,6 @@ namespace SixAIO.Champions
             {
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Circle,
                 MinimumHitChance = () => QHitChance,
-                Delay = () => 0f,
                 Range = () => 800,
                 Speed = () => 1000,
                 Radius = () => 180,
@@ -34,11 +46,7 @@ namespace SixAIO.Champions
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
-                PredictionMode = () => Prediction.MenuSelected.PredictionType.Cone,
-                MinimumHitChance = () => EHitChance,
-                Range = () => 800,
-                Radius = () => 140,
-                Speed = () => 2500,
+                IsTargetted = () => true,
                 IsEnabled = () => UseE,
                 TargetSelect = (mode) =>
                 {
@@ -46,10 +54,6 @@ namespace SixAIO.Champions
                                                 .Where(x => x.IsAlive && x.Distance <= 1000 &&
                                                             TargetSelector.IsAttackable(x) &&
                                                             !TargetSelector.IsInvulnerable(x, Oasys.Common.Logic.DamageType.Magical, false));
-                    if (targets.Any(x => x.Distance <= 550))
-                    {
-                        return targets.FirstOrDefault(x => x.Distance <= 550);
-                    }
 
                     foreach (var target in targets)
                     {
@@ -58,6 +62,18 @@ namespace SixAIO.Champions
                         {
                             return targetOrb.FirstOrDefault();
                         }
+                    }
+
+                    if (UsePushAway)
+                    {
+                        return PushAwayModeSelected switch
+                        {
+                            PushAwayMode.Melee => targets.FirstOrDefault(x => x.CombatType == CombatTypes.Melee && x.Distance < PushAwayRange),
+                            PushAwayMode.LowerThanMyRange => targets.FirstOrDefault(x => x.AttackRange < UnitManager.MyChampion.AttackRange && x.Distance < PushAwayRange),
+                            PushAwayMode.DashNearMe => targets.FirstOrDefault(x => x.AIManager.IsDashing && UnitManager.MyChampion.DistanceTo(x.AIManager.NavEndPosition) < PushAwayRange),
+                            PushAwayMode.Everything => targets.FirstOrDefault(x => x.Distance < PushAwayRange),
+                            _ => null,
+                        };
                     }
 
                     return null;
@@ -77,7 +93,7 @@ namespace SixAIO.Champions
 
         private IEnumerable<GameObjectBase> GetOrbsBetweenMeAndEnemy(Hero enemy, int width)
         {
-            return GetOrbs().Where(orb => orb.Distance <= 800 &&
+            return Orbs.Where(orb => orb is not null && orb.Distance <= 800 &&
                         Geometry.DistanceFromPointToLine(enemy.W2S, new Vector2[] { UnitManager.MyChampion.W2S, orb.W2S }) <= width &&
                         orb.W2S.Distance(enemy.W2S) < UnitManager.MyChampion.W2S.Distance(enemy.W2S));
         }
@@ -100,12 +116,71 @@ namespace SixAIO.Champions
             return DamageCalculator.GetMagicResistMod(UnitManager.MyChampion, target) * (charges * chargeDamage);
         }
 
+        internal override void OnCreateObject(AIBaseClient obj)
+        {
+            if (IsOrb(obj))
+            {
+                _orbs.Add(obj);
+            }
+        }
+
+        internal override void OnDeleteObject(AIBaseClient obj)
+        {
+            if (!IsOrb(obj))
+            {
+                _orbs.Remove(obj);
+            }
+        }
+
+        internal override void OnCoreRender()
+        {
+            try
+            {
+                if (UnitManager.MyChampion.IsAlive)
+                {
+                    var w2s = LeagueNativeRendererManager.WorldToScreenSpell(UnitManager.MyChampion.Position);
+                    var color = Color.Blue;
+
+                    foreach (var orb in Orbs)
+                    {
+                        var orbW2S = LeagueNativeRendererManager.WorldToScreenSpell(orb.Position);
+                        if (!orbW2S.IsZero)
+                        {
+                            Oasys.SDK.Rendering.RenderFactory.DrawLine(w2s.X, w2s.Y, orbW2S.X, orbW2S.Y, 2, color);
+                            Oasys.SDK.Rendering.RenderFactory.DrawText(orb.Name, 12, orbW2S, color);
+                        }
+                    }
+                }
+            }
+            catch (Exception)
+            {
+            }
+        }
+
         internal override void OnCoreMainInput()
         {
             if (SpellR.ExecuteCastSpell() || SpellE.ExecuteCastSpell() || /*SpellW.ExecuteCastSpell() ||*/ SpellQ.ExecuteCastSpell())
             {
                 return;
             }
+        }
+
+        private bool UsePushAway
+        {
+            get => ESettings.GetItem<Switch>("Use Push Away").IsOn;
+            set => ESettings.GetItem<Switch>("Use Push Away").IsOn = value;
+        }
+
+        private int PushAwayRange
+        {
+            get => ESettings.GetItem<Counter>("Push Away Range").Value;
+            set => ESettings.GetItem<Counter>("Push Away Range").Value = value;
+        }
+
+        private PushAwayMode PushAwayModeSelected
+        {
+            get => (PushAwayMode)Enum.Parse(typeof(PushAwayMode), ESettings.GetItem<ModeDisplay>("Push Away Mode").SelectedModeName);
+            set => ESettings.GetItem<ModeDisplay>("Push Away Mode").SelectedModeName = value.ToString();
         }
 
         internal override void InitializeMenu()
@@ -121,7 +196,9 @@ namespace SixAIO.Champions
             //WSettings.AddItem(new Switch() { Title = "Use W", IsOn = true });
 
             ESettings.AddItem(new Switch() { Title = "Use E", IsOn = true });
-            ESettings.AddItem(new ModeDisplay() { Title = "E HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
+            ESettings.AddItem(new Switch() { Title = "Use Push Away", IsOn = true });
+            ESettings.AddItem(new Counter() { Title = "Push Away Range", MinValue = 50, MaxValue = 800, Value = 250, ValueFrequency = 25 });
+            ESettings.AddItem(new ModeDisplay() { Title = "Push Away Mode", ModeNames = PushAwayHelper.ConstructPushAwayModeTable(), SelectedModeName = "Everything" });
 
             RSettings.AddItem(new Switch() { Title = "Use R", IsOn = true });
         }
