@@ -16,6 +16,13 @@ namespace SixAIO.Champions
         public Jhin()
         {
             Oasys.SDK.InputProviders.KeyboardProvider.OnKeyPress += KeyboardProvider_OnKeyPress;
+            SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
+            {
+                IsTargetted = () => true,
+                IsEnabled = () => UseQ,
+                TargetSelect = (mode) => Orbwalker.TargetHero,
+                ShouldCast = (mode, target, spellClass, damage) => target is not null && target.Distance <= 550
+            };
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
             {
                 AllowCollision = (target, collisions) => !collisions.Any(),
@@ -24,8 +31,7 @@ namespace SixAIO.Champions
                 Range = () => 2500,
                 Radius = () => 90,
                 Speed = () => 2500,
-                Delay = () => 0.75f,
-                IsEnabled = () => UseW,
+                IsEnabled = () => UseW && (!WOnlyOutsideOfAttackRange || !UnitManager.EnemyChampions.Any(TargetSelector.IsInRange)) && (UnitManager.EnemyChampions.All(x => x.Distance >= WMinimumRange || !TargetSelector.IsAttackable(x))),
                 TargetSelect = (mode) => SpellW.GetTargets(mode, x => x.BuffManager.ActiveBuffs.Any(buff => buff.Name == "jhinespotteddebuff" && buff.Stacks >= 1)).FirstOrDefault()
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
@@ -68,20 +74,37 @@ namespace SixAIO.Champions
 
         internal override void OnCoreMainInput()
         {
-            if (SpellW.ExecuteCastSpell() || SpellR.ExecuteCastSpell())
+            if (SpellQ.ExecuteCastSpell() || SpellW.ExecuteCastSpell() || SpellR.ExecuteCastSpell())
             {
                 return;
             }
         }
 
+        private bool WOnlyOutsideOfAttackRange
+        {
+            get => WSettings.GetItem<Switch>("W only outside of attack range").IsOn;
+            set => WSettings.GetItem<Switch>("W only outside of attack range").IsOn = value;
+        }
+
+        private int WMinimumRange
+        {
+            get => WSettings.GetItem<Counter>("W minimum range").Value;
+            set => WSettings.GetItem<Counter>("W minimum range").Value = value;
+        }
+
         internal override void InitializeMenu()
         {
             MenuManager.AddTab(new Tab($"SIXAIO - {nameof(Jhin)}"));
+            MenuTab.AddGroup(new Group("Q Settings"));
             MenuTab.AddGroup(new Group("W Settings"));
             MenuTab.AddGroup(new Group("R Settings"));
 
+            QSettings.AddItem(new Switch() { Title = "Use Q", IsOn = true });
+
             WSettings.AddItem(new Switch() { Title = "Use W", IsOn = true });
             WSettings.AddItem(new ModeDisplay() { Title = "W HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
+            WSettings.AddItem(new Switch() { Title = "W only outside of attack range", IsOn = false });
+            WSettings.AddItem(new Counter() { Title = "W minimum range", MinValue = 0, MaxValue = 1500, Value = 0, ValueFrequency = 50 });
 
             RSettings.AddItem(new Switch() { Title = "Use R", IsOn = true });
             RSettings.AddItem(new Switch() { Title = "Allow R cast on minimap", IsOn = true });
