@@ -1,4 +1,5 @@
-﻿using Oasys.Common.Enums.GameEnums;
+﻿using Oasys.Common;
+using Oasys.Common.Enums.GameEnums;
 using Oasys.Common.Extensions;
 using Oasys.Common.GameObject;
 using Oasys.Common.GameObject.Clients;
@@ -63,13 +64,20 @@ namespace SixAIO.Champions
                 IsEnabled = () => UseE,
                 TargetSelect = (mode) =>
                 {
-                    var dagger = _daggers.FirstOrDefault(x => x.Distance <= 775 && x.IsAlive && UnitManager.EnemyChampions.Any(enemy => enemy.DistanceTo(x.Position) <= 440));
-                    if (dagger is not null)
+                    if (AllowEOnDaggers)
                     {
-                        return dagger;
+                        var dagger = _daggers.FirstOrDefault(x => x.Distance <= 775 && x.IsAlive && UnitManager.EnemyChampions.Any(enemy => enemy.DistanceTo(x.Position) <= 500));
+                        if (dagger is not null)
+                        {
+                            return dagger;
+                        }
+                    }
+                    if (AllowEOnChamps)
+                    {
+                        return SpellE.GetTargets(mode).FirstOrDefault();
                     }
 
-                    return SpellE.GetTargets(mode).FirstOrDefault();
+                    return null;
                 }
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
@@ -146,6 +154,43 @@ namespace SixAIO.Champions
             }
         }
 
+        //internal override void OnCoreRender()
+        //{
+        //    try
+        //    {
+        //        if (UnitManager.MyChampion.IsAlive)
+        //        {
+        //            var w2s = LeagueNativeRendererManager.WorldToScreenSpell(UnitManager.MyChampion.Position);
+        //            var color = Color.Blue;
+
+        //            foreach (var dagger in _daggers)
+        //            {
+        //                var orbW2S = LeagueNativeRendererManager.WorldToScreenSpell(dagger.Position);
+        //                if (!orbW2S.IsZero)
+        //                {
+        //                    RenderFactory.DrawLine(w2s.X, w2s.Y, orbW2S.X, orbW2S.Y, 2, color);
+        //                    RenderFactory.DrawText(dagger.Name, 12, orbW2S, color);
+        //                }
+        //            }
+        //        }
+        //    }
+        //    catch (Exception)
+        //    {
+        //    }
+        //}
+
+        internal bool AllowEOnDaggers
+        {
+            get => ESettings.GetItem<Switch>("Allow E on daggers").IsOn;
+            set => ESettings.GetItem<Switch>("Allow E on daggers").IsOn = value;
+        }
+
+        internal bool AllowEOnChamps
+        {
+            get => ESettings.GetItem<Switch>("Allow E on champs").IsOn;
+            set => ESettings.GetItem<Switch>("Allow E on champs").IsOn = value;
+        }
+
         internal bool OnlyRIfCantE
         {
             get => RSettings.GetItem<Switch>("Only R if cant E").IsOn;
@@ -180,6 +225,8 @@ namespace SixAIO.Champions
             WSettings.AddItem(new Switch() { Title = "Use W", IsOn = true });
 
             ESettings.AddItem(new Switch() { Title = "Use E", IsOn = true });
+            ESettings.AddItem(new Switch() { Title = "Allow E on daggers", IsOn = true });
+            ESettings.AddItem(new Switch() { Title = "Allow E on champs", IsOn = true });
 
             RSettings.AddItem(new Switch() { Title = "Use R", IsOn = true });
             RSettings.AddItem(new Switch() { Title = "Only R if cant E", IsOn = true });

@@ -44,7 +44,7 @@ namespace SixAIO.Champions
                             (SpellQ.ChargeTimer.IsRunning || UnitManager.MyChampion.Mana > 85) &&
                             target != null &&
                             (SpellQ.ChargeTimer.IsRunning ? target.Distance < SpellQ.Range() : target.Distance < 1600),
-                TargetSelect = (mode) => SpellQ.GetTargets(mode, x => (UseOnlyIfXGTEWStacks == 0 || WStacks(x) >= UseOnlyIfXGTEWStacks)).FirstOrDefault()
+                TargetSelect = (mode) => SpellQ.GetTargets(mode, x => (QOnlyIfXGTEWStacks == 0 || WStacks(x) >= QOnlyIfXGTEWStacks)).FirstOrDefault()
             };
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
             {
@@ -64,7 +64,7 @@ namespace SixAIO.Champions
                 Radius = () => 300,
                 Speed = () => 1600,
                 IsEnabled = () => UseE,
-                TargetSelect = (mode) => SpellE.GetTargets(mode, x => (UseOnlyIfXGTEWStacks == 0 || WStacks(x) >= UseOnlyIfXGTEWStacks)).FirstOrDefault()
+                TargetSelect = (mode) => SpellE.GetTargets(mode, x => (EOnlyIfXGTEWStacks == 0 || WStacks(x) >= EOnlyIfXGTEWStacks)).FirstOrDefault()
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
@@ -75,7 +75,7 @@ namespace SixAIO.Champions
                 Speed = () => 1500,
                 IsEnabled = () => UseR,
                 TargetSelect = (mode) => SpellR.GetTargets(mode, x => x.HealthPercent <= UseOnlyRIfXLTEHPPercent &&
-                                                                        (UseOnlyIfXGTEWStacks == 0 || WStacks(x) >= UseOnlyIfXGTEWStacks) &&
+                                                                        (ROnlyIfXGTEWStacks == 0 || WStacks(x) >= ROnlyIfXGTEWStacks) &&
                                                                         RIfMoreThanEnemiesNear < UnitManager.EnemyChampions.Count(enemy =>
                                                                         TargetSelector.IsAttackable(enemy) && enemy.Distance(x) < REnemiesCloserThan))
                                                 .FirstOrDefault()
@@ -90,10 +90,22 @@ namespace SixAIO.Champions
             }
         }
 
-        private int UseOnlyIfXGTEWStacks
+        private int QOnlyIfXGTEWStacks
         {
-            get => MenuTab.GetItem<Counter>("Use only if x >= W stacks").Value;
-            set => MenuTab.GetItem<Counter>("Use only if x >= W stacks").Value = value;
+            get => QSettings.GetItem<Counter>("Only Q if x >= W stacks").Value;
+            set => QSettings.GetItem<Counter>("Only Q if x >= W stacks").Value = value;
+        }
+
+        private int EOnlyIfXGTEWStacks
+        {
+            get => ESettings.GetItem<Counter>("Only E if x >= W stacks").Value;
+            set => ESettings.GetItem<Counter>("Only E if x >= W stacks").Value = value;
+        }
+
+        private int ROnlyIfXGTEWStacks
+        {
+            get => RSettings.GetItem<Counter>("Only R if x >= W stacks").Value;
+            set => RSettings.GetItem<Counter>("Only R if x >= W stacks").Value = value;
         }
 
         private int UseOnlyWIfXLTEHPPercent
@@ -127,22 +139,24 @@ namespace SixAIO.Champions
             MenuTab.AddGroup(new Group("W Settings"));
             MenuTab.AddGroup(new Group("E Settings"));
             MenuTab.AddGroup(new Group("R Settings"));
-            MenuTab.AddItem(new Counter() { Title = "Use only if x >= W stacks", MinValue = 0, MaxValue = 3, Value = 3, ValueFrequency = 1 });
 
             QSettings.AddItem(new Switch() { Title = "Use Q", IsOn = true });
             QSettings.AddItem(new ModeDisplay() { Title = "Q HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
+            QSettings.AddItem(new Counter() { Title = "Only Q if x >= W stacks", MinValue = 0, MaxValue = 3, Value = 0, ValueFrequency = 1 });
 
             WSettings.AddItem(new Switch() { Title = "Use W", IsOn = true });
             WSettings.AddItem(new Counter() { Title = "Use only W if x <= HP percent", MinValue = 0, MaxValue = 100, Value = 50, ValueFrequency = 5 });
 
             ESettings.AddItem(new Switch() { Title = "Use E", IsOn = true });
             ESettings.AddItem(new ModeDisplay() { Title = "E HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
+            ESettings.AddItem(new Counter() { Title = "Only E if x >= W stacks", MinValue = 0, MaxValue = 3, Value = 3, ValueFrequency = 1 });
 
             RSettings.AddItem(new Switch() { Title = "Use R", IsOn = true });
             RSettings.AddItem(new Counter() { Title = "Use only R if x <= HP percent", MinValue = 0, MaxValue = 100, Value = 50, ValueFrequency = 5 });
             RSettings.AddItem(new ModeDisplay() { Title = "R HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
             RSettings.AddItem(new Counter() { Title = "R x >= Enemies Near Target", MinValue = 0, MaxValue = 5, Value = 1, ValueFrequency = 1 });
             RSettings.AddItem(new Counter() { Title = "R Enemies Closer Than", MinValue = 200, MaxValue = 800, Value = 600, ValueFrequency = 50 });
+            RSettings.AddItem(new Counter() { Title = "Only R if x >= W stacks", MinValue = 0, MaxValue = 3, Value = 0, ValueFrequency = 1 });
         }
     }
 }

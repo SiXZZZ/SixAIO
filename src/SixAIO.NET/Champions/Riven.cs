@@ -7,6 +7,7 @@ using Oasys.Common.Menu.ItemComponents;
 using Oasys.SDK;
 using Oasys.SDK.Menu;
 using Oasys.SDK.SpellCasting;
+using Oasys.SDK.Tools;
 using SixAIO.Models;
 using System;
 using System.Linq;
@@ -15,6 +16,9 @@ namespace SixAIO.Champions
 {
     internal class Riven : Champion
     {
+        internal Spell SpellQ23;
+        internal Spell SpellR2;
+
         private static int PassiveStacks()
         {
             var buff = UnitManager.MyChampion.BuffManager.GetBuffByName("RivenPassiveAABoost", false, true);
@@ -24,7 +28,17 @@ namespace SixAIO.Champions
                     ? (int)buff.Stacks
                     : 0;
         }
-        //RivenTriCleave = q passive 
+
+        private static int QStacks()
+        {
+            var buff = UnitManager.MyChampion.BuffManager.GetBuffByName("RivenTriCleave", false, true);
+            return buff == null
+                ? 0
+                : buff.IsActive && buff.Stacks > 0
+                    ? (int)buff.Stacks
+                    : 0;
+        }
+
         private static BuffEntry GetUltBuff() => UnitManager.MyChampion.BuffManager.GetBuffByName("rivenwindslashready", false, true);
 
         private static bool IsUltActive()
@@ -36,7 +50,9 @@ namespace SixAIO.Champions
         private static float UltTimeLeft()
         {
             var buff = GetUltBuff();
-            return buff != null && buff.IsActive ? buff.Duration : 0;
+            var result = buff != null && buff.IsActive ? buff.RemainingDurationMs : 0;
+            //Logger.Log($"ulttime left: {result}");
+            return result;
         }
 
         private static bool IsWindSlashReady()
@@ -73,6 +89,11 @@ namespace SixAIO.Champions
                             target != null,
                 TargetSelect = (mode) => UnitManager.EnemyChampions.FirstOrDefault(x => x.Distance <= UnitManager.MyChampion.TrueAttackRange + (IsUltActive() ? 250 : 150) && TargetSelector.IsAttackable(x))
             };
+            SpellQ23 = new Spell(CastSlot.Q, SpellSlot.Q)
+            {
+                IsEnabled = () => UseQ,
+                ShouldCast = (mode, target, spellClass, damage) => GameEngine.GameTime >= _lastQChargeTime + 3.5f && _lastQCharge <= QStacks() && ((UseQ2BeforeExpire && QStacks() == 1) || (UseQ3BeforeExpire && QStacks() == 2))
+            };
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
             {
                 IsEnabled = () => UseW,
@@ -89,20 +110,32 @@ namespace SixAIO.Champions
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Cone,
-                MinimumHitChance = () => RHitChance,
+                MinimumHitChance = () => R2HitChance,
                 Range = () => 1100f,
                 Speed = () => 1600f,
                 Radius = () => 200,
                 Damage = GetRDamage,
-                IsEnabled = () => UseR,
+                IsEnabled = () => UseR2,
                 IsSpellReady = (spellClass, minMana, minCharges) => spellClass.IsSpellReady && IsWindSlashReady(),
                 ShouldCast = (mode, target, spellClass, damage) =>
                             target != null &&
                             (target.Health < GetRDamage(target, spellClass) ||
-                            (UltTimeLeft() > 0 && UltTimeLeft() < 1f) ||
+                            (UltTimeLeft() > 0 && UltTimeLeft() < 1000f) ||
                             (AllSpellsOnCooldown() && PassiveStacks() <= 2) ||
                             (GetMissingHealthPercent(target) < 75.0f)),
                 TargetSelect = (mode) => SpellR.GetTargets(mode, x => x.Health < GetRDamage(x, SpellR.SpellClass)).FirstOrDefault()
+            };
+            SpellR2 = new Spell(CastSlot.R, SpellSlot.R)
+            {
+                PredictionMode = () => Prediction.MenuSelected.PredictionType.Cone,
+                MinimumHitChance = () => Prediction.MenuSelected.HitChance.Impossible,
+                Range = () => 5000,
+                Speed = () => 1600f,
+                Radius = () => 200,
+                IsEnabled = () => UseR2,
+                IsSpellReady = (spellClass, minMana, minCharges) => spellClass.IsSpellReady && IsWindSlashReady(),
+                ShouldCast = (mode, target, spellClass, damage) => target != null && UltTimeLeft() < 1000f,
+                TargetSelect = (mode) => SpellR2.GetTargets(mode).FirstOrDefault()
             };
         }
 
@@ -165,7 +198,7 @@ namespace SixAIO.Champions
 
         internal override void OnCoreMainInput()
         {
-            if (SpellR.ExecuteCastSpell() || SpellQ.ExecuteCastSpell() || SpellW.ExecuteCastSpell() || SpellE.ExecuteCastSpell())
+            if (SpellR.ExecuteCastSpell() || SpellQ.ExecuteCastSpell() || SpellW.ExecuteCastSpell() || SpellE.ExecuteCastSpell() || SpellR2.ExecuteCastSpell() || SpellQ23.ExecuteCastSpell())
             {
                 return;
             }
@@ -173,11 +206,37 @@ namespace SixAIO.Champions
 
         internal override void OnCoreMainTick()
         {
-            if (_lastQCharge != UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot.Q).Charges)
+            if (_lastQCharge != QStacks())
             {
-                _lastQCharge = UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot.Q).Charges;
+                _lastQCharge = QStacks();
                 _lastQChargeTime = GameEngine.GameTime;
             }
+
+            //Logger.Log($"{_lastQCharge} - {_lastQChargeTime}");
+        }
+
+        internal bool UseQ2BeforeExpire
+        {
+            get => QSettings.GetItem<Switch>("Use Q2 Before Expire").IsOn;
+            set => QSettings.GetItem<Switch>("Use Q2 Before Expire").IsOn = value;
+        }
+
+        internal bool UseQ3BeforeExpire
+        {
+            get => QSettings.GetItem<Switch>("Use Q3 Before Expire").IsOn;
+            set => QSettings.GetItem<Switch>("Use Q3 Before Expire").IsOn = value;
+        }
+
+        internal bool UseR2
+        {
+            get => RSettings.GetItem<Switch>("Use R2").IsOn;
+            set => RSettings.GetItem<Switch>("Use R2").IsOn = value;
+        }
+
+        internal Prediction.MenuSelected.HitChance R2HitChance
+        {
+            get => (Prediction.MenuSelected.HitChance)Enum.Parse(typeof(Prediction.MenuSelected.HitChance), RSettings.GetItem<ModeDisplay>("R2 HitChance").SelectedModeName);
+            set => RSettings.GetItem<ModeDisplay>("R2 HitChance").SelectedModeName = value.ToString();
         }
 
         internal override void InitializeMenu()
@@ -190,13 +249,15 @@ namespace SixAIO.Champions
             MenuTab.AddGroup(new Group("R Settings"));
 
             QSettings.AddItem(new Switch() { Title = "Use Q", IsOn = true });
+            QSettings.AddItem(new Switch() { Title = "Use Q2 Before Expire", IsOn = true });
+            QSettings.AddItem(new Switch() { Title = "Use Q3 Before Expire", IsOn = true });
 
             WSettings.AddItem(new Switch() { Title = "Use W", IsOn = true });
 
             ESettings.AddItem(new Switch() { Title = "Use E", IsOn = true });
 
-            RSettings.AddItem(new Switch() { Title = "Use R", IsOn = true });
-            RSettings.AddItem(new ModeDisplay() { Title = "R HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
+            RSettings.AddItem(new Switch() { Title = "Use R2", IsOn = true });
+            RSettings.AddItem(new ModeDisplay() { Title = "R2 HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
 
         }
     }
