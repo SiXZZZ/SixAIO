@@ -9,6 +9,7 @@ using SixAIO.Enums;
 using SixAIO.Models;
 using System;
 using System.Linq;
+using System.Windows.Forms;
 
 namespace SixAIO.Champions
 {
@@ -16,6 +17,7 @@ namespace SixAIO.Champions
     {
         public Zeri()
         {
+            Oasys.SDK.InputProviders.KeyboardProvider.OnKeyPress += KeyboardProvider_OnKeyPress;
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
@@ -32,7 +34,7 @@ namespace SixAIO.Champions
                     {
                         if (target is null)
                         {
-                            target = UnitManager.EnemyTowers.FirstOrDefault(x => TargetSelector.IsAttackable(x) && x.Distance <= SpellQ.Range()+x.UnitComponentInfo.UnitBoundingRadius);
+                            target = UnitManager.EnemyTowers.FirstOrDefault(x => TargetSelector.IsAttackable(x) && x.Distance <= SpellQ.Range() + x.UnitComponentInfo.UnitBoundingRadius);
                         }
                         if (target is null)
                         {
@@ -57,6 +59,17 @@ namespace SixAIO.Champions
                 IsEnabled = () => UseW,
                 TargetSelect = (mode) => SpellW.GetTargets(mode).FirstOrDefault()
             };
+            SpellWSemiAuto = new Spell(CastSlot.W, SpellSlot.W)
+            {
+                AllowCollision = (target, collisions) => !collisions.Any(),
+                PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
+                MinimumHitChance = () => WHitChance,
+                Range = () => 2700,
+                Radius = () => 200,
+                Speed = () => 2200,
+                IsEnabled = () => UseSemiAutoW,
+                TargetSelect = (mode) => SpellWSemiAuto.GetTargets(mode).OrderBy(x => x.Distance).FirstOrDefault()
+            };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
                 Delay = () => 0f,
@@ -70,6 +83,14 @@ namespace SixAIO.Champions
                 IsEnabled = () => UseR,
                 ShouldCast = (mode, target, spellClass, damage) => UnitManager.EnemyChampions.Count(x => TargetSelector.IsAttackable(x) && x.Distance < REnemiesCloserThan) > RIfMoreThanEnemiesNear,
             };
+        }
+
+        private void KeyboardProvider_OnKeyPress(Keys keyBeingPressed, Oasys.Common.Tools.Devices.Keyboard.KeyPressState pressState)
+        {
+            if (keyBeingPressed == SemiAutoWKey && pressState == Oasys.Common.Tools.Devices.Keyboard.KeyPressState.Down)
+            {
+                SpellWSemiAuto.ExecuteCastSpell();
+            }
         }
 
         private static bool IsQActive()
@@ -178,6 +199,10 @@ namespace SixAIO.Champions
 
             WSettings.AddItem(new Switch() { Title = "Use W", IsOn = true });
             WSettings.AddItem(new ModeDisplay() { Title = "W HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
+
+            WSettings.AddItem(new Switch() { Title = "Use Semi Auto W", IsOn = true });
+            WSettings.AddItem(new KeyBinding() { Title = "Semi Auto W Key", SelectedKey = Keys.T });
+            WSettings.AddItem(new ModeDisplay() { Title = "Semi Auto W HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
 
             ESettings.AddItem(new Switch() { Title = "Use E", IsOn = false });
             ESettings.AddItem(new ModeDisplay() { Title = "E Dash Mode", ModeNames = DashHelper.ConstructDashModeTable(), SelectedModeName = "ToMouse" });

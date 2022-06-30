@@ -10,8 +10,11 @@ namespace SixAIO.Models
     internal abstract class Champion
     {
         internal Spell SpellQ;
+        internal Spell SpellQSemiAuto;
         internal Spell SpellW;
+        internal Spell SpellWSemiAuto;
         internal Spell SpellE;
+        internal Spell SpellESemiAuto;
         internal Spell SpellR;
         internal Spell SpellRSemiAuto;
 
@@ -52,6 +55,19 @@ namespace SixAIO.Models
             get => QSettings.GetItem<Counter>("Q Min Mana").Value;
             set => QSettings.GetItem<Counter>("Q Min Mana").Value = value;
         }
+        internal bool UseSemiAutoQ
+        {
+            get => QSettings.GetItem<Switch>("Use Semi Auto Q").IsOn;
+            set => QSettings.GetItem<Switch>("Use Semi Auto Q").IsOn = value;
+        }
+
+        public Keys SemiAutoQKey => QSettings.GetItem<KeyBinding>("Semi Auto Q Key").SelectedKey;
+
+        internal Oasys.SDK.Prediction.MenuSelected.HitChance SemiAutoQHitChance
+        {
+            get => (Oasys.SDK.Prediction.MenuSelected.HitChance)Enum.Parse(typeof(Oasys.SDK.Prediction.MenuSelected.HitChance), QSettings.GetItem<ModeDisplay>("Semi Auto Q HitChance").SelectedModeName);
+            set => QSettings.GetItem<ModeDisplay>("Semi Auto Q HitChance").SelectedModeName = value.ToString();
+        }
 
         internal bool UseW
         {
@@ -82,6 +98,19 @@ namespace SixAIO.Models
             get => WSettings.GetItem<Counter>("W Min Mana").Value;
             set => WSettings.GetItem<Counter>("W Min Mana").Value = value;
         }
+        internal bool UseSemiAutoW
+        {
+            get => WSettings.GetItem<Switch>("Use Semi Auto W").IsOn;
+            set => WSettings.GetItem<Switch>("Use Semi Auto W").IsOn = value;
+        }
+
+        public Keys SemiAutoWKey => WSettings.GetItem<KeyBinding>("Semi Auto W Key").SelectedKey;
+
+        internal Oasys.SDK.Prediction.MenuSelected.HitChance SemiAutoWHitChance
+        {
+            get => (Oasys.SDK.Prediction.MenuSelected.HitChance)Enum.Parse(typeof(Oasys.SDK.Prediction.MenuSelected.HitChance), WSettings.GetItem<ModeDisplay>("Semi Auto W HitChance").SelectedModeName);
+            set => WSettings.GetItem<ModeDisplay>("Semi Auto W HitChance").SelectedModeName = value.ToString();
+        }
 
         internal bool UseE
         {
@@ -111,6 +140,19 @@ namespace SixAIO.Models
         {
             get => ESettings.GetItem<Counter>("E Min Mana").Value;
             set => ESettings.GetItem<Counter>("E Min Mana").Value = value;
+        }
+        internal bool UseSemiAutoE
+        {
+            get => ESettings.GetItem<Switch>("Use Semi Auto E").IsOn;
+            set => ESettings.GetItem<Switch>("Use Semi Auto E").IsOn = value;
+        }
+
+        public Keys SemiAutoEKey => ESettings.GetItem<KeyBinding>("Semi Auto E Key").SelectedKey;
+
+        internal Oasys.SDK.Prediction.MenuSelected.HitChance SemiAutoEHitChance
+        {
+            get => (Oasys.SDK.Prediction.MenuSelected.HitChance)Enum.Parse(typeof(Oasys.SDK.Prediction.MenuSelected.HitChance), ESettings.GetItem<ModeDisplay>("Semi Auto E HitChance").SelectedModeName);
+            set => ESettings.GetItem<ModeDisplay>("Semi Auto E HitChance").SelectedModeName = value.ToString();
         }
 
         internal bool UseR
