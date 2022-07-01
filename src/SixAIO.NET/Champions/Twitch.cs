@@ -8,6 +8,7 @@ using Oasys.SDK;
 using Oasys.SDK.Menu;
 using Oasys.SDK.SpellCasting;
 using Oasys.SDK.Tools;
+using SharpDX;
 using SixAIO.Models;
 using System;
 using System.Linq;
@@ -103,6 +104,31 @@ namespace SixAIO.Champions
             }
         }
 
+        internal override void OnCoreRender()
+        {
+            if (DrawQTime)
+            {
+                var qBuff = UnitManager.MyChampion.BuffManager.ActiveBuffs.FirstOrDefault(x => x.Name == "TwitchHideInShadows" && x.Stacks >= 1);
+                if (qBuff != null)
+                {
+                    var qTimeRemaining = qBuff.RemainingDurationMs / 1000;
+                    var w2s = LeagueNativeRendererManager.WorldToScreenSpell(UnitManager.MyChampion.Position);
+                    w2s.Y -= 20;
+                    Oasys.SDK.Rendering.RenderFactory.DrawText($"Q:{qTimeRemaining:0.##}", 12, w2s, Color.Blue);
+                }
+            }
+            if (DrawRTime)
+            {
+                var rBuff = UnitManager.MyChampion.BuffManager.ActiveBuffs.FirstOrDefault(x => x.Name == "TwitchFullAutomatic" && x.Stacks >= 1);
+                if (rBuff != null)
+                {
+                    var rTimeRemaining = rBuff.RemainingDurationMs / 1000;
+                    var w2s = LeagueNativeRendererManager.WorldToScreenSpell(UnitManager.MyChampion.Position);
+                    Oasys.SDK.Rendering.RenderFactory.DrawText($"R:{rTimeRemaining:0.##}", 12, w2s, Color.Blue);
+                }
+            }
+        }
+
         internal override void OnCoreMainInput()
         {
             SpellE.ExecuteCastSpell();
@@ -135,6 +161,18 @@ namespace SixAIO.Champions
             var magicDamage = magicResistMod * ((0.3f * UnitManager.MyChampion.UnitStats.TotalAbilityPower) * stacks);
             //Logger.Log($"Physical: {physicalDamage} - Magic: {magicDamage}");
             return (float)(((physicalDamage - enemy.PhysicalShield) + (magicDamage - enemy.MagicalShield)) - enemy.NeutralShield);
+        }
+
+        private bool DrawQTime
+        {
+            get => QSettings.GetItem<Switch>("Draw Q Time").IsOn;
+            set => QSettings.GetItem<Switch>("Draw Q Time").IsOn = value;
+        }
+
+        private bool DrawRTime
+        {
+            get => RSettings.GetItem<Switch>("Draw R Time").IsOn;
+            set => RSettings.GetItem<Switch>("Draw R Time").IsOn = value;
         }
 
         private int QIfMoreThanEnemiesNear
@@ -188,6 +226,7 @@ namespace SixAIO.Champions
             MenuTab.AddGroup(new Group("R Settings"));
 
             QSettings.AddItem(new Switch() { Title = "Use Q", IsOn = true });
+            QSettings.AddItem(new Switch() { Title = "Draw Q Time", IsOn = true });
             QSettings.AddItem(new Counter() { Title = "Q If More Than Enemies Near", MinValue = 0, MaxValue = 5, Value = 0, ValueFrequency = 1 });
             QSettings.AddItem(new Counter() { Title = "Q Enemies Closer Than", MinValue = 50, MaxValue = 1500, Value = 800, ValueFrequency = 25 });
 
@@ -201,6 +240,7 @@ namespace SixAIO.Champions
             ESettings.AddItem(new Switch() { Title = "E when can kill", IsOn = true });
 
             RSettings.AddItem(new Switch() { Title = "Use R", IsOn = true });
+            RSettings.AddItem(new Switch() { Title = "Draw R Time", IsOn = true });
             RSettings.AddItem(new Counter() { Title = "R If More Than Enemies Near", MinValue = 0, MaxValue = 5, Value = 2, ValueFrequency = 1 });
             RSettings.AddItem(new Counter() { Title = "R Enemies Closer Than", MinValue = 50, MaxValue = 1500, Value = 1100, ValueFrequency = 50 });
         }
