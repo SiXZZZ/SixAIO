@@ -27,11 +27,18 @@ namespace SixAIO.Utilities
             set => AutoRanduinsGroup.GetItem<Counter>("Targets in range").Value = value;
         }
 
+        private static int HealthPercent
+        {
+            get => AutoRanduinsGroup.GetItem<Counter>("Health Percent").Value;
+            set => AutoRanduinsGroup.GetItem<Counter>("Health Percent").Value = value;
+        }
+
         internal static Task GameEvents_OnGameLoadComplete()
         {
             Tab.AddGroup(new Group("Auto Randuins"));
             AutoRanduinsGroup.AddItem(new Switch() { Title = "Use Randuins", IsOn = true });
             AutoRanduinsGroup.AddItem(new Counter() { Title = "Targets in range", Value = 2, MinValue = 1, MaxValue = 5, ValueFrequency = 1 });
+            AutoRanduinsGroup.AddItem(new Counter() { Title = "Health Percent", Value = 70, MinValue = 0, MaxValue = 100, ValueFrequency = 5 });
 
             CoreEvents.OnCoreMainInputAsync += InputHandler;
             return Task.CompletedTask;
@@ -44,6 +51,7 @@ namespace SixAIO.Utilities
                 if (UseRanduins &&
                     UnitManager.MyChampion.IsAlive &&
                     TargetSelector.IsAttackable(UnitManager.MyChampion, false) &&
+                    HealthPercent >= UnitManager.MyChampion.HealthPercent &&
                     TargetCount <= UnitManager.EnemyChampions.Count(x => x.IsAlive && x.Distance <= 450 && TargetSelector.IsAttackable(x)))
                 {
                     if (UnitManager.MyChampion.Inventory.HasItem(ItemID.Randuins_Omen) &&

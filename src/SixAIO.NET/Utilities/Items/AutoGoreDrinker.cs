@@ -27,11 +27,18 @@ namespace SixAIO.Utilities
             set => AutoGoreDrinkerGroup.GetItem<Counter>("Targets in range").Value = value;
         }
 
+        private static int HealthPercent
+        {
+            get => AutoGoreDrinkerGroup.GetItem<Counter>("Health Percent").Value;
+            set => AutoGoreDrinkerGroup.GetItem<Counter>("Health Percent").Value = value;
+        }
+
         internal static Task GameEvents_OnGameLoadComplete()
         {
             Tab.AddGroup(new Group("Auto Gore Drinker"));
             AutoGoreDrinkerGroup.AddItem(new Switch() { Title = "Use Gore Drinker", IsOn = true });
             AutoGoreDrinkerGroup.AddItem(new Counter() { Title = "Targets in range", Value = 2, MinValue = 1, MaxValue = 5, ValueFrequency = 1 });
+            AutoGoreDrinkerGroup.AddItem(new Counter() { Title = "Health Percent", Value = 70, MinValue = 0, MaxValue = 100, ValueFrequency = 5 });
 
             CoreEvents.OnCoreMainInputAsync += InputHandler;
             return Task.CompletedTask;
@@ -44,6 +51,7 @@ namespace SixAIO.Utilities
                 if (UseGoreDrinker &&
                     UnitManager.MyChampion.IsAlive &&
                     TargetSelector.IsAttackable(UnitManager.MyChampion, false) &&
+                    HealthPercent >= UnitManager.MyChampion.HealthPercent &&
                     TargetCount <= UnitManager.EnemyChampions.Count(x => x.IsAlive && x.Distance <= 450 && TargetSelector.IsAttackable(x)))
                 {
                     if (UnitManager.MyChampion.Inventory.HasItem(ItemID.Goredrinker) &&
