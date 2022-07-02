@@ -1,5 +1,6 @@
 ﻿using Oasys.Common.Enums.GameEnums;
 using Oasys.Common.EventsProvider;
+using Oasys.Common.GameObject.Clients.ExtendedInstances;
 using Oasys.Common.GameObject.Clients.ExtendedInstances.Spells;
 using Oasys.Common.Menu;
 using Oasys.Common.Menu.ItemComponents;
@@ -60,6 +61,30 @@ namespace SixAIO.Utilities
             set => AutoCleanseGroup.GetItem<Counter>("Reaction Delay").Value = value;
         }
 
+        private static bool Exhaust
+        {
+            get => AutoCleanseGroup?.GetItem<Switch>("Exhaust")?.IsOn ?? false;
+            set => AutoCleanseGroup.GetItem<Switch>("Exhaust").IsOn = value;
+        }
+
+        private static bool Ignite
+        {
+            get => AutoCleanseGroup?.GetItem<Switch>("Ignite")?.IsOn ?? false;
+            set => AutoCleanseGroup.GetItem<Switch>("Ignite").IsOn = value;
+        }
+
+        private static bool RedSmite
+        {
+            get => AutoCleanseGroup?.GetItem<Switch>("Red Smite")?.IsOn ?? false;
+            set => AutoCleanseGroup.GetItem<Switch>("Red Smite").IsOn = value;
+        }
+
+        private static bool BlueSmite
+        {
+            get => AutoCleanseGroup?.GetItem<Switch>("Blue Smite")?.IsOn ?? false;
+            set => AutoCleanseGroup.GetItem<Switch>("Blue Smite").IsOn = value;
+        }
+
         internal static Task GameEvents_OnGameLoadComplete()
         {
             TabItem.OnTabItemChange += TabItem_OnTabItemChange;
@@ -85,6 +110,10 @@ namespace SixAIO.Utilities
             AutoCleanseGroup.AddItem(new Counter() { Title = "Reaction Delay", Value = 100, MinValue = 0, MaxValue = 5000, ValueFrequency = 50 });
 
             AutoCleanseGroup.AddItem(new InfoDisplay() { Title = "-Only cleanse debuffs longer than ms-" });
+            AutoCleanseGroup.AddItem(new Switch() { Title = "Exhaust", IsOn = true });
+            AutoCleanseGroup.AddItem(new Switch() { Title = "Ignite", IsOn = false });
+            AutoCleanseGroup.AddItem(new Switch() { Title = "Blue Smite", IsOn = false });
+            AutoCleanseGroup.AddItem(new Switch() { Title = "Red Smite", IsOn = false });
             AutoCleanseGroup.AddItem(new Counter() { Title = "Stun", Value = 500, MinValue = 0, MaxValue = 5000, ValueFrequency = 250 });
             AutoCleanseGroup.AddItem(new Counter() { Title = "Snare", Value = 500, MinValue = 0, MaxValue = 5000, ValueFrequency = 250 });
             AutoCleanseGroup.AddItem(new Counter() { Title = "Slow", Value = 5250, MinValue = 0, MaxValue = 10000, ValueFrequency = 250 });
@@ -188,42 +217,69 @@ namespace SixAIO.Utilities
 
         private static bool ShouldUseCleanse(bool qss = false)
         {
+            if (BuffChecker.IsKnockedUpOrBack(UnitManager.MyChampion))
+            {
+                return false;
+            }
+
             return UnitManager.MyChampion.IsAlive &&
                    TargetSelector.IsAttackable(UnitManager.MyChampion, false) &&
-                   IsCrowdControlled(qss);
+                   (IsCrowdControlled(qss) ||
+                   SummonerDebuffed(qss));
+        }
+
+        private static bool SummonerDebuffed(bool qss)
+        {
+            return qss
+                ? false
+                : CheckBuff(Exhaust, "SummonerExhaust") ||
+                  CheckBuff(Ignite, "SummonerDot") ||
+                  CheckBuff(RedSmite, "itemsmitechallenge") ||
+                  CheckBuff(BlueSmite, "itemsmiteslow");
+        }
+
+        private static bool CheckBuff(bool shouldCheck, string buffName)
+        {
+            if (shouldCheck)
+            {
+                var buff = UnitManager.MyChampion.BuffManager.ActiveBuffs.FirstOrDefault(x => x.Stacks >= 1 && x.IsActive && x.Name == buffName);
+                return LogBuff(buff);
+            }
+
+            return false;
         }
 
         private static bool IsCrowdControlled(bool qss = false)
         {
             try
             {
-                var buffs = UnitManager.MyChampion.BuffManager.GetBuffList();
-                if (BuffChecker.IsKnockedUpOrBack(UnitManager.MyChampion))
-                {
-                    return false;
-                }
-
-                var cc = buffs.Where(qss
+                var cc = UnitManager.MyChampion.BuffManager.ActiveBuffs.Where(qss
                                     ? BuffChecker.IsCrowdControllButCanQss
                                     : BuffChecker.IsCrowdControllButCanCleanse).FirstOrDefault(buff =>
                                (float)buff.StartTime + (float)((float)ReactionDelay / 1000f) < GameEngine.GameTime && buff.DurationMs < 10_000 &&
                                 buff.DurationMs >= AutoCleanseGroup.GetItem<Counter>(x => x.Title.Contains(buff.EntryType.ToString(), StringComparison.OrdinalIgnoreCase))?.Value);
-                //return cc != null;
-
-                if (cc != null && !cc.Name.Contains("Unknown", StringComparison.OrdinalIgnoreCase))
-                {
-                    if (LogCleanseBuff)
-                    {
-                        Logger.Log($"[AutoCleanse] Name:{cc.Name} - Active:{cc.IsActive} - Duration:{cc.DurationMs} - Type:{cc.EntryType} - Stacks:{cc.Stacks}");
-                    }
-                    return true;
-                }
-                return false;
+                
+                return LogBuff(cc);
             }
             catch (Exception)
             {
                 return false;
             }
+        }
+
+        private static bool LogBuff(BuffEntry buff)
+        {
+            if (buff?.Name.Contains("Unknown", StringComparison.OrdinalIgnoreCase) == false)
+            {
+                if (LogCleanseBuff)
+                {
+                    Logger.Log($"[AutoCleanse] Name:{buff.Name} - Active:{buff.IsActive} - Duration:{buff.DurationMs} - Type:{buff.EntryType} - Stacks:{buff.Stacks}");
+                }
+
+                return true;
+            }
+
+            return false;
         }
     }
 }
