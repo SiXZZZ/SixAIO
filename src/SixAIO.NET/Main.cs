@@ -29,6 +29,7 @@ namespace SixAIO
             GameEvents.OnGameLoadComplete += AutoRanduins.GameEvents_OnGameLoadComplete;
             GameEvents.OnGameLoadComplete += AutoIronSpikeWhip.GameEvents_OnGameLoadComplete;
             GameEvents.OnGameLoadComplete += AutoGoreDrinker.GameEvents_OnGameLoadComplete;
+            GameEvents.OnGameLoadComplete += AutoEverfrost.GameEvents_OnGameLoadComplete;
             GameEvents.OnGameLoadComplete += AutoGargoyleStoneplate.GameEvents_OnGameLoadComplete;
             GameEvents.OnGameLoadComplete += AutoGaleforce.GameEvents_OnGameLoadComplete;
             GameEvents.OnGameLoadComplete += AutoStrideBreaker.GameEvents_OnGameLoadComplete;
