@@ -209,17 +209,21 @@ namespace SixAIO.Champions
                     }
                 }
 
-                //foreach (var item in Axes())
-                //{
-                //    try
-                //    {
-                //        RenderFactory.DrawNativeCircle(item.Position, 50, Color.White, 2);
-                //        RenderFactory.DrawText(item.Name, 18, item.W2S, Color.White);
-                //    }
-                //    catch (Exception)
-                //    {
-                //    }
-                //}
+                if (DrawAxes)
+                {
+                    foreach (var item in Axes())
+                    {
+                        try
+                        {
+                            var color = Oasys.Common.Tools.ColorConverter.GetColor(DrawAxesColor, 255);
+                            RenderFactory.DrawNativeCircle(item.Position, 120, color, 2);
+                            //RenderFactory.DrawText(item.Name, 18, item.W2S, Color.White);
+                        }
+                        catch (Exception)
+                        {
+                        }
+                    }
+                }
             }
             catch (Exception)
             {
@@ -246,6 +250,18 @@ namespace SixAIO.Champions
         {
             get => QSettings.GetItem<Switch>("Draw Q Catch Range").IsOn;
             set => QSettings.GetItem<Switch>("Draw Q Catch Range").IsOn = value;
+        }
+
+        private bool DrawAxes
+        {
+            get => QSettings.GetItem<Switch>("Draw Axes").IsOn;
+            set => QSettings.GetItem<Switch>("Draw Axes").IsOn = value;
+        }
+
+        private string DrawAxesColor
+        {
+            get => QSettings.GetItem<ModeDisplay>("Draw Axes Color").SelectedModeName;
+            set => QSettings.GetItem<ModeDisplay>("Draw Axes Color").SelectedModeName = value;
         }
 
         private int QCatchRange
@@ -289,6 +305,8 @@ namespace SixAIO.Champions
             QSettings.AddItem(new Switch() { Title = "Use Q", IsOn = true });
             QSettings.AddItem(new Switch() { Title = "Use Q Catch Range", IsOn = true });
             QSettings.AddItem(new Switch() { Title = "Draw Q Catch Range", IsOn = true });
+            QSettings.AddItem(new Switch() { Title = "Draw Axes", IsOn = true });
+            QSettings.AddItem(new ModeDisplay() { Title = "Draw Axes Color", ModeNames = Oasys.Common.Tools.ColorConverter.GetColors(), SelectedModeName = "Blue" });
             QSettings.AddItem(new Counter() { Title = "Q Catch Range", MinValue = 0, MaxValue = 800, Value = 500, ValueFrequency = 10 });
             QSettings.AddItem(new ModeDisplay() { Title = "Q Catch Mode", ModeNames = Enum.GetNames(typeof(CatchMode)).ToList(), SelectedModeName = "Mouse" });
 
