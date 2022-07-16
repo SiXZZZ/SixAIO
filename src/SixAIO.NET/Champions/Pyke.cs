@@ -23,7 +23,7 @@ namespace SixAIO.Champions
         {
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
-                AllowCollision = (target, collisions) => false,
+                AllowCollision = (target, collisions) => !collisions.Any(),
                 IsCharge = () => true,
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
                 MinimumHitChance = () => QHitChance,
