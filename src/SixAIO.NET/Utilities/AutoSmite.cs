@@ -214,7 +214,7 @@ namespace SixAIO.Utilities
                     (Crab && enemy.UnitComponentInfo.SkinName.Contains("Sru_Crab")) ||
                     (Krug && enemy.UnitComponentInfo.SkinName.Contains("SRU_Krug")) ||
                     (Gromp && enemy.UnitComponentInfo.SkinName.Contains("SRU_Gromp")) ||
-                    (MurkWolf && enemy.UnitComponentInfo.SkinName.Contains("SRU_MurkWolf")) ||
+                    (MurkWolf && enemy.UnitComponentInfo.SkinName.Equals("SRU_Murkwolf")) ||
                     (Razorbeak && enemy.UnitComponentInfo.SkinName.Equals("SRU_Razorbeak"))))
                 {
                     return enemy;
