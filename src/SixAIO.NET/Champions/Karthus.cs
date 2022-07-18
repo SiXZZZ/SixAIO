@@ -30,8 +30,9 @@ namespace SixAIO.Champions
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Circle,
                 MinimumHitChance = () => QHitChance,
                 Range = () => 875,
-                Speed = () => 1200,
+                Speed = () => QSpeed,
                 Radius = () => 160,
+                Delay = () => (float)((float)((float)QDelay) / 1000f),
                 IsEnabled = () => UseQ,
                 TargetSelect = (mode) => SpellQ.GetTargets(mode).FirstOrDefault()
             };
@@ -136,6 +137,18 @@ namespace SixAIO.Champions
             }
         }
 
+        private int QSpeed
+        {
+            get => QSettings.GetItem<Counter>("Q Speed").Value;
+            set => QSettings.GetItem<Counter>("Q Speed").Value = value;
+        }
+
+        private int QDelay
+        {
+            get => QSettings.GetItem<Counter>("Q Delay").Value;
+            set => QSettings.GetItem<Counter>("Q Delay").Value = value;
+        }
+
         internal override void InitializeMenu()
         {
             MenuManager.AddTab(new Tab($"SIXAIO - {nameof(Karthus)}"));
@@ -146,6 +159,8 @@ namespace SixAIO.Champions
             QSettings.AddItem(new Switch() { Title = "Use Q", IsOn = true });
             QSettings.AddItem(new Switch() { Title = "Use Q Laneclear", IsOn = true });
             QSettings.AddItem(new ModeDisplay() { Title = "Q HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
+            QSettings.AddItem(new Counter() { Title = "Q Speed", MinValue = 0, MaxValue = 100_000, Value = 1200, ValueFrequency = 50 });
+            QSettings.AddItem(new Counter() { Title = "Q Delay", MinValue = 0, MaxValue = 5_000, Value = 250, ValueFrequency = 50 });
 
             //MenuTab.AddItem(new Switch() { Title = "Use W", IsOn = true });
             ESettings.AddItem(new Switch() { Title = "Use E", IsOn = true });
