@@ -61,6 +61,12 @@ namespace SixAIO.Utilities
             set => AutoCleanseGroup.GetItem<Counter>("Reaction Delay").Value = value;
         }
 
+        private static int SummonersReactionDelay
+        {
+            get => AutoCleanseGroup?.GetItem<Counter>("Summoners Reaction Delay")?.Value ?? 100;
+            set => AutoCleanseGroup.GetItem<Counter>("Summoners Reaction Delay").Value = value;
+        }
+
         private static bool Exhaust
         {
             get => AutoCleanseGroup?.GetItem<Switch>("Exhaust")?.IsOn ?? false;
@@ -107,13 +113,15 @@ namespace SixAIO.Utilities
             AutoCleanseGroup.AddItem(new Switch() { Title = "Use Items", IsOn = true });
             AutoCleanseGroup.AddItem(new Switch() { Title = "Cleanse On Combo", IsOn = true });
             AutoCleanseGroup.AddItem(new Switch() { Title = "Cleanse On Tick", IsOn = false });
-            AutoCleanseGroup.AddItem(new Counter() { Title = "Reaction Delay", Value = 100, MinValue = 0, MaxValue = 5000, ValueFrequency = 50 });
 
-            AutoCleanseGroup.AddItem(new InfoDisplay() { Title = "-Only cleanse debuffs longer than ms-" });
+            AutoCleanseGroup.AddItem(new Counter() { Title = "Summoners Reaction Delay", Value = 100, MinValue = 0, MaxValue = 5000, ValueFrequency = 50 });
             AutoCleanseGroup.AddItem(new Switch() { Title = "Exhaust", IsOn = true });
             AutoCleanseGroup.AddItem(new Switch() { Title = "Ignite", IsOn = false });
             AutoCleanseGroup.AddItem(new Switch() { Title = "Blue Smite", IsOn = false });
             AutoCleanseGroup.AddItem(new Switch() { Title = "Red Smite", IsOn = false });
+
+            AutoCleanseGroup.AddItem(new Counter() { Title = "Reaction Delay", Value = 100, MinValue = 0, MaxValue = 5000, ValueFrequency = 50 });
+            AutoCleanseGroup.AddItem(new InfoDisplay() { Title = "-Only cleanse debuffs longer than ms-" });
             AutoCleanseGroup.AddItem(new Counter() { Title = "Stun", Value = 500, MinValue = 0, MaxValue = 5000, ValueFrequency = 250 });
             AutoCleanseGroup.AddItem(new Counter() { Title = "Snare", Value = 500, MinValue = 0, MaxValue = 5000, ValueFrequency = 250 });
             AutoCleanseGroup.AddItem(new Counter() { Title = "Slow", Value = 5250, MinValue = 0, MaxValue = 10000, ValueFrequency = 250 });
@@ -242,7 +250,7 @@ namespace SixAIO.Utilities
         {
             if (shouldCheck)
             {
-                var buff = UnitManager.MyChampion.BuffManager.ActiveBuffs.FirstOrDefault(x => x.Stacks >= 1 && x.IsActive && x.Name == buffName);
+                var buff = UnitManager.MyChampion.BuffManager.ActiveBuffs.FirstOrDefault(x => x.Stacks >= 1 && x.IsActive && x.Name == buffName && (float)x.StartTime + (float)((float)ReactionDelay / 1000f) < GameEngine.GameTime);
                 return LogBuff(buff);
             }
 
@@ -258,7 +266,7 @@ namespace SixAIO.Utilities
                                     : BuffChecker.IsCrowdControllButCanCleanse).FirstOrDefault(buff =>
                                (float)buff.StartTime + (float)((float)ReactionDelay / 1000f) < GameEngine.GameTime && buff.DurationMs < 10_000 &&
                                 buff.DurationMs >= AutoCleanseGroup.GetItem<Counter>(x => x.Title.Contains(buff.EntryType.ToString(), StringComparison.OrdinalIgnoreCase))?.Value);
-                
+
                 return LogBuff(cc);
             }
             catch (Exception)

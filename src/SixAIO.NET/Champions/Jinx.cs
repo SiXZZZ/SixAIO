@@ -29,22 +29,31 @@ namespace SixAIO.Champions
                 ShouldCast = (mode, target, spellClass, damage) =>
                 {
                     var usingRockets = IsQActive();
+                    var usingMinigun = !usingRockets;
                     var extraRange = 50 + (30 * UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot.Q).Level);
                     var minigunRange = usingRockets
                                         ? UnitManager.MyChampion.TrueAttackRange - extraRange
                                         : UnitManager.MyChampion.TrueAttackRange;
+                    minigunRange = Math.Min(QMinigunMaximumRange, minigunRange);
+
                     var rocketRange = usingRockets
                                         ? UnitManager.MyChampion.TrueAttackRange
                                         : UnitManager.MyChampion.TrueAttackRange + extraRange;
+                    rocketRange = Math.Max(QMinigunMaximumRange, rocketRange);
 
                     //if (!UnitManager.EnemyChampions.Any(x => x.Distance < 1200 && TargetSelector.IsAttackable(x)))
                     //{
                     //    return usingRockets;
                     //}
-                    if (usingRockets && Orbwalker.TargetHero != null && Orbwalker.TargetHero.Distance <= minigunRange)
+                    if (usingMinigun && Orbwalker.TargetHero != null && Orbwalker.TargetHero.Distance > minigunRange)
                     {
-                        return usingRockets;
+                        return true;
                     }
+                    if (usingRockets && Orbwalker.TargetHero != null && Orbwalker.TargetHero.Distance < minigunRange)
+                    {
+                        return true;
+                    }
+
                     if (!usingRockets && Orbwalker.TargetHero == null)
                     {
                         return QPreferRockets
@@ -162,6 +171,12 @@ namespace SixAIO.Champions
             set => QSettings.GetItem<Switch>("Q prefer rockets").IsOn = value;
         }
 
+        private int QMinigunMaximumRange
+        {
+            get => QSettings.GetItem<Counter>("Q Minigun Maximum Range").Value;
+            set => QSettings.GetItem<Counter>("Q Minigun Maximum Range").Value = value;
+        }
+
         private bool WOnlyOutsideOfAttackRange
         {
             get => WSettings.GetItem<Switch>("W only outside of attack range").IsOn;
@@ -228,6 +243,7 @@ namespace SixAIO.Champions
 
             QSettings.AddItem(new Switch() { Title = "Use Q", IsOn = true });
             QSettings.AddItem(new Switch() { Title = "Q prefer rockets", IsOn = false });
+            QSettings.AddItem(new Counter() { Title = "Q Minigun Maximum Range", MinValue = 0, MaxValue = 750, Value = 750, ValueFrequency = 25 });
 
             WSettings.AddItem(new Switch() { Title = "Use W", IsOn = true });
             WSettings.AddItem(new ModeDisplay() { Title = "W HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
