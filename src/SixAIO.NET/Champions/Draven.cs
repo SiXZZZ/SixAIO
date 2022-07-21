@@ -1,4 +1,5 @@
 ﻿using Oasys.Common.Enums.GameEnums;
+using Oasys.Common.Extensions;
 using Oasys.Common.GameObject;
 using Oasys.Common.GameObject.Clients;
 using Oasys.Common.Menu;
@@ -78,7 +79,7 @@ namespace SixAIO.Champions
             {
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
                 MinimumHitChance = () => EHitChance,
-                Range = () => 1100,
+                Range = () => EMaximumRange,
                 Radius = () => 260,
                 Speed = () => 1400,
                 IsEnabled = () => UseE,
@@ -94,7 +95,7 @@ namespace SixAIO.Champions
                 Radius = () => 320,
                 Speed = () => 2000,
                 IsEnabled = () => UseR,
-                TargetSelect = (mode) => SpellR.GetTargets(mode, x => x.Distance > RMinimumRange && x.Distance <= RMaximumRange).FirstOrDefault(x => x.Health < GetRDamage(x))
+                TargetSelect = (mode) => SpellR.GetTargets(mode, x => x.Distance > RMinimumRange && x.Distance <= RMaximumRange).FirstOrDefault(x => x.Health < GetRDamage(x) || x.HealthPercent <= RTargetMaxHPPercent)
             };
             SpellRSemiAuto = new Spell(CastSlot.R, SpellSlot.R)
             {
@@ -282,6 +283,12 @@ namespace SixAIO.Champions
             Self
         }
 
+        private int EMaximumRange
+        {
+            get => ESettings.GetItem<Counter>("E maximum range").Value;
+            set => ESettings.GetItem<Counter>("E maximum range").Value = value;
+        }
+
         private int RMinimumRange
         {
             get => RSettings.GetItem<Counter>("R minimum range").Value;
@@ -292,6 +299,12 @@ namespace SixAIO.Champions
         {
             get => RSettings.GetItem<Counter>("R maximum range").Value;
             set => RSettings.GetItem<Counter>("R maximum range").Value = value;
+        }
+
+        private int RTargetMaxHPPercent
+        {
+            get => RSettings.GetItem<Counter>("R Target Max HP Percent").Value;
+            set => RSettings.GetItem<Counter>("R Target Max HP Percent").Value = value;
         }
 
         internal override void InitializeMenu()
@@ -314,6 +327,7 @@ namespace SixAIO.Champions
 
             ESettings.AddItem(new Switch() { Title = "Use E", IsOn = true });
             ESettings.AddItem(new ModeDisplay() { Title = "E HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
+            ESettings.AddItem(new Counter() { Title = "E maximum range", MinValue = 0, MaxValue = 1100, Value = 1100, ValueFrequency = 50 });
 
             RSettings.AddItem(new Switch() { Title = "Use R", IsOn = true });
             RSettings.AddItem(new ModeDisplay() { Title = "R HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
@@ -325,6 +339,7 @@ namespace SixAIO.Champions
             RSettings.AddItem(new Switch() { Title = "Allow R cast on minimap", IsOn = true });
             RSettings.AddItem(new Counter() { Title = "R minimum range", MinValue = 0, MaxValue = 30_000, Value = 0, ValueFrequency = 50 });
             RSettings.AddItem(new Counter() { Title = "R maximum range", MinValue = 0, MaxValue = 30_000, Value = 30_000, ValueFrequency = 50 });
+            RSettings.AddItem(new Counter() { Title = "R Target Max HP Percent", MinValue = 10, MaxValue = 100, Value = 50, ValueFrequency = 5 });
         }
     }
 }
