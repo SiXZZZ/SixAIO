@@ -250,7 +250,7 @@ namespace SixAIO.Utilities
         {
             if (shouldCheck)
             {
-                var buff = UnitManager.MyChampion.BuffManager.ActiveBuffs.FirstOrDefault(x => x.Stacks >= 1 && x.IsActive && x.Name == buffName && (float)x.StartTime + (float)((float)ReactionDelay / 1000f) < GameEngine.GameTime);
+                var buff = UnitManager.MyChampion.BuffManager.ActiveBuffs.FirstOrDefault(x => x.Stacks >= 1 && x.IsActive && x.Name == buffName && (float)x.StartTime + (float)((float)SummonersReactionDelay / 1000f) < GameEngine.GameTime);
                 return LogBuff(buff);
             }
 
