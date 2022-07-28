@@ -1,12 +1,15 @@
 ﻿using Newtonsoft.Json;
 using Oasys.Common.Enums.GameEnums;
 using Oasys.Common.GameObject;
+using Oasys.Common.GameObject.Clients;
+using Oasys.Common.GameObject.Clients.ExtendedInstances.Spells;
 using Oasys.Common.GameObject.ObjectClass;
 using Oasys.Common.Menu;
 using Oasys.Common.Menu.ItemComponents;
 using Oasys.SDK;
 using Oasys.SDK.Menu;
 using Oasys.SDK.SpellCasting;
+using Oasys.SDK.Tools;
 using SixAIO.Enums;
 using SixAIO.Models;
 using SixAIO.Utilities;
@@ -14,6 +17,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace SixAIO.Champions
 {
@@ -29,6 +33,7 @@ namespace SixAIO.Champions
 
         public Tristana()
         {
+            Oasys.Common.EventsProvider.GameEvents.OnGameProcessSpell += GameEvents_OnGameProcessSpell;
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
                 IsEnabled = () => UseQ,
@@ -36,10 +41,11 @@ namespace SixAIO.Champions
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
+                AllowCancelBasicAttack = () => true,
                 IsTargetted = () => true,
                 IsEnabled = () => UseE,
                 TargetSelect = (mode) => UseTargetselector
-                ? Orbwalker.TargetHero
+                ? TargetSelector.GetBestChampionTarget(Orbwalker.SelectedHero)
                 : GetPrioritizationTarget(),
                 ShouldCast = (mode, target, spellClass, damage) => target is not null && target.Distance <= 517 + 8 * UnitManager.MyChampion.Level
             };
@@ -53,6 +59,16 @@ namespace SixAIO.Champions
                 IsEnabled = () => UseR,
                 TargetSelect = (mode) => TargetSelectR()
             };
+        }
+
+        private Task GameEvents_OnGameProcessSpell(AIBaseClient objectProcessingSpell, SpellActiveEntry processingSpellEntry)
+        {
+            if (Orbwalker.OrbwalkingMode == Orbwalker.OrbWalkingModeType.Combo && objectProcessingSpell.IsMe && processingSpellEntry.SpellSlot == SpellSlot.W)
+            {
+                SpellE.ExecuteCastSpell();
+            }
+
+            return Task.CompletedTask;
         }
 
         private Hero TargetSelectR()
@@ -86,7 +102,10 @@ namespace SixAIO.Champions
         internal override void OnCoreMainInput()
         {
             Orbwalker.SelectedTarget = GetETarget(UnitManager.EnemyChampions);
-            if (SpellQ.ExecuteCastSpell() || SpellE.ExecuteCastSpell() || SpellR.ExecuteCastSpell())
+
+            SpellQ.ExecuteCastSpell();
+
+            if (SpellE.ExecuteCastSpell() || SpellR.ExecuteCastSpell())
             {
                 return;
             }
