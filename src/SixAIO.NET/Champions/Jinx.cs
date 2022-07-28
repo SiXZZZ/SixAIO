@@ -83,7 +83,7 @@ namespace SixAIO.Champions
                 Range = () => 1500,
                 Radius = () => 120,
                 Speed = () => 3300,
-                Delay = () => 0.6f,
+                Delay = () => 0.4f,
                 MinimumMana = () => 90,
                 //Damage = (target, spellClass) =>
                 //            target != null
