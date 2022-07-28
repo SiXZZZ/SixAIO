@@ -25,9 +25,15 @@ namespace SixAIO.Champions
             Oasys.SDK.InputProviders.KeyboardProvider.OnKeyPress += KeyboardProvider_OnKeyPress;
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
+                MinimumMana = () => 20,
                 IsEnabled = () => UseQ,
                 ShouldCast = (mode, target, spellClass, damage) =>
                 {
+                    if (!UseQLaneclear && mode == Orbwalker.OrbWalkingModeType.LaneClear)
+                    {
+                        return false;
+                    }
+
                     var usingRockets = IsQActive();
                     var usingMinigun = !usingRockets;
                     var extraRange = 50 + (30 * UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot.Q).Level);
@@ -40,6 +46,11 @@ namespace SixAIO.Champions
                                         ? UnitManager.MyChampion.TrueAttackRange
                                         : UnitManager.MyChampion.TrueAttackRange + extraRange;
                     rocketRange = Math.Max(QMinigunMaximumRange, rocketRange);
+
+                    if (mode == Orbwalker.OrbWalkingModeType.LaneClear)
+                    {
+                        return QPreferRockets ? !usingRockets : usingRockets;
+                    }
 
                     //if (!UnitManager.EnemyChampions.Any(x => x.Distance < 1200 && TargetSelector.IsAttackable(x)))
                     //{
@@ -73,19 +84,14 @@ namespace SixAIO.Champions
                 Radius = () => 120,
                 Speed = () => 3300,
                 Delay = () => 0.6f,
+                MinimumMana = () => 90,
                 //Damage = (target, spellClass) =>
                 //            target != null
                 //            ? DamageCalculator.GetArmorMod(UnitManager.MyChampion, target) *
                 //            ((10 + spellClass.Level * 40) +
                 //            (UnitManager.MyChampion.UnitStats.TotalAttackDamage * (1.15f + 0.15f * spellClass.Level)))
                 //            : 0,
-                IsEnabled = () => UseW,
-                IsSpellReady = (spellClass, minimumMana, minimumCharges) =>
-                                spellClass.IsSpellReady &&
-                                UnitManager.MyChampion.Mana >= spellClass.SpellData.ResourceCost &&
-                                UnitManager.MyChampion.Mana >= minimumMana &&
-                                spellClass.Charges >= minimumCharges &&
-                                !WOnlyOutsideOfAttackRange || !UnitManager.EnemyChampions.Any(TargetSelector.IsInRange),
+                IsEnabled = () => UseW && !WOnlyOutsideOfAttackRange || !UnitManager.EnemyChampions.Any(TargetSelector.IsInRange),
                 TargetSelect = (mode) => SpellW.GetTargets(mode, x => x.Distance > WMinimumRange).FirstOrDefault()
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
@@ -95,6 +101,7 @@ namespace SixAIO.Champions
                 Radius = () => 120,
                 Speed = () => 1500,
                 Range = () => 925,
+                MinimumMana = () => 90,
                 IsEnabled = () => UseE,
                 TargetSelect = (mode) => EOnSelf && UnitManager.EnemyChampions.Any(x => x.Distance <= EMaximumRange && TargetSelector.IsAttackable(x))
                                         ? UnitManager.MyChampion
@@ -111,6 +118,7 @@ namespace SixAIO.Champions
                 Radius = () => 280,
                 Speed = () => 2000,
                 Delay = () => 0.6f,
+                MinimumMana = () => 100,
                 //Damage = (target, spellClass) =>
                 //            target != null
                 //            ? DamageCalculator.GetMagicResistMod(UnitManager.MyChampion, target) *
@@ -136,6 +144,7 @@ namespace SixAIO.Champions
                 Radius = () => 280,
                 Speed = () => 2000,
                 Delay = () => 0.6f,
+                MinimumMana = () => 100,
                 IsEnabled = () => UseSemiAutoR,
                 TargetSelect = (mode) => SpellRSemiAuto.GetTargets(mode, x => x.Distance > RMinimumRange && x.Distance <= RMaximumRange).FirstOrDefault()
             };
@@ -159,7 +168,7 @@ namespace SixAIO.Champions
 
         internal override void OnCoreLaneClearInput()
         {
-            if (SpellQ.ExecuteCastSpell())
+            if (SpellQ.ExecuteCastSpell(Orbwalker.OrbWalkingModeType.LaneClear))
             {
                 return;
             }
@@ -242,6 +251,7 @@ namespace SixAIO.Champions
             MenuTab.AddGroup(new Group("R Settings"));
 
             QSettings.AddItem(new Switch() { Title = "Use Q", IsOn = true });
+            QSettings.AddItem(new Switch() { Title = "Use Q Laneclear", IsOn = true });
             QSettings.AddItem(new Switch() { Title = "Q prefer rockets", IsOn = false });
             QSettings.AddItem(new Counter() { Title = "Q Minigun Maximum Range", MinValue = 0, MaxValue = 750, Value = 750, ValueFrequency = 25 });
 

@@ -41,7 +41,7 @@ namespace SixAIO.Champions
                 Range = () => 1000,
                 Radius = () => 250,
                 Speed = () => 2500,
-                IsEnabled = () => UseW,
+                IsEnabled = () => UseW && !UnitManager.MyChampion.BuffManager.ActiveBuffs.Any(x => x.Name == "XerathLocusOfPower2" && x.Stacks >= 1),
                 TargetSelect = (mode) => SpellW.GetTargets(mode).FirstOrDefault()
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
@@ -52,7 +52,7 @@ namespace SixAIO.Champions
                 Range = () => EMaximumRange,
                 Radius = () => 120,
                 Speed = () => 1400,
-                IsEnabled = () => UseE,
+                IsEnabled = () => UseE && !UnitManager.MyChampion.BuffManager.ActiveBuffs.Any(x => x.Name == "XerathLocusOfPower2" && x.Stacks >= 1),
                 TargetSelect = (mode) => SpellE.GetTargets(mode).FirstOrDefault()
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
@@ -63,11 +63,13 @@ namespace SixAIO.Champions
                 MinimumHitChance = () => RHitChance,
                 Range = () => 5000,
                 Radius = () => 200,
-                Speed = () => 1500,
-                Delay = () => 0.63f,
+                Speed = () => RSpeed,
+                Delay = () => (float)((float)((float)RDelay) / 1000f),
                 IsEnabled = () => UseR && UnitManager.MyChampion.BuffManager.ActiveBuffs.Any(x => x.Name == "xerathrshots" && x.Stacks >= 1),
                 IsSpellReady = (spellClass, minMana, minCharges) => UnitManager.MyChampion.BuffManager.ActiveBuffs.Any(x => x.Name == "XerathLocusOfPower2" && x.Stacks >= 1) && spellClass.Charges > minCharges || UnitManager.MyChampion.Mana > minMana,
-                TargetSelect = (mode) => SpellR.GetTargets(mode).OrderBy(x => x.DistanceTo(GameEngine.WorldMousePosition)).FirstOrDefault()
+                TargetSelect = (mode) => RTargetClosestToMouse
+                                        ? SpellR.GetTargets(mode).OrderBy(x => x.DistanceTo(GameEngine.WorldMousePosition)).FirstOrDefault()
+                                        : SpellR.GetTargets(mode).FirstOrDefault()
             };
             SpellRSemiAuto = new Spell(CastSlot.R, SpellSlot.R)
             {
@@ -77,11 +79,13 @@ namespace SixAIO.Champions
                 MinimumHitChance = () => SemiAutoRHitChance,
                 Range = () => 5000,
                 Radius = () => 200,
-                Speed = () => 1500,
-                Delay = () => 0.63f,
+                Speed = () => RSpeed,
+                Delay = () => (float)((float)((float)RDelay) / 1000f),
                 IsEnabled = () => UseSemiAutoR && UnitManager.MyChampion.BuffManager.ActiveBuffs.Any(x => x.Name == "xerathrshots" && x.Stacks >= 1),
                 IsSpellReady = (spellClass, minMana, minCharges) => UnitManager.MyChampion.BuffManager.ActiveBuffs.Any(x => x.Name == "XerathLocusOfPower2" && x.Stacks >= 1) && spellClass.Charges > minCharges || UnitManager.MyChampion.Mana > minMana,
-                TargetSelect = (mode) => SpellRSemiAuto.GetTargets(mode).OrderBy(x => x.DistanceTo(GameEngine.WorldMousePosition)).FirstOrDefault()
+                TargetSelect = (mode) => RTargetClosestToMouse
+                                        ? SpellRSemiAuto.GetTargets(mode).OrderBy(x => x.DistanceTo(GameEngine.WorldMousePosition)).FirstOrDefault()
+                                        : SpellRSemiAuto.GetTargets(mode).FirstOrDefault()
             };
         }
         //XerathLocusOfPower2
@@ -121,6 +125,24 @@ namespace SixAIO.Champions
             set => ESettings.GetItem<Counter>("E maximum range").Value = value;
         }
 
+        private bool RTargetClosestToMouse
+        {
+            get => RSettings.GetItem<Switch>("R Target Closest To Mouse").IsOn;
+            set => RSettings.GetItem<Switch>("R Target Closest To Mouse").IsOn = value;
+        }
+
+        private int RSpeed
+        {
+            get => RSettings.GetItem<Counter>("R Speed").Value;
+            set => RSettings.GetItem<Counter>("R Speed").Value = value;
+        }
+
+        private int RDelay
+        {
+            get => RSettings.GetItem<Counter>("R Delay").Value;
+            set => RSettings.GetItem<Counter>("R Delay").Value = value;
+        }
+
         internal override void InitializeMenu()
         {
             MenuManager.AddTab(new Tab($"SIXAIO - {nameof(Xerath)}"));
@@ -141,7 +163,10 @@ namespace SixAIO.Champions
             ESettings.AddItem(new Counter() { Title = "E maximum range", MinValue = 0, MaxValue = 1125, Value = 1100, ValueFrequency = 25 });
 
             RSettings.AddItem(new Switch() { Title = "Use R", IsOn = true });
+            RSettings.AddItem(new Counter() { Title = "R Speed", MinValue = 0, MaxValue = 100_000, Value = 1500, ValueFrequency = 50 });
+            RSettings.AddItem(new Counter() { Title = "R Delay", MinValue = 0, MaxValue = 5_000, Value = 630, ValueFrequency = 10 });
             RSettings.AddItem(new Switch() { Title = "Allow R cast on minimap", IsOn = true });
+            RSettings.AddItem(new Switch() { Title = "R Target Closest To Mouse", IsOn = true });
             RSettings.AddItem(new ModeDisplay() { Title = "R HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
 
             RSettings.AddItem(new Switch() { Title = "Use Semi Auto R", IsOn = true });
