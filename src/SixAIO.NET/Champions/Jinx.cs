@@ -91,7 +91,7 @@ namespace SixAIO.Champions
                 //            ((10 + spellClass.Level * 40) +
                 //            (UnitManager.MyChampion.UnitStats.TotalAttackDamage * (1.15f + 0.15f * spellClass.Level)))
                 //            : 0,
-                IsEnabled = () => UseW && !WOnlyOutsideOfAttackRange || !UnitManager.EnemyChampions.Any(TargetSelector.IsInRange),
+                IsEnabled = () => UseW && (!WOnlyOutsideOfAttackRange || !UnitManager.EnemyChampions.Any(TargetSelector.IsInRange)),
                 TargetSelect = (mode) => SpellW.GetTargets(mode, x => x.Distance > WMinimumRange).FirstOrDefault()
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
