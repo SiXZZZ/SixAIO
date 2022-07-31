@@ -1,4 +1,5 @@
 ﻿using Oasys.Common.Enums.GameEnums;
+using Oasys.Common.Extensions;
 using Oasys.Common.GameObject;
 using Oasys.Common.GameObject.ObjectClass;
 using Oasys.Common.Menu;
@@ -150,17 +151,19 @@ namespace SixAIO.Champions
         {
             if (DrawEDamage && SpellE.SpellClass.IsSpellReady)
             {
-                var champs = UnitManager.EnemyChampions.Where(x => GetEDamage(x) > 0);
-                foreach (var champ in champs)
+                var champs = UnitManager.EnemyChampions.Where(x => x.IsVisible && x.Distance <= 2000 && x.W2S.IsValid() && GetEDamage(x) > 0);
+                foreach (var enemy in champs)
                 {
-                    var pos = new Vector2(champ.HealthBarScreenPosition.X + 40, champ.HealthBarScreenPosition.Y - 40);
-                    RenderFactory.DrawText($"{(int)GetEDamage(champ)}", 12, pos, Color.White);
+                    //var pos = new Vector2(champ.HealthBarScreenPosition.X + 40, champ.HealthBarScreenPosition.Y - 40);
+                    //RenderFactory.DrawText($"{(int)GetEDamage(champ)}", 12, pos, Color.White);
+                    RenderFactory.DrawHPBarDamage(enemy, GetEDamage(enemy), EDamageColor);
                 }
-                var minions = UnitManager.EnemyMinions.Where(x => GetEDamage(x) > 0);
-                foreach (var minion in minions)
+                var minions = UnitManager.EnemyMinions.Where(x => x.IsVisible && x.Distance <= 2000 && x.W2S.IsValid() && GetEDamage(x) > 0);
+                foreach (var enemy in minions)
                 {
-                    var pos = new Vector2(minion.HealthBarScreenPosition.X + 40, minion.HealthBarScreenPosition.Y - 40);
-                    RenderFactory.DrawText($"{(int)GetEDamage(minion)}", 12, pos, Color.White);
+                    //var pos = new Vector2(champ.HealthBarScreenPosition.X + 40, champ.HealthBarScreenPosition.Y - 40);
+                    //RenderFactory.DrawText($"{(int)GetEDamage(champ)}", 12, pos, Color.White);
+                    RenderFactory.DrawHPBarDamage(enemy, GetEDamage(enemy), EDamageColor);
                 }
             }
         }
@@ -184,6 +187,8 @@ namespace SixAIO.Champions
             get => ESettings.GetItem<Switch>("Draw E Damage").IsOn;
             set => ESettings.GetItem<Switch>("Draw E Damage").IsOn = value;
         }
+
+        public Color EDamageColor => ColorConverter.GetColor(ESettings.GetItem<ModeDisplay>("E Damage Color").SelectedModeName, ESettings.GetItem<Counter>("E Damage Color Alpha").Value);
 
         internal bool ESlowIfCanReset
         {
@@ -241,6 +246,9 @@ namespace SixAIO.Champions
 
             ESettings.AddItem(new Switch() { Title = "Use E", IsOn = true });
             ESettings.AddItem(new Switch() { Title = "Draw E Damage", IsOn = false });
+            ESettings.AddItem(new ModeDisplay() { Title = "E Damage Color", ModeNames = ColorConverter.GetColors(), SelectedModeName = "Orange" });
+            ESettings.AddItem(new Counter() { Title = "E Damage Color Alpha", MinValue = 0, MaxValue = 255, Value = 75, ValueFrequency = 5 });
+
             ESettings.AddItem(new Counter() { Title = "E Below HP Percent", MinValue = 0, MaxValue = 100, Value = 5, ValueFrequency = 5 });
             ESettings.AddItem(new Switch() { Title = "E Slow If Can Reset", IsOn = true });
             ESettings.AddItem(new Counter() { Title = "E Kill Minions", MinValue = 0, MaxValue = 10, Value = 3, ValueFrequency = 1 });

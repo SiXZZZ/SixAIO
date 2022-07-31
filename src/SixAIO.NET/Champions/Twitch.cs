@@ -1,11 +1,13 @@
 ﻿using Oasys.Common;
 using Oasys.Common.Enums.GameEnums;
+using Oasys.Common.Extensions;
 using Oasys.Common.GameObject;
 using Oasys.Common.GameObject.ObjectClass;
 using Oasys.Common.Menu;
 using Oasys.Common.Menu.ItemComponents;
 using Oasys.SDK;
 using Oasys.SDK.Menu;
+using Oasys.SDK.Rendering;
 using Oasys.SDK.SpellCasting;
 using Oasys.SDK.Tools;
 using SharpDX;
@@ -114,7 +116,7 @@ namespace SixAIO.Champions
                     var qTimeRemaining = qBuff.RemainingDurationMs / 1000;
                     var w2s = LeagueNativeRendererManager.WorldToScreenSpell(UnitManager.MyChampion.Position);
                     w2s.Y -= 20;
-                    Oasys.SDK.Rendering.RenderFactory.DrawText($"Q:{qTimeRemaining:0.##}", 12, w2s, Color.Blue);
+                    RenderFactory.DrawText($"Q:{qTimeRemaining:0.##}", 12, w2s, Color.Blue);
                 }
             }
             if (DrawRTime)
@@ -124,7 +126,14 @@ namespace SixAIO.Champions
                 {
                     var rTimeRemaining = rBuff.RemainingDurationMs / 1000;
                     var w2s = LeagueNativeRendererManager.WorldToScreenSpell(UnitManager.MyChampion.Position);
-                    Oasys.SDK.Rendering.RenderFactory.DrawText($"R:{rTimeRemaining:0.##}", 12, w2s, Color.Blue);
+                    RenderFactory.DrawText($"R:{rTimeRemaining:0.##}", 12, w2s, Color.Blue);
+                }
+            }
+            if (DrawEDamage)
+            {
+                foreach (var enemy in UnitManager.EnemyChampions.Where(x => x.IsAlive && x.Distance <= 2000 && x.W2S.IsValid()))
+                {
+                    RenderFactory.DrawHPBarDamage(enemy, GetEDamage(enemy), EDamageColor);
                 }
             }
         }
@@ -152,6 +161,10 @@ namespace SixAIO.Champions
         internal static float GetEDamage(GameObjectBase enemy)
         {
             var stacks = TwitchEStacks(enemy);
+            if (stacks == 0)
+            {
+                return 0;
+            }
             var eLevel = UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot.E).Level;
             var armorMod = DamageCalculator.GetArmorMod(UnitManager.MyChampion, enemy);
             var magicResistMod = DamageCalculator.GetMagicResistMod(UnitManager.MyChampion, enemy);
@@ -192,6 +205,15 @@ namespace SixAIO.Champions
             get => ESettings.GetItem<Switch>("E when can kill").IsOn;
             set => ESettings.GetItem<Switch>("E when can kill").IsOn = value;
         }
+
+        private bool DrawEDamage
+        {
+            get => ESettings.GetItem<Switch>("Draw E Damage").IsOn;
+            set => ESettings.GetItem<Switch>("Draw E Damage").IsOn = value;
+        }
+
+        public Color EDamageColor => ColorConverter.GetColor(ESettings.GetItem<ModeDisplay>("E Damage Color").SelectedModeName, ESettings.GetItem<Counter>("E Damage Color Alpha").Value);
+
 
         private int TargetsWithStacks
         {
@@ -238,6 +260,9 @@ namespace SixAIO.Champions
             ESettings.AddItem(new Counter() { Title = "Targets with stacks", MinValue = 1, MaxValue = 5, Value = 1, ValueFrequency = 1 });
             ESettings.AddItem(new Counter() { Title = "Minimum stacks", MinValue = 1, MaxValue = 6, Value = 6, ValueFrequency = 1 });
             ESettings.AddItem(new Switch() { Title = "E when can kill", IsOn = true });
+            ESettings.AddItem(new Switch() { Title = "Draw E Damage", IsOn = true });
+            ESettings.AddItem(new ModeDisplay() { Title = "E Damage Color", ModeNames = ColorConverter.GetColors(), SelectedModeName = "Orange" });
+            ESettings.AddItem(new Counter() { Title = "E Damage Color Alpha", MinValue = 0, MaxValue = 255, Value = 75, ValueFrequency = 5 });
 
             RSettings.AddItem(new Switch() { Title = "Use R", IsOn = true });
             RSettings.AddItem(new Switch() { Title = "Draw R Time", IsOn = true });

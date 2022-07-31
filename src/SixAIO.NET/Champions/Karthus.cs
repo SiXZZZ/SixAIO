@@ -1,10 +1,12 @@
 ﻿using Oasys.Common;
 using Oasys.Common.Enums.GameEnums;
+using Oasys.Common.Extensions;
 using Oasys.Common.GameObject;
 using Oasys.Common.Menu;
 using Oasys.Common.Menu.ItemComponents;
 using Oasys.SDK;
 using Oasys.SDK.Menu;
+using Oasys.SDK.Rendering;
 using Oasys.SDK.SpellCasting;
 using SharpDX;
 using SixAIO.Models;
@@ -135,6 +137,14 @@ namespace SixAIO.Champions
                 var pos = new Vector2() { X = LeagueNativeRendererManager.GetWindowsScreenResolution().X / 2, Y = 100 };
                 Oasys.SDK.Rendering.RenderFactory.DrawText(_killMessage, 12, pos, Color.Red);
             }
+
+            if (DrawRDamage && (UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot.R).IsSpellReady || UnitManager.MyChampion.GetCurrentCastingSpell()?.SpellSlot == SpellSlot.R))
+            {
+                foreach (var enemy in UnitManager.EnemyChampions.Where(x => x.IsAlive && x.W2S.IsValid()))
+                {
+                    RenderFactory.DrawHPBarDamage(enemy, GetRDamage(enemy), RDamageColor);
+                }
+            }
         }
 
         private int QSpeed
@@ -148,6 +158,14 @@ namespace SixAIO.Champions
             get => QSettings.GetItem<Counter>("Q Delay").Value;
             set => QSettings.GetItem<Counter>("Q Delay").Value = value;
         }
+
+        private bool DrawRDamage
+        {
+            get => RSettings.GetItem<Switch>("Draw R Damage").IsOn;
+            set => RSettings.GetItem<Switch>("Draw R Damage").IsOn = value;
+        }
+
+        public Color RDamageColor => ColorConverter.GetColor(RSettings.GetItem<ModeDisplay>("R Damage Color").SelectedModeName, RSettings.GetItem<Counter>("R Damage Color Alpha").Value);
 
         internal override void InitializeMenu()
         {
@@ -166,6 +184,9 @@ namespace SixAIO.Champions
             ESettings.AddItem(new Switch() { Title = "Use E", IsOn = true });
 
             RSettings.AddItem(new Switch() { Title = "Use R", IsOn = true });
+            RSettings.AddItem(new Switch() { Title = "Draw R Damage", IsOn = true });
+            RSettings.AddItem(new ModeDisplay() { Title = "R Damage Color", ModeNames = ColorConverter.GetColors(), SelectedModeName = "Orange" });
+            RSettings.AddItem(new Counter() { Title = "R Damage Color Alpha", MinValue = 0, MaxValue = 255, Value = 75, ValueFrequency = 5 });
         }
     }
 }
