@@ -7,6 +7,7 @@ using Oasys.Common.Menu.ItemComponents;
 using Oasys.SDK;
 using Oasys.SDK.Menu;
 using Oasys.SDK.SpellCasting;
+using Oasys.SDK.Tools;
 using SixAIO.Models;
 using System;
 using System.Linq;
@@ -17,6 +18,12 @@ namespace SixAIO.Champions
     {
         private bool _originalTargetChampsOnlySetting;
         private AIBaseClient _ireliaE;
+
+        private static float QStacks()
+        {
+            var buff = UnitManager.MyChampion.BuffManager.GetBuffByName("ireliapassivestacks", false, true);
+            return buff is null ? 0 : buff.Stacks;
+        }
 
         private static bool AllSpellsOnCooldown()
         {
@@ -99,13 +106,20 @@ namespace SixAIO.Champions
             {
                 if (target.IsObject(ObjectTypeFlag.AIHeroClient))
                 {
-                    return target.Distance <= SpellQ.Range() && TargetSelector.IsAttackable(target) && CanQResetOnTarget(target);
+                    return target.Distance <= SpellQ.Range() &&
+                           TargetSelector.IsAttackable(target) &&
+                           CanQResetOnTarget(target);
                 }
 
-                return target.Distance <= SpellQ.Range() && UnitManager.EnemyChampions.Any(enemy => target.DistanceTo(enemy.Position) <= SpellQ.Range()) && TargetSelector.IsAttackable(target) && CanQResetOnTarget(target);
+                return target.Distance <= SpellQ.Range() &&
+                       UnitManager.EnemyChampions.Any(enemy => target.DistanceTo(enemy.Position) <= SpellQ.Range() && target.DistanceTo(enemy.Position) < enemy.Distance) &&
+                       TargetSelector.IsAttackable(target) &&
+                       CanQResetOnTarget(target);
             }
 
-            return target.Distance <= SpellQ.Range() && TargetSelector.IsAttackable(target) && CanQResetOnTarget(target);
+            return target.Distance <= SpellQ.Range() &&
+                   TargetSelector.IsAttackable(target) &&
+                   CanQResetOnTarget(target);
         }
 
         private bool IsCastingE => UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot.E).SpellData.SpellName.Equals("IreliaE", StringComparison.OrdinalIgnoreCase) && _ireliaE is not null;
@@ -176,6 +190,11 @@ namespace SixAIO.Champions
 
         internal override void OnCoreMainInput()
         {
+            foreach (var buff in UnitManager.MyChampion.BuffManager.ActiveBuffs)
+            {
+                Logger.Log(buff);
+            }
+
             if (SpellQ.ExecuteCastSpell() || /*SpellW.ExecuteCastSpell() ||*/ SpellR.ExecuteCastSpell() || SpellE.ExecuteCastSpell())
             {
                 return;
