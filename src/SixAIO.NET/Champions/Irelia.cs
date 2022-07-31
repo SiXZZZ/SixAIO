@@ -111,7 +111,8 @@ namespace SixAIO.Champions
                            CanQResetOnTarget(target);
                 }
 
-                return target.Distance <= SpellQ.Range() &&
+                return (QMinionsMaxStacks || QStacks() < 4) &&
+                       target.Distance <= SpellQ.Range() &&
                        UnitManager.EnemyChampions.Any(enemy => target.DistanceTo(enemy.Position) <= SpellQ.Range() && target.DistanceTo(enemy.Position) < enemy.Distance) &&
                        TargetSelector.IsAttackable(target) &&
                        CanQResetOnTarget(target);
@@ -190,11 +191,6 @@ namespace SixAIO.Champions
 
         internal override void OnCoreMainInput()
         {
-            foreach (var buff in UnitManager.MyChampion.BuffManager.ActiveBuffs)
-            {
-                Logger.Log(buff);
-            }
-
             if (SpellQ.ExecuteCastSpell() || /*SpellW.ExecuteCastSpell() ||*/ SpellR.ExecuteCastSpell() || SpellE.ExecuteCastSpell())
             {
                 return;
@@ -216,6 +212,11 @@ namespace SixAIO.Champions
                 _ireliaE = obj;
             }
         }
+        internal bool QMinionsMaxStacks
+        {
+            get => QSettings.GetItem<Switch>("Q Minions in combo on max stacks").IsOn;
+            set => QSettings.GetItem<Switch>("Q Minions in combo on max stacks").IsOn = value;
+        }
 
         private int RMaximumRange
         {
@@ -234,6 +235,7 @@ namespace SixAIO.Champions
 
             QSettings.AddItem(new Switch() { Title = "Use Q", IsOn = true });
             QSettings.AddItem(new Switch() { Title = "Use Q Laneclear", IsOn = true });
+            QSettings.AddItem(new Switch() { Title = "Q Minions in combo on max stacks", IsOn = true });
 
             WSettings.AddItem(new Switch() { Title = "Use W", IsOn = true });
 
