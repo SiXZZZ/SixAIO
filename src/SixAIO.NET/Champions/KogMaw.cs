@@ -5,6 +5,7 @@ using Oasys.Common.Menu.ItemComponents;
 using Oasys.SDK;
 using Oasys.SDK.Menu;
 using Oasys.SDK.SpellCasting;
+using Oasys.SDK.Tools;
 using SixAIO.Models;
 using System;
 using System.Linq;
@@ -14,6 +15,9 @@ namespace SixAIO.Champions
 {
     internal class KogMaw : Champion
     {
+        private float UltCost => 40 * UnitManager.MyChampion.BuffManager.ActiveBuffs
+                                .FirstOrDefault(x => x.IsActive && x.Name.Equals("kogmawlivingartillerycost", StringComparison.OrdinalIgnoreCase))?.Stacks ?? 0;
+
         public KogMaw()
         {
             Oasys.SDK.InputProviders.KeyboardProvider.OnKeyPress += KeyboardProvider_OnKeyPress;
@@ -61,7 +65,7 @@ namespace SixAIO.Champions
                                         (UnitManager.MyChampion.UnitStats.BonusAttackDamage) +
                                         (UnitManager.MyChampion.UnitStats.TotalAbilityPower))
                             : 0,
-                IsEnabled = () => UseR,
+                IsEnabled = () => UseR && UltCost <= RMaxManaCost,
                 MinimumMana = () => RMinMana,
                 TargetSelect = (mode) => SpellR.GetTargets(mode, x => x.HealthPercent <= RTargetMaxHPPercent && ROnlyOutSideAttackRange(x) && x.Distance <= RMaximumRange).FirstOrDefault()
             };
@@ -100,6 +104,11 @@ namespace SixAIO.Champions
 
         internal override void OnCoreMainInput()
         {
+            Logger.Log($"{SpellR.SpellClass.SpellData.ResourceCost} - {SpellR.SpellClass.Charges}");
+            foreach (var buff in UnitManager.MyChampion.BuffManager.ActiveBuffs)
+            {
+                Logger.Log(buff);
+            }
             if (SpellW.ExecuteCastSpell() || SpellQ.ExecuteCastSpell() || SpellR.ExecuteCastSpell() || SpellE.ExecuteCastSpell())
             {
                 return;
@@ -142,6 +151,12 @@ namespace SixAIO.Champions
             set => RSettings.GetItem<Counter>("R maximum range").Value = value;
         }
 
+        internal int RMaxManaCost
+        {
+            get => RSettings.GetItem<Counter>("R Max Mana Cost").Value;
+            set => RSettings.GetItem<Counter>("R Max Mana Cost").Value = value;
+        }
+
         internal override void InitializeMenu()
         {
             MenuManager.AddTab(new Tab($"SIXAIO - {nameof(KogMaw)}"));
@@ -166,6 +181,7 @@ namespace SixAIO.Champions
 
             RSettings.AddItem(new Switch() { Title = "Use R", IsOn = true });
             RSettings.AddItem(new Counter() { Title = "R Min Mana", MinValue = 0, MaxValue = 500, Value = 150, ValueFrequency = 10 });
+            RSettings.AddItem(new Counter() { Title = "R Max Mana Cost", MinValue = 0, MaxValue = 500, Value = 150, ValueFrequency = 10 });
             RSettings.AddItem(new Counter() { Title = "R Target Max HP Percent", MinValue = 10, MaxValue = 100, Value = 40, ValueFrequency = 5 });
             RSettings.AddItem(new Switch() { Title = "R only outside of attack range", IsOn = true });
             RSettings.AddItem(new Counter() { Title = "R minimum range", MinValue = 0, MaxValue = 1800, Value = 0, ValueFrequency = 50 });
