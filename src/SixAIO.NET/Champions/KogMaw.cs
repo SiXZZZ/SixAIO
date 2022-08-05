@@ -104,11 +104,6 @@ namespace SixAIO.Champions
 
         internal override void OnCoreMainInput()
         {
-            Logger.Log($"{SpellR.SpellClass.SpellData.ResourceCost} - {SpellR.SpellClass.Charges}");
-            foreach (var buff in UnitManager.MyChampion.BuffManager.ActiveBuffs)
-            {
-                Logger.Log(buff);
-            }
             if (SpellW.ExecuteCastSpell() || SpellQ.ExecuteCastSpell() || SpellR.ExecuteCastSpell() || SpellE.ExecuteCastSpell())
             {
                 return;
