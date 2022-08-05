@@ -19,29 +19,44 @@ namespace SixAIO.Champions
             Oasys.SDK.InputProviders.KeyboardProvider.OnKeyPress += KeyboardProvider_OnKeyPress;
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
-                AllowCollision = (target, collisions) => target.IsObject(ObjectTypeFlag.AIMinionClient)
-                                                        ? QAllowLaneclearMinionCollision
-                                                        : !collisions.Any(),
+                AllowCollision = (target, collisions) => !collisions.Any(),
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
                 MinimumHitChance = () => QHitChance,
                 Range = () => 1200,
                 Radius = () => 120,
                 Speed = () => 2000,
-                //Damage = (target, spellClass) =>
-                //            target != null
-                //            ? DamageCalculator.GetArmorMod(UnitManager.MyChampion, target) *
-                //            ((-5 + spellClass.Level * 25) +
-                //            (UnitManager.MyChampion.UnitStats.TotalAttackDamage * 1.3f) +
-                //            (UnitManager.MyChampion.UnitStats.TotalAbilityPower * 0.15f))
-                //            : 0,
+                Damage = (target, spellClass) =>
+                            target != null
+                            ? DamageCalculator.CalculateActualDamage(UnitManager.MyChampion, target,
+                                ((-5 + spellClass.Level * 25) +
+                                (UnitManager.MyChampion.UnitStats.TotalAttackDamage * 1.3f) +
+                                (UnitManager.MyChampion.UnitStats.TotalAbilityPower * 0.15f)))
+                            : 0,
                 IsEnabled = () => UseQ,
                 MinimumMana = () => QMinMana,
-                TargetSelect = (mode) => PrioTargetsWithW
-                                                ? SpellQ.GetTargets(mode)
-                                                        .OrderByDescending(x => x.BuffManager.ActiveBuffs.Any(buff => buff.IsActive && buff.Stacks >= 1 && buff.Name == "ezrealwattach"))
-                                                        .FirstOrDefault()
-                                                : SpellQ.GetTargets(mode)
-                                                        .FirstOrDefault()
+                TargetSelect = (mode) =>
+                {
+                    if (mode == Orbwalker.OrbWalkingModeType.Combo)
+                    {
+                        return PrioTargetsWithW
+                                ? SpellQ.GetTargets(mode)
+                                        .OrderByDescending(x => x.BuffManager.ActiveBuffs.Any(buff => buff.IsActive && buff.Stacks >= 1 && buff.Name == "ezrealwattach"))
+                                        .FirstOrDefault()
+                                : SpellQ.GetTargets(mode).FirstOrDefault();
+                    }
+                    else if (mode == Orbwalker.OrbWalkingModeType.LastHit)
+                    {
+                        return SpellQ.GetTargets(mode, x => x.Health <= SpellQ.Damage(x, SpellQ.SpellClass)).FirstOrDefault();
+                    }
+                    else if (mode == Orbwalker.OrbWalkingModeType.Mixed)
+                    {
+                        return SpellQ.GetTargets(mode, x => x.IsObject(ObjectTypeFlag.AIHeroClient) || x.Health <= SpellQ.Damage(x, SpellQ.SpellClass)).FirstOrDefault();
+                    }
+                    else
+                    {
+                        return SpellQ.GetTargets(mode).FirstOrDefault();
+                    }
+                }
             };
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
             {
@@ -141,10 +156,20 @@ namespace SixAIO.Champions
             }
         }
 
-        internal bool QAllowLaneclearMinionCollision
+        internal override void OnCoreHarassInput()
         {
-            get => QSettings.GetItem<Switch>("Q Allow Laneclear minion collision").IsOn;
-            set => QSettings.GetItem<Switch>("Q Allow Laneclear minion collision").IsOn = value;
+            if (UseQHarass && SpellQ.ExecuteCastSpell(Orbwalker.OrbWalkingModeType.Mixed))
+            {
+                return;
+            }
+        }
+
+        internal override void OnCoreLastHitInput()
+        {
+            if (UseQLasthit && SpellQ.ExecuteCastSpell(Orbwalker.OrbWalkingModeType.LastHit))
+            {
+                return;
+            }
         }
 
         internal bool PrioTargetsWithW
@@ -187,7 +212,8 @@ namespace SixAIO.Champions
 
             QSettings.AddItem(new Switch() { Title = "Use Q", IsOn = true });
             QSettings.AddItem(new Switch() { Title = "Use Q Laneclear", IsOn = true });
-            QSettings.AddItem(new Switch() { Title = "Q Allow Laneclear minion collision", IsOn = true });
+            QSettings.AddItem(new Switch() { Title = "Use Q Harass", IsOn = true });
+            QSettings.AddItem(new Switch() { Title = "Use Q Lasthit", IsOn = true });
             QSettings.AddItem(new Counter() { Title = "Q Min Mana", MinValue = 0, MaxValue = 500, Value = 40, ValueFrequency = 10 });
             QSettings.AddItem(new ModeDisplay() { Title = "Q HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
 

@@ -37,6 +37,18 @@ namespace SixAIO.Models
             set => QSettings.GetItem<Switch>("Use Q Laneclear").IsOn = value;
         }
 
+        internal bool UseQLasthit
+        {
+            get => QSettings.GetItem<Switch>("Use Q Lasthit").IsOn;
+            set => QSettings.GetItem<Switch>("Use Q Lasthit").IsOn = value;
+        }
+
+        internal bool UseQHarass
+        {
+            get => QSettings.GetItem<Switch>("Use Q Harass").IsOn;
+            set => QSettings.GetItem<Switch>("Use Q Harass").IsOn = value;
+        }
+
         internal Oasys.SDK.Prediction.MenuSelected.HitChance QHitChance
         {
             get => (Oasys.SDK.Prediction.MenuSelected.HitChance)Enum.Parse(typeof(Oasys.SDK.Prediction.MenuSelected.HitChance), QSettings.GetItem<ModeDisplay>("Q HitChance").SelectedModeName);
