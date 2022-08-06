@@ -1,152 +1,153 @@
 ﻿using Oasys.Common.Enums.GameEnums;
+using Oasys.Common.Extensions;
 using Oasys.Common.GameObject;
-using Oasys.Common.GameObject.Clients.ExtendedInstances;
-using Oasys.Common.GameObject.Clients.ExtendedInstances.Spells;
+using Oasys.Common.GameObject.Clients;
+using Oasys.Common.Logic;
 using Oasys.Common.Menu;
 using Oasys.Common.Menu.ItemComponents;
 using Oasys.SDK;
 using Oasys.SDK.Menu;
 using Oasys.SDK.SpellCasting;
-using Oasys.SDK.Tools;
-using SixAIO.Helpers;
+using SharpDX;
 using SixAIO.Models;
-using System;
+using System.Collections.Generic;
 using System.Linq;
+using Group = Oasys.Common.Menu.Group;
+using Orbwalker = Oasys.SDK.Orbwalker;
+using TargetSelector = Oasys.SDK.TargetSelector;
 
 namespace SixAIO.Champions
 {
-    //internal class Fiora : Champion
-    //{
-    //    private static BuffEntry GetUltBuff() => UnitManager.MyChampion.BuffManager.GetBuffByName("rivenwindslashready", false, true);
+    internal class Fiora : Champion
+    {
+        private static List<AIBaseClient> FioraPassives = new List<AIBaseClient>();
+        private static List<AIBaseClient> FioraActivePassives => FioraPassives.Where(IsFioraPassive).ToList();
 
-    //    private static bool IsUltActive()
-    //    {
-    //        var buff = GetUltBuff();
-    //        return buff != null && buff.IsActive;
-    //    }
+        public static Vector3 Passivepos(GameObjectBase target)
+        {
+            var passive = FioraActivePassives.Where(x => x.Position.Distance(target.Position) <= 50).FirstOrDefault();
+            var position = target.Position;
+            if (passive == null)
+            {
+                return Vector3.Zero;
+            }
 
-    //    private static float UltTimeLeft()
-    //    {
-    //        var buff = GetUltBuff();
-    //        return buff != null && buff.IsActive ? buff.EndTime - GameEngine.GameTime : 0;
-    //    }
+            if (passive.Name.Contains("NE"))
+            {
+                var pos = new Vector2
+                {
+                    X = position.To2D().X,
+                    Y = position.To2D().Y + 150
+                };
+                return pos.To3D();
+            }
+            if (passive.Name.Contains("SE"))
+            {
+                var pos = new Vector2
+                {
+                    X = position.To2D().X - 150,
+                    Y = position.To2D().Y
+                };
+                return pos.To3D();
+            }
+            if (passive.Name.Contains("NW"))
+            {
+                var pos = new Vector2
+                {
+                    X = position.To2D().X + 150,
+                    Y = position.To2D().Y
+                };
+                return pos.To3D();
+            }
+            if (passive.Name.Contains("SW"))
+            {
+                var pos = new Vector2
+                {
+                    X = position.To2D().X,
+                    Y = position.To2D().Y - 150
+                };
+                return pos.To3D();
+            }
 
-    //    private int _lastQCharge = -1;
-    //    private float _lastQChargeTime = 0;
-    //    private float _lastAATime = 0f;
-    //    private float _lastQTime = 0f;
+            return Vector3.Zero;
+        }
 
-    //    public Fiora()
-    //    {
-    //        Spell.OnSpellCast += Spell_OnSpellCast;
-    //        Orbwalker.OnOrbwalkerAfterBasicAttack += Orbwalker_OnOrbwalkerAfterBasicAttack;
-    //        SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
-    //        {
-    //            CastTime = () => 0f,
-    //            ShouldCast = (target, spellClass, damage) =>
-    //                        UseQ &&
-    //                        spellClass.IsSpellReady &&
-    //                        _lastAATime > _lastQTime + 0.333f &&
-    //                        _lastAATime > _lastQChargeTime + 0.333f &&
-    //                        target != null,
-    //            TargetSelect = (mode) => UnitManager.EnemyChampions.FirstOrDefault(x => x.Distance <= UnitManager.MyChampion.TrueAttackRange + 300 && TargetSelector.IsAttackable(x))
-    //        };
-    //        SpellE = new Spell(CastSlot.E, SpellSlot.E)
-    //        {
-    //            CastTime = () => 0f,
-    //            ShouldCast = (target, spellClass, damage) =>
-    //                        UseE &&
-    //                        spellClass.IsSpellReady &&
-    //                        !Orbwalker.CanBasicAttack &&
-    //                        target != null,
-    //            TargetSelect = (mode) => UnitManager.EnemyChampions.FirstOrDefault(x => x.Distance <= UnitManager.MyChampion.TrueAttackRange + 50 && TargetSelector.IsAttackable(x))
-    //        };
-    //        SpellR = new Spell(CastSlot.R, SpellSlot.R)
-    //        {
-    //            ShouldCast = (target, spellClass, damage) =>
-    //                        UseR &&
-    //                        spellClass.IsSpellReady &&
-    //                        target != null &&
-    //                        (target.Health < GetRDamage(target, spellClass) ||
-    //                        (UltTimeLeft() > 0 && UltTimeLeft() < 1f) ||
-    //                        (GetMissingHealthPercent(target) < 75.0f)),
-    //            TargetSelect = (mode) => UnitManager.EnemyChampions.FirstOrDefault(x => x.Distance <= 800 && TargetSelector.IsAttackable(x) &&
-    //                                                                                x.Health < GetRDamage(x, UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot.R)))
-    //        };
-    //    }
+        public static bool HasPassive(GameObjectBase target)
+        {
+            return FioraActivePassives.Any(x => x.Position.Distance(target.Position) <= 50);
+        }
 
-    //    private float GetMissingHealthPercent(GameObjectBase target)
-    //    {
-    //        var missingHealthPercent = 100f - (target.Health / target.MaxHealth * 100f);
-    //        return missingHealthPercent;
-    //    }
+        public Fiora()
+        {
+            Orbwalker.OnOrbwalkerAfterBasicAttack += Orbwalker_OnOrbwalkerAfterBasicAttack;
+            SpellE = new Spell(CastSlot.E, SpellSlot.E)
+            {
+                IsEnabled = () => UseE,
+                ShouldCast = (mode, target, spellClass, damage) => TargetSelector.IsAttackable(Orbwalker.TargetHero) && TargetSelector.IsInRange(Orbwalker.TargetHero),
+            };
+        }
 
-    //    private float GetRDamage(GameObjectBase target, SpellClass spellClass)
-    //    {
-    //        if (target == null)
-    //        {
-    //            return 0;
-    //        }
-    //        var extraDamagePercent = GetMissingHealthPercent(target) * 2.667f;
-    //        if (extraDamagePercent > 200f)
-    //        {
-    //            extraDamagePercent = 200f;
-    //        }
-    //        return DamageCalculator.GetArmorMod(UnitManager.MyChampion, target) * ((1 + (extraDamagePercent / 100f)) *
-    //               ((UnitManager.MyChampion.UnitStats.BonusAttackDamage * 0.60f) + 50 + 50 * spellClass.Level));
-    //    }
+        private void Orbwalker_OnOrbwalkerAfterBasicAttack(float gameTime, GameObjectBase target)
+        {
+            SpellE.ExecuteCastSpell();
+        }
 
-    //    private void Spell_OnSpellCast(Spell spell)
-    //    {
-    //        if (spell.SpellSlot == SpellSlot.Q)
-    //        {
-    //            _lastQTime = GameEngine.GameTime;
-    //        }
+        internal override void OnCoreMainInput()
+        {
+            var target = UnitManager.EnemyChampions.Where(x => TargetSelector.IsAttackable(x) && HasPassive(x)).OrderBy(x => x.Health).FirstOrDefault();
+            if (target != null)
+            {
+                SpellCastProvider.CastSpell(CastSlot.Q, Passivepos(target));
+            }
+        }
 
-    //        if (spell.SpellSlot == SpellSlot.E)
-    //        {
-    //            SpellQ.ExecuteCastSpell();
-    //            SpellR.ExecuteCastSpell();
-    //        }
+        internal override void OnCoreMainTick()
+        {
+            foreach (var item in FioraPassives.Where(x => !IsFioraPassive(x)))
+            {
+                FioraPassives.Remove(item);
+            }
+        }
 
-    //        if (spell.SpellSlot == SpellSlot.Q)
-    //        {
-    //            SpellR.ExecuteCastSpell();
-    //        }
-    //    }
+        private static bool IsFioraPassive(GameObjectBase obj)
+        {
+            var name = obj.Name;
+            return name.Contains("Fiora") &&
+                   (name.Contains("Passive") || name.Contains("R_Mark") || name.Contains("_R")) &&
+                   (name.Contains("NE") || name.Contains("SE") || name.Contains("NW") || name.Contains("SW"));
+        }
 
-    //    private void Orbwalker_OnOrbwalkerAfterBasicAttack(float gameTime, GameObjectBase target)
-    //    {
-    //        _lastAATime = gameTime;
-    //        if (target != null)
-    //        {
-    //            SpellQ.ExecuteCastSpell();
-    //        }
-    //    }
+        internal override void OnCreateObject(AIBaseClient obj)
+        {
+            if (IsFioraPassive(obj))
+            {
+                FioraPassives.Add(obj);
+                //Logger.Log($"Added: {obj.Name}");
+            }
+        }
 
-    //    internal override void OnCoreMainInput()
-    //    {
-    //        if (SpellR.ExecuteCastSpell() || SpellQ.ExecuteCastSpell() || SpellE.ExecuteCastSpell())
-    //        {
-    //            return;
-    //        }
-    //    }
+        internal override void OnDeleteObject(AIBaseClient obj)
+        {
+            if (IsFioraPassive(obj))
+            {
+                FioraPassives.Remove(obj);
+                //Logger.Log($"Removed: {obj.Name}");
+            }
+        }
 
-    //    internal override void OnCoreMainTick()
-    //    {
-    //        if (_lastQCharge != UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot.Q).Charges)
-    //        {
-    //            _lastQCharge = UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot.Q).Charges;
-    //            _lastQChargeTime = GameEngine.GameTime;
-    //        }
-    //    }
+        internal override void InitializeMenu()
+        {
+            MenuManager.AddTab(new Tab($"SIXAIO - {nameof(Fiora)}"));
+            MenuTab.AddGroup(new Group("Q Settings"));
+            MenuTab.AddGroup(new Group("W Settings"));
+            MenuTab.AddGroup(new Group("E Settings"));
 
-    //    internal override void InitializeMenu()
-    //    {
-    //        MenuManager.AddTab(new Tab($"SIXAIO - {nameof(Fiora)}"));
-    //        MenuTab.AddItem(new Switch() { Title = "Use Q", IsOn = true });
-    //        MenuTab.AddItem(new Switch() { Title = "Use E", IsOn = true });
-    //        MenuTab.AddItem(new Switch() { Title = "Use R", IsOn = true });
-    //    }
-    //}
+            QSettings.AddItem(new Switch() { Title = "Use Q", IsOn = true });
+
+            WSettings.AddItem(new Switch() { Title = "Use W", IsOn = true });
+
+            ESettings.AddItem(new Switch() { Title = "Use E", IsOn = true });
+
+        }
+    }
 }
