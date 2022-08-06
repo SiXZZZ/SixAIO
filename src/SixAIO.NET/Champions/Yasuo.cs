@@ -40,26 +40,39 @@ namespace SixAIO.Champions
                 Range = () => UnitManager.MyChampion.AIManager.IsDashing ? 250 : GetQState() == 3 ? 1150 : 450,
                 From = () => UnitManager.MyChampion.AIManager.IsDashing ? UnitManager.MyChampion.AIManager.NavEndPosition : UnitManager.MyChampion.AIManager.ServerPosition,
                 IsEnabled = () => UseQ,
+                Damage = (target, spellClass) =>
+                            target != null
+                            ? DamageCalculator.CalculateActualDamage(UnitManager.MyChampion, target,
+                                (-5 + spellClass.Level * 25) +
+                                (UnitManager.MyChampion.UnitStats.TotalAttackDamage * 1.05f))
+                            : 0,
                 ShouldCast = (mode, target, spellClass, damage) => target != null || (UnitManager.MyChampion.AIManager.IsDashing && (UnitManager.EnemyChampions.Any(x => SpellQ.From().Distance(x.Position) <= SpellQ.Range() && TargetSelector.IsAttackable(x)) || GetQState() < 3)),
                 TargetSelect = (mode) =>
                 {
-                    var champ = UnitManager.EnemyChampions.FirstOrDefault(x => SpellQ.From().Distance(x.Position) <= SpellQ.Range() && TargetSelector.IsAttackable(x));
-                    if (champ != null)
+                    if (mode == Orbwalker.OrbWalkingModeType.LastHit)
                     {
-                        return champ;
+                        return SpellQ.GetTargets(mode, x => x.Health <= SpellQ.Damage(x, SpellQ.SpellClass)).FirstOrDefault();
                     }
-                    if (GetQState() < 3)
+                    else
                     {
-                        var minion = UnitManager.EnemyMinions.FirstOrDefault(x => SpellQ.From().Distance(x.Position) <= SpellQ.Range() && TargetSelector.IsAttackable(x));
-                        if (minion != null)
+                        var champ = UnitManager.EnemyChampions.FirstOrDefault(x => SpellQ.From().Distance(x.Position) <= SpellQ.Range() && TargetSelector.IsAttackable(x));
+                        if (champ != null)
                         {
-                            return minion;
+                            return champ;
                         }
-
-                        var jungle = UnitManager.EnemyJungleMobs.FirstOrDefault(x => SpellQ.From().Distance(x.Position) <= SpellQ.Range() && TargetSelector.IsAttackable(x));
-                        if (jungle != null)
+                        if (GetQState() < 3)
                         {
-                            return jungle;
+                            var minion = UnitManager.EnemyMinions.FirstOrDefault(x => SpellQ.From().Distance(x.Position) <= SpellQ.Range() && TargetSelector.IsAttackable(x));
+                            if (minion != null)
+                            {
+                                return minion;
+                            }
+
+                            var jungle = UnitManager.EnemyJungleMobs.FirstOrDefault(x => SpellQ.From().Distance(x.Position) <= SpellQ.Range() && TargetSelector.IsAttackable(x));
+                            if (jungle != null)
+                            {
+                                return jungle;
+                            }
                         }
                     }
 
@@ -220,6 +233,14 @@ namespace SixAIO.Champions
             }
         }
 
+        internal override void OnCoreLastHitInput()
+        {
+            if (UseQLasthit && SpellQ.ExecuteCastSpell(Orbwalker.OrbWalkingModeType.LastHit))
+            {
+                return;
+            }
+        }
+
         private int RUltEnemies
         {
             get => RSettings.GetItem<Counter>("R Ult enemies").Value;
@@ -236,6 +257,7 @@ namespace SixAIO.Champions
 
             QSettings.AddItem(new Switch() { Title = "Use Q", IsOn = true });
             QSettings.AddItem(new Switch() { Title = "Use Q Laneclear", IsOn = true });
+            QSettings.AddItem(new Switch() { Title = "Use Q Lasthit", IsOn = true });
             QSettings.AddItem(new ModeDisplay() { Title = "Q HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
 
             //MenuTab.AddItem(new Switch() { Title = "Use W", IsOn = true });
