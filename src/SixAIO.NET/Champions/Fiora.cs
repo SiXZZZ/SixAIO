@@ -25,7 +25,7 @@ namespace SixAIO.Champions
 
         public static Vector3 Passivepos(GameObjectBase target)
         {
-            var passive = FioraActivePassives.Where(x => x.Position.Distance(target.Position) <= 50).FirstOrDefault();
+            var passive = FioraActivePassives.Where(x => x.Position.Distance(target.Position) <= 75).FirstOrDefault();
             var position = target.Position;
             if (passive == null)
             {
@@ -37,7 +37,7 @@ namespace SixAIO.Champions
                 var pos = new Vector2
                 {
                     X = position.To2D().X,
-                    Y = position.To2D().Y + 150
+                    Y = position.To2D().Y + 75
                 };
                 return pos.To3D();
             }
@@ -45,7 +45,7 @@ namespace SixAIO.Champions
             {
                 var pos = new Vector2
                 {
-                    X = position.To2D().X - 150,
+                    X = position.To2D().X - 75,
                     Y = position.To2D().Y
                 };
                 return pos.To3D();
@@ -54,7 +54,7 @@ namespace SixAIO.Champions
             {
                 var pos = new Vector2
                 {
-                    X = position.To2D().X + 150,
+                    X = position.To2D().X + 75,
                     Y = position.To2D().Y
                 };
                 return pos.To3D();
@@ -64,7 +64,7 @@ namespace SixAIO.Champions
                 var pos = new Vector2
                 {
                     X = position.To2D().X,
-                    Y = position.To2D().Y - 150
+                    Y = position.To2D().Y - 75
                 };
                 return pos.To3D();
             }
@@ -74,7 +74,7 @@ namespace SixAIO.Champions
 
         public static bool HasPassive(GameObjectBase target)
         {
-            return FioraActivePassives.Any(x => x.Position.Distance(target.Position) <= 50);
+            return FioraActivePassives.Any(x => x.Position.Distance(target.Position) <= 75);
         }
 
         public Fiora()
@@ -97,7 +97,11 @@ namespace SixAIO.Champions
             var target = UnitManager.EnemyChampions.Where(x => TargetSelector.IsAttackable(x) && HasPassive(x)).OrderBy(x => x.Health).FirstOrDefault();
             if (target != null)
             {
-                SpellCastProvider.CastSpell(CastSlot.Q, Passivepos(target));
+                var passivepos = Passivepos(target);
+                if (passivepos.Distance(UnitManager.MyChampion.Position) <= 420)
+                {
+                    SpellCastProvider.CastSpell(CastSlot.Q, passivepos);
+                }
             }
         }
 
