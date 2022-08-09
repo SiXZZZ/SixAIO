@@ -140,16 +140,16 @@ namespace SixAIO.Champions
         {
             if (AALaneclearIfNoComboTarget && Orbwalker.TargetHero is null)
             {
-                Orbwalker.SelectedHero = UnitManager.EnemyMinions.OrderBy(x => x.Distance).FirstOrDefault(x => TargetSelector.IsAttackable(x) && TargetSelector.IsInRange(x));
-                if (Orbwalker.SelectedHero is null)
+                Orbwalker.SelectedTarget = UnitManager.EnemyMinions.OrderBy(x => x.Distance).FirstOrDefault(x => TargetSelector.IsAttackable(x) && TargetSelector.IsInRange(x));
+                if (Orbwalker.SelectedTarget is null)
                 {
-                    Orbwalker.SelectedHero = UnitManager.EnemyTowers.OrderBy(x => x.Distance).FirstOrDefault(x => TargetSelector.IsAttackable(x) && TargetSelector.IsInRange(x));
-                    if (Orbwalker.SelectedHero is null)
+                    Orbwalker.SelectedTarget = UnitManager.EnemyTowers.OrderBy(x => x.Distance).FirstOrDefault(x => TargetSelector.IsAttackable(x) && TargetSelector.IsInRange(x));
+                    if (Orbwalker.SelectedTarget is null)
                     {
-                        Orbwalker.SelectedHero = UnitManager.EnemyJungleMobs.OrderBy(x => x.Distance).FirstOrDefault(x => TargetSelector.IsAttackable(x) && TargetSelector.IsInRange(x));
-                        if (Orbwalker.SelectedHero is null)
+                        Orbwalker.SelectedTarget = UnitManager.EnemyJungleMobs.OrderBy(x => x.Distance).FirstOrDefault(x => TargetSelector.IsAttackable(x) && TargetSelector.IsInRange(x));
+                        if (Orbwalker.SelectedTarget is null)
                         {
-                            Orbwalker.SelectedHero = UnitManager.EnemyInhibitors.OrderBy(x => x.Distance).FirstOrDefault(x => TargetSelector.IsAttackable(x) && TargetSelector.IsInRange(x));
+                            Orbwalker.SelectedTarget = UnitManager.EnemyInhibitors.OrderBy(x => x.Distance).FirstOrDefault(x => TargetSelector.IsAttackable(x) && TargetSelector.IsInRange(x));
                         }
                     }
                 }
