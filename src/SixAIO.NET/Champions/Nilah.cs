@@ -39,7 +39,7 @@ namespace SixAIO.Champions
             {
                 IsTargetted = () => true,
                 Range = () => 550,
-                IsEnabled = () => UseE,
+                IsEnabled = () => UseE && (!EOnlyIfOutOfAARange || Orbwalker.TargetHero is null),
                 MinimumCharges = () => 1,
                 ShouldCast = (mode, target, spellClass, damage) => ShouldE(target),
                 TargetSelect = (mode) => SpellE.GetTargets(mode, ShouldE).FirstOrDefault()
@@ -102,6 +102,12 @@ namespace SixAIO.Champions
             set => QSettings.GetItem<Switch>("Q Allow Laneclear minion collision").IsOn = value;
         }
 
+        internal bool EOnlyIfOutOfAARange
+        {
+            get => ESettings.GetItem<Switch>("E Only If Out Of AA Range").IsOn;
+            set => ESettings.GetItem<Switch>("E Only If Out Of AA Range").IsOn = value;
+        }
+
         internal bool AllowEInTowerRange
         {
             get => ESettings.GetItem<Switch>("Allow E in tower range").IsOn;
@@ -135,6 +141,7 @@ namespace SixAIO.Champions
             WSettings.AddItem(new Switch() { Title = "Use W", IsOn = true });
 
             ESettings.AddItem(new Switch() { Title = "Use E", IsOn = true });
+            ESettings.AddItem(new Switch() { Title = "E Only If Out Of AA Range", IsOn = true });
             ESettings.AddItem(new Switch() { Title = "Allow E in tower range", IsOn = true });
 
             RSettings.AddItem(new Switch() { Title = "Use R", IsOn = true });
