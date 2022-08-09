@@ -31,7 +31,7 @@ namespace SixAIO.Champions
                 Radius = () => 80,
                 Speed = () => 2400,
                 Damage = (target, spellClass) => -45 + (65 * spellClass.Level) + UnitManager.MyChampion.UnitStats.TotalAttackDamage,
-                IsEnabled = () => UseQ,
+                IsEnabled = () => UseQ && (UnitManager.MyChampion.AttackSpeed <= QOnlyBelowAttackSpeed || UnitManager.EnemyChampions.All(x => x.Distance > UnitManager.MyChampion.TrueAttackRange)),
                 TargetSelect = (mode) => SpellQ.GetTargets(mode).FirstOrDefault()
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
@@ -65,6 +65,7 @@ namespace SixAIO.Champions
                 Orbwalker.OrbWalkingModeType.Combo => UnitManager.EnemyChampions.Count(IsValidHero) >= EKillChampions,
                 Orbwalker.OrbWalkingModeType.LaneClear =>
                             (UnitManager.EnemyChampions.Count(IsValidHero) >= EKillChampions) ||
+                            (UnitManager.EnemyMinions.Where(IsSpecialMinion).Count(IsValidTarget) >= 1) ||
                             (UnitManager.EnemyJungleMobs.Count(x => IsValidTarget(x) && IsEpicJungleMonster(x)) >= EKillEpicMonsters) ||
                             (UnitManager.EnemyJungleMobs.Count(IsValidTarget) >= EKillMonsters) ||
                             (UnitManager.EnemyMinions.Count(IsValidTarget) >= EKillMinions),
@@ -118,6 +119,8 @@ namespace SixAIO.Champions
             return result;
         }
 
+        private static bool IsSpecialMinion(GameObjectBase minion) => minion.IsObject(ObjectTypeFlag.AIMinionClient) && (minion.UnitComponentInfo.SkinName.Contains("MinionSiege", StringComparison.OrdinalIgnoreCase) || minion.UnitComponentInfo.SkinName.Contains("MinionSuper", StringComparison.OrdinalIgnoreCase));
+
         internal static float GetAdditionalSpearLevelAttackDamageMod()
         {
             return UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot.E).Level switch
@@ -148,7 +151,7 @@ namespace SixAIO.Champions
         }
 
         internal override void OnCoreRender()
-        {
+        {            
             if (DrawEDamage && SpellE.SpellClass.IsSpellReady)
             {
                 var champs = UnitManager.EnemyChampions.Where(x => x.IsVisible && x.Distance <= 2000 && x.W2S.IsValid() && GetEDamage(x) > 0);
@@ -180,6 +183,12 @@ namespace SixAIO.Champions
                     Logger.Log("Binded Ally: " + BindedAlly.Name + " " + BindedAlly.ModelName);
                 }
             }
+        }
+
+        private float QOnlyBelowAttackSpeed
+        {
+            get => QSettings.GetItem<FloatCounter>("Q Only Below Attack Speed").Value;
+            set => QSettings.GetItem<FloatCounter>("Q Only Below Attack Speed").Value = value;
         }
 
         internal bool DrawEDamage
@@ -242,7 +251,7 @@ namespace SixAIO.Champions
 
             QSettings.AddItem(new Switch() { Title = "Use Q", IsOn = true });
             QSettings.AddItem(new ModeDisplay() { Title = "Q HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
-
+            QSettings.AddItem(new FloatCounter() { Title = "Q Only Below Attack Speed", MinValue = 0.5f, MaxValue = 5.0f, Value = 2.5f, ValueFrequency = 0.1f });
 
             ESettings.AddItem(new Switch() { Title = "Use E", IsOn = true });
             ESettings.AddItem(new Switch() { Title = "Draw E Damage", IsOn = false });
