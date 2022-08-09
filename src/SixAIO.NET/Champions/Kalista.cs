@@ -18,6 +18,7 @@ namespace SixAIO.Champions
 {
     internal class Kalista : Champion
     {
+        private bool _originalTargetChampsOnlySetting;
         public Hero BindedAlly { get; private set; }
 
         public Kalista()
@@ -62,7 +63,8 @@ namespace SixAIO.Champions
 
             return mode switch
             {
-                Orbwalker.OrbWalkingModeType.Combo => UnitManager.EnemyChampions.Count(IsValidHero) >= EKillChampions,
+                Orbwalker.OrbWalkingModeType.Combo => (UnitManager.EnemyMinions.Where(IsSpecialMinion).Count(IsValidTarget) >= 1) ||
+                                                      UnitManager.EnemyChampions.Count(IsValidHero) >= EKillChampions,
                 Orbwalker.OrbWalkingModeType.LaneClear =>
                             (UnitManager.EnemyChampions.Count(IsValidHero) >= EKillChampions) ||
                             (UnitManager.EnemyMinions.Where(IsSpecialMinion).Count(IsValidTarget) >= 1) ||
@@ -136,6 +138,23 @@ namespace SixAIO.Champions
 
         internal override void OnCoreMainInput()
         {
+            if (AALaneclearIfNoComboTarget && Orbwalker.TargetHero is null)
+            {
+                Orbwalker.SelectedHero = UnitManager.EnemyMinions.OrderBy(x => x.Distance).FirstOrDefault(x => TargetSelector.IsAttackable(x) && TargetSelector.IsInRange(x));
+                if (Orbwalker.SelectedHero is null)
+                {
+                    Orbwalker.SelectedHero = UnitManager.EnemyTowers.OrderBy(x => x.Distance).FirstOrDefault(x => TargetSelector.IsAttackable(x) && TargetSelector.IsInRange(x));
+                    if (Orbwalker.SelectedHero is null)
+                    {
+                        Orbwalker.SelectedHero = UnitManager.EnemyJungleMobs.OrderBy(x => x.Distance).FirstOrDefault(x => TargetSelector.IsAttackable(x) && TargetSelector.IsInRange(x));
+                        if (Orbwalker.SelectedHero is null)
+                        {
+                            Orbwalker.SelectedHero = UnitManager.EnemyInhibitors.OrderBy(x => x.Distance).FirstOrDefault(x => TargetSelector.IsAttackable(x) && TargetSelector.IsInRange(x));
+                        }
+                    }
+                }
+            }
+
             if (SpellE.ExecuteCastSpell() || SpellQ.ExecuteCastSpell() || SpellR.ExecuteCastSpell())
             {
                 return;
@@ -151,7 +170,7 @@ namespace SixAIO.Champions
         }
 
         internal override void OnCoreRender()
-        {            
+        {
             if (DrawEDamage && SpellE.SpellClass.IsSpellReady)
             {
                 var champs = UnitManager.EnemyChampions.Where(x => x.IsVisible && x.Distance <= 2000 && x.W2S.IsValid() && GetEDamage(x) > 0);
@@ -183,6 +202,12 @@ namespace SixAIO.Champions
                     Logger.Log("Binded Ally: " + BindedAlly.Name + " " + BindedAlly.ModelName);
                 }
             }
+        }
+
+        private bool AALaneclearIfNoComboTarget
+        {
+            get => MenuTab?.GetItem<Switch>("AA Laneclear If No Combo Target")?.IsOn ?? false;
+            set => MenuTab.GetItem<Switch>("AA Laneclear If No Combo Target").IsOn = value;
         }
 
         private float QOnlyBelowAttackSpeed
@@ -243,11 +268,14 @@ namespace SixAIO.Champions
 
         internal override void InitializeMenu()
         {
+            TabItem.OnTabItemChange += TabItem_OnTabItemChange;
             MenuManager.AddTab(new Tab($"SIXAIO - {nameof(Kalista)}"));
 
             MenuTab.AddGroup(new Group("Q Settings"));
             MenuTab.AddGroup(new Group("E Settings"));
             MenuTab.AddGroup(new Group("R Settings"));
+
+            MenuTab.AddItem(new Switch() { Title = "AA Laneclear If No Combo Target", IsOn = true });
 
             QSettings.AddItem(new Switch() { Title = "Use Q", IsOn = true });
             QSettings.AddItem(new ModeDisplay() { Title = "Q HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
@@ -271,6 +299,60 @@ namespace SixAIO.Champions
 
             RSettings.AddItem(new Switch() { Title = "Use R", IsOn = true });
             RSettings.AddItem(new Counter() { Title = "R Health Percent", MinValue = 0, MaxValue = 100, Value = 20, ValueFrequency = 5 });
+
+            SetTargetChampsOnly(false);
+        }
+
+        private void SetTargetChampsOnly(bool value)
+        {
+            try
+            {
+                var orbTab = MenuManagerProvider.GetTab("Orbwalker");
+                var orbGroup = orbTab.GetGroup("Input");
+                _originalTargetChampsOnlySetting = orbGroup.GetItem<Switch>("Hold Target Champs Only").IsOn;
+                orbGroup.GetItem<Switch>("Hold Target Champs Only").IsOn = value;
+            }
+            catch (Exception ex)
+            {
+                //Logger.Log(ex.Message);
+            }
+        }
+
+        private void TabItem_OnTabItemChange(string tabName, TabItem tabItem)
+        {
+            if (AALaneclearIfNoComboTarget &&
+                tabItem.TabName == "Orbwalker" &&
+                tabItem.GroupName == "Input" &&
+                tabItem.Title == "Hold Target Champs Only" &&
+                tabItem is Switch targetChamps &&
+                targetChamps.IsOn)
+            {
+                SetTargetChampsOnly(false);
+            }
+
+            if (tabItem.TabName == $"SIXAIO - {nameof(Kalista)}" &&
+                tabItem.Title == "AA Laneclear If No Combo Target" &&
+                tabItem is Switch aaLaneClear)
+            {
+                SetTargetChampsOnly(!aaLaneClear.IsOn);
+            }
+        }
+
+        internal override void OnGameMatchComplete()
+        {
+            try
+            {
+                TabItem.OnTabItemChange -= TabItem_OnTabItemChange;
+
+                var orbTab = MenuManagerProvider.GetTab("Orbwalker");
+                var orbGroup = orbTab.GetGroup("Input");
+                orbGroup.GetItem<Switch>("Hold Target Champs Only")
+                        .IsOn = _originalTargetChampsOnlySetting;
+            }
+            catch (Exception ex)
+            {
+                //Logger.Log(ex.Message);
+            }
         }
     }
 }
