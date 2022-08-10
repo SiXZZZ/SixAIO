@@ -62,12 +62,26 @@ namespace SixAIO.Champions
             {
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
                 MinimumHitChance = () => WHitChance,
-                Range = () => 1000,
+                Range = () => WMaximumRange,
                 Radius = () => 160,
                 Speed = () => 1700,
                 IsEnabled = () => UseW,
                 MinimumMana = () => WMinMana,
-                TargetSelect = (mode) => SpellW.GetTargets(mode).FirstOrDefault()
+                TargetSelect = (mode) =>
+                {
+                    if (OnlyWIfCanProc)
+                    {
+                        if (Orbwalker.TargetHero is not null)
+                        {
+                            return Orbwalker.TargetHero;
+                        }
+                        return SpellQ.GetTargets(mode, x => x.Distance <= WMaximumRange).FirstOrDefault();
+                    }
+                    else
+                    {
+                        return SpellW.GetTargets(mode).FirstOrDefault();
+                    }
+                }
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
@@ -178,6 +192,18 @@ namespace SixAIO.Champions
             set => WSettings.GetItem<Switch>("Prio Targets With W").IsOn = value;
         }
 
+        internal bool OnlyWIfCanProc
+        {
+            get => WSettings.GetItem<Switch>("Only W If Can Proc").IsOn;
+            set => WSettings.GetItem<Switch>("Only W If Can Proc").IsOn = value;
+        }
+
+        private int WMaximumRange
+        {
+            get => WSettings.GetItem<Counter>("W maximum range").Value;
+            set => WSettings.GetItem<Counter>("W maximum range").Value = value;
+        }
+
         private DashMode DashModeSelected
         {
             get => (DashMode)Enum.Parse(typeof(DashMode), ESettings.GetItem<ModeDisplay>("Dash Mode").SelectedModeName);
@@ -221,6 +247,8 @@ namespace SixAIO.Champions
             WSettings.AddItem(new Counter() { Title = "W Min Mana", MinValue = 0, MaxValue = 500, Value = 80, ValueFrequency = 10 });
             WSettings.AddItem(new ModeDisplay() { Title = "W HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
             WSettings.AddItem(new Switch() { Title = "Prio Targets With W", IsOn = true });
+            WSettings.AddItem(new Switch() { Title = "Only W If Can Proc", IsOn = true });
+            WSettings.AddItem(new Counter() { Title = "W maximum range", MinValue = 0, MaxValue = 1000, Value = 1000, ValueFrequency = 50 });
 
             ESettings.AddItem(new Switch() { Title = "Use E", IsOn = false });
             ESettings.AddItem(new Counter() { Title = "E Min Mana", MinValue = 0, MaxValue = 500, Value = 150, ValueFrequency = 10 });
