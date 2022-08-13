@@ -1,11 +1,14 @@
-﻿using Oasys.Common.GameObject.ObjectClass;
+﻿using Oasys.Common.GameObject.Clients.ExtendedInstances.Spells;
+using Oasys.Common.GameObject.ObjectClass;
 using Oasys.Common.Menu;
 using Oasys.Common.Menu.ItemComponents;
 using Oasys.Common.Tools.Devices;
 using Oasys.SDK;
+using Oasys.SDK.Tools;
 using System;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -17,9 +20,6 @@ namespace SixAIO.Utilities
         {
             Keyboard.OnKeyPress += Keyboard_OnKeyPress;
         }
-
-        [DllImport("user32.dll")]
-        internal static extern IntPtr GetForegroundWindow();
 
         private static Tab OrbTab => MenuManagerProvider.GetTab("Orbwalker");
         private static Group OrbInputTab => OrbTab.GetGroup("Input");
@@ -93,6 +93,7 @@ namespace SixAIO.Utilities
                     ChatCDAlerterGroup.AddItem(new Switch() { Title = sum2, IsOn = !string.IsNullOrEmpty(sum2) });
                 }
             }
+
             return Task.CompletedTask;
         }
 
@@ -100,44 +101,52 @@ namespace SixAIO.Utilities
 
         private static void Keyboard_OnKeyPress(Keys keyBeingPressed, Keyboard.KeyPressState pressState)
         {
-            if (keyBeingPressed == Keys.None)
+            try
             {
-                return;
-            }
-            //Logger.Log($"{keyBeingPressed} {pressState}");
-            if (Use &&
-                !AnyKeysPressed() &&
-                !GameEngine.ChatBox.IsChatBoxOpen &&
-                GetForegroundWindow() == System.Diagnostics.Process.GetProcessesByName("League of Legends").FirstOrDefault().MainWindowHandle &&
-                Keyboard.IsPressed(GetKeybinding()) &&
-                _lastMessage + 10 < GameEngine.GameTime)
-            {
-                _lastMessage = GameEngine.GameTime;
-                foreach (var enemy in UnitManager.EnemyChampions.Where(x => !x.IsTargetDummy))
+                if (keyBeingPressed == Keys.None)
                 {
-                    var spellBook = enemy.GetSpellBook();
-                    var summoner1 = spellBook.GetSpellClass(Oasys.Common.Enums.GameEnums.SpellSlot.Summoner1);
-                    var summoner2 = spellBook.GetSpellClass(Oasys.Common.Enums.GameEnums.SpellSlot.Summoner2);
+                    return;
+                }
 
-                    var message = $"{enemy.ModelName.ToLowerInvariant()} ";
-                    if (ShouldSend(enemy, summoner1))
+                //Logger.Log($"{keyBeingPressed} {pressState}");
+                if (Use &&
+                    !AnyKeysPressed() &&
+                    !GameEngine.ChatBox.IsChatBoxOpen &&
+                    GameEngine.IsGameWindowFocused &&
+                    Keyboard.IsPressed(GetKeybinding()) &&
+                    _lastMessage + 10 < GameEngine.GameTime)
+                {
+                    _lastMessage = GameEngine.GameTime;
+                    foreach (var enemy in UnitManager.EnemyChampions.Where(x => !x.IsTargetDummy))
                     {
-                        message += GetMessage(enemy, summoner1).ToLowerInvariant();
-                    }
-                    if (ShouldSend(enemy, summoner2))
-                    {
-                        message += GetMessage(enemy, summoner2).ToLowerInvariant();
-                    }
-                    if (message != $"{enemy.ModelName.ToLowerInvariant()} ")
-                    {
-                        Send(message.ToLowerInvariant());
-                        Keyboard.SendKeyUp(Keyboard.GetKeyBoardScanCode(GetKeybinding()));
+                        var spellBook = enemy.GetSpellBook();
+                        var summoner1 = spellBook.GetSpellClass(Oasys.Common.Enums.GameEnums.SpellSlot.Summoner1);
+                        var summoner2 = spellBook.GetSpellClass(Oasys.Common.Enums.GameEnums.SpellSlot.Summoner2);
+
+                        var message = $"{enemy.ModelName.ToLowerInvariant()} ";
+                        if (ShouldSend(enemy, summoner1))
+                        {
+                            message += GetMessage(summoner1).ToLowerInvariant();
+                        }
+                        if (ShouldSend(enemy, summoner2))
+                        {
+                            message += GetMessage(summoner2).ToLowerInvariant();
+                        }
+                        if (message != $"{enemy.ModelName.ToLowerInvariant()} ")
+                        {
+                            Send(message.ToLowerInvariant());
+                            Keyboard.SendKeyUp(Keyboard.GetKeyBoardScanCode(GetKeybinding()));
+                        }
                     }
                 }
+                else
+                {
+                    Keyboard.SendKeyUp(Keyboard.GetKeyBoardScanCode(GetKeybinding()));
+                }
             }
-            else
+            catch (Exception ex)
             {
-                Keyboard.SendKeyUp(Keyboard.GetKeyBoardScanCode(GetKeybinding()));
+                Logger.Log(ex);
             }
         }
 
@@ -151,7 +160,7 @@ namespace SixAIO.Utilities
         {
             try
             {
-                if (summoner.ToLowerInvariant().Contains("smite"))
+                if (summoner.Contains("smite", StringComparison.InvariantCultureIgnoreCase))
                 {
                     return "smite";
                 }
@@ -171,30 +180,56 @@ namespace SixAIO.Utilities
                     _ => summoner.ToLowerInvariant().Replace("summoner", "")
                 };
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                Logger.Log(ex);
                 return string.Empty;
             }
         }
 
-        private static string GetMessage(Hero hero, Oasys.Common.GameObject.Clients.ExtendedInstances.Spells.SpellClass spellClass)
+        private static string GetMessage(SpellClass spellClass)
         {
-            var expire = new TimeSpan(0, 0, (int)spellClass.CooldownExpire).ToString("mmss");
+            try
+            {
+                var expire = new TimeSpan(0, 0, (int)spellClass.CooldownExpire).ToString("mmss");
 
-            return $"{GetSummonerText(spellClass.SpellData.SpellName)} {expire} ";
+                return $"{GetSummonerText(spellClass.SpellData.SpellName)} {expire} ";
+            }
+            catch (Exception ex)
+            {
+                Logger.Log(ex);
+                return string.Empty;
+            }
         }
 
-        private static bool ShouldSend(Hero hero, Oasys.Common.GameObject.Clients.ExtendedInstances.Spells.SpellClass spellClass)
+        private static bool ShouldSend(Hero hero, SpellClass spellClass)
         {
-            return !spellClass.IsSpellReady && ChatCDAlerterGroup.GetItem<Switch>(hero.ModelName + " " + GetSummonerText(spellClass.SpellData.SpellName)).IsOn;
+            try
+            {
+                return !spellClass.IsSpellReady && ChatCDAlerterGroup.GetItem<Switch>(hero.ModelName + " " + GetSummonerText(spellClass.SpellData.SpellName)).IsOn;
+            }
+            catch (Exception ex)
+            {
+                Logger.Log(ex);
+                return false;
+            }
         }
 
         private static void Send(string message)
         {
-            if (!string.IsNullOrEmpty(message))
+            try
             {
-                Oasys.SDK.InputProviders.KeyboardProvider.PressKey(Oasys.SDK.InputProviders.KeyboardProvider.KeyBoardScanCodes.KEY_ENTER);
-                SendKeys.SendWait(" " + message + "{ENTER}");
+                if (!string.IsNullOrEmpty(message))
+                {
+                    Oasys.SDK.InputProviders.KeyboardProvider.PressKey(Oasys.SDK.InputProviders.KeyboardProvider.KeyBoardScanCodes.KEY_ENTER);
+                    Thread.Sleep(5);
+                    SendKeys.SendWait(" " + message + "{ENTER}");
+                    Thread.Sleep(5);
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Log(ex);
             }
         }
     }
