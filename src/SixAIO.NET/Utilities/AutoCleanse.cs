@@ -261,11 +261,12 @@ namespace SixAIO.Utilities
         {
             try
             {
+
                 var cc = UnitManager.MyChampion.BuffManager.ActiveBuffs.Where(qss
                                     ? BuffChecker.IsCrowdControllButCanQss
                                     : BuffChecker.IsCrowdControllButCanCleanse).FirstOrDefault(buff =>
                                (float)buff.StartTime + (float)((float)ReactionDelay / 1000f) < GameEngine.GameTime && buff.DurationMs < 10_000 &&
-                                buff.DurationMs >= AutoCleanseGroup.GetItem<Counter>(x => x.Title.Contains(buff.EntryType.ToString(), StringComparison.OrdinalIgnoreCase))?.Value);
+                                Math.Min(buff.DurationMs, buff.RemainingDurationMs + ReactionDelay + 100) >= AutoCleanseGroup.GetItem<Counter>(x => x.Title.Contains(buff.EntryType.ToString(), StringComparison.OrdinalIgnoreCase))?.Value);
 
                 return LogBuff(cc);
             }
