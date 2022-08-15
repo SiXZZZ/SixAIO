@@ -7,6 +7,7 @@ using Oasys.SDK;
 using Oasys.SDK.Menu;
 using Oasys.SDK.SpellCasting;
 using Oasys.SDK.Tools;
+using SharpDX;
 using SixAIO.Enums;
 using SixAIO.Models;
 using System;
@@ -54,9 +55,16 @@ namespace SixAIO.Champions
             };
         }
 
+
+        private static readonly Vector3 _orderNexusPos = new Vector3(405, 95, 425);
+        private static readonly Vector3 _chaosNexusPos = new Vector3(14300, 90, 14400);
+
         private bool ShouldE(GameObjectBase target)
         {
-            return AllowEInTowerRange || UnitManager.EnemyTowers.All(x => x.Position.Distance(target.Position) >= 850);
+            return AllowEInTowerRange ||
+                (UnitManager.EnemyTowers.All(x => x.Position.Distance(target.Position) >= 850) &&
+                target.Position.Distance(_orderNexusPos) >= 1000 &&
+                target.Position.Distance(_chaosNexusPos) >= 1000);
         }
 
         private void Orbwalker_OnOrbwalkerAfterBasicAttack(float gameTime, GameObjectBase target)

@@ -8,6 +8,7 @@ using Oasys.SDK;
 using Oasys.SDK.Menu;
 using Oasys.SDK.SpellCasting;
 using Oasys.SDK.Tools;
+using SharpDX;
 using SixAIO.Enums;
 using SixAIO.Models;
 using System;
@@ -42,13 +43,25 @@ namespace SixAIO.Champions
                 IsEnabled = () => UseE && (!EOnlyIfOutOfAARange || Orbwalker.TargetHero is null),
                 MinimumCharges = () => 1,
                 ShouldCast = (mode, target, spellClass, damage) => ShouldE(target),
-                TargetSelect = (mode) => SpellE.GetTargets(mode, ShouldE).FirstOrDefault()
+                TargetSelect = (mode) => EOnlyIfCanKill
+                                        ? SpellE.GetTargets(mode, ShouldE).FirstOrDefault(x => x.Health <= EDamage(x))
+                                        : SpellE.GetTargets(mode, ShouldE).FirstOrDefault()
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
                 IsEnabled = () => UseR,
                 ShouldCast = (mode, target, spellClass, damage) => UnitManager.EnemyChampions.Count(x => TargetSelector.IsAttackable(x) && x.Distance < REnemiesCloserThan) > RIfMoreThanEnemiesNear,
             };
+        }
+
+        private float EDamage(GameObjectBase target)
+        {
+            var dmg = 0f;
+            var baseDmg = 40f + SpellE.SpellClass.Level * 25f;
+            var scaleDmg = UnitManager.MyChampion.UnitStats.TotalAttackDamage * 0.2f;
+            dmg += baseDmg;
+            dmg += scaleDmg;
+            return DamageCalculator.CalculateActualDamage(UnitManager.MyChampion, target, dmg);
         }
 
         private bool IsBasicAttackingMe(Hero enemy)
@@ -73,9 +86,15 @@ namespace SixAIO.Champions
             }
         }
 
+        private static readonly Vector3 _orderNexusPos = new Vector3(405, 95, 425);
+        private static readonly Vector3 _chaosNexusPos = new Vector3(14300, 90, 14400);
+
         private bool ShouldE(GameObjectBase target)
         {
-            return AllowEInTowerRange || UnitManager.EnemyTowers.All(x => x.Position.Distance(target.Position) >= 850);
+            return AllowEInTowerRange ||
+                (UnitManager.EnemyTowers.All(x => x.Position.Distance(target.Position) >= 850) &&
+                target.Position.Distance(_orderNexusPos) >= 1000 &&
+                target.Position.Distance(_chaosNexusPos) >= 1000);
         }
 
         internal override void OnCoreMainInput()
@@ -106,6 +125,12 @@ namespace SixAIO.Champions
         {
             get => ESettings.GetItem<Switch>("E Only If Out Of AA Range").IsOn;
             set => ESettings.GetItem<Switch>("E Only If Out Of AA Range").IsOn = value;
+        }
+
+        internal bool EOnlyIfCanKill
+        {
+            get => ESettings.GetItem<Switch>("E Only If Can Kill").IsOn;
+            set => ESettings.GetItem<Switch>("E Only If Can Kill").IsOn = value;
         }
 
         internal bool AllowEInTowerRange
@@ -143,6 +168,7 @@ namespace SixAIO.Champions
             ESettings.AddItem(new Switch() { Title = "Use E", IsOn = true });
             ESettings.AddItem(new Switch() { Title = "E Only If Out Of AA Range", IsOn = true });
             ESettings.AddItem(new Switch() { Title = "Allow E in tower range", IsOn = true });
+            ESettings.AddItem(new Switch() { Title = "E Only If Can Kill", IsOn = false });
 
             RSettings.AddItem(new Switch() { Title = "Use R", IsOn = true });
             RSettings.AddItem(new Counter() { Title = "R If More Than Enemies Near", MinValue = 0, MaxValue = 5, Value = 1, ValueFrequency = 1 });
