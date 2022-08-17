@@ -15,6 +15,8 @@ namespace SixAIO.Champions
     internal class Caitlyn : Champion
     {
         internal Spell SpellEQ;
+        private GameObjectBase _eTarget;
+
         public Caitlyn()
         {
             SDKSpell.OnSpellCast += Spell_OnSpellCast;
@@ -27,7 +29,7 @@ namespace SixAIO.Champions
                 Speed = () => 2200,
                 Delay = () => 0.6f,
                 IsEnabled = () => UseQ && UseE,
-                TargetSelect = (mode) => SpellE.GetTargets(mode).FirstOrDefault()
+                TargetSelect = (mode) => _eTarget
             };
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
@@ -56,7 +58,7 @@ namespace SixAIO.Champions
                 Range = () => 780,
                 IsEnabled = () => UseW,
                 MinimumCharges = () => 1,
-                TargetSelect = (mode) => SpellW.GetTargets(mode, x => BuffChecker.IsCrowdControlled(x)).FirstOrDefault()
+                TargetSelect = (mode) => SpellW.GetTargets(mode, x => BuffChecker.IsCrowdControlled(x, false)).FirstOrDefault()
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
@@ -90,8 +92,9 @@ namespace SixAIO.Champions
 
         private void Spell_OnSpellCast(SDKSpell spell, GameObjectBase target)
         {
-            if (OnlyEWithQ && spell.SpellSlot == SpellSlot.E)
+            if (spell.SpellSlot == SpellSlot.E)
             {
+                _eTarget = target;
                 SpellEQ.ExecuteCastSpell();
             }
         }
