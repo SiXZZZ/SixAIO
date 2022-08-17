@@ -3,8 +3,8 @@
 	<PropertyGroup>
 		<TargetFramework>net6.0-windows7</TargetFramework>
 		<UseWindowsForms>true</UseWindowsForms>
-		<AssemblyVersion>2.5.21.5</AssemblyVersion>
-		<FileVersion>2.5.21.5</FileVersion>
+		<AssemblyVersion>2.5.21.6</AssemblyVersion>
+		<FileVersion>2.5.21.6</FileVersion>
 	</PropertyGroup>
 
 	<Target Name="PostBuild" AfterTargets="PostBuildEvent">
