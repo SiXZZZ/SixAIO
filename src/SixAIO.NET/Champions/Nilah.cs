@@ -42,7 +42,7 @@ namespace SixAIO.Champions
                 Range = () => 550,
                 IsEnabled = () => UseE && (!EOnlyIfOutOfAARange || Orbwalker.TargetHero is null),
                 MinimumCharges = () => 1,
-                ShouldCast = (mode, target, spellClass, damage) => ShouldE(target),
+                ShouldCast = (mode, target, spellClass, damage) => target is not null && ShouldE(target),
                 TargetSelect = (mode) => EOnlyIfCanKill
                                         ? SpellE.GetTargets(mode, ShouldE).FirstOrDefault(x => x.Health <= EDamage(x))
                                         : SpellE.GetTargets(mode, ShouldE).FirstOrDefault()
@@ -91,6 +91,11 @@ namespace SixAIO.Champions
 
         private bool ShouldE(GameObjectBase target)
         {
+            if (EIfCanKill && target.Health <= EDamage(target))
+            {
+                return true;
+            }
+
             return AllowEInTowerRange ||
                 (UnitManager.EnemyTowers.All(x => x.Position.Distance(target.Position) >= 850) &&
                 target.Position.Distance(_orderNexusPos) >= 1000 &&
@@ -133,6 +138,12 @@ namespace SixAIO.Champions
             set => ESettings.GetItem<Switch>("E Only If Can Kill").IsOn = value;
         }
 
+        internal bool EIfCanKill
+        {
+            get => ESettings.GetItem<Switch>("E If Can Kill").IsOn;
+            set => ESettings.GetItem<Switch>("E If Can Kill").IsOn = value;
+        }
+
         internal bool AllowEInTowerRange
         {
             get => ESettings.GetItem<Switch>("Allow E in tower range").IsOn;
@@ -168,6 +179,7 @@ namespace SixAIO.Champions
             ESettings.AddItem(new Switch() { Title = "Use E", IsOn = true });
             ESettings.AddItem(new Switch() { Title = "E Only If Out Of AA Range", IsOn = true });
             ESettings.AddItem(new Switch() { Title = "Allow E in tower range", IsOn = true });
+            ESettings.AddItem(new Switch() { Title = "E If Can Kill", IsOn = true });
             ESettings.AddItem(new Switch() { Title = "E Only If Can Kill", IsOn = false });
 
             RSettings.AddItem(new Switch() { Title = "Use R", IsOn = true });
