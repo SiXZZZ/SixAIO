@@ -1,4 +1,5 @@
 ﻿using Oasys.Common.Enums.GameEnums;
+using Oasys.Common.Extensions;
 using Oasys.Common.GameObject;
 using Oasys.Common.GameObject.Clients;
 using Oasys.Common.GameObject.Clients.ExtendedInstances.Spells;
@@ -8,6 +9,7 @@ using Oasys.SDK;
 using Oasys.SDK.Menu;
 using Oasys.SDK.SpellCasting;
 using Oasys.SDK.Tools;
+using SharpDX;
 using SixAIO.Models;
 using System;
 using System.Linq;
@@ -102,6 +104,11 @@ namespace SixAIO.Champions
 
         private bool ShouldQ(GameObjectBase target, Orbwalker.OrbWalkingModeType mode)
         {
+            if (!ShouldQ(target))
+            {
+                return false;
+            }
+
             if (mode == Orbwalker.OrbWalkingModeType.Combo)
             {
                 if (target.IsObject(ObjectTypeFlag.AIHeroClient))
@@ -124,6 +131,17 @@ namespace SixAIO.Champions
         }
 
         private bool IsCastingE => UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot.E).SpellData.SpellName.Equals("IreliaE", StringComparison.OrdinalIgnoreCase) && _ireliaE is not null;
+
+        private static readonly Vector3 _orderNexusPos = new Vector3(405, 95, 425);
+        private static readonly Vector3 _chaosNexusPos = new Vector3(14300, 90, 14400);
+
+        private bool ShouldQ(GameObjectBase target)
+        {
+            return AllowQInTowerRange ||
+                (UnitManager.EnemyTowers.All(x => x.Position.Distance(target.Position) >= 850) &&
+                target.Position.Distance(_orderNexusPos) >= 1000 &&
+                target.Position.Distance(_chaosNexusPos) >= 1000);
+        }
 
         private float GetMissingHealthPercent(GameObjectBase target)
         {
@@ -177,11 +195,6 @@ namespace SixAIO.Champions
             {
                 SpellQ.ExecuteCastSpell();
             }
-
-            if (spell.SpellSlot == SpellSlot.Q)
-            {
-                SpellR.ExecuteCastSpell();
-            }
         }
 
         private void Orbwalker_OnOrbwalkerAfterBasicAttack(float gameTime, GameObjectBase target)
@@ -218,6 +231,12 @@ namespace SixAIO.Champions
             set => QSettings.GetItem<Switch>("Q Minions in combo on max stacks").IsOn = value;
         }
 
+        internal bool AllowQInTowerRange
+        {
+            get => QSettings.GetItem<Switch>("Allow Q in tower range").IsOn;
+            set => QSettings.GetItem<Switch>("Allow Q in tower range").IsOn = value;
+        }
+
         private int RMaximumRange
         {
             get => RSettings.GetItem<Counter>("R maximum range").Value;
@@ -236,6 +255,7 @@ namespace SixAIO.Champions
             QSettings.AddItem(new Switch() { Title = "Use Q", IsOn = true });
             QSettings.AddItem(new Switch() { Title = "Use Q Laneclear", IsOn = true });
             QSettings.AddItem(new Switch() { Title = "Q Minions in combo on max stacks", IsOn = true });
+            QSettings.AddItem(new Switch() { Title = "Allow Q in tower range", IsOn = true });
 
             WSettings.AddItem(new Switch() { Title = "Use W", IsOn = true });
 

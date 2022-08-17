@@ -39,7 +39,7 @@ namespace SixAIO.Champions
             {
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
                 MinimumHitChance = () => EHitChance,
-                Range = () => 850,
+                Range = () => EMaximumRange,
                 Radius = () => 170,
                 Speed = () => 1000,
                 IsEnabled = () => UseE,
@@ -58,6 +58,12 @@ namespace SixAIO.Champions
             {
                 return;
             }
+        }
+
+        private int EMaximumRange
+        {
+            get => ESettings.GetItem<Counter>("E maximum range").Value;
+            set => ESettings.GetItem<Counter>("E maximum range").Value = value;
         }
 
         private int RIfMoreThanEnemiesNear
@@ -88,6 +94,7 @@ namespace SixAIO.Champions
 
             ESettings.AddItem(new Switch() { Title = "Use E", IsOn = true });
             ESettings.AddItem(new ModeDisplay() { Title = "E HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
+            ESettings.AddItem(new Counter() { Title = "E maximum range", MinValue = 0, MaxValue = 850, Value = 850, ValueFrequency = 50 });
 
             RSettings.AddItem(new Switch() { Title = "Use R", IsOn = true });
             RSettings.AddItem(new Counter() { Title = "R If More Than Enemies Near", MinValue = 0, MaxValue = 5, Value = 2, ValueFrequency = 1 });
