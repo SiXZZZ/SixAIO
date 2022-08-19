@@ -10,6 +10,7 @@ using Oasys.SDK.Tools;
 using SixAIO.Models;
 using System;
 using System.Linq;
+using System.Threading;
 
 namespace SixAIO.Champions
 {
@@ -21,11 +22,17 @@ namespace SixAIO.Champions
         [12.36.37 pm - SixAIO]: E : BlindMonkEOne
         [12.36.37 pm - SixAIO]: R : BlindMonkRKick
          */
+        internal Spell SpellQ2;
 
         private bool IsFirstCast(string spellName) => !spellName.Contains("two", StringComparison.OrdinalIgnoreCase);
 
         public LeeSin()
         {
+            SpellQ2 = new Spell(CastSlot.Q, SpellSlot.Q)
+            {
+                IsEnabled = () => UseQ && !IsFirstCast(SpellQ.SpellClass.SpellData.SpellName),
+                ShouldCast = (mode, target, spellClass, damage) => true
+            };
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
                 AllowCollision = (target, collisions) => !collisions.Any(),
@@ -53,11 +60,58 @@ namespace SixAIO.Champions
                 IsTargetted = () => true,
                 Range = () => 375,
                 IsEnabled = () => UseR,
-                TargetSelect = (mode) => SpellR.GetTargets(mode).FirstOrDefault(x => x.Health + x.NeutralShield + x.PhysicalShield + 50 < GetRDamage(x))
+                TargetSelect = (mode) => SpellR.GetTargets(mode).FirstOrDefault(x => x.Health + x.NeutralShield + x.PhysicalShield + 50 < RDamage(x))
             };
         }
 
-        private float GetRDamage(GameObjectBase target)
+        private float ComboDamage(GameObjectBase target)
+        {
+            var dmg = 0f;
+            if (SpellQ.SpellClass.IsSpellReady)
+            {
+                dmg += QDamage(target);
+                //Logger.Log($"Combo damage Q: {dmg}");
+            }
+            if (SpellE.SpellClass.IsSpellReady)
+            {
+                dmg += EDamage(target);
+                //Logger.Log($"Combo damage E: {dmg}");
+            }
+            if (SpellR.SpellClass.IsSpellReady)
+            {
+                dmg += RDamage(target);
+                //Logger.Log($"Combo damage R: {dmg}");
+            }
+            //Logger.Log($"Combo damage: {dmg}");
+            return dmg;
+        }
+
+        private float QDamage(GameObjectBase target)
+        {
+            var baseDmg = 30f + SpellQ.SpellClass.Level * 25f;
+            var scaleDmg = UnitManager.MyChampion.UnitStats.BonusAttackDamage;
+            var dmg = baseDmg + scaleDmg;
+            if (!IsFirstCast(SpellQ.SpellClass.SpellData.SpellName))
+            {
+                var missingHealthPercent = 100f - target.HealthPercent;
+                dmg *= missingHealthPercent;
+            }
+            return DamageCalculator.CalculateActualDamage(UnitManager.MyChampion, target, dmg);
+        }
+        private float EDamage(GameObjectBase target)
+        {
+            if (!IsFirstCast(SpellQ.SpellClass.SpellData.SpellName))
+            {
+                return 0;
+            }
+
+            var baseDmg = 70 + SpellE.SpellClass.Level * 30f;
+            var scaleDmg = UnitManager.MyChampion.UnitStats.BonusAttackDamage;
+            var dmg = baseDmg + scaleDmg;
+            return DamageCalculator.CalculateActualDamage(UnitManager.MyChampion, target, 0, dmg, 0);
+        }
+
+        private float RDamage(GameObjectBase target)
         {
             var baseDmg = -50 + SpellR.SpellClass.Level * 225;
             var scaleDmg = 2f * UnitManager.MyChampion.UnitStats.BonusAttackDamage;
@@ -67,6 +121,25 @@ namespace SixAIO.Champions
 
         internal override void OnCoreMainInput()
         {
+            //if (UnitManager.EnemyChampions.Any(x => x.IsAlive && x.Distance <= 350))
+            //{
+            //    var target = SpellQ.GetTargets(Orbwalker.OrbWalkingModeType.Combo).FirstOrDefault(x => x.Distance <= SpellR.Range() && x.Health <= ComboDamage(x));
+            //    if (target is not null &&
+            //        SpellQ.SpellClass.IsSpellReady &&
+            //        SpellE.SpellClass.IsSpellReady &&
+            //        SpellR.SpellClass.IsSpellReady)
+            //    {
+            //        Logger.Log("casting q");
+            //        SpellQ.ExecuteCastSpell();
+            //        Logger.Log("casting e");
+            //        SpellE.ExecuteCastSpell();
+            //        Logger.Log("casting r");
+            //        SpellR.ExecuteCastSpell();
+            //        Logger.Log("casting q2");
+            //        SpellQ2.ExecuteCastSpell();
+            //    }
+            //}
+
             if (SpellR.ExecuteCastSpell() || SpellE.ExecuteCastSpell() || SpellQ.ExecuteCastSpell() || SpellW.ExecuteCastSpell())
             {
                 return;
