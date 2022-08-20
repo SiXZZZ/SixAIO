@@ -16,6 +16,7 @@ namespace SixAIO.Champions
 {
     internal class Rengar : Champion
     {
+        private bool IsUltActive => UnitManager.MyChampion.BuffManager.ActiveBuffs.Any(x => x.Name == "RengarR" && x.Stacks >= 1);
         private bool IsEmpowered => UnitManager.MyChampion.Mana == 4;
 
         public Rengar()
@@ -23,12 +24,12 @@ namespace SixAIO.Champions
             Orbwalker.OnOrbwalkerAfterBasicAttack += Orbwalker_OnOrbwalkerAfterBasicAttack;
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
-                IsEnabled = () => UseQ && (!IsEmpowered || CanUseEmpoweredQ),
+                IsEnabled = () => UseQ && !IsUltActive && (!IsEmpowered || CanUseEmpoweredQ),
                 ShouldCast = (mode, target, spellClass, damage) => TargetSelector.IsAttackable(Orbwalker.TargetHero) && TargetSelector.IsInRange(Orbwalker.TargetHero),
             };
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
             {
-                IsEnabled = () => UseW && (!IsEmpowered || CanUseEmpoweredW),
+                IsEnabled = () => UseW && !IsUltActive && (!IsEmpowered || CanUseEmpoweredW),
                 ShouldCast = (mode, target, spellClass, damage) => UnitManager.MyChampion.HealthPercent <= WIfHealthPercentBelow || UnitManager.EnemyChampions.Any(x => TargetSelector.IsAttackable(x) && x.Distance <= 450 && x.IsAlive),
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
@@ -39,7 +40,7 @@ namespace SixAIO.Champions
                 Range = () => EMaximumRange,
                 Radius = () => 140,
                 Speed = () => 1500,
-                IsEnabled = () => UseE && (!IsEmpowered || CanUseEmpoweredE) && (!OnlyEOutOfAARange || UnitManager.EnemyChampions.All(x => x.Distance >= 200)),
+                IsEnabled = () => UseE && !IsUltActive && (!IsEmpowered || CanUseEmpoweredE) && (!OnlyEOutOfAARange || UnitManager.EnemyChampions.All(x => x.Distance >= 200)),
                 TargetSelect = (mode) => SpellE.GetTargets(mode).FirstOrDefault()
             };
         }
