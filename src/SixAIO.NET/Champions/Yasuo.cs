@@ -102,15 +102,15 @@ namespace SixAIO.Champions
                             }
                             else if (!Orbwalker.TargetChampionsOnly)
                             {
-                                foreach (var target in UnitManager.EnemyChampions.Where(x => x.IsAlive && x.Distance <= 1500))
+                                foreach (var target in UnitManager.EnemyChampions.Where(x => x.Distance <= EChaseRange && TargetSelector.IsAttackable(x)))
                                 {
-                                    var targetMinion = GetMinionBetweenMeAndEnemy(UnitManager.EnemyMinions.Where(CanEOnTarget), target, 600, 450);
+                                    var targetMinion = GetMinionBetweenMeAndEnemy(UnitManager.EnemyMinions.Where(CanEOnTarget), target, 450);
                                     if (targetMinion != null)
                                     {
                                         return targetMinion;
                                     }
 
-                                    var targetJungle = GetMinionBetweenMeAndEnemy(UnitManager.EnemyJungleMobs.Where(CanEOnTarget), target, 600, 450);
+                                    var targetJungle = GetMinionBetweenMeAndEnemy(UnitManager.EnemyJungleMobs.Where(CanEOnTarget), target, 450);
                                     if (targetJungle != null)
                                     {
                                         return targetJungle;
@@ -121,7 +121,7 @@ namespace SixAIO.Champions
                     }
                     if (!Orbwalker.TargetChampionsOnly)
                     {
-                        var minion = UnitManager.EnemyMinions.Where(EndDistinationOutOfTower).FirstOrDefault(x => CanEOnTarget(x) && x.Health <= GetEDamage(x, UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot.E)));
+                        var minion = UnitManager.EnemyMinions.FirstOrDefault(x => CanEOnTarget(x) && x.Health <= GetEDamage(x, UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot.E)));
                         if (minion != null)
                         {
                             return minion;
@@ -146,22 +146,29 @@ namespace SixAIO.Champions
             };
         }
 
-        private bool EndDistinationOutOfTower(Minion minion)
-        {
-            var targetPos = minion.Position;
-            var myPos = UnitManager.MyChampion.Position;
-            var endPos = myPos.Extend(targetPos, 475);
+        private static readonly Vector3 _orderNexusPos = new Vector3(405, 95, 425);
+        private static readonly Vector3 _chaosNexusPos = new Vector3(14300, 90, 14400);
 
-            return !UnitManager.EnemyTowers.Any(x => x.DistanceTo(endPos) <= 850);
+        private bool ShouldE(GameObjectBase target)
+        {
+            var targetPos = target.Position;
+            var myPos = UnitManager.MyChampion.Position;
+            var endPos = myPos.Extend(targetPos, 500);
+            return AllowEInTowerRange ||
+                (UnitManager.EnemyTowers.Where(x => x.IsAlive).All(x => x.Position.Distance(endPos) >= 850) &&
+                target.Position.Distance(_orderNexusPos) >= 1000 &&
+                target.Position.Distance(_chaosNexusPos) >= 1000);
         }
 
-        private GameObjectBase GetMinionBetweenMeAndEnemy(IEnumerable<GameObjectBase> targets, Hero enemy, int width, int distance)
+        private GameObjectBase GetMinionBetweenMeAndEnemy(IEnumerable<GameObjectBase> targets, Hero enemy, int distance)
         {
             return targets.FirstOrDefault(minion =>
-                        minion.IsAlive && minion.Distance <= distance &&
+                        minion.IsAlive &&
+                        minion.Distance <= distance &&
                         TargetSelector.IsAttackable(minion) &&
-                        Geometry.DistanceFromPointToLine(enemy.W2S, new Vector2[] { UnitManager.MyChampion.W2S, enemy.W2S }) <= width &&
-                        minion.Distance(enemy) < UnitManager.MyChampion.Distance(enemy));
+                        minion.DistanceTo(enemy.Position) <= EChaseRange &&
+                        minion.DistanceTo(enemy.Position) < enemy.Distance &&
+                        UnitManager.MyChampion.Position.Extend(minion.Position, 500).Distance(enemy.Position) < enemy.Distance);
         }
 
         private float GetMissingHealthPercent(GameObjectBase target)
@@ -187,6 +194,11 @@ namespace SixAIO.Champions
 
         private bool CanEOnTarget(GameObjectBase target)
         {
+            if (!ShouldE(target))
+            {
+                return false;
+            }
+
             if (target.IsAlive && target.Distance <= 450 && TargetSelector.IsAttackable(target))
             {
                 var eBuff = target.BuffManager.GetBuffByName("YasuoE", false, true);
@@ -241,6 +253,18 @@ namespace SixAIO.Champions
             }
         }
 
+        internal bool AllowEInTowerRange
+        {
+            get => ESettings.GetItem<Switch>("Allow E in tower range").IsOn;
+            set => ESettings.GetItem<Switch>("Allow E in tower range").IsOn = value;
+        }
+
+        private int EChaseRange
+        {
+            get => ESettings.GetItem<Counter>("E Chase Range").Value;
+            set => ESettings.GetItem<Counter>("E Chase Range").Value = value;
+        }
+
         private int RUltEnemies
         {
             get => RSettings.GetItem<Counter>("R Ult enemies").Value;
@@ -264,6 +288,8 @@ namespace SixAIO.Champions
 
             ESettings.AddItem(new Switch() { Title = "Use E", IsOn = true });
             ESettings.AddItem(new Switch() { Title = "Use E Laneclear", IsOn = true });
+            ESettings.AddItem(new Switch() { Title = "Allow E in tower range", IsOn = false });
+            ESettings.AddItem(new Counter() { Title = "E Chase Range", MinValue = 450, MaxValue = 2500, Value = 1500, ValueFrequency = 50 });
 
             RSettings.AddItem(new Switch() { Title = "Use R", IsOn = true });
             RSettings.AddItem(new Counter() { Title = "R Ult enemies", MinValue = 1, MaxValue = 5, Value = 1, ValueFrequency = 1 });

@@ -97,7 +97,7 @@ namespace SixAIO.Champions
             }
 
             return AllowEInTowerRange ||
-                (UnitManager.EnemyTowers.All(x => x.Position.Distance(target.Position) >= 850) &&
+                (UnitManager.EnemyTowers.Where(x => x.IsAlive).All(x => x.Position.Distance(target.Position) >= 850) &&
                 target.Position.Distance(_orderNexusPos) >= 1000 &&
                 target.Position.Distance(_chaosNexusPos) >= 1000);
         }
