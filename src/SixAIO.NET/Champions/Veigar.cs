@@ -25,15 +25,27 @@ namespace SixAIO.Champions
                 Range = () => 950,
                 Radius = () => 140,
                 Speed = () => 2200,
-                //Damage = (target, spellClass) =>
-                //            target != null
-                //            ? DamageCalculator.GetArmorMod(UnitManager.MyChampion, target) *
-                //            ((-5 + spellClass.Level * 25) +
-                //            (UnitManager.MyChampion.UnitStats.TotalAttackDamage * 1.3f) +
-                //            (UnitManager.MyChampion.UnitStats.TotalAbilityPower * 0.15f))
-                //            : 0,
+                Damage = (target, spellClass) => GetQDamage(target),
                 IsEnabled = () => UseQ,
-                TargetSelect = (mode) => SpellQ.GetTargets(mode).FirstOrDefault()
+                TargetSelect = (mode) =>
+                {
+                    if (mode == Orbwalker.OrbWalkingModeType.Combo)
+                    {
+                        return SpellQ.GetTargets(mode).FirstOrDefault();
+                    }
+                    else if (mode == Orbwalker.OrbWalkingModeType.LastHit)
+                    {
+                        return SpellQ.GetTargets(mode, x => x.Health <= SpellQ.Damage(x, SpellQ.SpellClass)).FirstOrDefault();
+                    }
+                    else if (mode == Orbwalker.OrbWalkingModeType.Mixed)
+                    {
+                        return SpellQ.GetTargets(mode, x => x.IsObject(ObjectTypeFlag.AIHeroClient) || x.Health <= SpellQ.Damage(x, SpellQ.SpellClass)).FirstOrDefault();
+                    }
+                    else
+                    {
+                        return SpellQ.GetTargets(mode).FirstOrDefault();
+                    }
+                }
             };
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
             {
@@ -54,6 +66,17 @@ namespace SixAIO.Champions
                                             !TargetSelector.IsInvulnerable(x, Oasys.Common.Logic.DamageType.Magical, false))
                                             .FirstOrDefault(RCanKill)
             };
+        }
+
+        private float GetQDamage(GameObjectBase target)
+        {
+            if (target == null)
+            {
+                return 0;
+            }
+            var baseDmg = 40 + SpellQ.SpellClass.Level * 40;
+            var scaleDmg = 0.6f * UnitManager.MyChampion.UnitStats.TotalAbilityPower;
+            return DamageCalculator.CalculateActualDamage(UnitManager.MyChampion, target, 0, baseDmg + scaleDmg, 0);
         }
 
         private static bool RCanKill(GameObjectBase target)
@@ -85,6 +108,31 @@ namespace SixAIO.Champions
             }
         }
 
+        internal override void OnCoreLaneClearInput()
+        {
+            if (UseQLaneclear && SpellQ.ExecuteCastSpell(Orbwalker.OrbWalkingModeType.LaneClear))
+            {
+                return;
+            }
+        }
+
+        internal override void OnCoreHarassInput()
+        {
+            if (UseQHarass && SpellQ.ExecuteCastSpell(Orbwalker.OrbWalkingModeType.Mixed))
+            {
+                return;
+            }
+        }
+
+        internal override void OnCoreLastHitInput()
+        {
+            if (UseQLasthit && SpellQ.ExecuteCastSpell(Orbwalker.OrbWalkingModeType.LastHit))
+            {
+                return;
+            }
+        }
+
+
         internal bool QAllowLaneclearMinionCollision
         {
             get => QSettings.GetItem<Switch>("Q Allow Laneclear minion collision").IsOn;
@@ -99,6 +147,9 @@ namespace SixAIO.Champions
             MenuTab.AddGroup(new Group("R Settings"));
 
             QSettings.AddItem(new Switch() { Title = "Use Q", IsOn = true });
+            QSettings.AddItem(new Switch() { Title = "Use Q Laneclear", IsOn = true });
+            QSettings.AddItem(new Switch() { Title = "Use Q Harass", IsOn = true });
+            QSettings.AddItem(new Switch() { Title = "Use Q Lasthit", IsOn = true });
             QSettings.AddItem(new Switch() { Title = "Q Allow Laneclear minion collision", IsOn = true });
             QSettings.AddItem(new ModeDisplay() { Title = "Q HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
 
