@@ -135,8 +135,8 @@ namespace SixAIO.Champions
 
         internal bool QAllowLaneclearMinionCollision
         {
-            get => QSettings.GetItem<Switch>("Q Allow Laneclear minion collision").IsOn;
-            set => QSettings.GetItem<Switch>("Q Allow Laneclear minion collision").IsOn = value;
+            get => QSettings.GetItem<Switch>("Q Allow minion collision").IsOn;
+            set => QSettings.GetItem<Switch>("Q Allow minion collision").IsOn = value;
         }
 
         internal override void InitializeMenu()
@@ -150,7 +150,7 @@ namespace SixAIO.Champions
             QSettings.AddItem(new Switch() { Title = "Use Q Laneclear", IsOn = true });
             QSettings.AddItem(new Switch() { Title = "Use Q Harass", IsOn = true });
             QSettings.AddItem(new Switch() { Title = "Use Q Lasthit", IsOn = true });
-            QSettings.AddItem(new Switch() { Title = "Q Allow Laneclear minion collision", IsOn = true });
+            QSettings.AddItem(new Switch() { Title = "Q Allow minion collision", IsOn = true });
             QSettings.AddItem(new ModeDisplay() { Title = "Q HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
 
             WSettings.AddItem(new Switch() { Title = "Use W", IsOn = true });

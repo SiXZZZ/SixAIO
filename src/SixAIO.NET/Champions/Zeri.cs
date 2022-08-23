@@ -1,4 +1,5 @@
 ﻿using Oasys.Common.Enums.GameEnums;
+using Oasys.Common.GameObject;
 using Oasys.Common.Menu;
 using Oasys.Common.Menu.ItemComponents;
 using Oasys.SDK;
@@ -20,6 +21,7 @@ namespace SixAIO.Champions
             Oasys.SDK.InputProviders.KeyboardProvider.OnKeyPress += KeyboardProvider_OnKeyPress;
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
+                AllowCollision = (target, collisions) => !collisions.Any(),
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
                 MinimumHitChance = () => QHitChance,
                 Range = () => UnitManager.MyChampion.AttackRange + 325,
@@ -27,6 +29,7 @@ namespace SixAIO.Champions
                 Speed = () => 2600,
                 Delay = () => 0f,
                 IsEnabled = () => UseQ,
+                Damage = (target, spellClass) => GetQDamage(target),
                 TargetSelect = (mode) =>
                 {
                     var target = SpellQ.GetTargets(mode).FirstOrDefault();
@@ -34,17 +37,30 @@ namespace SixAIO.Champions
                     {
                         if (target is null)
                         {
-                            target = UnitManager.EnemyTowers.FirstOrDefault(x => TargetSelector.IsAttackable(x) && x.Distance <= SpellQ.Range() + x.UnitComponentInfo.UnitBoundingRadius);
+                            return UnitManager.EnemyTowers.FirstOrDefault(x => TargetSelector.IsAttackable(x) && x.Distance <= SpellQ.Range() + x.UnitComponentInfo.UnitBoundingRadius);
                         }
                         if (target is null)
                         {
-                            target = UnitManager.EnemyInhibitors.FirstOrDefault(x => TargetSelector.IsAttackable(x) && x.Distance <= SpellQ.Range() + x.UnitComponentInfo.UnitBoundingRadius);
+                            return UnitManager.EnemyInhibitors.FirstOrDefault(x => TargetSelector.IsAttackable(x) && x.Distance <= SpellQ.Range() + x.UnitComponentInfo.UnitBoundingRadius);
                         }
                         if (target is null && TargetSelector.IsAttackable(UnitManager.EnemyNexus) && UnitManager.EnemyNexus.Distance <= SpellQ.Range() + UnitManager.EnemyNexus.UnitComponentInfo.UnitBoundingRadius)
                         {
-                            target = UnitManager.EnemyNexus;
+                            return UnitManager.EnemyNexus;
                         }
                     }
+                    if (mode == Orbwalker.OrbWalkingModeType.Combo)
+                    {
+                        return SpellQ.GetTargets(mode).FirstOrDefault();
+                    }
+                    else if (mode == Orbwalker.OrbWalkingModeType.LastHit)
+                    {
+                        return SpellQ.GetTargets(mode, x => x.Health <= SpellQ.Damage(x, SpellQ.SpellClass)).FirstOrDefault();
+                    }
+                    else if (mode == Orbwalker.OrbWalkingModeType.Mixed)
+                    {
+                        return SpellQ.GetTargets(mode, x => x.IsObject(ObjectTypeFlag.AIHeroClient) || x.Health <= SpellQ.Damage(x, SpellQ.SpellClass)).FirstOrDefault();
+                    }
+
                     return target;
                 }
             };
@@ -85,6 +101,17 @@ namespace SixAIO.Champions
             };
         }
 
+        private float GetQDamage(GameObjectBase target)
+        {
+            if (target == null)
+            {
+                return 0;
+            }
+            var baseDmg = 5 + SpellQ.SpellClass.Level * 3;
+            var scaleDmg = UnitManager.MyChampion.UnitStats.TotalAttackDamage * (1f + SpellQ.SpellClass.Level * 0.05f);
+            return DamageCalculator.CalculateActualDamage(UnitManager.MyChampion, target, baseDmg + scaleDmg);
+        }
+
         private void KeyboardProvider_OnKeyPress(Keys keyBeingPressed, Oasys.Common.Tools.Devices.Keyboard.KeyPressState pressState)
         {
             if (keyBeingPressed == SemiAutoWKey && pressState == Oasys.Common.Tools.Devices.Keyboard.KeyPressState.Down)
@@ -123,6 +150,22 @@ namespace SixAIO.Champions
             }
 
             if (UseQLaneclear && SpellQ.ExecuteCastSpell(Orbwalker.OrbWalkingModeType.LaneClear))
+            {
+                return;
+            }
+        }
+
+        internal override void OnCoreHarassInput()
+        {
+            if (UseQHarass && SpellQ.ExecuteCastSpell(Orbwalker.OrbWalkingModeType.Mixed))
+            {
+                return;
+            }
+        }
+
+        internal override void OnCoreLastHitInput()
+        {
+            if (UseQLasthit && SpellQ.ExecuteCastSpell(Orbwalker.OrbWalkingModeType.LastHit))
             {
                 return;
             }
@@ -193,6 +236,8 @@ namespace SixAIO.Champions
 
             QSettings.AddItem(new Switch() { Title = "Use Q", IsOn = true });
             QSettings.AddItem(new Switch() { Title = "Use Q Laneclear", IsOn = true });
+            QSettings.AddItem(new Switch() { Title = "Use Q Harass", IsOn = true });
+            QSettings.AddItem(new Switch() { Title = "Use Q Lasthit", IsOn = true });
             QSettings.AddItem(new ModeDisplay() { Title = "Q HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
             QSettings.AddItem(new Switch() { Title = "Show Q range", IsOn = true });
             QSettings.AddItem(new ModeDisplay() { Title = "Q range color", ModeNames = Oasys.Common.Tools.ColorConverter.GetColors(), SelectedModeName = "Blue" });
