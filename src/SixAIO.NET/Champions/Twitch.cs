@@ -129,7 +129,7 @@ namespace SixAIO.Champions
                     RenderFactory.DrawText($"R:{rTimeRemaining:0.##}", 12, w2s, Color.Blue);
                 }
             }
-            if (DrawEDamage)
+            if (DrawEDamage && SpellE.SpellClass.IsSpellReady)
             {
                 foreach (var enemy in UnitManager.EnemyChampions.Where(x => x.IsAlive && x.Distance <= 2000 && x.W2S.IsValid()))
                 {
