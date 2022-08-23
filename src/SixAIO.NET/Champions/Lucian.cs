@@ -69,7 +69,7 @@ namespace SixAIO.Champions
                             }
                         }
                     }
-
+                     
                     return targets.FirstOrDefault(x => x.Distance <= range + x.UnitComponentInfo.UnitBoundingRadius);
                 }
             };
