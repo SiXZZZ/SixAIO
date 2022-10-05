@@ -36,8 +36,7 @@ namespace SixAIO.Champions
                 IsEnabled = () => UseQ,
                 TargetSelect = (mode) =>
                 {
-
-                    var range = 600 + 25 * (PassiveStacks() % 20);
+                    var range = 600 + 25 * (PassiveStacks() / 20) + UnitManager.MyChampion.UnitComponentInfo.UnitBoundingRadius;
                     var targets = UnitManager.EnemyChampions.Where(x => x.IsAlive && x.Distance <= 1300 && TargetSelector.IsAttackable(x));
                     if (targets.Any(x => x.Distance <= range + x.UnitComponentInfo.UnitBoundingRadius))
                     {
@@ -47,7 +46,7 @@ namespace SixAIO.Champions
                     {
                         foreach (var target in targets)
                         {
-                            var targetMinion = GetMinionBetweenMeAndEnemy(target, 100);
+                            var targetMinion = GetMinionBetweenMeAndEnemy(target, 100, range);
                             if (targetMinion != null)
                             {
                                 return targetMinion;
@@ -92,16 +91,42 @@ namespace SixAIO.Champions
             };
         }
 
-        private GameObjectBase GetMinionBetweenMeAndEnemy(Hero enemy, int width)
+        private GameObjectBase GetMinionBetweenMeAndEnemy(Hero enemy, int width, float range)
         {
-            var myPos = EB.Prediction.Position.PredictUnitPosition(UnitManager.MyChampion, 250);
+            var myPos = EB.Prediction.Position.PredictUnitPosition(UnitManager.MyChampion, 400);
             var myPosW2s = myPos.To3DWorld().ToW2S();
-            var enemyPos = EB.Prediction.Position.PredictUnitPosition(enemy, 250);
+            var enemyPos = EB.Prediction.Position.PredictUnitPosition(enemy, 400);
             var enemyPosW2s = enemyPos.To3DWorld().ToW2S();
-            return UnitManager.EnemyMinions.FirstOrDefault(minion => minion.IsAlive && minion.Distance <= 500 + UnitManager.MyChampion.UnitComponentInfo.UnitBoundingRadius &&
-                        TargetSelector.IsAttackable(minion) &&
-                        Geometry.DistanceFromPointToLine(enemyPosW2s, new Vector2[] { myPosW2s, minion.W2S }) <= width / 2 &&
-                        minion.W2S.Distance(enemyPosW2s) < myPosW2s.Distance(enemyPosW2s));
+            var enemyTarget = UnitManager.EnemyMinions.FirstOrDefault(minion => IsOnLineWithTarget(width, range, minion, myPosW2s, enemyPosW2s));
+            if (enemyTarget is not null)
+            {
+                return enemyTarget;
+            }
+            var soul = UnitManager.EnemyJungleMobs.Where(x => x.ModelName == "SennaSoul" && TargetSelector.IsInRange(x)).FirstOrDefault(minion => IsOnLineWithTarget(width, range, minion, myPosW2s, enemyPosW2s));
+            if (soul is not null)
+            {
+                return soul;
+            }
+            var allyMinion = UnitManager.AllyMinions.FirstOrDefault(minion => IsOnLineWithTarget(width, range, minion, myPosW2s, enemyPosW2s));
+            if (allyMinion is not null)
+            {
+                return allyMinion;
+            }
+            var allyChamp = UnitManager.AllyChampions.FirstOrDefault(minion => IsOnLineWithTarget(width, range, minion, myPosW2s, enemyPosW2s));
+            if (allyChamp is not null)
+            {
+                return allyChamp;
+            }
+
+            return null;
+        }
+
+        private static bool IsOnLineWithTarget(int width, float range, GameObjectBase minion, Vector2 myPosW2s, Vector2 enemyPosW2s)
+        {
+            return minion.IsAlive && minion.Distance <= range &&
+                                    TargetSelector.IsAttackable(minion, false, true) &&
+                                    Geometry.DistanceFromPointToLine(enemyPosW2s, new Vector2[] { myPosW2s, minion.W2S }) <= width / 2 &&
+                                    minion.W2S.Distance(enemyPosW2s) < myPosW2s.Distance(enemyPosW2s);
         }
 
         private static void TargetSoulsWithOrbwalker()
@@ -120,7 +145,7 @@ namespace SixAIO.Champions
 
         internal override void OnCoreLaneClearInput()
         {
-            if (UseQLaneclear && SpellQ.ExecuteCastSpell(Orbwalker.OrbWalkingModeType.LaneClear))
+            if (UseQLaneclear && SpellQ.ExecuteCastSpell())
             {
                 return;
             }
