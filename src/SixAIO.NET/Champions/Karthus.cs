@@ -18,8 +18,6 @@ namespace SixAIO.Champions
 {
     internal class Karthus : Champion
     {
-        private static GameObjectBase _defileObject;
-
         private static bool IsEActive()
         {
             var buff = UnitManager.MyChampion.BuffManager.GetBuffByName("KarthusDefile", false, true);
@@ -30,11 +28,9 @@ namespace SixAIO.Champions
         {
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
-                AllowCastWhileDead = () => true,
-                From = () => UnitManager.MyChampion.IsAlive ? UnitManager.MyChampion.Position : _defileObject?.Position ?? UnitManager.MyChampion.Position,
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Circle,
                 MinimumHitChance = () => QHitChance,
-                Range = () => UnitManager.MyChampion.IsAlive ? 875 : 1500,
+                Range = () => 875,
                 Speed = () => QSpeed,
                 Radius = () => 160,
                 Delay = () => (float)((float)((float)QDelay) / 1000f),
@@ -43,8 +39,6 @@ namespace SixAIO.Champions
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
-                AllowCastWhileDead = () => true,
-                From = () => UnitManager.MyChampion.IsAlive ? UnitManager.MyChampion.Position : _defileObject?.Position ?? UnitManager.MyChampion.Position,
                 Range = () => 550f,
                 Delay = () => 0f,
                 IsEnabled = () => UseE,
@@ -89,20 +83,10 @@ namespace SixAIO.Champions
             return DamageCalculator.GetMagicResistMod(UnitManager.MyChampion, target) * dmg;
         }
 
-        internal override void OnCreateObject(AIBaseClient obj)
-        {
-            if (obj.Name.Contains("Karthus_") && obj.Name.Contains("P_Defile"))
-            {
-                _defileObject = obj;
-            }
-        }
-
         internal override void OnCoreMainInput()
         {
-            if (SpellE.ExecuteCastSpell() || SpellQ.ExecuteCastSpell())
-            {
-                return;
-            }
+            SpellQ.ExecuteCastSpell();
+            SpellE.ExecuteCastSpell();
         }
 
         internal override void OnCoreLaneClearInput()
@@ -143,7 +127,6 @@ namespace SixAIO.Champions
                     RenderFactory.DrawText(killMessage, 12, pos, Color.Red);
                 }
             }
-            RenderFactory.DrawText("KARTHUS POSITION " + UnitManager.MyChampion.IsAlive, 12, SpellQ.From().ToW2S(), Color.Red);
 
             if (DrawRDamage &&
                 (UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot.R).IsSpellReady ||
