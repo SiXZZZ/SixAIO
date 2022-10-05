@@ -14,7 +14,7 @@ using System.Threading;
 
 namespace SixAIO.Champions
 {
-    internal class LeeSin : Champion
+    internal sealed class LeeSin : Champion
     {
         /*
         [12.36.37 pm - SixAIO]: Q : BlindMonkQOne

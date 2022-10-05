@@ -20,7 +20,7 @@ using TargetSelector = Oasys.Common.Logic.TargetSelector;
 
 namespace SixAIO.Champions
 {
-    internal class Lucian : Champion
+    internal sealed class Lucian : Champion
     {
         private bool _originalTargetChampsOnlySetting;
         private static bool IsPassiveActive

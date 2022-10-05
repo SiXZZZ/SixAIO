@@ -16,7 +16,7 @@ using System.Linq;
 
 namespace SixAIO.Champions
 {
-    internal class Graves : Champion
+    internal sealed class Graves : Champion
     {
         private float _lastAATime;
 

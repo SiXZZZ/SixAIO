@@ -16,7 +16,7 @@ using System.Linq;
 
 namespace SixAIO.Champions
 {
-    internal class Kindred : Champion
+    internal sealed class Kindred : Champion
     {
         private static TargetSelection _targetSelection;
 

@@ -16,7 +16,7 @@ using System.Linq;
 
 namespace SixAIO.Champions
 {
-    internal class Irelia : Champion
+    internal sealed class Irelia : Champion
     {
         private bool _originalTargetChampsOnlySetting;
         private AIBaseClient _ireliaE;

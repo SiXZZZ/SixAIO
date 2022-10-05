@@ -10,7 +10,7 @@ using System.Linq;
 
 namespace SixAIO.Champions
 {
-    internal class Vex : Champion
+    internal sealed class Vex : Champion
     {
         internal Spell SpellQ2;
 

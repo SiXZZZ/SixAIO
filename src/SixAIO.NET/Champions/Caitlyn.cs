@@ -12,7 +12,7 @@ using System.Linq;
 
 namespace SixAIO.Champions
 {
-    internal class Caitlyn : Champion
+    internal sealed class Caitlyn : Champion
     {
         internal Spell SpellEQ;
         private GameObjectBase _eTarget;

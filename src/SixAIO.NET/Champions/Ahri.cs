@@ -11,7 +11,7 @@ using System.Linq;
 
 namespace SixAIO.Champions
 {
-    internal class Ahri : Champion
+    internal sealed class Ahri : Champion
     {
         public Ahri()
         {

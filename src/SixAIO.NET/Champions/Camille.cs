@@ -13,7 +13,7 @@ using System.Windows.Forms;
 
 namespace SixAIO.Champions
 {
-    internal class Camille : Champion
+    internal sealed class Camille : Champion
     {
         internal Spell SpellQ2;
 

@@ -14,7 +14,7 @@ using System.Windows.Forms;
 
 namespace SixAIO.Utilities
 {
-    internal class ChatCooldownAlerter
+    internal sealed class ChatCooldownAlerter
     {
         static ChatCooldownAlerter()
         {

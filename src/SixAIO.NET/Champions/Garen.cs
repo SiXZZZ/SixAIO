@@ -16,7 +16,7 @@ using System.Linq;
 
 namespace SixAIO.Champions
 {
-    internal class Garen : Champion
+    internal sealed class Garen : Champion
     {
         private static TargetSelection _targetSelection;
         private float _lastAATime = 0f;

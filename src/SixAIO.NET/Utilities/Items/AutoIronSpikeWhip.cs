@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace SixAIO.Utilities
 {
-    internal class AutoIronSpikeWhip
+    internal sealed class AutoIronSpikeWhip
     {
         private static Tab Tab => MenuManagerProvider.GetTab("SIXAIO - Utilities");
         private static Group AutoIronSpikeWhipGroup => Tab.GetGroup("Auto Iron Spike Whip");

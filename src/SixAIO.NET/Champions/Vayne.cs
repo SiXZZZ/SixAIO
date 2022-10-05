@@ -21,7 +21,7 @@ using TargetSelector = Oasys.SDK.TargetSelector;
 
 namespace SixAIO.Champions
 {
-    internal class Vayne : Champion
+    internal sealed class Vayne : Champion
     {
         public Vayne()
         {

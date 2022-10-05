@@ -13,7 +13,7 @@ using System.Windows.Forms;
 
 namespace SixAIO.Champions
 {
-    internal class Evelynn : Champion
+    internal sealed class Evelynn : Champion
     {
         private bool IsQLine()
         {

@@ -10,7 +10,7 @@ using System.Linq;
 
 namespace SixAIO.Champions
 {
-    internal class Blitzcrank : Champion
+    internal sealed class Blitzcrank : Champion
     {
         public Blitzcrank()
         {

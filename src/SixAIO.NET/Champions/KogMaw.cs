@@ -17,7 +17,7 @@ using System.Windows.Forms;
 
 namespace SixAIO.Champions
 {
-    internal class KogMaw : Champion
+    internal sealed class KogMaw : Champion
     {
         private float UltCost => 40 * UnitManager.MyChampion.BuffManager.ActiveBuffs
                                 .FirstOrDefault(x => x.IsActive && x.Name.Equals("kogmawlivingartillerycost", StringComparison.OrdinalIgnoreCase))?.Stacks ?? 0;

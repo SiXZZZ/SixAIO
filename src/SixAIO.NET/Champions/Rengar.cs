@@ -14,7 +14,7 @@ using System.Linq;
 
 namespace SixAIO.Champions
 {
-    internal class Rengar : Champion
+    internal sealed class Rengar : Champion
     {
         private bool IsUltActive => UnitManager.MyChampion.BuffManager.ActiveBuffs.Any(x => x.Name == "RengarR" && x.Stacks >= 1);
         private bool IsEmpowered => UnitManager.MyChampion.Mana == 4;

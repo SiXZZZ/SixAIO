@@ -20,7 +20,7 @@ using System.Windows.Forms;
 
 namespace SixAIO.Champions
 {
-    internal class Gangplank : Champion
+    internal sealed class Gangplank : Champion
     {
         private bool _originalTargetChampsOnlySetting;
 

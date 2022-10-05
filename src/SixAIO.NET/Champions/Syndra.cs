@@ -19,7 +19,7 @@ using System.Linq;
 
 namespace SixAIO.Champions
 {
-    internal class Syndra : Champion
+    internal sealed class Syndra : Champion
     {
         private List<AIBaseClient> _orbs = new List<AIBaseClient>();
 

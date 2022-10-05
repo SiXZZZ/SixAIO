@@ -21,7 +21,7 @@ using System.Linq;
 
 namespace SixAIO.Champions
 {
-    internal class Katarina : Champion
+    internal sealed class Katarina : Champion
     {
         private const string KatarinaQDagger = "Dagger";
         internal Spell PokeSpellQ;

@@ -18,7 +18,7 @@ using System.Windows.Forms;
 
 namespace SixAIO.Champions
 {
-    internal class Yone : Champion
+    internal sealed class Yone : Champion
     {
         private static int GetQState() => UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot.Q).SpellData.SpellName switch
         {

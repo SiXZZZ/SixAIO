@@ -11,7 +11,7 @@ using System.Linq;
 
 namespace SixAIO.Champions
 {
-    internal class Thresh : Champion
+    internal sealed class Thresh : Champion
     {
         public Thresh()
         {

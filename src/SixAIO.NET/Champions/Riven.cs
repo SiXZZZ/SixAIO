@@ -14,7 +14,7 @@ using System.Linq;
 
 namespace SixAIO.Champions
 {
-    internal class Riven : Champion
+    internal sealed class Riven : Champion
     {
         internal Spell SpellQ23;
         internal Spell SpellR2;

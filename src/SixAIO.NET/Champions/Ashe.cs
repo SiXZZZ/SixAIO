@@ -11,7 +11,7 @@ using System.Windows.Forms;
 
 namespace SixAIO.Champions
 {
-    internal class Ashe : Champion
+    internal sealed class Ashe : Champion
     {
         public Ashe()
         {

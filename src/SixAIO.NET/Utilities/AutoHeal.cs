@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace SixAIO.Utilities
 {
-    internal class AutoHeal
+    internal sealed class AutoHeal
     {
         public static CastSlot HealSlot;
 

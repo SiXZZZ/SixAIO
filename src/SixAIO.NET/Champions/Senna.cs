@@ -19,7 +19,7 @@ using DamageCalculator = Oasys.SDK.DamageCalculator;
 
 namespace SixAIO.Champions
 {
-    internal class Senna : Champion
+    internal sealed class Senna : Champion
     {
         private bool _originalTargetChampsOnlySetting;
         public float PassiveStacks()

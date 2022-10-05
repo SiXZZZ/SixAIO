@@ -13,7 +13,7 @@ using System.Linq;
 
 namespace SixAIO.Champions
 {
-    internal class Sylas : Champion
+    internal sealed class Sylas : Champion
     {
         private bool IsEActive => UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot.E).SpellData.SpellName.Equals("SylasE2", StringComparison.OrdinalIgnoreCase);
         //SylasPassiveAttack

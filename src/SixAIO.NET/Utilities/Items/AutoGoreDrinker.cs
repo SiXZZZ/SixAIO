@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace SixAIO.Utilities
 {
-    internal class AutoGoreDrinker
+    internal sealed class AutoGoreDrinker
     {
         private static Tab Tab => MenuManagerProvider.GetTab("SIXAIO - Utilities");
         private static Group AutoGoreDrinkerGroup => Tab.GetGroup("Auto Gore Drinker");

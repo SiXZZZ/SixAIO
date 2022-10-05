@@ -9,7 +9,7 @@ using System.Linq;
 
 namespace SixAIO.Champions
 {
-    internal class Teemo : Champion
+    internal sealed class Teemo : Champion
     {
         public Teemo()
         {

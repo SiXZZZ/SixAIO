@@ -21,7 +21,7 @@ using System.Threading.Tasks;
 
 namespace SixAIO.Champions
 {
-    internal class Tristana : Champion
+    internal sealed class Tristana : Champion
     {
         private static TargetSelection _targetSelection;
 

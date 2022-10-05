@@ -12,7 +12,7 @@ using System.Windows.Forms;
 
 namespace SixAIO.Champions
 {
-    internal class Jinx : Champion
+    internal sealed class Jinx : Champion
     {
         private static bool IsQActive()
         {

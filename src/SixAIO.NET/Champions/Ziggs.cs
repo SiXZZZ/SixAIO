@@ -10,7 +10,7 @@ using System.Linq;
 
 namespace SixAIO.Champions
 {
-    internal class Ziggs : Champion
+    internal sealed class Ziggs : Champion
     {
         public Ziggs()
         {

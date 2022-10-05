@@ -11,7 +11,7 @@ using System.Windows.Forms;
 
 namespace SixAIO.Champions
 {
-    internal class TwistedFate : Champion
+    internal sealed class TwistedFate : Champion
     {
         internal Spell YellowCard;
         internal Spell RedCard;

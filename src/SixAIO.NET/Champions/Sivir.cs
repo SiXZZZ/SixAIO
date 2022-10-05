@@ -10,7 +10,7 @@ using System.Linq;
 
 namespace SixAIO.Champions
 {
-    internal class Sivir : Champion
+    internal sealed class Sivir : Champion
     {
         public Sivir()
         {

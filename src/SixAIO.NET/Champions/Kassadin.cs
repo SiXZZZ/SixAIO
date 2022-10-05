@@ -12,7 +12,7 @@ using System.Linq;
 
 namespace SixAIO.Champions
 {
-    internal class Kassadin : Champion
+    internal sealed class Kassadin : Champion
     {
 
         //RiftWalk

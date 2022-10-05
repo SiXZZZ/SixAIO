@@ -13,7 +13,7 @@ using System.Linq;
 
 namespace SixAIO.Champions
 {
-    internal class Aatrox : Champion
+    internal sealed class Aatrox : Champion
     {
         public int QVersion => SpellQ.SpellClass.SpellData.SpellName switch
         {

@@ -17,7 +17,7 @@ using System.Windows.Forms;
 
 namespace SixAIO.Champions
 {
-    internal class Draven : Champion
+    internal sealed class Draven : Champion
     {
         private static List<GameObjectBase> _axes = new();
         private static IEnumerable<GameObjectBase> Axes() => _axes.Where(x => x.Distance <= 2000).Where(IsAxe);

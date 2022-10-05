@@ -2,11 +2,11 @@
 
 namespace SixAIO.Utilities
 {
-    internal class TargetSelection
+    internal sealed class TargetSelection
     {
         public List<TargetPrioritization> TargetPrioritizations { get; set; } = new List<TargetPrioritization>();
     }
-    internal class TargetPrioritization
+    internal sealed class TargetPrioritization
     {
         public string Champion { get; set; }
 

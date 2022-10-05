@@ -16,7 +16,7 @@ using System.Linq;
 
 namespace SixAIO.Champions
 {
-    internal class Karthus : Champion
+    internal sealed class Karthus : Champion
     {
         private static bool IsEActive()
         {

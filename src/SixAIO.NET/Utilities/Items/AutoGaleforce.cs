@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace SixAIO.Utilities
 {
-    internal class AutoGaleforce
+    internal sealed class AutoGaleforce
     {
         private static Tab Tab => MenuManagerProvider.GetTab("SIXAIO - Utilities");
         private static Group AutoGaleforceGroup => Tab.GetGroup("Auto Galeforce");

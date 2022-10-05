@@ -13,7 +13,7 @@ using System.Linq;
 
 namespace SixAIO.Champions
 {
-    internal class Renekton : Champion
+    internal sealed class Renekton : Champion
     {
         private static bool UltActive()
         {

@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace SixAIO.Utilities
 {
-    internal class AutoSmite
+    internal sealed class AutoSmite
     {
         public static SpellClass SmiteKey;
         public static CastSlot SmiteSlot;

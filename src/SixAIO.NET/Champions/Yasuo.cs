@@ -17,7 +17,7 @@ using System.Linq;
 
 namespace SixAIO.Champions
 {
-    internal class Yasuo : Champion
+    internal sealed class Yasuo : Champion
     {
         private bool _originalTargetChampsOnlySetting;
 

@@ -19,7 +19,7 @@ using System.Windows.Forms;
 
 namespace SixAIO.Champions
 {
-    internal class Gwen : Champion
+    internal sealed class Gwen : Champion
     {
         private static int GwenQStacks()
         {

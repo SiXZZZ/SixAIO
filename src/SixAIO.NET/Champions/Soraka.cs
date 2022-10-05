@@ -11,7 +11,7 @@ using System.Linq;
 
 namespace SixAIO.Champions
 {
-    internal class Soraka : Champion
+    internal sealed class Soraka : Champion
     {
         public Soraka()
         {

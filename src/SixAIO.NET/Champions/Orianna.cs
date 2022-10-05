@@ -13,7 +13,7 @@ using System.Linq;
 
 namespace SixAIO.Champions
 {
-    internal class Orianna : Champion
+    internal sealed class Orianna : Champion
     {
         private static GameObjectBase Ball { get; set; }
 

@@ -13,7 +13,7 @@ using System.Linq;
 
 namespace SixAIO.Champions
 {
-    internal class Pyke : Champion
+    internal sealed class Pyke : Champion
     {
         private bool IsChargingQ => UnitManager.MyChampion.BuffManager.ActiveBuffs.Any(x => x.Name == "PykeQ" && x.Stacks >= 1);
 

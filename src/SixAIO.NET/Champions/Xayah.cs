@@ -16,7 +16,7 @@ using System.Linq;
 
 namespace SixAIO.Champions
 {
-    internal class Xayah : Champion
+    internal sealed class Xayah : Champion
     {
         private List<AIBaseClient> _feathers = new List<AIBaseClient>();
 

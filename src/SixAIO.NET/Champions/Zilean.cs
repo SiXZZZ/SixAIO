@@ -10,7 +10,7 @@ using System.Linq;
 
 namespace SixAIO.Champions
 {
-    internal class Zilean : Champion
+    internal sealed class Zilean : Champion
     {
         public Zilean()
         {

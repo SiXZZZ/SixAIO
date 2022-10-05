@@ -12,7 +12,7 @@ using System.Linq;
 
 namespace SixAIO.Champions
 {
-    internal class Darius : Champion
+    internal sealed class Darius : Champion
     {
         private bool IsQActive => UnitManager.MyChampion.BuffManager.ActiveBuffs.Any(x => x.IsActive && x.Stacks >= 1 && x.Name.Equals("dariusqcast", StringComparison.OrdinalIgnoreCase));
         

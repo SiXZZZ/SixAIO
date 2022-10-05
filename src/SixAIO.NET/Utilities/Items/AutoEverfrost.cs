@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace SixAIO.Utilities
 {
-    internal class AutoEverfrost
+    internal sealed class AutoEverfrost
     {
         private static Tab Tab => MenuManagerProvider.GetTab("SIXAIO - Utilities");
         private static Group AutoEverfrostGroup => Tab.GetGroup("Auto Everfrost");

@@ -11,7 +11,7 @@ using System.Linq;
 
 namespace SixAIO.Champions
 {
-    internal class Jax : Champion
+    internal sealed class Jax : Champion
     {
         public Jax()
         {

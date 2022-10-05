@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace SixAIO.Utilities
 {
-    internal class AutoStrideBreaker
+    internal sealed class AutoStrideBreaker
     {
         private static Tab Tab => MenuManagerProvider.GetTab("SIXAIO - Utilities");
         private static Group AutoStrideBreakerGroup => Tab.GetGroup("Auto Stride Breaker");

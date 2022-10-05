@@ -11,7 +11,7 @@ using System.Windows.Forms;
 
 namespace SixAIO.Champions
 {
-    internal class Jhin : Champion
+    internal sealed class Jhin : Champion
     {
         public Jhin()
         {

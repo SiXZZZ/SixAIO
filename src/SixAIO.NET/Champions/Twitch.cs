@@ -17,7 +17,7 @@ using System.Linq;
 
 namespace SixAIO.Champions
 {
-    internal class Twitch : Champion
+    internal sealed class Twitch : Champion
     {
         public Twitch()
         {

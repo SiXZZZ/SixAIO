@@ -14,7 +14,7 @@ using System.Windows.Forms;
 
 namespace SixAIO.Champions
 {
-    internal class Zeri : Champion
+    internal sealed class Zeri : Champion
     {
         public Zeri()
         {

@@ -13,7 +13,7 @@ using System.Linq;
 
 namespace SixAIO.Champions
 {
-    internal class Leblanc : Champion
+    internal sealed class Leblanc : Champion
     {
         internal Spell SpellRQ;
         internal Spell SpellRW;

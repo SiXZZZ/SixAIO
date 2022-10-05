@@ -15,7 +15,7 @@ using System.Threading.Tasks;
 
 namespace SixAIO.Utilities
 {
-    internal class ComboSmite
+    internal sealed class ComboSmite
     {
         public static CastSlot SmiteCastSlot;
         public static SpellSlot SmiteSlot;

@@ -16,7 +16,7 @@ using System.Linq;
 
 namespace SixAIO.Champions
 {
-    internal class Ekko : Champion
+    internal sealed class Ekko : Champion
     {
         private GameObjectBase _ekkoRTrailEnd;
 

@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace SixAIO.Utilities
 {
-    internal class AutoMikaelsBlessing
+    internal sealed class AutoMikaelsBlessing
     {
         private static float _lastCleanse = 0f;
 

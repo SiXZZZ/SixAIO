@@ -17,7 +17,7 @@ using System.Linq;
 
 namespace SixAIO.Champions
 {
-    internal class Khazix : Champion
+    internal sealed class Khazix : Champion
     {
         private static List<GameObjectBase> _isolations = new();
         private static IEnumerable<GameObjectBase> Isolations() => _isolations.Where(x => x.Distance <= 2000).Where(IsIsolation);

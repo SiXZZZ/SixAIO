@@ -10,7 +10,7 @@ using System.Linq;
 
 namespace SixAIO.Champions
 {
-    internal class Amumu : Champion
+    internal sealed class Amumu : Champion
     {
         private static bool IsWActive()
         {

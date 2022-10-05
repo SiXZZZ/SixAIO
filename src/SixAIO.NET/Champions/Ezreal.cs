@@ -12,7 +12,7 @@ using System.Windows.Forms;
 
 namespace SixAIO.Champions
 {
-    internal class Ezreal : Champion
+    internal sealed class Ezreal : Champion
     {
         public Ezreal()
         {

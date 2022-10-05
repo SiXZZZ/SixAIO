@@ -12,7 +12,7 @@ using System.Linq;
 
 namespace SixAIO.Champions
 {
-    internal class Varus : Champion
+    internal sealed class Varus : Champion
     {
         private static int WStacks<T>(T target) where T : GameObjectBase
         {

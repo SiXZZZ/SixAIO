@@ -12,7 +12,7 @@ using System.Linq;
 
 namespace SixAIO.Champions
 {
-    internal class Nautilus : Champion
+    internal sealed class Nautilus : Champion
     {
         public Nautilus()
         {

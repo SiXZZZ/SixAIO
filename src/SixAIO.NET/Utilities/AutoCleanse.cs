@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 
 namespace SixAIO.Utilities
 {
-    internal class AutoCleanse
+    internal sealed class AutoCleanse
     {
         private static float _lastCleanse = 0f;
         private static float _lastQss = 0f;

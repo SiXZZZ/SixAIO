@@ -11,7 +11,7 @@ using System.Linq;
 
 namespace SixAIO.Champions
 {
-    internal class Seraphine : Champion
+    internal sealed class Seraphine : Champion
     {
         public Seraphine()
         {

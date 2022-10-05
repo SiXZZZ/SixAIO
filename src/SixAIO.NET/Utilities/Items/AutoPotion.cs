@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace SixAIO.Utilities
 {
-    internal class AutoPotion
+    internal sealed class AutoPotion
     {
         private static float _lastPotion;
 

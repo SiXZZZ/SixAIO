@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace SixAIO
 {
-    internal class Main
+    internal sealed class Main
     {
         private static Champion _currentChampion;
 

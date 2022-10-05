@@ -18,7 +18,7 @@ using TargetSelector = Oasys.SDK.TargetSelector;
 
 namespace SixAIO.Champions
 {
-    internal class Fiora : Champion
+    internal sealed class Fiora : Champion
     {
         private static List<AIBaseClient> FioraPassives = new List<AIBaseClient>();
         private static List<AIBaseClient> FioraActivePassives => FioraPassives.Where(IsFioraPassive).ToList();

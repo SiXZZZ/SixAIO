@@ -11,7 +11,7 @@ using System.Windows.Forms;
 
 namespace SixAIO.Champions
 {
-    internal class Xerath : Champion
+    internal sealed class Xerath : Champion
     {
         public Xerath()
         {

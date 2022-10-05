@@ -16,7 +16,7 @@ using System.Linq;
 
 namespace SixAIO.Champions
 {
-    internal class Kalista : Champion
+    internal sealed class Kalista : Champion
     {
         private bool _originalTargetChampsOnlySetting;
         public Hero BindedAlly { get; private set; }

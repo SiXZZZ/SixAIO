@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace SixAIO.Utilities
 {
-    internal class AutoRanduins
+    internal sealed class AutoRanduins
     {
         private static Tab Tab => MenuManagerProvider.GetTab("SIXAIO - Utilities");
         private static Group AutoRanduinsGroup => Tab.GetGroup("Auto Randuins");

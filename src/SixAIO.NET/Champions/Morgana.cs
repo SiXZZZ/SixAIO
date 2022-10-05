@@ -10,7 +10,7 @@ using System.Linq;
 
 namespace SixAIO.Champions
 {
-    internal class Morgana : Champion
+    internal sealed class Morgana : Champion
     {
         public Morgana()
         {

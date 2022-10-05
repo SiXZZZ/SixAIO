@@ -14,7 +14,7 @@ using System.Linq;
 
 namespace SixAIO.Champions
 {
-    internal class Aphelios : Champion
+    internal sealed class Aphelios : Champion
     {
         public enum GunType
         {

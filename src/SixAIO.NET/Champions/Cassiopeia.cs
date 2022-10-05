@@ -13,7 +13,7 @@ using Oasys.Common.Extensions;
 
 namespace SixAIO.Champions
 {
-    internal class Cassiopeia : Champion
+    internal sealed class Cassiopeia : Champion
     {
         public Cassiopeia()
         {

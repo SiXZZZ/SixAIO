@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace SixAIO.Utilities
 {
-    internal class AutoGargoyleStoneplate
+    internal sealed class AutoGargoyleStoneplate
     {
         private static Tab Tab => MenuManagerProvider.GetTab("SIXAIO - Utilities");
         private static Group AutoGargoyleStoneplateGroup => Tab.GetGroup("Auto Gargoyle");
