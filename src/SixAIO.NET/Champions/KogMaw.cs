@@ -1,11 +1,15 @@
-﻿using Oasys.Common.Enums.GameEnums;
+﻿using Oasys.Common;
+using Oasys.Common.Enums.GameEnums;
+using Oasys.Common.Extensions;
 using Oasys.Common.GameObject;
 using Oasys.Common.Menu;
 using Oasys.Common.Menu.ItemComponents;
 using Oasys.SDK;
 using Oasys.SDK.Menu;
+using Oasys.SDK.Rendering;
 using Oasys.SDK.SpellCasting;
 using Oasys.SDK.Tools;
+using SharpDX;
 using SixAIO.Models;
 using System;
 using System.Linq;
@@ -102,6 +106,21 @@ namespace SixAIO.Champions
             return UnitManager.MyChampion.TrueAttackRange + 110 + (20 * UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot.W).Level);
         }
 
+        internal override void OnCoreRender()
+        {
+            if (DrawWTime)
+            {
+                var wBuff = UnitManager.MyChampion.BuffManager.ActiveBuffs.FirstOrDefault(x => x.Name == "KogMawBioArcaneBarrage" && x.Stacks >= 1);
+                if (wBuff != null && wBuff.RemainingDurationMs > 0)
+                {
+                    var qTimeRemaining = wBuff.RemainingDurationMs / 1000;
+                    var w2s = LeagueNativeRendererManager.WorldToScreenSpell(UnitManager.MyChampion.Position);
+                    w2s.Y -= 20;
+                    RenderFactory.DrawText($"W:{qTimeRemaining:0.##}", 12, w2s, Color.Blue);
+                }
+            }
+        }
+
         internal override void OnCoreMainInput()
         {
             if (SpellW.ExecuteCastSpell() || SpellQ.ExecuteCastSpell() || SpellR.ExecuteCastSpell() || SpellE.ExecuteCastSpell())
@@ -114,6 +133,12 @@ namespace SixAIO.Champions
         {
             get => QSettings.GetItem<Counter>("Q Max Range").Value;
             set => QSettings.GetItem<Counter>("Q Max Range").Value = value;
+        }
+
+        private bool DrawWTime
+        {
+            get => WSettings.GetItem<Switch>("Draw W Time").IsOn;
+            set => WSettings.GetItem<Switch>("Draw W Time").IsOn = value;
         }
 
         private int EMaxRange
@@ -168,6 +193,7 @@ namespace SixAIO.Champions
 
             WSettings.AddItem(new Switch() { Title = "Use W", IsOn = true });
             WSettings.AddItem(new Counter() { Title = "W Min Mana", MinValue = 0, MaxValue = 500, Value = 0, ValueFrequency = 10 });
+            WSettings.AddItem(new Switch() { Title = "Draw W Time", IsOn = true });
 
             ESettings.AddItem(new Switch() { Title = "Use E", IsOn = true });
             ESettings.AddItem(new Counter() { Title = "E Min Mana", MinValue = 0, MaxValue = 500, Value = 150, ValueFrequency = 10 });
