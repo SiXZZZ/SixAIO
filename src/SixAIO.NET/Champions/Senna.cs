@@ -4,6 +4,7 @@ using Oasys.Common.GameObject;
 using Oasys.Common.GameObject.ObjectClass;
 using Oasys.Common.Menu;
 using Oasys.Common.Menu.ItemComponents;
+using Oasys.Common.Logic;
 using Oasys.SDK;
 using Oasys.SDK.Menu;
 using Oasys.SDK.SpellCasting;
@@ -11,6 +12,10 @@ using SharpDX;
 using SixAIO.Models;
 using System;
 using System.Linq;
+using Geometry = Oasys.SDK.Geometry;
+using Orbwalker = Oasys.SDK.Orbwalker;
+using TargetSelector = Oasys.Common.Logic.TargetSelector;
+using DamageCalculator = Oasys.SDK.DamageCalculator;
 
 namespace SixAIO.Champions
 {
@@ -89,9 +94,14 @@ namespace SixAIO.Champions
 
         private GameObjectBase GetMinionBetweenMeAndEnemy(Hero enemy, int width)
         {
-            return UnitManager.EnemyMinions.FirstOrDefault(minion => minion.IsAlive && minion.Distance <= 500 && TargetSelector.IsAttackable(minion) &&
-                        Geometry.DistanceFromPointToLine(enemy.W2S, new Vector2[] { UnitManager.MyChampion.W2S, minion.W2S }) <= width / 2 &&
-                        minion.W2S.Distance(enemy.W2S) < UnitManager.MyChampion.W2S.Distance(enemy.W2S));
+            var myPos = EB.Prediction.Position.PredictUnitPosition(UnitManager.MyChampion, 250);
+            var myPosW2s = myPos.To3DWorld().ToW2S();
+            var enemyPos = EB.Prediction.Position.PredictUnitPosition(enemy, 250);
+            var enemyPosW2s = enemyPos.To3DWorld().ToW2S();
+            return UnitManager.EnemyMinions.FirstOrDefault(minion => minion.IsAlive && minion.Distance <= 500 + UnitManager.MyChampion.UnitComponentInfo.UnitBoundingRadius &&
+                        TargetSelector.IsAttackable(minion) &&
+                        Geometry.DistanceFromPointToLine(enemyPosW2s, new Vector2[] { myPosW2s, minion.W2S }) <= width / 2 &&
+                        minion.W2S.Distance(enemyPosW2s) < myPosW2s.Distance(enemyPosW2s));
         }
 
         private static void TargetSoulsWithOrbwalker()
