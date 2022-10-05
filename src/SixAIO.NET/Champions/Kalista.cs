@@ -32,7 +32,7 @@ namespace SixAIO.Champions
                 Radius = () => 80,
                 Speed = () => 2400,
                 Damage = (target, spellClass) => -45 + (65 * spellClass.Level) + UnitManager.MyChampion.UnitStats.TotalAttackDamage,
-                IsEnabled = () => UseQ && (UnitManager.MyChampion.AttackSpeed <= QOnlyBelowAttackSpeed || UnitManager.EnemyChampions.All(x => x.Distance > UnitManager.MyChampion.TrueAttackRange)),
+                IsEnabled = () => UseQ && (!OnlyQifcantAA || Orbwalker.TargetHero is null) && (UnitManager.MyChampion.AttackSpeed <= QOnlyBelowAttackSpeed || UnitManager.EnemyChampions.All(x => x.Distance > UnitManager.MyChampion.TrueAttackRange)),
                 TargetSelect = (mode) => SpellQ.GetTargets(mode).FirstOrDefault()
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
@@ -138,6 +138,8 @@ namespace SixAIO.Champions
 
         internal override void OnCoreMainInput()
         {
+            Orbwalker.SelectedTarget = null;
+
             if (AALaneclearIfNoComboTarget && Orbwalker.TargetHero is null)
             {
                 Orbwalker.SelectedTarget = UnitManager.EnemyMinions.OrderBy(x => x.Distance).FirstOrDefault(x => TargetSelector.IsAttackable(x) && TargetSelector.IsInRange(x));
@@ -216,6 +218,12 @@ namespace SixAIO.Champions
             set => QSettings.GetItem<FloatCounter>("Q Only Below Attack Speed").Value = value;
         }
 
+        internal bool OnlyQifcantAA
+        {
+            get => QSettings.GetItem<Switch>("Only Q if cant AA").IsOn;
+            set => QSettings.GetItem<Switch>("Only Q if cant AA").IsOn = value;
+        }
+
         internal bool DrawEDamage
         {
             get => ESettings.GetItem<Switch>("Draw E Damage").IsOn;
@@ -278,6 +286,7 @@ namespace SixAIO.Champions
             MenuTab.AddItem(new Switch() { Title = "AA Laneclear If No Combo Target", IsOn = true });
 
             QSettings.AddItem(new Switch() { Title = "Use Q", IsOn = true });
+            QSettings.AddItem(new Switch() { Title = "Only Q if cant AA", IsOn = true });
             QSettings.AddItem(new ModeDisplay() { Title = "Q HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
             QSettings.AddItem(new FloatCounter() { Title = "Q Only Below Attack Speed", MinValue = 0.5f, MaxValue = 5.0f, Value = 2.5f, ValueFrequency = 0.1f });
 
