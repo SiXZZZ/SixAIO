@@ -2,6 +2,8 @@
 using Oasys.Common.Enums.GameEnums;
 using Oasys.Common.Extensions;
 using Oasys.Common.GameObject;
+using Oasys.Common.GameObject.ObjectClass;
+using Oasys.Common.Logic;
 using Oasys.Common.Menu;
 using Oasys.Common.Menu.ItemComponents;
 using Oasys.SDK;
@@ -14,6 +16,8 @@ using SixAIO.Models;
 using System;
 using System.Linq;
 using System.Windows.Forms;
+using Orbwalker = Oasys.SDK.Orbwalker;
+using TargetSelector = Oasys.SDK.TargetSelector;
 
 namespace SixAIO.Champions
 {
@@ -53,7 +57,7 @@ namespace SixAIO.Champions
             var targets = UnitManager.EnemyChampions.Where(x => x.IsAlive &&
                                                                 x.Distance <= 550 + x.UnitComponentInfo.UnitBoundingRadius + UnitManager.MyChampion.UnitComponentInfo.UnitBoundingRadius &&
                                                                 TargetSelector.IsAttackable(x) &&
-                                                                !TargetSelector.IsInvulnerable(x, Oasys.Common.Logic.DamageType.Magical, false))
+                                                                !TargetSelector.IsInvulnerable(x, DamageType.Magical, false))
                                                     .OrderBy(x => x.Health);
             var target = targets.FirstOrDefault(CanStun);
             if (target != null)
@@ -78,18 +82,21 @@ namespace SixAIO.Champions
 
         private int DistanceToWall(GameObjectBase target)
         {
+            var enemyPos = EB.Prediction.Position.PredictUnitPosition(target, 250);
+            var enemyPosW2s = enemyPos.To3DWorld().ToW2S();
+
             for (var i = 0; i < CondemnRange; i += 10)
             {
                 if (UseAdvancedE)
                 {
-                    if (CheckPositions(target.Position, target.Distance + i).Count(x => x.IsValid() && EngineManager.IsWall(x)) >= 3)
+                    if (CheckPositions(enemyPos.To3DWorld(), target.Distance + i).Count(x => x.IsValid() && EngineManager.IsWall(x)) >= 3)
                     {
                         return i;
                     }
                 }
                 else
                 {
-                    var pos = UnitManager.MyChampion.Position.Extend(target.Position, target.Distance + i);
+                    var pos = UnitManager.MyChampion.Position.Extend(enemyPos.To3DWorld(), target.Distance + i);
                     if (pos.IsValid() && EngineManager.IsWall(pos))
                     {
                         return i;
