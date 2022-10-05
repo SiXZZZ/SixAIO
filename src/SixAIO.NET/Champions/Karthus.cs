@@ -2,6 +2,7 @@
 using Oasys.Common.Enums.GameEnums;
 using Oasys.Common.Extensions;
 using Oasys.Common.GameObject;
+using Oasys.Common.GameObject.Clients;
 using Oasys.Common.Menu;
 using Oasys.Common.Menu.ItemComponents;
 using Oasys.SDK;
@@ -17,7 +18,7 @@ namespace SixAIO.Champions
 {
     internal class Karthus : Champion
     {
-        private static string _killMessage;
+        private static GameObjectBase _defileObject;
 
         private static bool IsEActive()
         {
@@ -29,9 +30,11 @@ namespace SixAIO.Champions
         {
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
+                AllowCastWhileDead = () => true,
+                From = () => UnitManager.MyChampion.IsAlive ? UnitManager.MyChampion.Position : _defileObject?.Position ?? UnitManager.MyChampion.Position,
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Circle,
                 MinimumHitChance = () => QHitChance,
-                Range = () => 875,
+                Range = () => UnitManager.MyChampion.IsAlive ? 875 : 1500,
                 Speed = () => QSpeed,
                 Radius = () => 160,
                 Delay = () => (float)((float)((float)QDelay) / 1000f),
@@ -40,6 +43,8 @@ namespace SixAIO.Champions
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
+                AllowCastWhileDead = () => true,
+                From = () => UnitManager.MyChampion.IsAlive ? UnitManager.MyChampion.Position : _defileObject?.Position ?? UnitManager.MyChampion.Position,
                 Range = () => 550f,
                 Delay = () => 0f,
                 IsEnabled = () => UseE,
@@ -66,28 +71,6 @@ namespace SixAIO.Champions
                     }
                 }
             };
-            SpellR = new Spell(CastSlot.R, SpellSlot.R)
-            {
-                IsEnabled = () => UseR,
-                RenderSpellUsage = () =>
-                {
-                    var enemies = UnitManager.EnemyChampions.Where(x => x.IsAlive && x.IsTargetable &&
-                                             !TargetSelector.IsInvulnerable(x, Oasys.Common.Logic.DamageType.Magical, false) &&
-                                             RCanKill(x));
-                    if (enemies.Any())
-                    {
-                        _killMessage = $"Can kill: ";
-                        foreach (var enemy in enemies)
-                        {
-                            _killMessage += $"{enemy.ModelName} ";
-                        }
-                    }
-                    else
-                    {
-                        _killMessage = string.Empty;
-                    }
-                }
-            };
         }
 
         private static bool RCanKill(GameObjectBase target)
@@ -106,17 +89,17 @@ namespace SixAIO.Champions
             return DamageCalculator.GetMagicResistMod(UnitManager.MyChampion, target) * dmg;
         }
 
-        internal override void OnCoreMainInput()
+        internal override void OnCreateObject(AIBaseClient obj)
         {
-            if (SpellE.ExecuteCastSpell() || SpellQ.ExecuteCastSpell())
+            if (obj.Name.Contains("Karthus_") && obj.Name.Contains("P_Defile"))
             {
-                return;
+                _defileObject = obj;
             }
         }
 
-        internal override void OnCoreMainTick()
+        internal override void OnCoreMainInput()
         {
-            if (SpellR.ExecuteCastSpell())
+            if (SpellE.ExecuteCastSpell() || SpellQ.ExecuteCastSpell())
             {
                 return;
             }
@@ -132,13 +115,39 @@ namespace SixAIO.Champions
 
         internal override void OnCoreRender()
         {
-            if (!string.IsNullOrEmpty(_killMessage))
+            if (DrawR)
             {
-                var pos = new Vector2() { X = LeagueNativeRendererManager.GetWindowsScreenResolution().X / 2, Y = 100 };
-                Oasys.SDK.Rendering.RenderFactory.DrawText(_killMessage, 12, pos, Color.Red);
-            }
+                var enemies = UnitManager.EnemyChampions.Where(x => x.IsAlive && x.IsTargetable &&
+                                             !TargetSelector.IsInvulnerable(x, Oasys.Common.Logic.DamageType.Magical, false) &&
+                                             RCanKill(x));
+                if (enemies.Any())
+                {
+                    var killMessage = "Can kill: ";
+                    for (int i = 0; i < enemies.Count(); i++)
+                    {
+                        var enemy = enemies.ElementAtOrDefault(i);
+                        if (enemy != null)
+                        {
+                            if (i == enemies.Count() - 1)
+                            {
+                                killMessage += $"{enemy.ModelName} ";
+                            }
+                            else
+                            {
+                                killMessage += $"{enemy.ModelName}, ";
+                            }
+                        }
+                    }
 
-            if (DrawRDamage && (UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot.R).IsSpellReady || UnitManager.MyChampion.GetCurrentCastingSpell()?.SpellSlot == SpellSlot.R))
+                    var pos = new Vector2() { X = LeagueNativeRendererManager.GetWindowsScreenResolution().X / 2, Y = 100 };
+                    RenderFactory.DrawText(killMessage, 12, pos, Color.Red);
+                }
+            }
+            RenderFactory.DrawText("KARTHUS POSITION " + UnitManager.MyChampion.IsAlive, 12, SpellQ.From().ToW2S(), Color.Red);
+
+            if (DrawRDamage &&
+                (UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot.R).IsSpellReady ||
+                 UnitManager.MyChampion.GetCurrentCastingSpell()?.SpellSlot == SpellSlot.R))
             {
                 foreach (var enemy in UnitManager.EnemyChampions.Where(x => x.IsAlive && x.W2S.IsValid()))
                 {
@@ -157,6 +166,12 @@ namespace SixAIO.Champions
         {
             get => QSettings.GetItem<Counter>("Q Delay").Value;
             set => QSettings.GetItem<Counter>("Q Delay").Value = value;
+        }
+
+        private bool DrawR
+        {
+            get => RSettings.GetItem<Switch>("Draw R").IsOn;
+            set => RSettings.GetItem<Switch>("Draw R").IsOn = value;
         }
 
         private bool DrawRDamage
@@ -183,7 +198,7 @@ namespace SixAIO.Champions
             //MenuTab.AddItem(new Switch() { Title = "Use W", IsOn = true });
             ESettings.AddItem(new Switch() { Title = "Use E", IsOn = true });
 
-            RSettings.AddItem(new Switch() { Title = "Use R", IsOn = true });
+            RSettings.AddItem(new Switch() { Title = "Draw R", IsOn = true });
             RSettings.AddItem(new Switch() { Title = "Draw R Damage", IsOn = true });
             RSettings.AddItem(new ModeDisplay() { Title = "R Damage Color", ModeNames = ColorConverter.GetColors(), SelectedModeName = "Orange" });
             RSettings.AddItem(new Counter() { Title = "R Damage Color Alpha", MinValue = 0, MaxValue = 255, Value = 75, ValueFrequency = 5 });

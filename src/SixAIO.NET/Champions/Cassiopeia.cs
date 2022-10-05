@@ -1,5 +1,4 @@
 ﻿using Oasys.Common.Enums.GameEnums;
-using Oasys.Common.Extensions;
 using Oasys.Common.GameObject;
 using Oasys.Common.GameObject.Clients.ExtendedInstances.Spells;
 using Oasys.Common.Menu;
@@ -10,6 +9,7 @@ using Oasys.SDK.SpellCasting;
 using SixAIO.Models;
 using System;
 using System.Linq;
+using Oasys.Common.Extensions;
 
 namespace SixAIO.Champions
 {
