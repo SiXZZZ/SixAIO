@@ -98,7 +98,7 @@ namespace SixAIO.Champions
             {
                 IsEnabled = () => UseW,
                 ShouldCast = (mode, target, spellClass, damage) =>
-                            UnitManager.EnemyChampions.Any(x => x.Distance <= x.UnitComponentInfo.UnitBoundingRadius + (IsUltActive() ? 300 : 250) && TargetSelector.IsAttackable(x)),
+                            UnitManager.EnemyChampions.Any(x => x.Distance <= x.BoundingRadius + (IsUltActive() ? 300 : 250) && TargetSelector.IsAttackable(x)),
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {

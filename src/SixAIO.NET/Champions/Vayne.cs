@@ -55,7 +55,7 @@ namespace SixAIO.Champions
         private GameObjectBase TargetSelectE()
         {
             var targets = UnitManager.EnemyChampions.Where(x => x.IsAlive &&
-                                                                x.Distance <= 550 + x.UnitComponentInfo.UnitBoundingRadius + UnitManager.MyChampion.UnitComponentInfo.UnitBoundingRadius &&
+                                                                x.Distance <= 550 + x.BoundingRadius+ UnitManager.MyChampion.BoundingRadius &&
                                                                 TargetSelector.IsAttackable(x) &&
                                                                 !TargetSelector.IsInvulnerable(x, DamageType.Magical, false))
                                                     .OrderBy(x => x.Health);
@@ -172,7 +172,7 @@ namespace SixAIO.Champions
             if (DrawE && SpellE.SpellClass.IsSpellReady)
             {
                 foreach (var target in UnitManager.EnemyChampions.Where(x => TargetSelector.IsAttackable(x) &&
-                                                                         x.Distance <= 550 + x.UnitComponentInfo.UnitBoundingRadius + UnitManager.MyChampion.UnitComponentInfo.UnitBoundingRadius &&
+                                                                         x.Distance <= 550 + x.BoundingRadius+ UnitManager.MyChampion.BoundingRadius &&
                                                                          x.IsAlive))
                 {
                     //for (var i = 0; i < CondemnRange; i += 5)

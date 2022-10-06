@@ -41,7 +41,7 @@ namespace SixAIO.Champions
                     {
                         var executeTarget = UnitManager.EnemyChampions
                             .Where(x => TargetSelector.IsAttackable(x) &&
-                                        ((UnitManager.MyChampion.Level < 6 && x.Distance < 525 + UnitManager.MyChampion.UnitComponentInfo.UnitBoundingRadius) ||
+                                        ((UnitManager.MyChampion.Level < 6 && x.Distance < 525 + UnitManager.MyChampion.BoundingRadius) ||
                                          TargetSelector.IsInRange(x)) &&
                                          EDamage(x) > x.Health)
                             .OrderBy(EDamage)
@@ -57,7 +57,7 @@ namespace SixAIO.Champions
                         if (UnitManager.MyChampion.Level < 6)
                         {
                             return UnitManager.EnemyChampions.Any(x =>
-                                                                x.Distance < 525 + UnitManager.MyChampion.UnitComponentInfo.UnitBoundingRadius &&
+                                                                x.Distance < 525 + UnitManager.MyChampion.BoundingRadius &&
                                                                 TargetSelector.IsAttackable(x));
                         }
                         else
