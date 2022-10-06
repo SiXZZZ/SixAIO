@@ -61,6 +61,12 @@ namespace SixAIO.Utilities
             set => AutoCleanseGroup.GetItem<Counter>("Reaction Delay").Value = value;
         }
 
+        private static int CleanseActionIntervalMS
+        {
+            get => AutoCleanseGroup?.GetItem<Counter>("Cleanse Action Interval MS")?.Value ?? 1000;
+            set => AutoCleanseGroup.GetItem<Counter>("Cleanse Action Interval MS").Value = value;
+        }
+
         private static int SummonersReactionDelay
         {
             get => AutoCleanseGroup?.GetItem<Counter>("Summoners Reaction Delay")?.Value ?? 100;
@@ -113,14 +119,14 @@ namespace SixAIO.Utilities
             AutoCleanseGroup.AddItem(new Switch() { Title = "Use Items", IsOn = true });
             AutoCleanseGroup.AddItem(new Switch() { Title = "Cleanse On Combo", IsOn = true });
             AutoCleanseGroup.AddItem(new Switch() { Title = "Cleanse On Tick", IsOn = false });
-
-            AutoCleanseGroup.AddItem(new Counter() { Title = "Summoners Reaction Delay", Value = 100, MinValue = 0, MaxValue = 5000, ValueFrequency = 50 });
+            AutoCleanseGroup.AddItem(new Counter() { Title = "Cleanse Action Interval MS", Value = 1000, MinValue = 50, MaxValue = 5000, ValueFrequency = 50 });
+            AutoCleanseGroup.AddItem(new Counter() { Title = "Summoners Reaction Delay", Value = 200, MinValue = 0, MaxValue = 5000, ValueFrequency = 50 });
             AutoCleanseGroup.AddItem(new Switch() { Title = "Exhaust", IsOn = true });
             AutoCleanseGroup.AddItem(new Switch() { Title = "Ignite", IsOn = false });
             AutoCleanseGroup.AddItem(new Switch() { Title = "Blue Smite", IsOn = false });
             AutoCleanseGroup.AddItem(new Switch() { Title = "Red Smite", IsOn = false });
 
-            AutoCleanseGroup.AddItem(new Counter() { Title = "Reaction Delay", Value = 100, MinValue = 0, MaxValue = 5000, ValueFrequency = 50 });
+            AutoCleanseGroup.AddItem(new Counter() { Title = "Reaction Delay", Value = 50, MinValue = 0, MaxValue = 5000, ValueFrequency = 50 });
             AutoCleanseGroup.AddItem(new InfoDisplay() { Title = "-Only cleanse debuffs longer than ms-" });
             AutoCleanseGroup.AddItem(new Counter() { Title = "Stun", Value = 500, MinValue = 0, MaxValue = 5000, ValueFrequency = 250 });
             AutoCleanseGroup.AddItem(new Counter() { Title = "Snare", Value = 500, MinValue = 0, MaxValue = 5000, ValueFrequency = 250 });
@@ -187,13 +193,13 @@ namespace SixAIO.Utilities
             {
                 if ((CleanseOnTick && callFromTick) || CleanseOnCombo)
                 {
-                    if (UseCleanse && GameEngine.GameTime > _lastCleanse + 1f && GameEngine.GameTime > _lastQss + 1f && ShouldUseCleanse() &&
+                    if (UseCleanse && GameEngine.GameTime > _lastCleanse + CleanseActionIntervalMS/1000f && GameEngine.GameTime > _lastQss + CleanseActionIntervalMS / 1000f && ShouldUseCleanse() &&
                         CleanseSpellClass is not null && CleanseSpellClass?.IsSpellReady == true)
                     {
                         SpellCastProvider.CastSpell(CleanseCastSlot);
                         _lastCleanse = GameEngine.GameTime;
                     }
-                    if (UseItems && GameEngine.GameTime > _lastCleanse + 1f && GameEngine.GameTime > _lastQss + 1f && ShouldUseCleanse(true))
+                    if (UseItems && GameEngine.GameTime > _lastCleanse + CleanseActionIntervalMS / 1000f && GameEngine.GameTime > _lastQss + CleanseActionIntervalMS / 1000f && ShouldUseCleanse(true))
                     {
                         if (UnitManager.MyChampion.Inventory.HasItem(ItemID.Quicksilver_Sash) &&
                             UnitManager.MyChampion.Inventory.GetItemByID(ItemID.Quicksilver_Sash)?.IsReady == true)
