@@ -136,6 +136,12 @@ namespace SixAIO.Models
             set => ESettings.GetItem<Switch>("Use E Laneclear").IsOn = value;
         }
 
+        internal bool UseELasthit
+        {
+            get => ESettings.GetItem<Switch>("Use E Lasthit").IsOn;
+            set => ESettings.GetItem<Switch>("Use E Lasthit").IsOn = value;
+        }
+
         internal Oasys.SDK.Prediction.MenuSelected.HitChance EHitChance
         {
             get => (Oasys.SDK.Prediction.MenuSelected.HitChance)Enum.Parse(typeof(Oasys.SDK.Prediction.MenuSelected.HitChance), ESettings.GetItem<ModeDisplay>("E HitChance").SelectedModeName);
