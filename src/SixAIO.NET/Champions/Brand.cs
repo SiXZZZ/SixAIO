@@ -5,6 +5,7 @@ using Oasys.Common.Menu.ItemComponents;
 using Oasys.SDK;
 using Oasys.SDK.Menu;
 using Oasys.SDK.SpellCasting;
+using Oasys.SDK.Tools;
 using SixAIO.Models;
 using System;
 using System.Linq;
@@ -24,7 +25,7 @@ namespace SixAIO.Champions
                 Radius = () => 120,
                 Speed = () => 1600,
                 IsEnabled = () => UseQ,
-                TargetSelect = (mode) => SpellQ.GetTargets(mode, x => x.BuffManager.HasBuff("BrandAblaze", false, true) &&
+                TargetSelect = (mode) => SpellQ.GetTargets(mode, x => x.BuffManager.HasActiveBuff(x => x.Name.Contains("BrandAblaze") && x.Stacks >= 1) &&
                                                                       !TargetSelector.IsInvulnerable(x, Oasys.Common.Logic.DamageType.Magical, false))
                                                 .FirstOrDefault()
             };
@@ -43,7 +44,18 @@ namespace SixAIO.Champions
                 IsTargetted = () => true,
                 Range = () => 675,
                 IsEnabled = () => UseE,
-                TargetSelect = (mode) => SpellE.GetTargets(mode, x => !TargetSelector.IsInvulnerable(x, Oasys.Common.Logic.DamageType.Magical, false)).FirstOrDefault()
+                TargetSelect = (mode) =>
+                {
+                    var target = SpellE.GetTargets(mode, x => !TargetSelector.IsInvulnerable(x, Oasys.Common.Logic.DamageType.Magical, false)).FirstOrDefault();
+                    if (target is null)
+                    {
+                        target = UnitManager.EnemyMinions.FirstOrDefault(x => TargetSelector.IsAttackable(x) &&
+                                                                              x.Distance <= SpellE.Range() &&
+                                                                              x.BuffManager.HasActiveBuff(buff => buff.Name.Contains("BrandAblaze")) &&
+                                                                              UnitManager.EnemyChampions.Any(c => c.DistanceTo(x.Position) < 600 && TargetSelector.IsAttackable(c)));
+                    }
+                    return target;
+                }
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
@@ -59,10 +71,20 @@ namespace SixAIO.Champions
 
         internal override void OnCoreMainInput()
         {
-            if (SpellE.ExecuteCastSpell() || SpellQ.ExecuteCastSpell() || SpellW.ExecuteCastSpell() || SpellR.ExecuteCastSpell())
+            if (Orbwalker.TargetChampionsOnly)
             {
-                return;
+                Orbwalker.TargetChampionsOnly = false;
+                SpellE.ExecuteCastSpell();
+                Orbwalker.TargetChampionsOnly = true;
             }
+            else
+            {
+                SpellE.ExecuteCastSpell();
+            }
+
+            SpellQ.ExecuteCastSpell();
+            SpellW.ExecuteCastSpell();
+            SpellR.ExecuteCastSpell();
         }
 
         internal override void InitializeMenu()
