@@ -129,11 +129,28 @@ namespace SixAIO.Champions
                     RenderFactory.DrawText($"R:{rTimeRemaining:0.##}", 12, w2s, Color.Blue);
                 }
             }
-            if (DrawEDamage && SpellE.SpellClass.IsSpellReady)
+            if (SpellE.SpellClass.IsSpellReady)
             {
-                foreach (var enemy in UnitManager.EnemyChampions.Where(x => x.IsAlive && x.Distance <= 2000 && x.W2S.IsValid()))
+                if (DrawEDamageChampions)
                 {
-                    RenderFactory.DrawHPBarDamage(enemy, GetEDamage(enemy), EDamageColor);
+                    foreach (var enemy in UnitManager.EnemyChampions.ToList().Where(x => x.IsAlive && x.Distance <= 2000 && x.W2S.IsValid()).ToList())
+                    {
+                        RenderFactory.DrawHPBarDamage(enemy, GetEDamage(enemy), EDamageColor);
+                    }
+                }
+                if (DrawEDamageMinions)
+                {
+                    foreach (var enemy in UnitManager.EnemyMinions.ToList().Where(x => x.IsAlive && x.Distance <= 2000 && x.W2S.IsValid()).ToList())
+                    {
+                        RenderFactory.DrawHPBarDamage(enemy, GetEDamage(enemy), EDamageColor);
+                    }
+                }
+                if (DrawEDamageMonsters)
+                {
+                    foreach (var enemy in UnitManager.EnemyJungleMobs.ToList().Where(x => x.IsAlive && x.Distance <= 2000 && x.W2S.IsValid()).ToList())
+                    {
+                        RenderFactory.DrawHPBarDamage(enemy, GetEDamage(enemy), EDamageColor);
+                    }
                 }
             }
         }
@@ -206,10 +223,22 @@ namespace SixAIO.Champions
             set => ESettings.GetItem<Switch>("E when can kill").IsOn = value;
         }
 
-        private bool DrawEDamage
+        private bool DrawEDamageChampions
         {
-            get => ESettings.GetItem<Switch>("Draw E Damage").IsOn;
-            set => ESettings.GetItem<Switch>("Draw E Damage").IsOn = value;
+            get => ESettings.GetItem<Switch>("Draw E Damage Champions").IsOn;
+            set => ESettings.GetItem<Switch>("Draw E Damage Champions").IsOn = value;
+        }
+
+        private bool DrawEDamageMinions
+        {
+            get => ESettings.GetItem<Switch>("Draw E Damage Minions").IsOn;
+            set => ESettings.GetItem<Switch>("Draw E Damage Minions").IsOn = value;
+        }
+
+        private bool DrawEDamageMonsters
+        {
+            get => ESettings.GetItem<Switch>("Draw E Damage Monsters").IsOn;
+            set => ESettings.GetItem<Switch>("Draw E Damage Monsters").IsOn = value;
         }
 
         public Color EDamageColor => ColorConverter.GetColor(ESettings.GetItem<ModeDisplay>("E Damage Color").SelectedModeName, ESettings.GetItem<Counter>("E Damage Color Alpha").Value);
@@ -260,9 +289,11 @@ namespace SixAIO.Champions
             ESettings.AddItem(new Counter() { Title = "Targets with stacks", MinValue = 1, MaxValue = 5, Value = 1, ValueFrequency = 1 });
             ESettings.AddItem(new Counter() { Title = "Minimum stacks", MinValue = 1, MaxValue = 6, Value = 6, ValueFrequency = 1 });
             ESettings.AddItem(new Switch() { Title = "E when can kill", IsOn = true });
-            ESettings.AddItem(new Switch() { Title = "Draw E Damage", IsOn = true });
-            ESettings.AddItem(new ModeDisplay() { Title = "E Damage Color", ModeNames = ColorConverter.GetColors(), SelectedModeName = "Orange" });
-            ESettings.AddItem(new Counter() { Title = "E Damage Color Alpha", MinValue = 0, MaxValue = 255, Value = 75, ValueFrequency = 5 });
+            ESettings.AddItem(new Switch() { Title = "Draw E Damage Champions", IsOn = true });
+            ESettings.AddItem(new Switch() { Title = "Draw E Damage Minions", IsOn = true });
+            ESettings.AddItem(new Switch() { Title = "Draw E Damage Monsters", IsOn = true });
+            ESettings.AddItem(new ModeDisplay() { Title = "E Damage Color", ModeNames = ColorConverter.GetColors(), SelectedModeName = "White" });
+            ESettings.AddItem(new Counter() { Title = "E Damage Color Alpha", MinValue = 0, MaxValue = 255, Value = 255, ValueFrequency = 5 });
 
             RSettings.AddItem(new Switch() { Title = "Use R", IsOn = true });
             RSettings.AddItem(new Switch() { Title = "Draw R Time", IsOn = true });

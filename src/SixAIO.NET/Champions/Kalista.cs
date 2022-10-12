@@ -173,21 +173,28 @@ namespace SixAIO.Champions
 
         internal override void OnCoreRender()
         {
-            if (DrawEDamage && SpellE.SpellClass.IsSpellReady)
+            if (SpellE.SpellClass.IsSpellReady)
             {
-                var champs = UnitManager.EnemyChampions.Where(x => x.IsVisible && x.Distance <= 2000 && x.W2S.IsValid() && GetEDamage(x) > 0);
-                foreach (var enemy in champs)
+                if (DrawEDamageChampions)
                 {
-                    //var pos = new Vector2(champ.HealthBarScreenPosition.X + 40, champ.HealthBarScreenPosition.Y - 40);
-                    //RenderFactory.DrawText($"{(int)GetEDamage(champ)}", 12, pos, Color.White);
-                    RenderFactory.DrawHPBarDamage(enemy, GetEDamage(enemy), EDamageColor);
+                    foreach (var enemy in UnitManager.EnemyChampions.ToList().Where(x => x.IsAlive && x.Distance <= 2000 && x.W2S.IsValid()).ToList())
+                    {
+                        RenderFactory.DrawHPBarDamage(enemy, GetEDamage(enemy), EDamageColor);
+                    }
                 }
-                var minions = UnitManager.EnemyMinions.Where(x => x.IsVisible && x.Distance <= 2000 && x.W2S.IsValid() && GetEDamage(x) > 0);
-                foreach (var enemy in minions)
+                if (DrawEDamageMinions)
                 {
-                    //var pos = new Vector2(champ.HealthBarScreenPosition.X + 40, champ.HealthBarScreenPosition.Y - 40);
-                    //RenderFactory.DrawText($"{(int)GetEDamage(champ)}", 12, pos, Color.White);
-                    RenderFactory.DrawHPBarDamage(enemy, GetEDamage(enemy), EDamageColor);
+                    foreach (var enemy in UnitManager.EnemyMinions.ToList().Where(x => x.IsAlive && x.Distance <= 2000 && x.W2S.IsValid()).ToList())
+                    {
+                        RenderFactory.DrawHPBarDamage(enemy, GetEDamage(enemy), EDamageColor);
+                    }
+                }
+                if (DrawEDamageMonsters)
+                {
+                    foreach (var enemy in UnitManager.EnemyJungleMobs.ToList().Where(x => x.IsAlive && x.Distance <= 2000 && x.W2S.IsValid()).ToList())
+                    {
+                        RenderFactory.DrawHPBarDamage(enemy, GetEDamage(enemy), EDamageColor);
+                    }
                 }
             }
         }
@@ -224,10 +231,22 @@ namespace SixAIO.Champions
             set => QSettings.GetItem<Switch>("Only Q if cant AA").IsOn = value;
         }
 
-        internal bool DrawEDamage
+        private bool DrawEDamageChampions
         {
-            get => ESettings.GetItem<Switch>("Draw E Damage").IsOn;
-            set => ESettings.GetItem<Switch>("Draw E Damage").IsOn = value;
+            get => ESettings.GetItem<Switch>("Draw E Damage Champions").IsOn;
+            set => ESettings.GetItem<Switch>("Draw E Damage Champions").IsOn = value;
+        }
+
+        private bool DrawEDamageMinions
+        {
+            get => ESettings.GetItem<Switch>("Draw E Damage Minions").IsOn;
+            set => ESettings.GetItem<Switch>("Draw E Damage Minions").IsOn = value;
+        }
+
+        private bool DrawEDamageMonsters
+        {
+            get => ESettings.GetItem<Switch>("Draw E Damage Monsters").IsOn;
+            set => ESettings.GetItem<Switch>("Draw E Damage Monsters").IsOn = value;
         }
 
         public Color EDamageColor => ColorConverter.GetColor(ESettings.GetItem<ModeDisplay>("E Damage Color").SelectedModeName, ESettings.GetItem<Counter>("E Damage Color Alpha").Value);
@@ -291,9 +310,11 @@ namespace SixAIO.Champions
             QSettings.AddItem(new FloatCounter() { Title = "Q Only Below Attack Speed", MinValue = 0.5f, MaxValue = 5.0f, Value = 2.5f, ValueFrequency = 0.1f });
 
             ESettings.AddItem(new Switch() { Title = "Use E", IsOn = true });
-            ESettings.AddItem(new Switch() { Title = "Draw E Damage", IsOn = false });
-            ESettings.AddItem(new ModeDisplay() { Title = "E Damage Color", ModeNames = ColorConverter.GetColors(), SelectedModeName = "Orange" });
-            ESettings.AddItem(new Counter() { Title = "E Damage Color Alpha", MinValue = 0, MaxValue = 255, Value = 75, ValueFrequency = 5 });
+            ESettings.AddItem(new Switch() { Title = "Draw E Damage Champions", IsOn = true });
+            ESettings.AddItem(new Switch() { Title = "Draw E Damage Minions", IsOn = true });
+            ESettings.AddItem(new Switch() { Title = "Draw E Damage Monsters", IsOn = true });
+            ESettings.AddItem(new ModeDisplay() { Title = "E Damage Color", ModeNames = ColorConverter.GetColors(), SelectedModeName = "White" });
+            ESettings.AddItem(new Counter() { Title = "E Damage Color Alpha", MinValue = 0, MaxValue = 255, Value = 255, ValueFrequency = 5 });
 
             ESettings.AddItem(new Counter() { Title = "E Below HP Percent", MinValue = 0, MaxValue = 100, Value = 5, ValueFrequency = 5 });
             ESettings.AddItem(new Switch() { Title = "E Slow If Can Reset", IsOn = true });
