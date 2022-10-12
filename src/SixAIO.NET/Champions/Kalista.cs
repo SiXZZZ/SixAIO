@@ -249,7 +249,7 @@ namespace SixAIO.Champions
             set => ESettings.GetItem<Switch>("Draw E Damage Monsters").IsOn = value;
         }
 
-        public Color EDamageColor => ColorConverter.GetColor(ESettings.GetItem<ModeDisplay>("E Damage Color").SelectedModeName, ESettings.GetItem<Counter>("E Damage Color Alpha").Value);
+        public Color EDamageColor => ColorConverter.GetColor(ESettings.GetItem<ModeDisplay>("E Damage Color").SelectedModeName, 255);
 
         internal bool ESlowIfCanReset
         {
@@ -314,7 +314,6 @@ namespace SixAIO.Champions
             ESettings.AddItem(new Switch() { Title = "Draw E Damage Minions", IsOn = true });
             ESettings.AddItem(new Switch() { Title = "Draw E Damage Monsters", IsOn = true });
             ESettings.AddItem(new ModeDisplay() { Title = "E Damage Color", ModeNames = ColorConverter.GetColors(), SelectedModeName = "White" });
-            ESettings.AddItem(new Counter() { Title = "E Damage Color Alpha", MinValue = 0, MaxValue = 255, Value = 255, ValueFrequency = 5 });
 
             ESettings.AddItem(new Counter() { Title = "E Below HP Percent", MinValue = 0, MaxValue = 100, Value = 5, ValueFrequency = 5 });
             ESettings.AddItem(new Switch() { Title = "E Slow If Can Reset", IsOn = true });

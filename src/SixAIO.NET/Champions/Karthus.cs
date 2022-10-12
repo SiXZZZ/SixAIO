@@ -5,6 +5,7 @@ using Oasys.Common.GameObject;
 using Oasys.Common.GameObject.Clients;
 using Oasys.Common.Menu;
 using Oasys.Common.Menu.ItemComponents;
+using Oasys.Common.Tools;
 using Oasys.SDK;
 using Oasys.SDK.Menu;
 using Oasys.SDK.Rendering;
@@ -13,6 +14,7 @@ using SharpDX;
 using SixAIO.Models;
 using System;
 using System.Linq;
+using ColorConverter = Oasys.SDK.ColorConverter;
 
 namespace SixAIO.Champions
 {
@@ -123,8 +125,7 @@ namespace SixAIO.Champions
                         }
                     }
 
-                    var pos = new Vector2() { X = LeagueNativeRendererManager.GetWindowsScreenResolution().X / 2, Y = 100 };
-                    RenderFactory.DrawText(killMessage, 12, pos, Color.Red);
+                    DrawAnnouncement(killMessage, Color.Black, Color.White, RDamageColor);
                 }
             }
 
@@ -137,6 +138,25 @@ namespace SixAIO.Champions
                     RenderFactory.DrawHPBarDamage(enemy, GetRDamage(enemy), RDamageColor);
                 }
             }
+        }
+
+        private static Vector2 _middle = new Vector2() { X = LeagueNativeRendererManager.GetWindowsScreenResolution().X / 2 - 200, Y = NativeImport.GetWindowPosition().Y + 50 };
+        private static Vector2 _barPos = new Vector2() { X = _middle.X - NativeImport.GetWindowPosition().X, Y = _middle.Y - NativeImport.GetWindowPosition().Y };
+        private static Vector2 _endPos = new Vector2 { X = _barPos.X + 400, Y = _barPos.Y };
+
+        private static void DrawAnnouncement(string text, Color background, Color border, Color font)
+        {
+            var width = Math.Min(LeagueNativeRendererManager.GetGameScreenResolution().X - 100, text.Length * 10);
+            _middle = new Vector2() { X = LeagueNativeRendererManager.GetWindowsScreenResolution().X / 2 - width / 2, Y = NativeImport.GetWindowPosition().Y + 50 };
+            _barPos = new Vector2() { X = _middle.X - NativeImport.GetWindowPosition().X, Y = _middle.Y - NativeImport.GetWindowPosition().Y };
+            _endPos = new Vector2 { X = _barPos.X + width, Y = _barPos.Y };
+            RenderFactoryProvider.DrawLine(_barPos.X, _barPos.Y, _endPos.X, _endPos.Y, 40, background);
+            RenderFactoryProvider.DrawSpellBox(_barPos, _endPos, 40, border);
+            var textPos = _barPos + NativeImport.GetWindowPosition();
+            textPos.X += width / 2;
+            //textPos.Y -= 20;
+
+            RenderFactoryProvider.DrawText(text, textPos, font);
         }
 
         private int QSpeed
@@ -163,7 +183,7 @@ namespace SixAIO.Champions
             set => RSettings.GetItem<Switch>("Draw R Damage").IsOn = value;
         }
 
-        public Color RDamageColor => ColorConverter.GetColor(RSettings.GetItem<ModeDisplay>("R Damage Color").SelectedModeName, RSettings.GetItem<Counter>("R Damage Color Alpha").Value);
+        public Color RDamageColor => ColorConverter.GetColor(RSettings.GetItem<ModeDisplay>("R Damage Color").SelectedModeName, 255);
 
         internal override void InitializeMenu()
         {
@@ -183,8 +203,7 @@ namespace SixAIO.Champions
 
             RSettings.AddItem(new Switch() { Title = "Draw R", IsOn = true });
             RSettings.AddItem(new Switch() { Title = "Draw R Damage", IsOn = true });
-            RSettings.AddItem(new ModeDisplay() { Title = "R Damage Color", ModeNames = ColorConverter.GetColors(), SelectedModeName = "Orange" });
-            RSettings.AddItem(new Counter() { Title = "R Damage Color Alpha", MinValue = 0, MaxValue = 255, Value = 75, ValueFrequency = 5 });
+            RSettings.AddItem(new ModeDisplay() { Title = "R Damage Color", ModeNames = ColorConverter.GetColors(), SelectedModeName = "White" });
         }
     }
 }

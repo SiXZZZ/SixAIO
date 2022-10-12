@@ -241,7 +241,7 @@ namespace SixAIO.Champions
             set => ESettings.GetItem<Switch>("Draw E Damage Monsters").IsOn = value;
         }
 
-        public Color EDamageColor => ColorConverter.GetColor(ESettings.GetItem<ModeDisplay>("E Damage Color").SelectedModeName, ESettings.GetItem<Counter>("E Damage Color Alpha").Value);
+        public Color EDamageColor => ColorConverter.GetColor(ESettings.GetItem<ModeDisplay>("E Damage Color").SelectedModeName, 255);
 
 
         private int TargetsWithStacks
@@ -293,7 +293,6 @@ namespace SixAIO.Champions
             ESettings.AddItem(new Switch() { Title = "Draw E Damage Minions", IsOn = true });
             ESettings.AddItem(new Switch() { Title = "Draw E Damage Monsters", IsOn = true });
             ESettings.AddItem(new ModeDisplay() { Title = "E Damage Color", ModeNames = ColorConverter.GetColors(), SelectedModeName = "White" });
-            ESettings.AddItem(new Counter() { Title = "E Damage Color Alpha", MinValue = 0, MaxValue = 255, Value = 255, ValueFrequency = 5 });
 
             RSettings.AddItem(new Switch() { Title = "Use R", IsOn = true });
             RSettings.AddItem(new Switch() { Title = "Draw R Time", IsOn = true });
