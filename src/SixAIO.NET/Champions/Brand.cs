@@ -1,5 +1,6 @@
 ﻿using Oasys.Common.Enums.GameEnums;
 using Oasys.Common.Extensions;
+using Oasys.Common.GameObject.Clients.ExtendedInstances.Spells;
 using Oasys.Common.Menu;
 using Oasys.Common.Menu.ItemComponents;
 using Oasys.SDK;
@@ -9,6 +10,7 @@ using Oasys.SDK.Tools;
 using SixAIO.Models;
 using System;
 using System.Linq;
+using static Oasys.Common.Logic.Orbwalker;
 
 namespace SixAIO.Champions
 {
@@ -71,11 +73,12 @@ namespace SixAIO.Champions
 
         internal override void OnCoreMainInput()
         {
-            if (Orbwalker.TargetChampionsOnly)
+            if (Orbwalker.TargetChampionsOnly && SpellE.SpellClass.IsSpellReady)
             {
-                Orbwalker.TargetChampionsOnly = false;
+                var tempTargetChamps = OrbSettings.TargetChampionsOnly;
+                OrbSettings.TargetChampionsOnly = false;
                 SpellE.ExecuteCastSpell();
-                Orbwalker.TargetChampionsOnly = true;
+                OrbSettings.TargetChampionsOnly = tempTargetChamps;
             }
             else
             {
