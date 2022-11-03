@@ -43,15 +43,12 @@ namespace SixAIO.Champions
                     {
                         return targets.FirstOrDefault(x => x.Distance <= range + x.BoundingRadius);
                     }
-                    if (!Orbwalker.TargetChampionsOnly)
+                    foreach (var target in targets)
                     {
-                        foreach (var target in targets)
+                        var targetMinion = GetMinionBetweenMeAndEnemy(target, 100, range);
+                        if (targetMinion != null)
                         {
-                            var targetMinion = GetMinionBetweenMeAndEnemy(target, 100, range);
-                            if (targetMinion != null)
-                            {
-                                return targetMinion;
-                            }
+                            return targetMinion;
                         }
                     }
 
@@ -138,7 +135,7 @@ namespace SixAIO.Champions
 
         internal override void OnCoreMainInput()
         {
-            if (Orbwalker.TargetChampionsOnly && SpellQ.SpellClass.IsSpellReady)
+            if (Orbwalker.TargetChampionsOnly && SpellQ.CanExecuteCastSpell())
             {
                 var tempTargetChamps = OrbSettings.TargetChampionsOnly;
                 OrbSettings.TargetChampionsOnly = false;
@@ -209,7 +206,7 @@ namespace SixAIO.Champions
             RSettings.AddItem(new Switch() { Title = "Allow R cast on minimap", IsOn = true });
             RSettings.AddItem(new Counter() { Title = "R minimum range", MinValue = 0, MaxValue = 30_000, Value = 0, ValueFrequency = 50 });
             RSettings.AddItem(new Counter() { Title = "R maximum range", MinValue = 0, MaxValue = 30_000, Value = 30_000, ValueFrequency = 50 });
-            
+
         }
     }
 }

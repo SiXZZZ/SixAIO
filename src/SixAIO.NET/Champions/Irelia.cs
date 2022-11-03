@@ -205,7 +205,7 @@ namespace SixAIO.Champions
 
         internal override void OnCoreMainInput()
         {
-            if (Orbwalker.TargetChampionsOnly && SpellQ.SpellClass.IsSpellReady)
+            if (Orbwalker.TargetChampionsOnly && SpellQ.CanExecuteCastSpell())
             {
                 var tempTargetChamps = OrbSettings.TargetChampionsOnly;
                 OrbSettings.TargetChampionsOnly = false;

@@ -101,7 +101,7 @@ namespace SixAIO.Champions
                             {
                                 return enemyChamps.FirstOrDefault(x => x.Distance <= 450);
                             }
-                            else if (!Orbwalker.TargetChampionsOnly)
+                            else
                             {
                                 foreach (var target in UnitManager.EnemyChampions.Where(x => x.Distance <= EChaseRange && TargetSelector.IsAttackable(x)))
                                 {
@@ -120,19 +120,17 @@ namespace SixAIO.Champions
                             }
                         }
                     }
-                    if (!Orbwalker.TargetChampionsOnly)
-                    {
-                        var minion = UnitManager.EnemyMinions.FirstOrDefault(x => CanEOnTarget(x) && x.Health <= GetEDamage(x, UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot.E)));
-                        if (minion != null)
-                        {
-                            return minion;
-                        }
 
-                        var jungle = UnitManager.EnemyJungleMobs.FirstOrDefault(CanEOnTarget);
-                        if (jungle != null)
-                        {
-                            return jungle;
-                        }
+                    var minion = UnitManager.EnemyMinions.FirstOrDefault(x => CanEOnTarget(x) && x.Health <= GetEDamage(x, UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot.E)));
+                    if (minion != null)
+                    {
+                        return minion;
+                    }
+
+                    var jungle = UnitManager.EnemyJungleMobs.FirstOrDefault(CanEOnTarget);
+                    if (jungle != null)
+                    {
+                        return jungle;
                     }
 
                     return null;
@@ -220,7 +218,7 @@ namespace SixAIO.Champions
 
         internal override void OnCoreMainInput()
         {
-            if (Orbwalker.TargetChampionsOnly && SpellE.SpellClass.IsSpellReady)
+            if (Orbwalker.TargetChampionsOnly && SpellE.CanExecuteCastSpell())
             {
                 var tempTargetChamps = OrbSettings.TargetChampionsOnly;
                 OrbSettings.TargetChampionsOnly = false;

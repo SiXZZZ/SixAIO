@@ -64,15 +64,12 @@ namespace SixAIO.Champions
                     {
                         return targets.FirstOrDefault(x => x.Distance <= range + x.BoundingRadius);
                     }
-                    if (!Orbwalker.TargetChampionsOnly)
+                    foreach (var target in targets)
                     {
-                        foreach (var target in targets)
+                        var targetMinion = GetMinionBetweenMeAndEnemy(target, 120);
+                        if (targetMinion != null)
                         {
-                            var targetMinion = GetMinionBetweenMeAndEnemy(target, 120);
-                            if (targetMinion != null)
-                            {
-                                return targetMinion;
-                            }
+                            return targetMinion;
                         }
                     }
 
@@ -142,7 +139,7 @@ namespace SixAIO.Champions
             var myPosW2s = myPos.To3DWorld().ToW2S();
             var enemyPos = EB.Prediction.Position.PredictUnitPosition(enemy, 250);
             var enemyPosW2s = enemyPos.To3DWorld().ToW2S();
-            return UnitManager.EnemyMinions.FirstOrDefault(minion => minion.IsAlive && minion.Distance <= 500 + UnitManager.MyChampion.BoundingRadius && 
+            return UnitManager.EnemyMinions.FirstOrDefault(minion => minion.IsAlive && minion.Distance <= 500 + UnitManager.MyChampion.BoundingRadius &&
                         TargetSelector.IsAttackable(minion) &&
                         Geometry.DistanceFromPointToLine(enemyPosW2s, new Vector2[] { myPosW2s, minion.W2S }) <= width / 2 &&
                         minion.W2S.Distance(enemyPosW2s) < myPosW2s.Distance(enemyPosW2s));
@@ -150,7 +147,7 @@ namespace SixAIO.Champions
 
         internal override void OnCoreMainInput()
         {
-            if (Orbwalker.TargetChampionsOnly && SpellQ.SpellClass.IsSpellReady)
+            if (Orbwalker.TargetChampionsOnly && SpellQ.CanExecuteCastSpell())
             {
                 var tempTargetChamps = OrbSettings.TargetChampionsOnly;
                 OrbSettings.TargetChampionsOnly = false;
