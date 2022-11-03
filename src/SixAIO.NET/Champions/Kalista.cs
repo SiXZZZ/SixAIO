@@ -329,6 +329,7 @@ namespace SixAIO.Champions
             RSettings.AddItem(new Switch() { Title = "Use R", IsOn = true });
             RSettings.AddItem(new Counter() { Title = "R Health Percent", MinValue = 0, MaxValue = 100, Value = 20, ValueFrequency = 5 });
 
+            _originalTargetChampsOnlySetting = Oasys.Common.Settings.Orbwalker.HoldTargetChampsOnly;
             SetTargetChampsOnly(false);
         }
 
@@ -336,10 +337,7 @@ namespace SixAIO.Champions
         {
             try
             {
-                var orbTab = MenuManagerProvider.GetTab("Orbwalker");
-                var orbGroup = orbTab.GetGroup("Input");
-                _originalTargetChampsOnlySetting = orbGroup.GetItem<Switch>("Hold Target Champs Only").IsOn;
-                orbGroup.GetItem<Switch>("Hold Target Champs Only").IsOn = value;
+                Oasys.Common.Settings.Orbwalker.HoldTargetChampsOnly = value;
             }
             catch (Exception ex)
             {
@@ -372,11 +370,7 @@ namespace SixAIO.Champions
             try
             {
                 TabItem.OnTabItemChange -= TabItem_OnTabItemChange;
-
-                var orbTab = MenuManagerProvider.GetTab("Orbwalker");
-                var orbGroup = orbTab.GetGroup("Input");
-                orbGroup.GetItem<Switch>("Hold Target Champs Only")
-                        .IsOn = _originalTargetChampsOnlySetting;
+                Oasys.Common.Settings.Orbwalker.HoldTargetChampsOnly = _originalTargetChampsOnlySetting;
             }
             catch (Exception ex)
             {

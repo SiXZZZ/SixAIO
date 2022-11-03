@@ -19,6 +19,7 @@ namespace SixAIO
         [OasysModuleEntryPoint]
         public static void Execute()
         {
+            Logger.Log($"Initialize SiXAIO [{System.Reflection.Assembly.GetExecutingAssembly().GetName().Version}]");
             GameEvents.OnGameLoadComplete += GameEvents_OnGameLoadComplete;
             GameEvents.OnGameLoadComplete += AutoSmite.GameEvents_OnGameLoadComplete;
             GameEvents.OnGameLoadComplete += ToggleSmite.GameEvents_OnGameLoadComplete;

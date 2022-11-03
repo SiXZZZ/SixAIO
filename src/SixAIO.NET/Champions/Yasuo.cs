@@ -14,6 +14,7 @@ using SixAIO.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using static Oasys.Common.Logic.Orbwalker;
 
 namespace SixAIO.Champions
 {
@@ -219,7 +220,26 @@ namespace SixAIO.Champions
 
         internal override void OnCoreMainInput()
         {
-            if (SpellR.ExecuteCastSpell() || SpellE.ExecuteCastSpell() || SpellQ.ExecuteCastSpell())
+            if (Orbwalker.TargetChampionsOnly && SpellE.SpellClass.IsSpellReady)
+            {
+                var tempTargetChamps = OrbSettings.TargetChampionsOnly;
+                OrbSettings.TargetChampionsOnly = false;
+                var casted = SpellE.ExecuteCastSpell();
+                OrbSettings.TargetChampionsOnly = tempTargetChamps;
+                if (casted)
+                {
+                    return;
+                }
+            }
+            else
+            {
+                if (SpellE.ExecuteCastSpell())
+                {
+                    return;
+                }
+            }
+
+            if (SpellR.ExecuteCastSpell() || SpellQ.ExecuteCastSpell())
             {
                 return;
             }
@@ -273,7 +293,6 @@ namespace SixAIO.Champions
 
         internal override void InitializeMenu()
         {
-            TabItem.OnTabItemChange += TabItem_OnTabItemChange;
             MenuManager.AddTab(new Tab($"SIXAIO - {nameof(Yasuo)}"));
             MenuTab.AddGroup(new Group("Q Settings"));
             MenuTab.AddGroup(new Group("E Settings"));
@@ -293,51 +312,7 @@ namespace SixAIO.Champions
 
             RSettings.AddItem(new Switch() { Title = "Use R", IsOn = true });
             RSettings.AddItem(new Counter() { Title = "R Ult enemies", MinValue = 1, MaxValue = 5, Value = 1, ValueFrequency = 1 });
-            SetTargetChampsOnly();
-        }
 
-        private void SetTargetChampsOnly()
-        {
-            try
-            {
-                var orbTab = MenuManagerProvider.GetTab("Orbwalker");
-                var orbGroup = orbTab.GetGroup("Input");
-                _originalTargetChampsOnlySetting = orbGroup.GetItem<Switch>("Hold Target Champs Only").IsOn;
-                orbGroup.GetItem<Switch>("Hold Target Champs Only").IsOn = false;
-            }
-            catch (Exception ex)
-            {
-                //Logger.Log(ex.Message);
-            }
-        }
-
-        private void TabItem_OnTabItemChange(string tabName, TabItem tabItem)
-        {
-            if (tabItem.TabName == "Orbwalker" &&
-                tabItem.GroupName == "Input" &&
-                tabItem.Title == "Hold Target Champs Only" &&
-                tabItem is Switch itemSwitch &&
-                itemSwitch.IsOn)
-            {
-                SetTargetChampsOnly();
-            }
-        }
-
-        internal override void OnGameMatchComplete()
-        {
-            try
-            {
-                TabItem.OnTabItemChange -= TabItem_OnTabItemChange;
-
-                var orbTab = MenuManagerProvider.GetTab("Orbwalker");
-                var orbGroup = orbTab.GetGroup("Input");
-                orbGroup.GetItem<Switch>("Hold Target Champs Only")
-                        .IsOn = _originalTargetChampsOnlySetting;
-            }
-            catch (Exception ex)
-            {
-                //Logger.Log(ex.Message);
-            }
         }
     }
 }
