@@ -1,4 +1,5 @@
 ﻿using Oasys.Common.Enums.GameEnums;
+using Oasys.Common.GameObject.Clients.ExtendedInstances;
 using Oasys.Common.Menu;
 using Oasys.Common.Menu.ItemComponents;
 using Oasys.SDK;
@@ -34,6 +35,13 @@ namespace SixAIO.Champions
                         TargetSelector.IsAttackable(x) && x.Distance <= 775 && x.IsAlive && x.BuffManager.ActiveBuffs.Any(buff =>
                             buff.IsActive && buff.Stacks >= WMinimumStacks && buff.Name == "kennenmarkofstorm"))
             };
+            SpellE = new Spell(CastSlot.E, SpellSlot.E)
+            {
+                IsEnabled = () => UseE,
+                ShouldCast = (mode, target, spellClass, damage) => spellClass.SpellData.SpellName == "KennenLRCancel" &&
+                UnitManager.MyChampion.AttackSpeed >= ECancelAboveAttackSpeed &&
+                UnitManager.EnemyChampions.Any(enemy => TargetSelector.IsAttackable(enemy) && enemy.Distance <= ECancelRange)
+            };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
                 IsEnabled = () => UseR,
@@ -43,6 +51,8 @@ namespace SixAIO.Champions
 
         internal override void OnCoreMainInput()
         {
+            SpellE.ExecuteCastSpell();
+
             if (SpellQ.ExecuteCastSpell() || SpellW.ExecuteCastSpell() || SpellR.ExecuteCastSpell())
             {
                 return;
@@ -59,6 +69,18 @@ namespace SixAIO.Champions
         {
             get => WSettings.GetItem<Counter>("W Minimum Stacks").Value;
             set => WSettings.GetItem<Counter>("W Minimum Stacks").Value = value;
+        }
+
+        private float ECancelAboveAttackSpeed
+        {
+            get => ESettings.GetItem<FloatCounter>("E Cancel Above Attack Speed").Value;
+            set => ESettings.GetItem<FloatCounter>("E Cancel Above Attack Speed").Value = value;
+        }
+
+        private int ECancelRange
+        {
+            get => ESettings.GetItem<Counter>("E Cancel Range").Value;
+            set => ESettings.GetItem<Counter>("E Cancel Range").Value = value;
         }
 
         private int RIfMoreThanEnemiesNear
@@ -78,6 +100,7 @@ namespace SixAIO.Champions
             MenuManager.AddTab(new Tab($"SIXAIO - {nameof(Kennen)}"));
             MenuTab.AddGroup(new Group("Q Settings"));
             MenuTab.AddGroup(new Group("W Settings"));
+            MenuTab.AddGroup(new Group("E Settings"));
             MenuTab.AddGroup(new Group("R Settings"));
 
             QSettings.AddItem(new Switch() { Title = "Use Q", IsOn = true });
@@ -86,6 +109,10 @@ namespace SixAIO.Champions
             WSettings.AddItem(new Switch() { Title = "Use W", IsOn = true });
             WSettings.AddItem(new Counter() { Title = "W If More Than Enemies Near", MinValue = 0, MaxValue = 5, Value = 1, ValueFrequency = 1 });
             WSettings.AddItem(new Counter() { Title = "W Minimum Stacks", MinValue = 0, MaxValue = 2, Value = 1, ValueFrequency = 1 });
+
+            ESettings.AddItem(new Switch() { Title = "Use E", IsOn = true });
+            ESettings.AddItem(new FloatCounter() { Title = "E Cancel Above Attack Speed", MinValue = 0.5f, MaxValue = 5.0f, Value = 1.5f, ValueFrequency = 0.1f });
+            ESettings.AddItem(new Counter() { Title = "E Cancel Range", MinValue = 100, MaxValue = 1000, Value = 550, ValueFrequency = 50 });
 
             RSettings.AddItem(new Switch() { Title = "Use R", IsOn = true });
             RSettings.AddItem(new Counter() { Title = "R If More Than Enemies Near", MinValue = 0, MaxValue = 5, Value = 1, ValueFrequency = 1 });
