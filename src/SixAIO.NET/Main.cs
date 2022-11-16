@@ -23,7 +23,6 @@ namespace SixAIO
             GameEvents.OnGameLoadComplete += GameEvents_OnGameLoadComplete;
             GameEvents.OnGameLoadComplete += AutoSmite.GameEvents_OnGameLoadComplete;
             GameEvents.OnGameLoadComplete += ToggleSmite.GameEvents_OnGameLoadComplete;
-            GameEvents.OnGameLoadComplete += ComboSmite.GameEvents_OnGameLoadComplete;
             GameEvents.OnGameLoadComplete += AutoHeal.GameEvents_OnGameLoadComplete;
             GameEvents.OnGameLoadComplete += AutoCleanse.GameEvents_OnGameLoadComplete;
             GameEvents.OnGameLoadComplete += AutoExhaust.GameEvents_OnGameLoadComplete;
@@ -90,7 +89,6 @@ namespace SixAIO
             CoreEvents.OnCoreMainTick += AutoHeal.OnCoreMainTick;
             CoreEvents.OnCoreMainInputAsync += AutoHeal.OnCoreMainInputAsync;
             CoreEvents.OnCoreMainInputAsync += AutoExhaust.OnCoreMainInputAsync;
-            CoreEvents.OnCoreMainInputAsync += ComboSmite.OnCoreMainInputAsync;
             CoreEvents.OnCoreMainInputRelease += CoreEvents_OnCoreMainInputRelease;
 
             return Task.CompletedTask;

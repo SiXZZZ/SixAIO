@@ -6,6 +6,8 @@ using Oasys.Common.Menu;
 using Oasys.Common.Menu.ItemComponents;
 using Oasys.SDK;
 using Oasys.SDK.SpellCasting;
+using Oasys.SDK.Tools;
+using System.Linq;
 using System.Threading.Tasks;
 using static Oasys.Common.Logic.Orbwalker;
 
@@ -179,18 +181,21 @@ namespace SixAIO.Utilities
             if (UseSmite && SmiteKey?.Charges > 0)
             {
                 jungleTarget = GetJungleTarget(500f);
-                var smiteDamage = 900f;
+                var smiteDamageTrackerBuff = UnitManager.MyChampion.BuffManager.ActiveBuffs.FirstOrDefault(x => x.Name == "itemsmitecounter" && x.Stacks >= 0);
+                var smiteDamage = 600;
+                if (smiteDamageTrackerBuff is not null)
+                {
+                    smiteDamage = smiteDamageTrackerBuff.Stacks switch
+                    {
+                        > 20 and <= 40 => 600,
+                        > 0 and <= 20 => 900,
+                        0 => 1200,
+                        _ => 600
+                    };
+                }
+
                 if (jungleTarget != null)
                 {
-                    foreach (var buffEntry in UnitManager.MyChampion.BuffManager.GetBuffList())
-                    {
-                        if (!(buffEntry.Name != "SmiteDamageTracker"))
-                        {
-                            smiteDamage = 450f;
-                            break;
-                        }
-                    }
-
                     if (jungleTarget.Health < smiteDamage)
                     {
                         var tempTargetChamps = OrbSettings.TargetChampionsOnly;
