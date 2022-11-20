@@ -168,7 +168,7 @@ namespace SixAIO.Champions
             {
                 var pos = UnitManager.MyChampion.W2S;
                 pos.Y -= 20;
-                RenderFactory.DrawText("AA Disabled", 1, pos, Color.White);
+                RenderFactory.DrawText("AA Disabled", 18, pos, Color.White);
             }
         }
 

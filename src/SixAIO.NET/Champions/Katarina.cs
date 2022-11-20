@@ -169,7 +169,7 @@ namespace SixAIO.Champions
         //                if (!orbW2S.IsZero)
         //                {
         //                    RenderFactory.DrawLine(w2s.X, w2s.Y, orbW2S.X, orbW2S.Y, 2, color);
-        //                    RenderFactory.DrawText(dagger.Name, 12, orbW2S, color);
+        //                    RenderFactory.DrawText(dagger.Name, 18, orbW2S, color);
         //                }
         //            }
         //        }

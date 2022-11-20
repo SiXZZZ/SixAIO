@@ -137,7 +137,7 @@ namespace SixAIO.Utilities
             {
                 var w2s = LeagueNativeRendererManager.WorldToScreenSpell(UnitManager.MyChampion.Position);
                 w2s.Y += 20;
-                RenderFactory.DrawText($"Toggle Smite Enabled", 12, w2s, Color.Blue);
+                RenderFactory.DrawText($"Toggle Smite Enabled", 18, w2s, Color.Blue);
             }
         }
 

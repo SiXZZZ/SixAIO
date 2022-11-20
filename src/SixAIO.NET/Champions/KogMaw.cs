@@ -116,7 +116,7 @@ namespace SixAIO.Champions
                     var qTimeRemaining = wBuff.RemainingDurationMs / 1000;
                     var w2s = LeagueNativeRendererManager.WorldToScreenSpell(UnitManager.MyChampion.Position);
                     w2s.Y -= 20;
-                    RenderFactory.DrawText($"W:{qTimeRemaining:0.##}", 12, w2s, Color.Blue);
+                    RenderFactory.DrawText($"W:{qTimeRemaining:0.##}", 18, w2s, Color.Blue);
                 }
             }
         }

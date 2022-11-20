@@ -105,7 +105,7 @@ namespace SixAIO.Champions
 #if DEBUG
             if (Ball != null && !Ball.W2S.IsZero)
             {
-                Oasys.SDK.Rendering.RenderFactory.DrawText("Orianna Ball", 12, GetBallPosition().ToW2S(), Color.Blue);
+                Oasys.SDK.Rendering.RenderFactory.DrawText("Orianna Ball", 18, GetBallPosition().ToW2S(), Color.Blue);
             }
 #endif
         }

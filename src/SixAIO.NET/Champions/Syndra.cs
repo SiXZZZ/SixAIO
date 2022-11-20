@@ -157,7 +157,7 @@ namespace SixAIO.Champions
         //                if (!orbW2S.IsZero)
         //                {
         //                    Oasys.SDK.Rendering.RenderFactory.DrawLine(w2s.X, w2s.Y, orbW2S.X, orbW2S.Y, 2, color);
-        //                    Oasys.SDK.Rendering.RenderFactory.DrawText(orb.Name, 12, orbW2S, color);
+        //                    Oasys.SDK.Rendering.RenderFactory.DrawText(orb.Name, 18, orbW2S, color);
         //                }
         //            }
         //        }

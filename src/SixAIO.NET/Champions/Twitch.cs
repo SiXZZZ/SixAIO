@@ -116,7 +116,7 @@ namespace SixAIO.Champions
                     var qTimeRemaining = qBuff.RemainingDurationMs / 1000;
                     var w2s = LeagueNativeRendererManager.WorldToScreenSpell(UnitManager.MyChampion.Position);
                     w2s.Y -= 20;
-                    RenderFactory.DrawText($"Q:{qTimeRemaining:0.##}", 12, w2s, Color.Blue);
+                    RenderFactory.DrawText($"Q:{qTimeRemaining:0.##}", 18, w2s, Color.Blue);
                 }
             }
             if (DrawRTime)
@@ -126,7 +126,7 @@ namespace SixAIO.Champions
                 {
                     var rTimeRemaining = rBuff.RemainingDurationMs / 1000;
                     var w2s = LeagueNativeRendererManager.WorldToScreenSpell(UnitManager.MyChampion.Position);
-                    RenderFactory.DrawText($"R:{rTimeRemaining:0.##}", 12, w2s, Color.Blue);
+                    RenderFactory.DrawText($"R:{rTimeRemaining:0.##}", 18, w2s, Color.Blue);
                 }
             }
             if (SpellE.SpellClass.IsSpellReady)

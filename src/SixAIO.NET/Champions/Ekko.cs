@@ -67,7 +67,7 @@ namespace SixAIO.Champions
         //{
         //    if (IsEkkoUltReady && _ekkoRTrailEnd.W2S.IsValid())
         //    {
-        //        RenderFactory.DrawText(_ekkoRTrailEnd.Name, 1, _ekkoRTrailEnd.W2S, SharpDX.Color.AliceBlue);
+        //        RenderFactory.DrawText(_ekkoRTrailEnd.Name, 18, _ekkoRTrailEnd.W2S, SharpDX.Color.AliceBlue);
         //    }
         //}
 

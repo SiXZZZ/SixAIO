@@ -135,7 +135,7 @@ namespace SixAIO.Champions
             //foreach (var obj in UnitManager.AllNativeObjects.Where(x => x.Distance <= 1500 && IsFeather(x)))
             //{
             //    var w2s = LeagueNativeRendererManager.WorldToScreenSpell(obj.Position);
-            //    Oasys.SDK.Rendering.RenderFactory.DrawText(obj.Health + " " + obj.Mana + " " + obj.UnitComponentInfo.SkinName + " " + obj.Name + " " + obj.ModelName, 12, w2s, Color.Blue);
+            //    Oasys.SDK.Rendering.RenderFactory.DrawText(obj.Health + " " + obj.Mana + " " + obj.UnitComponentInfo.SkinName + " " + obj.Name + " " + obj.ModelName, 18, w2s, Color.Blue);
             //}
         }
 
