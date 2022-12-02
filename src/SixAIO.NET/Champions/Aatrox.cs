@@ -28,6 +28,7 @@ namespace SixAIO.Champions
             Spell.OnSpellCast += Spell_OnSpellCast;
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
+                MinimumHitChance = () => QHitChance,
                 PredictionMode = () => QVersion switch
                 {
                     1 => Prediction.MenuSelected.PredictionType.Line,
@@ -52,7 +53,11 @@ namespace SixAIO.Champions
                     _ => 180,
                 },
                 IsEnabled = () => UseQ,
-                TargetSelect = (mode) => SpellQ.GetTargets(mode).FirstOrDefault()
+                TargetSelect = (mode) => SpellQ.GetTargets(mode,
+                                                    x => OnlyQOnKnockedUpTargets
+                                                    ? x.BuffManager.ActiveBuffs.Any(buff => buff.EntryType == BuffType.Knockup || buff.EntryType == BuffType.Knockback)
+                                                    : true)
+                                                .FirstOrDefault()
             };
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
             {
@@ -62,7 +67,11 @@ namespace SixAIO.Champions
                 Radius = () => 160,
                 Speed = () => 1800,
                 IsEnabled = () => UseW,
-                TargetSelect = (mode) => SpellW.GetTargets(mode).FirstOrDefault()
+                TargetSelect = (mode) => SpellW.GetTargets(mode,
+                                                    x => OnlyWOnKnockedUpTargets
+                                                    ? x.BuffManager.ActiveBuffs.Any(buff => buff.EntryType == BuffType.Knockup || buff.EntryType == BuffType.Knockback)
+                                                    : true)
+                                                .FirstOrDefault()
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
@@ -83,10 +92,21 @@ namespace SixAIO.Champions
 
         internal override void OnCoreMainInput()
         {
-            if (SpellQ.ExecuteCastSpell() || SpellE.ExecuteCastSpell() || SpellW.ExecuteCastSpell())
-            {
-                return;
-            }
+            SpellQ.ExecuteCastSpell();
+            SpellW.ExecuteCastSpell();
+            SpellE.ExecuteCastSpell();
+        }
+
+        internal bool OnlyQOnKnockedUpTargets
+        {
+            get => QSettings.GetItem<Switch>("Only Q on Knocked up targets").IsOn;
+            set => QSettings.GetItem<Switch>("Only Q on Knocked up targets").IsOn = value;
+        }
+
+        internal bool OnlyWOnKnockedUpTargets
+        {
+            get => WSettings.GetItem<Switch>("Only W on Knocked up targets").IsOn;
+            set => WSettings.GetItem<Switch>("Only W on Knocked up targets").IsOn = value;
         }
 
         internal override void InitializeMenu()
@@ -98,9 +118,11 @@ namespace SixAIO.Champions
 
             QSettings.AddItem(new Switch() { Title = "Use Q", IsOn = true });
             QSettings.AddItem(new ModeDisplay() { Title = "Q HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "VeryHigh" });
+            QSettings.AddItem(new Switch() { Title = "Only Q on Knocked up targets", IsOn = true });
 
             WSettings.AddItem(new Switch() { Title = "Use W", IsOn = true });
             WSettings.AddItem(new ModeDisplay() { Title = "W HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "Immobile" });
+            WSettings.AddItem(new Switch() { Title = "Only W on Knocked up targets", IsOn = true });
 
             ESettings.AddItem(new Switch() { Title = "Use E", IsOn = true });
         }
