@@ -78,9 +78,10 @@ namespace SixAIO.Utilities
         {
             try
             {
+                var gameTime = GameEngine.GameTime;
                 if (UnitManager.MyChampion.IsAlive &&
                     TargetSelector.IsAttackable(UnitManager.MyChampion, false) &&
-                    TimeBetweenPotions + _lastPotion <= GameEngine.GameTime &&
+                    TimeBetweenPotions + _lastPotion <= gameTime &&
                     (HealthFlat >= UnitManager.MyChampion.Health ||
                     HealthPercent >= UnitManager.MyChampion.HealthPercent))
                 {
@@ -89,28 +90,28 @@ namespace SixAIO.Utilities
                         UnitManager.MyChampion.Inventory.GetItemByID(ItemID.Health_Potion)?.IsReady == true)
                     {
                         ItemCastProvider.CastItem(ItemID.Health_Potion);
-                        _lastPotion = GameEngine.GameTime;
+                        _lastPotion = gameTime;
                     }
                     else if (UseRefillablePotion &&
                              UnitManager.MyChampion.Inventory.HasItem(ItemID.Refillable_Potion) &&
                              UnitManager.MyChampion.Inventory.GetItemByID(ItemID.Refillable_Potion)?.IsReady == true)
                     {
                         ItemCastProvider.CastItem(ItemID.Refillable_Potion);
-                        _lastPotion = GameEngine.GameTime;
+                        _lastPotion = gameTime;
                     }
                     else if (UseCorruptingPotion &&
                              UnitManager.MyChampion.Inventory.HasItem(ItemID.Corrupting_Potion) &&
                              UnitManager.MyChampion.Inventory.GetItemByID(ItemID.Corrupting_Potion)?.IsReady == true)
                     {
                         ItemCastProvider.CastItem(ItemID.Corrupting_Potion);
-                        _lastPotion = GameEngine.GameTime;
+                        _lastPotion = gameTime;
                     }
                     else if (UseBiscuit &&
                              UnitManager.MyChampion.Inventory.HasItem(ItemID.Total_Biscuit_of_Everlasting_Will) &&
                              UnitManager.MyChampion.Inventory.GetItemByID(ItemID.Total_Biscuit_of_Everlasting_Will)?.IsReady == true)
                     {
                         ItemCastProvider.CastItem(ItemID.Total_Biscuit_of_Everlasting_Will);
-                        _lastPotion = GameEngine.GameTime;
+                        _lastPotion = gameTime;
                     }
                 }
             }

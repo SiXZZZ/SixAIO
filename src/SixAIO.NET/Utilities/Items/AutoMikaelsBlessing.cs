@@ -130,8 +130,9 @@ namespace SixAIO.Utilities
                     return false;
                 }
 
+                var gameTime = GameEngine.GameTime;
                 var cc = buffs.Where(BuffChecker.IsCrowdControllButCanCleanse).FirstOrDefault(buff =>
-                               (float)buff.StartTime + (float)(ReactionDelay / 1000f) < GameEngine.GameTime && buff.DurationMs < 10_000 &&
+                               (float)buff.StartTime + (float)(ReactionDelay / 1000f) < gameTime && buff.DurationMs < 10_000 &&
                                 buff.DurationMs >= AutoMikaelsBlessingGroup.GetItem<Counter>(x => x.Title.Contains(buff.EntryType.ToString(), StringComparison.OrdinalIgnoreCase))?.Value);
                 //return cc != null;
 

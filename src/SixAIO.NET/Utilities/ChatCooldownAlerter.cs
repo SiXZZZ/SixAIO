@@ -108,15 +108,16 @@ namespace SixAIO.Utilities
                     return;
                 }
 
+                var gameTime = GameEngine.GameTime;
                 //Logger.Log($"{keyBeingPressed} {pressState}");
                 if (Use &&
                     !AnyKeysPressed() &&
                     !GameEngine.ChatBox.IsChatBoxOpen &&
                     GameEngine.IsGameWindowFocused &&
                     Keyboard.IsPressed(GetKeybinding()) &&
-                    _lastMessage + 10 < GameEngine.GameTime)
+                    _lastMessage + 10 < gameTime)
                 {
-                    _lastMessage = GameEngine.GameTime;
+                    _lastMessage = gameTime;
                     foreach (var enemy in UnitManager.EnemyChampions.Where(x => !x.IsTargetDummy))
                     {
                         var spellBook = enemy.GetSpellBook();

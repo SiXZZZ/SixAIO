@@ -191,33 +191,34 @@ namespace SixAIO.Utilities
         {
             try
             {
+                var gameTime = GameEngine.GameTime;
                 if ((CleanseOnTick && callFromTick) || CleanseOnCombo)
                 {
-                    if (UseCleanse && GameEngine.GameTime > _lastCleanse + CleanseActionIntervalMS/1000f && GameEngine.GameTime > _lastQss + CleanseActionIntervalMS / 1000f && ShouldUseCleanse() &&
+                    if (UseCleanse && gameTime > _lastCleanse + CleanseActionIntervalMS / 1000f && gameTime > _lastQss + CleanseActionIntervalMS / 1000f && ShouldUseCleanse() &&
                         CleanseSpellClass is not null && CleanseSpellClass?.IsSpellReady == true)
                     {
                         SpellCastProvider.CastSpell(CleanseCastSlot);
-                        _lastCleanse = GameEngine.GameTime;
+                        _lastCleanse = gameTime;
                     }
-                    if (UseItems && GameEngine.GameTime > _lastCleanse + CleanseActionIntervalMS / 1000f && GameEngine.GameTime > _lastQss + CleanseActionIntervalMS / 1000f && ShouldUseCleanse(true))
+                    if (UseItems && gameTime > _lastCleanse + CleanseActionIntervalMS / 1000f && gameTime > _lastQss + CleanseActionIntervalMS / 1000f && ShouldUseCleanse(true))
                     {
                         if (UnitManager.MyChampion.Inventory.HasItem(ItemID.Quicksilver_Sash) &&
                             UnitManager.MyChampion.Inventory.GetItemByID(ItemID.Quicksilver_Sash)?.IsReady == true)
                         {
                             ItemCastProvider.CastItem(ItemID.Quicksilver_Sash);
-                            _lastQss = GameEngine.GameTime;
+                            _lastQss = gameTime;
                         }
                         else if (UnitManager.MyChampion.Inventory.HasItem(ItemID.Silvermere_Dawn) &&
                                  UnitManager.MyChampion.Inventory.GetItemByID(ItemID.Silvermere_Dawn)?.IsReady == true)
                         {
                             ItemCastProvider.CastItem(ItemID.Silvermere_Dawn);
-                            _lastQss = GameEngine.GameTime;
+                            _lastQss = gameTime;
                         }
                         else if (UnitManager.MyChampion.Inventory.HasItem(ItemID.Mercurial_Scimitar) &&
                                  UnitManager.MyChampion.Inventory.GetItemByID(ItemID.Mercurial_Scimitar)?.IsReady == true)
                         {
                             ItemCastProvider.CastItem(ItemID.Mercurial_Scimitar);
-                            _lastQss = GameEngine.GameTime;
+                            _lastQss = gameTime;
                         }
                     }
                 }
@@ -244,19 +245,20 @@ namespace SixAIO.Utilities
 
         private static bool SummonerDebuffed(bool qss)
         {
+            var gameTime = GameEngine.GameTime;
             return qss
                 ? false
-                : CheckBuff(Exhaust, "SummonerExhaust") ||
-                  CheckBuff(Ignite, "SummonerDot") ||
-                  CheckBuff(RedSmite, "itemsmitechallenge") ||
-                  CheckBuff(BlueSmite, "itemsmiteslow");
+                : CheckBuff(Exhaust, "SummonerExhaust", gameTime) ||
+                  CheckBuff(Ignite, "SummonerDot", gameTime) ||
+                  CheckBuff(RedSmite, "itemsmitechallenge", gameTime) ||
+                  CheckBuff(BlueSmite, "itemsmiteslow", gameTime);
         }
 
-        private static bool CheckBuff(bool shouldCheck, string buffName)
+        private static bool CheckBuff(bool shouldCheck, string buffName, float gameTime)
         {
             if (shouldCheck)
             {
-                var buff = UnitManager.MyChampion.BuffManager.ActiveBuffs.FirstOrDefault(x => x.Stacks >= 1 && x.IsActive && x.Name == buffName && (float)x.StartTime + (float)((float)SummonersReactionDelay / 1000f) < GameEngine.GameTime);
+                var buff = UnitManager.MyChampion.BuffManager.ActiveBuffs.FirstOrDefault(x => x.Stacks >= 1 && x.IsActive && x.Name == buffName && (float)x.StartTime + (float)((float)SummonersReactionDelay / 1000f) < gameTime);
                 return LogBuff(buff);
             }
 
@@ -267,11 +269,11 @@ namespace SixAIO.Utilities
         {
             try
             {
-
+                var gameTime = GameEngine.GameTime;
                 var cc = UnitManager.MyChampion.BuffManager.ActiveBuffs.Where(qss
                                     ? BuffChecker.IsCrowdControllButCanQss
                                     : BuffChecker.IsCrowdControllButCanCleanse).FirstOrDefault(buff =>
-                               (float)buff.StartTime + (float)((float)ReactionDelay / 1000f) < GameEngine.GameTime && buff.DurationMs < 10_000 &&
+                               (float)buff.StartTime + (float)((float)ReactionDelay / 1000f) < gameTime && buff.DurationMs < 10_000 &&
                                 Math.Min(buff.DurationMs, buff.RemainingDurationMs + ReactionDelay + 100) >= AutoCleanseGroup.GetItem<Counter>(x => x.Title.Contains(buff.EntryType.ToString(), StringComparison.OrdinalIgnoreCase))?.Value);
 
                 return LogBuff(cc);
