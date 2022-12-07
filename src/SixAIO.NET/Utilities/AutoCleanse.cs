@@ -194,28 +194,32 @@ namespace SixAIO.Utilities
                 var gameTime = GameEngine.GameTime;
                 if ((CleanseOnTick && callFromTick) || CleanseOnCombo)
                 {
-                    if (UseCleanse && gameTime > _lastCleanse + CleanseActionIntervalMS / 1000f && gameTime > _lastQss + CleanseActionIntervalMS / 1000f && ShouldUseCleanse() &&
-                        CleanseSpellClass is not null && CleanseSpellClass?.IsSpellReady == true)
+                    if (UseCleanse && CleanseSpellClass is not null && CleanseSpellClass?.IsSpellReady == true &&
+                        gameTime > _lastCleanse + CleanseActionIntervalMS / 1000f && gameTime > _lastQss + CleanseActionIntervalMS / 1000f &&
+                        ShouldUseCleanse())
                     {
                         SpellCastProvider.CastSpell(CleanseCastSlot);
                         _lastCleanse = gameTime;
                     }
-                    if (UseItems && gameTime > _lastCleanse + CleanseActionIntervalMS / 1000f && gameTime > _lastQss + CleanseActionIntervalMS / 1000f && ShouldUseCleanse(true))
+                    if (UseItems && gameTime > _lastCleanse + CleanseActionIntervalMS / 1000f && gameTime > _lastQss + CleanseActionIntervalMS / 1000f)
                     {
                         if (UnitManager.MyChampion.Inventory.HasItem(ItemID.Quicksilver_Sash) &&
-                            UnitManager.MyChampion.Inventory.GetItemByID(ItemID.Quicksilver_Sash)?.IsReady == true)
+                            UnitManager.MyChampion.Inventory.GetItemByID(ItemID.Quicksilver_Sash)?.IsReady == true &&
+                                 ShouldUseCleanse(true))
                         {
                             ItemCastProvider.CastItem(ItemID.Quicksilver_Sash);
                             _lastQss = gameTime;
                         }
                         else if (UnitManager.MyChampion.Inventory.HasItem(ItemID.Silvermere_Dawn) &&
-                                 UnitManager.MyChampion.Inventory.GetItemByID(ItemID.Silvermere_Dawn)?.IsReady == true)
+                                 UnitManager.MyChampion.Inventory.GetItemByID(ItemID.Silvermere_Dawn)?.IsReady == true &&
+                                 ShouldUseCleanse(true))
                         {
                             ItemCastProvider.CastItem(ItemID.Silvermere_Dawn);
                             _lastQss = gameTime;
                         }
                         else if (UnitManager.MyChampion.Inventory.HasItem(ItemID.Mercurial_Scimitar) &&
-                                 UnitManager.MyChampion.Inventory.GetItemByID(ItemID.Mercurial_Scimitar)?.IsReady == true)
+                                 UnitManager.MyChampion.Inventory.GetItemByID(ItemID.Mercurial_Scimitar)?.IsReady == true &&
+                                 ShouldUseCleanse(true))
                         {
                             ItemCastProvider.CastItem(ItemID.Mercurial_Scimitar);
                             _lastQss = gameTime;
@@ -270,11 +274,15 @@ namespace SixAIO.Utilities
             try
             {
                 var gameTime = GameEngine.GameTime;
-                var cc = UnitManager.MyChampion.BuffManager.ActiveBuffs.Where(qss
-                                    ? BuffChecker.IsCrowdControllButCanQss
-                                    : BuffChecker.IsCrowdControllButCanCleanse).FirstOrDefault(buff =>
-                               (float)buff.StartTime + (float)((float)ReactionDelay / 1000f) < gameTime && buff.DurationMs < 10_000 &&
-                                Math.Min(buff.DurationMs, buff.RemainingDurationMs + ReactionDelay + 100) >= AutoCleanseGroup.GetItem<Counter>(x => x.Title.Contains(buff.EntryType.ToString(), StringComparison.OrdinalIgnoreCase))?.Value);
+                var cc = UnitManager.MyChampion.BuffManager.
+                    ActiveBuffs
+                    .Where(qss
+                           ? BuffChecker.IsCrowdControllButCanQss
+                           : BuffChecker.IsCrowdControllButCanCleanse)
+                    .FirstOrDefault(buff =>
+                           buff.StartTime + (float)((float)ReactionDelay / 1000f) < gameTime &&
+                           buff.DurationMs < 10_000 &&
+                           Math.Min(buff.DurationMs, buff.RemainingDurationMs + ReactionDelay + 100) >= AutoCleanseGroup.GetItem<Counter>(x => x.Title.Contains(buff.EntryType.ToString(), StringComparison.OrdinalIgnoreCase))?.Value);
 
                 return LogBuff(cc);
             }
