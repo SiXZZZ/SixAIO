@@ -13,6 +13,7 @@ using Oasys.Common.Extensions;
 using System.Windows.Forms;
 using Oasys.SDK.Rendering;
 using SharpDX;
+using System.Runtime.Serialization;
 
 namespace SixAIO.Champions
 {
@@ -46,7 +47,7 @@ namespace SixAIO.Champions
             {
                 Delay = () => 0.125f,
                 IsTargetted = () => true,
-                Range = () => 700,
+                Range = () => 700 + UnitManager.MyChampion.BoundingRadius,
                 Damage = (target, spellClass) => GetEDamage(target, spellClass),
                 IsEnabled = () => UseE,
                 TargetSelect = (mode) =>
@@ -170,6 +171,23 @@ namespace SixAIO.Champions
                 pos.Y -= 20;
                 RenderFactory.DrawText("AA Disabled", 18, pos, Color.White);
             }
+            if (ShowERange)
+            {
+                var color = Oasys.Common.Tools.ColorConverter.GetColor(ERangeColor);
+                RenderFactory.DrawNativeCircle(UnitManager.MyChampion.Position, SpellE.Range(), color, 2);
+            }
+        }
+
+        private bool ShowERange
+        {
+            get => ESettings.GetItem<Switch>("Show E range").IsOn;
+            set => ESettings.GetItem<Switch>("Show E range").IsOn = value;
+        }
+
+        private string ERangeColor
+        {
+            get => ESettings.GetItem<ModeDisplay>("E range color").SelectedModeName;
+            set => ESettings.GetItem<ModeDisplay>("E range color").SelectedModeName = value;
         }
 
         public Keys DisableAAKey => MenuTab.GetItem<KeyBinding>("Disable AA Key").SelectedKey;
@@ -193,6 +211,8 @@ namespace SixAIO.Champions
             ESettings.AddItem(new Switch() { Title = "Use E", IsOn = true });
             ESettings.AddItem(new Switch() { Title = "Use E Laneclear", IsOn = true });
             ESettings.AddItem(new Switch() { Title = "Use E Lasthit", IsOn = true });
+            ESettings.AddItem(new Switch() { Title = "Show E range", IsOn = true });
+            ESettings.AddItem(new ModeDisplay() { Title = "E range color", ModeNames = Oasys.Common.Tools.ColorConverter.GetColors(), SelectedModeName = "Blue" });
 
             RSettings.AddItem(new Switch() { Title = "Use R", IsOn = true });
             RSettings.AddItem(new ModeDisplay() { Title = "R HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });

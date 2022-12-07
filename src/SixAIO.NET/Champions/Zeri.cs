@@ -24,7 +24,7 @@ namespace SixAIO.Champions
                 //AllowCollision = (target, collisions) => !collisions.Any(),
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
                 MinimumHitChance = () => QHitChance,
-                Range = () => UnitManager.MyChampion.AttackRange + 325,
+                Range = () => UnitManager.MyChampion.AttackRange + 250,
                 Radius = () => 80,
                 Speed = () => 2600,
                 Delay = () => 0f,
@@ -71,7 +71,7 @@ namespace SixAIO.Champions
                 MinimumHitChance = () => WHitChance,
                 Range = () => 1200,
                 Radius = () => 80,
-                Speed = () => 2200,
+                Speed = () => 2500,
                 IsEnabled = () => UseW,
                 TargetSelect = (mode) => SpellW.GetTargets(mode).FirstOrDefault()
             };
@@ -82,7 +82,7 @@ namespace SixAIO.Champions
                 MinimumHitChance = () => SemiAutoWHitChance,
                 Range = () => 2700,
                 Radius = () => 200,
-                Speed = () => 2200,
+                Speed = () => 2500,
                 IsEnabled = () => UseSemiAutoW,
                 TargetSelect = (mode) => SpellWSemiAuto.GetTargets(mode).OrderBy(x => x.Distance).FirstOrDefault()
             };
@@ -107,7 +107,7 @@ namespace SixAIO.Champions
             {
                 return 0;
             }
-            var baseDmg = 5 + SpellQ.SpellClass.Level * 3;
+            var baseDmg = 12 + SpellQ.SpellClass.Level * 3;
             var scaleDmg = UnitManager.MyChampion.UnitStats.TotalAttackDamage * (1f + SpellQ.SpellClass.Level * 0.05f);
             return DamageCalculator.CalculateActualDamage(UnitManager.MyChampion, target, baseDmg + scaleDmg);
         }
@@ -176,7 +176,7 @@ namespace SixAIO.Champions
             if (ShowQRange)
             {
                 var color = Oasys.Common.Tools.ColorConverter.GetColor(QRangeColor);
-                Oasys.SDK.Rendering.RenderFactory.DrawNativeCircle(UnitManager.MyChampion.Position, SpellQ.Range(), color, 5);
+                Oasys.SDK.Rendering.RenderFactory.DrawNativeCircle(UnitManager.MyChampion.Position, SpellQ.Range(), color, 2);
             }
         }
 
