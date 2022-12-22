@@ -28,7 +28,7 @@ namespace SixAIO.Champions
                 AllowCollision = (target, collisions) => !collisions.Any(),
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Cone,
                 MinimumHitChance = () => WHitChance,
-                Range = () => 1200,
+                Range = () => 1100,
                 Radius = () => 18.5f + (9.25f * SpellW.SpellClass.Level),
                 Speed = () => 2000,
                 IsEnabled = () => UseW,
