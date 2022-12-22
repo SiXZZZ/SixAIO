@@ -178,9 +178,20 @@ namespace SixAIO.Champions
 
         internal override void OnCoreMainInput()
         {
-            if (SpellR.ExecuteCastSpell() || SpellE.ExecuteCastSpell() || SpellW.ExecuteCastSpell() || SpellQ.ExecuteCastSpell())
+            SpellR.ExecuteCastSpell();
+            SpellE.ExecuteCastSpell();
+            SpellW.ExecuteCastSpell();
+            SpellQ.ExecuteCastSpell();
+        }
+
+        internal override void OnCoreMainTick()
+        {
+            if (ComboOnTick)
             {
-                return;
+                SpellR.ExecuteCastSpell();
+                SpellE.ExecuteCastSpell();
+                SpellW.ExecuteCastSpell();
+                SpellQ.ExecuteCastSpell();
             }
         }
 
@@ -238,6 +249,12 @@ namespace SixAIO.Champions
             set => RSettings.GetItem<Switch>("R Knockup enemies").IsOn = value;
         }
 
+        private bool ComboOnTick
+        {
+            get => MenuTab.GetItem<Switch>("Combo On Tick").IsOn;
+            set => MenuTab.GetItem<Switch>("Combo On Tick").IsOn = value;
+        }
+
         internal override void InitializeMenu()
         {
             MenuManager.AddTab(new Tab($"SIXAIO - {nameof(Lulu)}"));
@@ -246,6 +263,7 @@ namespace SixAIO.Champions
             MenuTab.AddGroup(new Group("W Settings"));
             MenuTab.AddGroup(new Group("E Settings"));
             MenuTab.AddGroup(new Group("R Settings"));
+            MenuTab.AddItem(new Switch() { Title = "Combo On Tick", IsOn = false });
 
             MenuTab.AddItem(new InfoDisplay() { Title = "---Allies to buff - 0 to disable---" });
             foreach (var allyChampion in UnitManager.AllyChampions)
@@ -266,7 +284,7 @@ namespace SixAIO.Champions
             ESettings.AddItem(new Counter() { Title = "E Min Mana", MinValue = 0, MaxValue = 500, Value = 80, ValueFrequency = 10 });
             ESettings.AddItem(new Switch() { Title = "E Buff ally", IsOn = true });
             ESettings.AddItem(new Switch() { Title = "E Shield ally", IsOn = true });
-            ESettings.AddItem(new Counter() { Title = "E Shield Health Percent", MinValue = 0, MaxValue = 100, Value = 70, ValueFrequency = 5 });
+            ESettings.AddItem(new Counter() { Title = "E Shield Health Percent", MinValue = 0, MaxValue = 100, Value = 30, ValueFrequency = 5 });
             ESettings.AddItem(new Switch() { Title = "E for damage on enemies", IsOn = false });
 
             RSettings.AddItem(new Switch() { Title = "Use R", IsOn = true });
