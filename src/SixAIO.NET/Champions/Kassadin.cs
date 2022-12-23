@@ -47,7 +47,7 @@ namespace SixAIO.Champions
                 Range = () => 600,
                 Radius = () => 80,
                 Speed = () => 2000,
-                IsEnabled = () => UseE && UnitManager.MyChampion.BuffManager.ActiveBuffs.Any(x => x.IsActive && x.Stacks >= 1 && x.Name == "forcepulsecancast"),
+                IsEnabled = () => UseE,
                 TargetSelect = (mode) => SpellE.GetTargets(mode).FirstOrDefault()
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
