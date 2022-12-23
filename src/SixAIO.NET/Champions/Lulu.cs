@@ -19,7 +19,7 @@ namespace SixAIO.Champions
             {
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
                 MinimumHitChance = () => QHitChance,
-                Range = () => 950,
+                Range = () => 900,
                 Radius = () => 120,
                 Speed = () => 1450,
                 IsEnabled = () => UseQ,
@@ -81,8 +81,18 @@ namespace SixAIO.Champions
                                             .Where(ally => MenuTab.GetItem<Counter>("Buff Ally Prio- " + ally?.ModelName)?.Value > 0)
                                             .OrderByDescending(ally => MenuTab.GetItem<Counter>("Buff Ally Prio- " + ally?.ModelName)?.Value)
                                             .FirstOrDefault(ally => ally.IsAlive && ally.Distance <= 650 && TargetSelector.IsAttackable(ally, false) &&
-                                                                    AnyEnemyIsCastingSpell() &&
+                                                                    UnitManager.EnemyChampions.Any(x => x.IsAlive && x.Distance <= 1000 && x.IsCastingSpell && x.GetCurrentCastingSpell()?.TargetIndexes?.Any() == true) &&
                                                                     ally.HealthPercent < EShieldHealthPercent);
+                    }
+
+                    if (target == null && EShieldAlly)
+                    {
+                        target = UnitManager.AllyChampions
+                                            .Where(ally => MenuTab.GetItem<Counter>("Buff Ally Prio- " + ally?.ModelName)?.Value > 0)
+                                            .OrderByDescending(ally => MenuTab.GetItem<Counter>("Buff Ally Prio- " + ally?.ModelName)?.Value)
+                                            .FirstOrDefault(ally => ally.IsAlive && ally.Distance <= 650 && TargetSelector.IsAttackable(ally, false) &&
+                                                                    UnitManager.EnemyChampions.Any(x => x.IsAlive && x.Distance <= 1000 && x.IsCastingSpell) &&
+                        ally.HealthPercent < EShieldHealthPercent);
                     }
 
                     if (target == null && EOnEnemies)
@@ -125,11 +135,6 @@ namespace SixAIO.Champions
                     return target;
                 }
             };
-        }
-
-        private bool AnyEnemyIsCastingSpell()
-        {
-            return UnitManager.EnemyChampions.Any(x => x.IsAlive && x.Distance <= 1000 && x.IsCastingSpell);
         }
 
         private bool IsCastingSpellOnAlly(Hero ally = null)
@@ -186,7 +191,10 @@ namespace SixAIO.Champions
 
         internal override void OnCoreMainTick()
         {
-            if (ComboOnTick)
+            if (ComboOnTick &&
+                UnitManager.MyChampion.IsAlive &&
+                !GameEngine.ChatBox.IsChatBoxOpen &&
+                GameEngine.IsGameWindowFocused)
             {
                 SpellR.ExecuteCastSpell();
                 SpellE.ExecuteCastSpell();
