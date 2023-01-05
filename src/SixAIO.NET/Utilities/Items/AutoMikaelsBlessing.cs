@@ -53,6 +53,7 @@ namespace SixAIO.Utilities
             AutoMikaelsBlessingGroup.AddItem(new Counter() { Title = "Fear", Value = 500, MinValue = 0, MaxValue = 5000, ValueFrequency = 250 });
             AutoMikaelsBlessingGroup.AddItem(new Counter() { Title = "Flee", Value = 500, MinValue = 0, MaxValue = 5000, ValueFrequency = 250 });
             AutoMikaelsBlessingGroup.AddItem(new Counter() { Title = "Sleep", Value = 1250, MinValue = 0, MaxValue = 5000, ValueFrequency = 250 });
+            AutoMikaelsBlessingGroup.AddItem(new Counter() { Title = "Asleep", Value = 1250, MinValue = 0, MaxValue = 5000, ValueFrequency = 250 });
             AutoMikaelsBlessingGroup.AddItem(new Counter() { Title = "Polymorph", Value = 1250, MinValue = 0, MaxValue = 5000, ValueFrequency = 250 });
 
             AutoMikaelsBlessingGroup.AddItem(new InfoDisplay() { Title = "-Only mikaels allies-" });

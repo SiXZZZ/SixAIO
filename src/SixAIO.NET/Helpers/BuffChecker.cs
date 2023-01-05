@@ -62,7 +62,7 @@ namespace SixAIO.Helpers
                    buff.EntryType == BuffType.Snare || buff.EntryType == BuffType.Charm ||
                    buff.EntryType == BuffType.Silence || buff.EntryType == BuffType.Blind ||
                    buff.EntryType == BuffType.Fear || buff.EntryType == BuffType.Polymorph ||
-                   buff.EntryType == BuffType.Flee || buff.EntryType == BuffType.Sleep) &&
+                   buff.EntryType == BuffType.Flee || buff.EntryType == BuffType.Sleep || buff.EntryType == BuffType.Asleep) &&
                    buff.Stacks >= 1 && buff.DurationMs <= 10_000 &&
                    !buff.Name.Equals("yonerstun", System.StringComparison.OrdinalIgnoreCase) &&
                    !buff.Name.Equals("landslidedebuff", System.StringComparison.OrdinalIgnoreCase) &&

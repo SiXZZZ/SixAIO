@@ -85,18 +85,6 @@ namespace SixAIO.Utilities
             set => AutoCleanseGroup.GetItem<Switch>("Ignite").IsOn = value;
         }
 
-        private static bool RedSmite
-        {
-            get => AutoCleanseGroup?.GetItem<Switch>("Red Smite")?.IsOn ?? false;
-            set => AutoCleanseGroup.GetItem<Switch>("Red Smite").IsOn = value;
-        }
-
-        private static bool BlueSmite
-        {
-            get => AutoCleanseGroup?.GetItem<Switch>("Blue Smite")?.IsOn ?? false;
-            set => AutoCleanseGroup.GetItem<Switch>("Blue Smite").IsOn = value;
-        }
-
         internal static Task GameEvents_OnGameLoadComplete()
         {
             TabItem.OnTabItemChange += TabItem_OnTabItemChange;
@@ -123,8 +111,6 @@ namespace SixAIO.Utilities
             AutoCleanseGroup.AddItem(new Counter() { Title = "Summoners Reaction Delay", Value = 200, MinValue = 0, MaxValue = 5000, ValueFrequency = 50 });
             AutoCleanseGroup.AddItem(new Switch() { Title = "Exhaust", IsOn = true });
             AutoCleanseGroup.AddItem(new Switch() { Title = "Ignite", IsOn = false });
-            AutoCleanseGroup.AddItem(new Switch() { Title = "Blue Smite", IsOn = false });
-            AutoCleanseGroup.AddItem(new Switch() { Title = "Red Smite", IsOn = false });
 
             AutoCleanseGroup.AddItem(new Counter() { Title = "Reaction Delay", Value = 50, MinValue = 0, MaxValue = 5000, ValueFrequency = 50 });
             AutoCleanseGroup.AddItem(new InfoDisplay() { Title = "-Only cleanse debuffs longer than ms-" });
@@ -137,6 +123,7 @@ namespace SixAIO.Utilities
             AutoCleanseGroup.AddItem(new Counter() { Title = "Fear", Value = 500, MinValue = 0, MaxValue = 5000, ValueFrequency = 250 });
             AutoCleanseGroup.AddItem(new Counter() { Title = "Flee", Value = 500, MinValue = 0, MaxValue = 5000, ValueFrequency = 250 });
             AutoCleanseGroup.AddItem(new Counter() { Title = "Sleep", Value = 1250, MinValue = 0, MaxValue = 5000, ValueFrequency = 250 });
+            AutoCleanseGroup.AddItem(new Counter() { Title = "Asleep", Value = 1250, MinValue = 0, MaxValue = 5000, ValueFrequency = 250 });
             AutoCleanseGroup.AddItem(new Counter() { Title = "Polymorph", Value = 1250, MinValue = 0, MaxValue = 5000, ValueFrequency = 250 });
 
             return Task.CompletedTask;
@@ -253,9 +240,7 @@ namespace SixAIO.Utilities
             return qss
                 ? false
                 : CheckBuff(Exhaust, "SummonerExhaust", gameTime) ||
-                  CheckBuff(Ignite, "SummonerDot", gameTime) ||
-                  CheckBuff(RedSmite, "itemsmitechallenge", gameTime) ||
-                  CheckBuff(BlueSmite, "itemsmiteslow", gameTime);
+                  CheckBuff(Ignite, "SummonerDot", gameTime);
         }
 
         private static bool CheckBuff(bool shouldCheck, string buffName, float gameTime)
