@@ -6,6 +6,7 @@ using Oasys.Common.Menu.ItemComponents;
 using Oasys.SDK;
 using Oasys.SDK.Menu;
 using Oasys.SDK.SpellCasting;
+using Oasys.SDK.Tools;
 using SixAIO.Models;
 using System;
 using System.Linq;
@@ -29,6 +30,11 @@ namespace SixAIO.Champions
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
                 IsCharge = () => true,
+                CastPosition = (pos) =>
+                {
+                    SpellW.ExecuteCastSpell();
+                    return pos;
+                },
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
                 MinimumHitChance = () => QHitChance,
                 Range = () => SpellQ.ChargeTimer.IsRunning
@@ -48,13 +54,12 @@ namespace SixAIO.Champions
             };
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
             {
-                Delay = () => 0f,
                 IsEnabled = () => UseW,
                 ShouldCast = (mode, target, spellClass, damage) =>
-                            SpellQ.ShouldCast(mode, target, SpellQ.SpellClass, damage) &&
-                            target != null &&
-                            target.HealthPercent <= UseOnlyWIfXLTEHPPercent,
-                TargetSelect = (mode) => SpellQ.TargetSelect(mode),
+                {
+                    var enemy = SpellQ.TargetSelect(mode);
+                    return enemy != null && enemy.HealthPercent <= UseOnlyWIfXLTEHPPercent;
+                },
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
