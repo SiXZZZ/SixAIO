@@ -57,7 +57,7 @@ namespace SixAIO.Utilities
                         {
                             PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
                             MinimumHitChance = () => HitChance,
-                            Range = () => 900,
+                            Range = () => 850,
                             Radius = () => 120,
                             Speed = () => 1550,
                             IsEnabled = () => UseEverfrost,

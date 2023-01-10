@@ -26,7 +26,7 @@ namespace SixAIO.Champions
                 IsEnabled = () => UseE,
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
                 MinimumHitChance = () => EHitChance,
-                Range = () => 900,
+                Range = () => 875,
                 Radius = () => 140,
                 Speed = () => 2000,
                 TargetSelect = (mode) => SpellE.GetTargets(mode).FirstOrDefault()

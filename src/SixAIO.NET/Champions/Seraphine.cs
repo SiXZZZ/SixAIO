@@ -34,7 +34,7 @@ namespace SixAIO.Champions
             {
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
                 MinimumHitChance = () => EHitChance,
-                Range = () => 1300,
+                Range = () => 1250,
                 Radius = () => 140,
                 Speed = () => 1200,
                 IsEnabled = () => UseE,

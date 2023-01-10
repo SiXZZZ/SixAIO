@@ -20,7 +20,7 @@ namespace SixAIO.Champions
                 CastPosition = (castPos) => SpellQ.From().ToW2S().Extend(castPos, SpellQ.From().ToW2S().Distance(castPos) + QExtraRange),
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
                 MinimumHitChance = () => QHitChance,
-                Range = () => 1000,
+                Range = () => 975,
                 Radius = () => 180,
                 Speed = () => 1600,
                 IsEnabled = () => UseQ,

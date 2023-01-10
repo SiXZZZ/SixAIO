@@ -22,7 +22,7 @@ namespace SixAIO.Champions
                 AllowCollision = (target, collisions) => !collisions.Any(),
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
                 MinimumHitChance = () => QHitChance,
-                Range = () => 950,
+                Range = () => 900,
                 Radius = () => 120,
                 Speed = () => 1700,
                 IsEnabled = () => UseQ,

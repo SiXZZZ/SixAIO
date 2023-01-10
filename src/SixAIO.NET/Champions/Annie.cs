@@ -49,7 +49,7 @@ namespace SixAIO.Champions
             {
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Cone,
                 MinimumHitChance = () => WHitChance,
-                Range = () => 600f,
+                Range = () => 575,
                 Radius = () => 50f,
                 Speed = () => 2000,
                 IsEnabled = () => UseW,
