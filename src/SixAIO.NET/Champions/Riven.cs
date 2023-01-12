@@ -83,6 +83,7 @@ namespace SixAIO.Champions
                 IsTargetted = () => true,
                 Delay = () => 0f,
                 IsEnabled = () => UseQ,
+                IsSpellReady = (spellClass, minMana, minCharges) => spellClass.IsSpellReady,
                 ShouldCast = (mode, target, spellClass, damage) =>
                             _lastAATime > _lastQTime + 0.333f &&
                             _lastAATime > _lastQChargeTime + 0.333f &&
@@ -92,11 +93,13 @@ namespace SixAIO.Champions
             SpellQ23 = new Spell(CastSlot.Q, SpellSlot.Q)
             {
                 IsEnabled = () => UseQ,
+                IsSpellReady = (spellClass, minMana, minCharges) => spellClass.IsSpellReady,
                 ShouldCast = (mode, target, spellClass, damage) => GameEngine.GameTime >= _lastQChargeTime + 3.5f && _lastQCharge <= QStacks() && ((UseQ2BeforeExpire && QStacks() == 1) || (UseQ3BeforeExpire && QStacks() == 2))
             };
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
             {
                 IsEnabled = () => UseW,
+                IsSpellReady = (spellClass, minMana, minCharges) => spellClass.IsSpellReady,
                 ShouldCast = (mode, target, spellClass, damage) =>
                             UnitManager.EnemyChampions.Any(x => x.Distance <= x.BoundingRadius + (IsUltActive() ? 300 : 250) && TargetSelector.IsAttackable(x)),
             };
@@ -105,6 +108,7 @@ namespace SixAIO.Champions
                 IsTargetted = () => true,
                 Delay = () => 0f,
                 IsEnabled = () => UseE,
+                IsSpellReady = (spellClass, minMana, minCharges) => spellClass.IsSpellReady,
                 TargetSelect = (mode) => UnitManager.EnemyChampions.FirstOrDefault(x => x.Distance <= (IsUltActive() ? 450 : 400) && TargetSelector.IsAttackable(x))
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
