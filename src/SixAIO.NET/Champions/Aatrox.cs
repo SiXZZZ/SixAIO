@@ -52,6 +52,7 @@ namespace SixAIO.Champions
                     3 => 300,
                     _ => 180,
                 },
+                IsSpellReady = (spellClass, minMana, minCharges) => spellClass.IsSpellReady,
                 IsEnabled = () => UseQ,
                 TargetSelect = (mode) => SpellQ.GetTargets(mode,
                                                     x => OnlyQOnKnockedUpTargets
@@ -67,6 +68,7 @@ namespace SixAIO.Champions
                 Radius = () => 160,
                 Speed = () => 1800,
                 IsEnabled = () => UseW,
+                IsSpellReady = (spellClass, minMana, minCharges) => spellClass.IsSpellReady,
                 TargetSelect = (mode) => SpellW.GetTargets(mode,
                                                     x => OnlyWOnKnockedUpTargets
                                                     ? x.BuffManager.ActiveBuffs.Any(buff => buff.EntryType == BuffType.Knockup || buff.EntryType == BuffType.Knockback)
@@ -75,6 +77,7 @@ namespace SixAIO.Champions
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
+                IsSpellReady = (spellClass, minMana, minCharges) => spellClass.IsSpellReady,
                 IsTargetted = () => true,
                 IsEnabled = () => UseE,
                 ShouldCast = (mode, target, spellClass, damage) => target is not null && TargetSelector.IsAttackable(target) && !TargetSelector.IsInRange(target),

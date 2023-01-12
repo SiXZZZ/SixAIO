@@ -32,6 +32,7 @@ namespace SixAIO.Champions
             Oasys.SDK.InputProviders.KeyboardProvider.OnKeyPress += KeyboardProvider_OnKeyPress;
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
+                IsSpellReady = (spellClass, minMana, minCharges) => spellClass.IsSpellReady,
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
                 MinimumHitChance = () => QHitChance,
                 Speed = () => 1500,
@@ -66,6 +67,7 @@ namespace SixAIO.Champions
             };
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
             {
+                IsSpellReady = (spellClass, minMana, minCharges) => spellClass.IsSpellReady,
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Cone,
                 MinimumHitChance = () => WHitChance,
                 Range = () => 600,
@@ -76,6 +78,7 @@ namespace SixAIO.Champions
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
+                IsSpellReady = (spellClass, minMana, minCharges) => spellClass.IsSpellReady,
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
                 MinimumHitChance = () => RHitChance,
                 Range = () => RMaximumRange,
@@ -87,6 +90,7 @@ namespace SixAIO.Champions
             };
             SpellRSemiAuto = new Spell(CastSlot.R, SpellSlot.R)
             {
+                IsSpellReady = (spellClass, minMana, minCharges) => spellClass.IsSpellReady,
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
                 MinimumHitChance = () => SemiAutoRHitChance,
                 Range = () => RMaximumRange,

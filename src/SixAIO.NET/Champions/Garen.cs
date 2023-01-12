@@ -31,6 +31,7 @@ namespace SixAIO.Champions
             Orbwalker.OnOrbwalkerAfterBasicAttack += Orbwalker_OnOrbwalkerAfterBasicAttack;
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
+                IsSpellReady = (spellClass, minMana, minCharges) => spellClass.IsSpellReady,
                 IsEnabled = () => UseQ && !IsQActive,
                 ShouldCast = (mode, target, spellClass, damage) =>
                             _lastAATime > _lastQTime &&
@@ -40,6 +41,7 @@ namespace SixAIO.Champions
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
+                IsSpellReady = (spellClass, minMana, minCharges) => spellClass.IsSpellReady,
                 IsEnabled = () => UseE && !IsEActive && !IsQActive,
                 ShouldCast = (mode, target, spellClass, damage) =>
                             TargetSelector.IsAttackable(Orbwalker.TargetHero) &&
@@ -47,6 +49,7 @@ namespace SixAIO.Champions
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
+                IsSpellReady = (spellClass, minMana, minCharges) => spellClass.IsSpellReady,
                 IsTargetted = () => true,
                 IsEnabled = () => UseR,
                 TargetSelect = (mode) => GetPrioritizationTarget(),

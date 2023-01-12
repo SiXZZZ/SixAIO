@@ -34,6 +34,7 @@ namespace SixAIO.Champions
             SDKSpell.OnSpellCast += Spell_OnSpellCast;
             PokeSpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
+                IsSpellReady = (spellClass, minMana, minCharges) => spellClass.IsSpellReady,
                 IsTargetted = () => true,
                 Range = () => 625,
                 IsEnabled = () => UseQ && !SpellE.SpellClass.IsSpellReady,
@@ -41,11 +42,13 @@ namespace SixAIO.Champions
             };
             PokeSpellW = new Spell(CastSlot.W, SpellSlot.W)
             {
+                IsSpellReady = (spellClass, minMana, minCharges) => spellClass.IsSpellReady,
                 IsEnabled = () => UseW,
                 ShouldCast = (mode, target, spellClass, damage) => !SpellE.SpellClass.IsSpellReady && UnitManager.EnemyChampions.Any(x => TargetSelector.IsAttackable(x) && x.Distance < REnemiesCloserThan),
             };
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
+                IsSpellReady = (spellClass, minMana, minCharges) => spellClass.IsSpellReady,
                 IsTargetted = () => true,
                 Range = () => 625,
                 IsEnabled = () => UseQ,
@@ -53,11 +56,13 @@ namespace SixAIO.Champions
             };
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
             {
+                IsSpellReady = (spellClass, minMana, minCharges) => spellClass.IsSpellReady,
                 IsEnabled = () => UseW,
                 ShouldCast = (mode, target, spellClass, damage) => UnitManager.EnemyChampions.Any(x => TargetSelector.IsAttackable(x) && x.Distance < REnemiesCloserThan),
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
+                IsSpellReady = (spellClass, minMana, minCharges) => spellClass.IsSpellReady,
                 IsTargetted = () => true,
                 Range = () => 775,
                 Delay = () => 0.5f,
@@ -82,6 +87,7 @@ namespace SixAIO.Champions
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
+                IsSpellReady = (spellClass, minMana, minCharges) => spellClass.IsSpellReady,
                 IsEnabled = () => UseR,
                 ShouldCast = (mode, target, spellClass, damage) =>
                 {

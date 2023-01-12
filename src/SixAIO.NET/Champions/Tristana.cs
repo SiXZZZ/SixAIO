@@ -36,6 +36,7 @@ namespace SixAIO.Champions
             Oasys.Common.EventsProvider.GameEvents.OnGameProcessSpell += GameEvents_OnGameProcessSpell;
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
+                IsSpellReady = (spellClass, minMana, minCharges) => spellClass.IsSpellReady,
                 IsEnabled = () => UseQ,
                 ShouldCast = (mode, target, spellClass, damage) => GetETarget(UnitManager.EnemyChampions) is not null
             };

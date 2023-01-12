@@ -24,7 +24,7 @@ namespace SixAIO.Champions
                     var champs = UnitManager.EnemyChampions.Count(x => x.Distance <= 600 && TargetSelector.IsAttackable(x));
                     var minions = UnitManager.EnemyMinions.Count(x => x.Distance <= 600 && TargetSelector.IsAttackable(x));
                     var jungleMobs = UnitManager.EnemyJungleMobs.Count(x => x.Distance <= 600 && TargetSelector.IsAttackable(x));
-                    return champs > 0 && minions <= 1 && jungleMobs <= 1;
+                    return champs > 0 && minions < 1 && jungleMobs < 1;
                 }
             };
             SpellW = new Spell(CastSlot.W, SpellSlot.W)

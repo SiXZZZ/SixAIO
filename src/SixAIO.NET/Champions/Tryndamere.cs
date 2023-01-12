@@ -18,12 +18,14 @@ namespace SixAIO.Champions
         {
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
+                IsSpellReady = (spellClass, minMana, minCharges) => spellClass.IsSpellReady,
                 Delay = () => 0f,
                 IsEnabled = () => UseQ,
                 ShouldCast = (mode, target, spellClass, damage) => UnitManager.MyChampion.IsAlive && UnitManager.MyChampion.HealthPercent < QHealthPercent
             };
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
             {
+                IsSpellReady = (spellClass, minMana, minCharges) => spellClass.IsSpellReady,
                 IsTargetted = () => true,
                 Range = () => 850,
                 IsEnabled = () => UseW,
@@ -31,6 +33,7 @@ namespace SixAIO.Champions
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
+                IsSpellReady = (spellClass, minMana, minCharges) => spellClass.IsSpellReady,
                 AllowCollision = (target, collisions) => true,
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
                 MinimumHitChance = () => Prediction.MenuSelected.HitChance.High,
@@ -43,6 +46,7 @@ namespace SixAIO.Champions
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
+                IsSpellReady = (spellClass, minMana, minCharges) => spellClass.IsSpellReady,
                 Delay = () => 0f,
                 IsEnabled = () => UseR,
                 ShouldCast = (mode, target, spellClass, damage) => UnitManager.MyChampion.IsAlive && UnitManager.MyChampion.HealthPercent < RHealthPercent

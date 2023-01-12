@@ -29,6 +29,7 @@ namespace SixAIO.Champions
                 Speed = () => 2600,
                 Delay = () => 0f,
                 IsEnabled = () => UseQ,
+                IsSpellReady = (spellClass, minMana, minCharges) => spellClass.IsSpellReady,
                 Damage = (target, spellClass) => GetQDamage(target),
                 TargetSelect = (mode) =>
                 {

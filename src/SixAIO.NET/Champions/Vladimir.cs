@@ -23,6 +23,7 @@ namespace SixAIO.Champions
             Oasys.SDK.InputProviders.KeyboardProvider.OnKeyPress += KeyboardProvider_OnKeyPress;
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
+                IsSpellReady = (spellClass, minMana, minCharges) => spellClass.IsSpellReady,
                 IsTargetted = () => true,
                 Range = () => 600,
                 IsEnabled = () => UseQ,
@@ -56,6 +57,7 @@ namespace SixAIO.Champions
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
+                IsSpellReady = (spellClass, minMana, minCharges) => spellClass.IsSpellReady,
                 IsCharge = () => true,
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
                 MinimumHitChance = () => Prediction.MenuSelected.HitChance.Low,
@@ -69,12 +71,12 @@ namespace SixAIO.Champions
                 MinimumCharges = () => 0,
                 AllowCollision = (_, _) => false,
                 Delay = () => 0,
-                IsSpellReady = (spellClass, minMana, minCharges) => spellClass.IsSpellReady,
                 ShouldCast = (mode, target, spellClass, damage) => target != null && (target.Distance < SpellE.Range() || (!SpellE.ChargeTimer.IsRunning && target.Distance <= 600)),
                 TargetSelect = (mode) => SpellE.GetTargets(mode).FirstOrDefault()
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
+                IsSpellReady = (spellClass, minMana, minCharges) => spellClass.IsSpellReady,
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Circle,
                 MinimumHitChance = () => RHitChance,
                 Range = () => 625,
