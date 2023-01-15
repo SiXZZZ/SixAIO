@@ -1,13 +1,16 @@
 ﻿using Oasys.Common.Enums.GameEnums;
+using Oasys.Common.GameObject;
 using Oasys.Common.Menu;
 using Oasys.Common.Menu.ItemComponents;
 using Oasys.SDK;
 using Oasys.SDK.Menu;
 using Oasys.SDK.SpellCasting;
+using Oasys.SDK.Tools;
 using SixAIO.Helpers;
 using SixAIO.Models;
 using System;
 using System.Linq;
+using System.Net.Sockets;
 using System.Windows.Forms;
 
 namespace SixAIO.Champions
@@ -16,7 +19,7 @@ namespace SixAIO.Champions
     {
         private static bool IsQActive()
         {
-            var buff = UnitManager.MyChampion.BuffManager.GetBuffByName("JinxQ", false, true);
+            var buff = UnitManager.MyChampion.BuffManager.ActiveBuffs.FirstOrDefault(x => x.Name == "JinxQ");
             return buff != null && buff.IsActive && buff.Stacks >= 1;
         }
 
@@ -47,20 +50,29 @@ namespace SixAIO.Champions
                                         : UnitManager.MyChampion.TrueAttackRange + extraRange;
                     rocketRange = Math.Max(QMinigunMaximumRange, rocketRange);
 
+                    Orbwalker.SelectedTarget = Oasys.Common.Logic.Orbwalker.GetTarget((Oasys.Common.Logic.OrbwalkingMode)mode, rocketRange);
+
                     if (mode == Orbwalker.OrbWalkingModeType.LaneClear)
                     {
-                        return QPreferRockets ? !usingRockets : usingRockets;
+                        if (ShouldUseRocketsForAOE(usingRockets, Orbwalker.LaneClearTarget))
+                        {
+                            return !usingRockets;
+                        }
+
+                        return QPreferRockets
+                            ? !usingRockets
+                            : usingRockets;
                     }
 
-                    //if (!UnitManager.EnemyChampions.Any(x => x.Distance < 1200 && TargetSelector.IsAttackable(x)))
-                    //{
-                    //    return usingRockets;
-                    //}
                     if (usingMinigun && Orbwalker.TargetHero != null && Orbwalker.TargetHero.Distance > minigunRange)
                     {
                         return true;
                     }
-                    if (usingRockets && Orbwalker.TargetHero != null && Orbwalker.TargetHero.Distance < minigunRange)
+                    if (ShouldUseRocketsForAOE(usingRockets, Orbwalker.TargetHero))
+                    {
+                        return !usingRockets;
+                    }
+                    else if (usingRockets && Orbwalker.TargetHero != null && Orbwalker.TargetHero.Distance < minigunRange)
                     {
                         return true;
                     }
@@ -150,6 +162,43 @@ namespace SixAIO.Champions
             };
         }
 
+        private bool ShouldUseRocketsForAOE(bool usingRockets, GameObjectBase orbTarget)
+        {
+            if (!UseRocketsForAOE)
+            {
+                return false;
+            }
+
+            if (orbTarget is null)
+            {
+                return usingRockets;
+            }
+
+            if (orbTarget.IsObject(ObjectTypeFlag.AIHeroClient))
+            {
+                var championNear = UnitManager.EnemyChampions.Any(x => x.NetworkID != orbTarget.NetworkID && x.DistanceTo(orbTarget.Position) <= QAOERadius && TargetSelector.IsAttackable(x));
+                if (championNear)
+                {
+                    return true;
+                }
+            }
+            if (orbTarget.IsObject(ObjectTypeFlag.AIMinionClient))
+            {
+                var minionNear = UnitManager.EnemyMinions.Any(x => x.NetworkID != orbTarget.NetworkID && x.DistanceTo(orbTarget.Position) <= QAOERadius && TargetSelector.IsAttackable(x));
+                if (minionNear)
+                {
+                    return true;
+                }
+                var monsterNear = UnitManager.EnemyJungleMobs.Any(x => x.NetworkID != orbTarget.NetworkID && x.DistanceTo(orbTarget.Position) <= QAOERadius && TargetSelector.IsAttackable(x));
+                if (monsterNear)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
         private void KeyboardProvider_OnKeyPress(Keys keyBeingPressed, Oasys.Common.Tools.Devices.Keyboard.KeyPressState pressState)
         {
             if (keyBeingPressed == SemiAutoRKey && pressState == Oasys.Common.Tools.Devices.Keyboard.KeyPressState.Down)
@@ -166,12 +215,29 @@ namespace SixAIO.Champions
             }
         }
 
+        internal override void OnCoreMainInputBeforeBasicAttack()
+        {
+            SpellQ.ExecuteCastSpell();
+        }
+
         internal override void OnCoreLaneClearInput()
         {
             if (SpellQ.ExecuteCastSpell(Orbwalker.OrbWalkingModeType.LaneClear))
             {
                 return;
             }
+        }
+
+        private bool UseRocketsForAOE
+        {
+            get => QSettings.GetItem<Switch>("Use Rockets For AOE").IsOn;
+            set => QSettings.GetItem<Switch>("Use Rockets For AOE").IsOn = value;
+        }
+
+        private int QAOERadius
+        {
+            get => QSettings.GetItem<Counter>("Q AOE Radius").Value;
+            set => QSettings.GetItem<Counter>("Q AOE Radius").Value = value;
         }
 
         private bool QPreferRockets
@@ -252,11 +318,13 @@ namespace SixAIO.Champions
 
             QSettings.AddItem(new Switch() { Title = "Use Q", IsOn = true });
             QSettings.AddItem(new Switch() { Title = "Use Q Laneclear", IsOn = true });
+            QSettings.AddItem(new Switch() { Title = "Use Rockets For AOE", IsOn = true });
+            QSettings.AddItem(new Counter() { Title = "Q AOE Radius", MinValue = 25, MaxValue = 250, Value = 250, ValueFrequency = 25 });
             QSettings.AddItem(new Switch() { Title = "Q prefer rockets", IsOn = false });
             QSettings.AddItem(new Counter() { Title = "Q Minigun Maximum Range", MinValue = 0, MaxValue = 750, Value = 750, ValueFrequency = 25 });
 
             WSettings.AddItem(new Switch() { Title = "Use W", IsOn = true });
-            WSettings.AddItem(new ModeDisplay() { Title = "W HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
+            WSettings.AddItem(new ModeDisplay() { Title = "W HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "VeryHigh" });
             WSettings.AddItem(new Switch() { Title = "W only outside of attack range", IsOn = false });
             WSettings.AddItem(new Counter() { Title = "W minimum range", MinValue = 0, MaxValue = 1500, Value = 0, ValueFrequency = 50 });
 
@@ -268,12 +336,12 @@ namespace SixAIO.Champions
             ESettings.AddItem(new Counter() { Title = "E enemy maximum range", MinValue = 0, MaxValue = 900, Value = 250, ValueFrequency = 50 });
 
             RSettings.AddItem(new Switch() { Title = "Use R", IsOn = true });
-            RSettings.AddItem(new ModeDisplay() { Title = "R HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
+            RSettings.AddItem(new ModeDisplay() { Title = "R HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "VeryHigh" });
 
 
             RSettings.AddItem(new Switch() { Title = "Use Semi Auto R", IsOn = true });
             RSettings.AddItem(new KeyBinding() { Title = "Semi Auto R Key", SelectedKey = Keys.T });
-            RSettings.AddItem(new ModeDisplay() { Title = "Semi Auto R HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
+            RSettings.AddItem(new ModeDisplay() { Title = "Semi Auto R HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "VeryHigh" });
 
 
             RSettings.AddItem(new Switch() { Title = "Allow R cast on minimap", IsOn = true });

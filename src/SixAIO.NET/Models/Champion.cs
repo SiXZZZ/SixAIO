@@ -245,5 +245,7 @@ namespace SixAIO.Models
         internal virtual void InitializeMenu() { }
 
         internal virtual void OnGameMatchComplete() { }
+
+        internal virtual void OnCoreMainInputBeforeBasicAttack() { }
     }
 }

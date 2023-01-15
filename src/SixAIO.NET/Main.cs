@@ -78,6 +78,7 @@ namespace SixAIO
 
             CoreEvents.OnCoreRender += CoreEvents_OnCoreRender;
             CoreEvents.OnCoreMainTick += CoreEvents_OnCoreMainTick;
+            CoreEvents.OnCoreMainInputBeforeBasicAttackAsync += CoreEvents_OnCoreMainInputBeforeBasicAttackAsync;
             CoreEvents.OnCoreMainInputAsync += CoreEvents_OnCoreMainInputAsync;
             CoreEvents.OnCoreHarassInputAsync += CoreEvents_OnCoreHarassInputAsync;
             CoreEvents.OnCoreLaneclearInputAsync += CoreEvents_OnCoreLaneclearInputAsync;
@@ -103,6 +104,19 @@ namespace SixAIO
             catch (Exception)
             {
             }
+        }
+
+        private static Task CoreEvents_OnCoreMainInputBeforeBasicAttackAsync()
+        {
+            try
+            {
+                _currentChampion?.OnCoreMainInputBeforeBasicAttack();
+            }
+            catch (Exception)
+            {
+            }
+
+            return Task.CompletedTask;
         }
 
         private static Task CoreEvents_OnCoreMainInputRelease()
