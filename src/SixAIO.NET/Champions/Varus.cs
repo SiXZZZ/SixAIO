@@ -81,7 +81,7 @@ namespace SixAIO.Champions
                 IsEnabled = () => UseR,
                 TargetSelect = (mode) => SpellR.GetTargets(mode, x => x.HealthPercent <= UseOnlyRIfXLTEHPPercent &&
                                                                         (ROnlyIfXGTEWStacks == 0 || WStacks(x) >= ROnlyIfXGTEWStacks) &&
-                                                                        RIfMoreThanEnemiesNear < UnitManager.EnemyChampions.Count(enemy =>
+                                                                        RIfMoreThanEnemiesNear <= UnitManager.EnemyChampions.Count(enemy =>
                                                                         TargetSelector.IsAttackable(enemy) && enemy.Distance(x) < REnemiesCloserThan))
                                                 .FirstOrDefault()
             };
@@ -159,7 +159,7 @@ namespace SixAIO.Champions
             RSettings.AddItem(new Switch() { Title = "Use R", IsOn = true });
             RSettings.AddItem(new Counter() { Title = "Use only R if x <= HP percent", MinValue = 0, MaxValue = 100, Value = 50, ValueFrequency = 5 });
             RSettings.AddItem(new ModeDisplay() { Title = "R HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
-            RSettings.AddItem(new Counter() { Title = "R x >= Enemies Near Target", MinValue = 0, MaxValue = 5, Value = 1, ValueFrequency = 1 });
+            RSettings.AddItem(new Counter() { Title = "R x >= Enemies Near Target", MinValue = 1, MaxValue = 5, Value = 1, ValueFrequency = 1 });
             RSettings.AddItem(new Counter() { Title = "R Enemies Closer Than", MinValue = 200, MaxValue = 800, Value = 600, ValueFrequency = 50 });
             RSettings.AddItem(new Counter() { Title = "Only R if x >= W stacks", MinValue = 0, MaxValue = 3, Value = 0, ValueFrequency = 1 });
         }
