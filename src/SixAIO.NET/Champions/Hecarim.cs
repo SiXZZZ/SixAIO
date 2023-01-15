@@ -41,7 +41,7 @@ namespace SixAIO.Champions
                 Radius = () => 460,
                 Speed = () => 1100,
                 IsEnabled = () => UseR,
-                TargetSelect = (mode) => SpellR.GetTargets(mode, x => RIfMoreThanEnemiesNear <= UnitManager.EnemyChampions.Count(enemy =>
+                TargetSelect = (mode) => SpellR.GetTargets(mode, x => RIfMoreThanEnemiesNear < UnitManager.EnemyChampions.Count(enemy =>
                                                                       TargetSelector.IsAttackable(enemy) && enemy.Distance(x) < REnemiesCloserThan))
                                                 .FirstOrDefault()
             };

@@ -81,7 +81,7 @@ namespace SixAIO.Champions
                 IsEnabled = () => UseR,
                 TargetSelect = (mode) => SpellR.GetTargets(mode, x => x.HealthPercent <= UseOnlyRIfXLTEHPPercent &&
                                                                         (ROnlyIfXGTEWStacks == 0 || WStacks(x) >= ROnlyIfXGTEWStacks) &&
-                                                                        RIfMoreThanEnemiesNear <= UnitManager.EnemyChampions.Count(enemy =>
+                                                                        RIfMoreThanEnemiesNear < UnitManager.EnemyChampions.Count(enemy =>
                                                                         TargetSelector.IsAttackable(enemy) && enemy.Distance(x) < REnemiesCloserThan))
                                                 .FirstOrDefault()
             };
