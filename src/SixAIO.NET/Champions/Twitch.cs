@@ -64,18 +64,17 @@ namespace SixAIO.Champions
                 Orbwalker.OrbWalkingModeType.Combo => ShouldEOnCombo(),
                 Orbwalker.OrbWalkingModeType.LaneClear =>
                             ShouldEOnCombo() ||
-                            (UnitManager.EnemyJungleMobs.Count(x => IsValidTarget(x) && IsEpicJungleMonster(x) && CanKill(x)) >= 1) ||
-                            (UnitManager.EnemyJungleMobs.Count(x => IsValidTarget(x) && CanKill(x)) >= 3) ||
-                            (UnitManager.EnemyMinions.Count(x => IsValidTarget(x) && CanKill(x)) >= 6),
+                            (UnitManager.EnemyJungleMobs.Count(x => IsValidTarget(x) && IsEpicJungleMonster(x) && CanKill(x)) >= EKillEpicMonsters) ||
+                            (UnitManager.EnemyJungleMobs.Count(x => IsValidTarget(x) && CanKill(x)) >= EKillMonsters) ||
+                            (UnitManager.EnemyMinions.Count(x => IsValidTarget(x) && CanKill(x)) >= EKillMinions),
                 _ => false
             };
         }
 
         private bool ShouldEOnCombo()
         {
-            return EWhenCanKill
-                ? UnitManager.EnemyChampions.Count(x => IsValidTarget(x) && CanKill(x)) >= 1
-                : UnitManager.EnemyChampions.Count(x => IsValidTarget(x) && TwitchEStacks(x) >= MinimumStacks) >= TargetsWithStacks;
+            return UnitManager.EnemyChampions.Count(x => IsValidTarget(x) && CanKill(x)) >= EKillChampions ||
+                   UnitManager.EnemyChampions.Count(x => IsValidTarget(x) && TwitchEStacks(x) >= MinimumStacks) >= TargetsWithStacks;
         }
 
         private static bool IsEpicJungleMonster(JungleMob target)
@@ -217,12 +216,6 @@ namespace SixAIO.Champions
             set => QSettings.GetItem<Counter>("Q Enemies Closer Than").Value = value;
         }
 
-        private bool EWhenCanKill
-        {
-            get => ESettings.GetItem<Switch>("E when can kill").IsOn;
-            set => ESettings.GetItem<Switch>("E when can kill").IsOn = value;
-        }
-
         private bool DrawEDamageChampions
         {
             get => ESettings.GetItem<Switch>("Draw E Damage Champions").IsOn;
@@ -254,6 +247,30 @@ namespace SixAIO.Champions
         {
             get => ESettings.GetItem<Counter>("Minimum stacks").Value;
             set => ESettings.GetItem<Counter>("Minimum stacks").Value = value;
+        }
+
+        private int EKillMinions
+        {
+            get => ESettings.GetItem<Counter>("E Kill Minions").Value;
+            set => ESettings.GetItem<Counter>("E Kill Minions").Value = value;
+        }
+
+        private int EKillMonsters
+        {
+            get => ESettings.GetItem<Counter>("E Kill Monsters").Value;
+            set => ESettings.GetItem<Counter>("E Kill Monsters").Value = value;
+        }
+
+        private int EKillEpicMonsters
+        {
+            get => ESettings.GetItem<Counter>("E Kill Epic Monsters").Value;
+            set => ESettings.GetItem<Counter>("E Kill Epic Monsters").Value = value;
+        }
+
+        private int EKillChampions
+        {
+            get => ESettings.GetItem<Counter>("E Kill Champions").Value;
+            set => ESettings.GetItem<Counter>("E Kill Champions").Value = value;
         }
 
         private int RIfMoreThanEnemiesNear
@@ -288,7 +305,10 @@ namespace SixAIO.Champions
             ESettings.AddItem(new Switch() { Title = "Use E Laneclear", IsOn = true });
             ESettings.AddItem(new Counter() { Title = "Targets with stacks", MinValue = 1, MaxValue = 5, Value = 1, ValueFrequency = 1 });
             ESettings.AddItem(new Counter() { Title = "Minimum stacks", MinValue = 1, MaxValue = 6, Value = 6, ValueFrequency = 1 });
-            ESettings.AddItem(new Switch() { Title = "E when can kill", IsOn = true });
+            ESettings.AddItem(new Counter() { Title = "E Kill Minions", MinValue = 0, MaxValue = 20, Value = 6, ValueFrequency = 1 });
+            ESettings.AddItem(new Counter() { Title = "E Kill Monsters", MinValue = 0, MaxValue = 10, Value = 3, ValueFrequency = 1 });
+            ESettings.AddItem(new Counter() { Title = "E Kill Epic Monsters", MinValue = 0, MaxValue = 10, Value = 1, ValueFrequency = 1 });
+            ESettings.AddItem(new Counter() { Title = "E Kill Champions", MinValue = 0, MaxValue = 10, Value = 1, ValueFrequency = 1 });
             ESettings.AddItem(new Switch() { Title = "Draw E Damage Champions", IsOn = true });
             ESettings.AddItem(new Switch() { Title = "Draw E Damage Minions", IsOn = true });
             ESettings.AddItem(new Switch() { Title = "Draw E Damage Monsters", IsOn = true });
