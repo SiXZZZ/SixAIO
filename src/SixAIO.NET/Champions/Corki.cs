@@ -20,7 +20,7 @@ namespace SixAIO.Champions
                 MinimumHitChance = () => QHitChance,
                 Range = () => 825,
                 Speed = () => 1000,
-                Radius = () => 250,
+                Radius = () => 275,
                 IsEnabled = () => UseQ,
                 TargetSelect = (mode) => SpellQ.GetTargets(mode).FirstOrDefault()
             };
@@ -34,7 +34,7 @@ namespace SixAIO.Champions
                 AllowCollision = (target, collisions) => !collisions.Any(),
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
                 MinimumHitChance = () => RHitChance,
-                Range = () => 1250,
+                Range = () => 1300,
                 Speed = () => 2000,
                 Radius = () => 80,
                 Delay = () => 0.2f,

@@ -48,7 +48,7 @@ namespace SixAIO.Champions
                 Delay = () => 0.125f,
                 IsTargetted = () => true,
                 Range = () => 700 + UnitManager.MyChampion.BoundingRadius,
-                Damage = (target, spellClass) => GetEDamage(target, spellClass),
+                Damage = GetEDamage,
                 IsEnabled = () => UseE,
                 TargetSelect = (mode) =>
                 {
@@ -64,7 +64,7 @@ namespace SixAIO.Champions
             {
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Cone,
                 MinimumHitChance = () => RHitChance,
-                Range = () => 750,
+                Range = () => 800,
                 Speed = () => 10000,
                 Radius = () => 80,
                 Delay = () => 0.5f,
@@ -78,7 +78,7 @@ namespace SixAIO.Champions
             {
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Cone,
                 MinimumHitChance = () => SemiAutoRHitChance,
-                Range = () => 750,
+                Range = () => 800,
                 Speed = () => 10000,
                 Radius = () => 80,
                 Delay = () => 0.5f,

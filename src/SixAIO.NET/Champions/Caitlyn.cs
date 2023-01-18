@@ -30,7 +30,7 @@ namespace SixAIO.Champions
                 Range = () => 1250,
                 Radius = () => 120,
                 Speed = () => 2200,
-                Delay = () => 0.6f,
+                Delay = () => 0.625f,
                 IsEnabled = () => UseQ && UseE,
                 TargetSelect = (mode) => _eTarget
             };
@@ -41,7 +41,7 @@ namespace SixAIO.Champions
                 Range = () => 1250,
                 Radius = () => 120,
                 Speed = () => 2200,
-                Delay = () => 0.6f,
+                Delay = () => 0.625f,
                 Damage = (target, spellClass) =>
                             target != null
                             ? DamageCalculator.GetArmorMod(UnitManager.MyChampion, target) *
