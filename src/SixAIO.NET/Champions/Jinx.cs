@@ -22,6 +22,7 @@ namespace SixAIO.Champions
 
         public Jinx()
         {
+            Oasys.Common.Logic.Orbwalker.OnOrbwalkerBeforeBasicAttack += Orbwalker_OnOrbwalkerBeforeBasicAttack;
             Oasys.SDK.InputProviders.KeyboardProvider.OnKeyPress += KeyboardProvider_OnKeyPress;
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
@@ -159,6 +160,14 @@ namespace SixAIO.Champions
             };
         }
 
+        private void Orbwalker_OnOrbwalkerBeforeBasicAttack(float gameTime, GameObjectBase target)
+        {
+            if (!IsQActive() && ShouldUseRocketsForAOE(false, target))
+            {
+                SpellCastProvider.CastSpell(CastSlot.Q);
+            }
+        }
+
         private bool ShouldUseRocketsForAOE(bool usingRockets, GameObjectBase orbTarget)
         {
             if (!UseRocketsForAOE)
@@ -171,14 +180,12 @@ namespace SixAIO.Champions
                 return usingRockets;
             }
 
-            if (orbTarget.IsObject(ObjectTypeFlag.AIHeroClient))
+            var championNear = UnitManager.EnemyChampions.Any(x => x.NetworkID != orbTarget.NetworkID && x.DistanceTo(orbTarget.Position) <= QAOERadius && TargetSelector.IsAttackable(x));
+            if (championNear)
             {
-                var championNear = UnitManager.EnemyChampions.Any(x => x.NetworkID != orbTarget.NetworkID && x.DistanceTo(orbTarget.Position) <= QAOERadius && TargetSelector.IsAttackable(x));
-                if (championNear)
-                {
-                    return true;
-                }
+                return true;
             }
+
             if (orbTarget.IsObject(ObjectTypeFlag.AIMinionClient))
             {
                 var minionNear = UnitManager.EnemyMinions.Any(x => x.NetworkID != orbTarget.NetworkID && x.DistanceTo(orbTarget.Position) <= QAOERadius && TargetSelector.IsAttackable(x));
@@ -210,11 +217,6 @@ namespace SixAIO.Champions
             {
                 return;
             }
-        }
-
-        internal override void OnCoreMainInputBeforeBasicAttack()
-        {
-            SpellQ.ExecuteCastSpell();
         }
 
         internal override void OnCoreLaneClearInput()
