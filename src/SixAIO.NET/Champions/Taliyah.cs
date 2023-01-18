@@ -2,13 +2,18 @@
 using Oasys.Common.Extensions;
 using Oasys.Common.Menu;
 using Oasys.Common.Menu.ItemComponents;
+using Oasys.Common.Tools;
 using Oasys.Common.Tools.Devices;
 using Oasys.SDK;
 using Oasys.SDK.Menu;
 using Oasys.SDK.SpellCasting;
+using SharpDX;
 using SixAIO.Models;
 using System;
+using System.Diagnostics;
 using System.Linq;
+using System.Threading.Tasks;
+using Switch = Oasys.Common.Menu.ItemComponents.Switch;
 
 namespace SixAIO.Champions
 {
@@ -16,6 +21,7 @@ namespace SixAIO.Champions
     {
         public Taliyah()
         {
+            SDKSpell.OnSpellCast += SDKSpell_OnSpellCast;
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
                 AllowCollision = (target, collisions) => target.IsObject(ObjectTypeFlag.AIMinionClient)
@@ -34,23 +40,35 @@ namespace SixAIO.Champions
             {
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Circle,
                 MinimumHitChance = () => WHitChance,
-                Delay = () => 0.55f,
+                Delay = () => 1f,
                 Range = () => 900,
-                Radius = () => 225,
-                Speed = () => 1500,
+                Radius = () => 200,
+                Speed = () => 5000,
                 IsEnabled = () => UseW,
                 MinimumMana = () => WMinMana,
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
-                PredictionMode = () => Prediction.MenuSelected.PredictionType.Cone,
+                PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
                 MinimumHitChance = () => EHitChance,
-                Range = () => 800,
-                Radius = () => 80f,
+                Range = () => 900,
+                Radius = () => 450f,
                 Speed = () => 2000,
                 IsEnabled = () => UseE,
                 TargetSelect = (mode) => SpellE.GetTargets(mode).FirstOrDefault()
             };
+        }
+
+        private void SDKSpell_OnSpellCast(SDKSpell spell, Oasys.Common.GameObject.GameObjectBase arg2)
+        {
+            if (spell.SpellSlot == SpellSlot.E)
+            {
+                CastW();
+            }
+            if (spell.SpellSlot == SpellSlot.W)
+            {
+                SpellQ.ExecuteCastSpell();
+            }
         }
 
         internal override void OnCoreMainInput()
@@ -61,19 +79,15 @@ namespace SixAIO.Champions
                     SpellE.IsSpellReady(SpellE.SpellClass, SpellE.MinimumMana(), SpellE.MinimumCharges()))
                 {
                     SpellE.ExecuteCastSpell();
-                    CastW();
-                    SpellQ.ExecuteCastSpell();
                 }
             }
-            else if (SpellW.IsSpellReady(SpellW.SpellClass, SpellW.MinimumMana(), SpellW.MinimumCharges()))
+            else
             {
                 CastW();
+                SpellE.ExecuteCastSpell();
             }
 
-            if (SpellQ.ExecuteCastSpell() || SpellE.ExecuteCastSpell())
-            {
-                return;
-            }
+            SpellQ.ExecuteCastSpell();
         }
 
         internal void CastW()
@@ -83,12 +97,43 @@ namespace SixAIO.Champions
             {
                 var targetPos = target.Position;
                 var predictResult = SpellW.GetPrediction(target);
-                var castPos = targetPos.Extend(targetPos + (predictResult.CastPosition - targetPos).Normalized(), 50).ToW2S();
-
-                Mouse.ClickAndBounce((int)castPos.X, (int)castPos.Y, 0, false, () => Keyboard.SendKeyDown((short)SpellW.CastSlot));
-                var secondCast = UnitManager.MyChampion.W2S;
-                Mouse.ClickAndBounce((int)secondCast.X, (int)secondCast.Y, 0, false, () => Keyboard.SendKeyUp((short)SpellW.CastSlot));
+                var castPos = targetPos.Extend(UnitManager.MyChampion.Position + (predictResult.CastPosition - UnitManager.MyChampion.Position).Normalized(), 50).ToW2S();
+                var mousePosRestore = Pos.MousePosition;
+                MouseAction(castPos, () => Keyboard.SendKeyDown((short)CastSlot.W));
+                MouseAction(UnitManager.MyChampion.W2S, () => Keyboard.SendKeyUp((short)CastSlot.W));
+                Mouse.SetCursor(mousePosRestore);
             }
+        }
+
+        private static bool MouseAction(Vector2 castPos, Action action)
+        {
+            var clock = Stopwatch.StartNew();
+            var inAction = true;
+            //parallel calling set cursor to keep the mouse where it should be while calling the callback
+            Parallel.Invoke(
+            () =>
+            {
+                action();
+
+                inAction = false;
+            },
+            () =>
+            {
+                var current = clock.ElapsedMilliseconds;
+                var i = 0;
+                do
+                {
+                    i++;
+                    if (clock.ElapsedMilliseconds > current || i % 20 == 0)
+                    {
+                        Mouse.SetCursor(castPos);
+                        current = clock.ElapsedMilliseconds;
+                    }
+                }
+                while (clock.ElapsedMilliseconds <= 50 || inAction);
+                //Logger.Log($"SetCursor Called: {i}");
+            });
+            return inAction;
         }
 
         internal override void OnCoreLaneClearInput()
