@@ -1,11 +1,11 @@
-﻿using Oasys.Common.Enums.GameEnums;
+﻿using Oasys.Common;
+using Oasys.Common.Enums.GameEnums;
 using Oasys.Common.GameObject;
 using Oasys.Common.Menu;
 using Oasys.Common.Menu.ItemComponents;
 using Oasys.SDK;
 using Oasys.SDK.Menu;
 using Oasys.SDK.SpellCasting;
-using SixAIO.Helpers;
 using SixAIO.Models;
 using System;
 using System.Linq;
@@ -15,7 +15,10 @@ namespace SixAIO.Champions
     internal sealed class Caitlyn : Champion
     {
         internal Spell SpellEQ;
+        internal Spell SpellEW;
+        internal Spell SpellWTargetted;
         private GameObjectBase _eTarget;
+        private float _lastWCast;
 
         public Caitlyn()
         {
@@ -54,11 +57,40 @@ namespace SixAIO.Champions
             {
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Circle,
                 MinimumHitChance = () => WHitChance,
+                Range = () => 780,
+                Radius = () => 15,
+                Speed = () => 5000,
+                Delay = () => 0.4f,
+                IsEnabled = () => UseW && _lastWCast + 2 <= EngineManager.GameTime,
+                MinimumCharges = () => 1,
+                TargetSelect = (mode) => SpellW.GetTargets(mode).FirstOrDefault()
+            };
+            SpellWTargetted = new Spell(CastSlot.W, SpellSlot.W)
+            {
                 IsTargetted = () => true,
                 Range = () => 780,
-                IsEnabled = () => UseW,
+                IsEnabled = () => UseW && _lastWCast + 2 <= EngineManager.GameTime,
                 MinimumCharges = () => 1,
-                TargetSelect = (mode) => SpellW.GetTargets(mode, x => BuffChecker.IsCrowdControlled(x, false)).FirstOrDefault()
+                TargetSelect = (mode) =>
+                {
+                    GameObjectBase target = null;
+
+                    if (target is null)
+                    {
+                        target = UnitManager.EnemyChampions.FirstOrDefault(x => x.Distance <= SpellW.Range() && TargetSelector.IsAttackable(x) && x.IsChanneling);
+                    }
+                    if (target is null)
+                    {
+                        target = UnitManager.EnemyChampions.FirstOrDefault(x => x.Distance <= SpellW.Range() && x.BuffManager.ActiveBuffs.Any(buff => buff.Name == "ZhonyasRingShield" && buff.Stacks >= 1));
+                    }
+                    if (target is null)
+                    {
+                        target = UnitManager.EnemyChampions.FirstOrDefault(x => x.Distance <= SpellW.Range() && !x.AIManager.IsMoving && !x.AIManager.IsDashing);
+                    }
+
+
+                    return target;
+                }
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
@@ -101,7 +133,17 @@ namespace SixAIO.Champions
 
         internal override void OnCoreMainInput()
         {
-            if (SpellW.ExecuteCastSpell() || SpellE.ExecuteCastSpell() || SpellQ.ExecuteCastSpell() || SpellR.ExecuteCastSpell())
+            if (UnitManager.EnemyChampions.Any(x => TargetSelector.IsAttackable(x) && (x.BuffManager.HasActiveBuff("CaitlynWSnare") || x.BuffManager.HasActiveBuff("CaitlynEMissile")) && x.Distance <= 1300))
+            {
+                Orbwalker.SelectedTarget = UnitManager.EnemyChampions.FirstOrDefault(x => TargetSelector.IsAttackable(x) && (x.BuffManager.HasActiveBuff("CaitlynWSnare") || x.BuffManager.HasActiveBuff("CaitlynEMissile")) && x.Distance <= 1300);
+            }
+
+            if (SpellWTargetted.ExecuteCastSpell() || SpellW.ExecuteCastSpell())
+            {
+                _lastWCast = GameEngine.GameTime;
+            }
+
+            if (SpellE.ExecuteCastSpell() || SpellQ.ExecuteCastSpell() || SpellR.ExecuteCastSpell())
             {
                 return;
             }
