@@ -54,8 +54,20 @@ namespace SixAIO.Champions
                 Range = () => 900,
                 Speed = () => 5000,
                 Radius = () => 240,
+                Delay = () => 1.4f,
                 IsEnabled = () => UseW,
                 TargetSelect = (mode) => SpellW.GetTargets(mode).FirstOrDefault()
+            };
+            SpellE = new Spell(CastSlot.E, SpellSlot.E)
+            {
+                PredictionMode = () => Prediction.MenuSelected.PredictionType.Circle,
+                MinimumHitChance = () => EHitChance,
+                Range = () => 900,
+                Speed = () => 5000,
+                Radius = () => 400,
+                Delay = () => 0.75f,
+                IsEnabled = () => UseE,
+                TargetSelect = (mode) => SpellE.GetTargets(mode).FirstOrDefault()
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
@@ -102,10 +114,10 @@ namespace SixAIO.Champions
 
         internal override void OnCoreMainInput()
         {
-            if (SpellR.ExecuteCastSpell() || SpellQ.ExecuteCastSpell() || SpellW.ExecuteCastSpell())
-            {
-                return;
-            }
+            SpellE.ExecuteCastSpell();
+            SpellW.ExecuteCastSpell();
+            SpellQ.ExecuteCastSpell();
+            SpellR.ExecuteCastSpell();
         }
 
         internal override void OnCoreLaneClearInput()
@@ -144,6 +156,7 @@ namespace SixAIO.Champions
             MenuManager.AddTab(new Tab($"SIXAIO - {nameof(Veigar)}"));
             MenuTab.AddGroup(new Group("Q Settings"));
             MenuTab.AddGroup(new Group("W Settings"));
+            MenuTab.AddGroup(new Group("E Settings"));
             MenuTab.AddGroup(new Group("R Settings"));
 
             QSettings.AddItem(new Switch() { Title = "Use Q", IsOn = true });
@@ -156,7 +169,9 @@ namespace SixAIO.Champions
             WSettings.AddItem(new Switch() { Title = "Use W", IsOn = true });
             WSettings.AddItem(new ModeDisplay() { Title = "W HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
 
-            //ESettings.AddItem(new Switch() { Title = "Use E", IsOn = true });
+            ESettings.AddItem(new Switch() { Title = "Use E", IsOn = true });
+            ESettings.AddItem(new ModeDisplay() { Title = "E HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
+
 
             RSettings.AddItem(new Switch() { Title = "Use R", IsOn = true });
         }
