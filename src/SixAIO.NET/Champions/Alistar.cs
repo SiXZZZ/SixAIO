@@ -5,7 +5,6 @@ using Oasys.SDK;
 using Oasys.SDK.Menu;
 using Oasys.SDK.SpellCasting;
 using SixAIO.Models;
-using System;
 using System.Linq;
 
 namespace SixAIO.Champions

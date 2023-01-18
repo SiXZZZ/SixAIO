@@ -1,7 +1,5 @@
 ﻿using Oasys.Common.Enums.GameEnums;
 using Oasys.Common.Extensions;
-using Oasys.Common.GameObject.Clients;
-using Oasys.Common.GameObject.ObjectClass;
 using Oasys.Common.Menu;
 using Oasys.Common.Menu.ItemComponents;
 using Oasys.SDK;

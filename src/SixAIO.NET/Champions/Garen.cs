@@ -1,7 +1,6 @@
 ﻿using Newtonsoft.Json;
 using Oasys.Common.Enums.GameEnums;
 using Oasys.Common.GameObject;
-using Oasys.Common.GameObject.ObjectClass;
 using Oasys.Common.Menu;
 using Oasys.Common.Menu.ItemComponents;
 using Oasys.SDK;

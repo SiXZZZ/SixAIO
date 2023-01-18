@@ -13,7 +13,6 @@ using Oasys.Common.Extensions;
 using System.Windows.Forms;
 using Oasys.SDK.Rendering;
 using SharpDX;
-using System.Runtime.Serialization;
 
 namespace SixAIO.Champions
 {

@@ -15,7 +15,6 @@ namespace SixAIO.Champions
     internal sealed class Caitlyn : Champion
     {
         internal Spell SpellEQ;
-        internal Spell SpellEW;
         internal Spell SpellWTargetted;
         private GameObjectBase _eTarget;
         private float _lastWCast;

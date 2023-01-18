@@ -9,7 +9,6 @@ using Oasys.Common.Menu;
 using Oasys.SDK;
 using Oasys.Common.GameObject;
 using Oasys.Common.Tools.Devices;
-using System.Threading;
 
 namespace SixAIO.Champions
 {

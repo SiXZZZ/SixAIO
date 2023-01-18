@@ -5,7 +5,6 @@ using Oasys.Common.Menu.ItemComponents;
 using Oasys.SDK;
 using Oasys.SDK.Menu;
 using Oasys.SDK.SpellCasting;
-using SixAIO.Enums;
 using SixAIO.Models;
 using System;
 using System.Linq;

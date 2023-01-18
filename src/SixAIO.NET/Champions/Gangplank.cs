@@ -1,16 +1,11 @@
 ﻿using Oasys.Common.Enums.GameEnums;
-using Oasys.Common.Extensions;
 using Oasys.Common.GameObject;
 using Oasys.Common.GameObject.Clients;
-using Oasys.Common.GameObject.ObjectClass;
 using Oasys.Common.Menu;
 using Oasys.Common.Menu.ItemComponents;
 using Oasys.SDK;
 using Oasys.SDK.Menu;
-using Oasys.SDK.Rendering;
 using Oasys.SDK.SpellCasting;
-using SharpDX;
-using SixAIO.Enums;
 using SixAIO.Helpers;
 using SixAIO.Models;
 using System;
