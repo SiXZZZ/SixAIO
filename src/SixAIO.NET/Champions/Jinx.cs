@@ -69,15 +69,24 @@ namespace SixAIO.Champions
                         {
                             return !IsUsingRockets;
                         }
-                        else
+                        else if (!UnitManager.EnemyMinions.Any(x => TargetSelector.IsAttackable(x) && x.Distance < MinigunRange) &&
+                                !UnitManager.EnemyJungleMobs.Any(x => TargetSelector.IsAttackable(x) && x.Distance < MinigunRange))
                         {
-                            return QPreferRockets
+                            if (UnitManager.EnemyMinions.Any(x => TargetSelector.IsAttackable(x) && x.Distance < RocketRange))
+                            {
+                                return !QPreferRockets || !IsUsingRockets;
+                            }
+                            if (UnitManager.EnemyJungleMobs.Any(x => TargetSelector.IsAttackable(x) && x.Distance < RocketRange))
+                            {
+                                return !QPreferRockets || !IsUsingRockets;
+                            }
+                        }
+
+                        return QPreferRockets
                                 ? !IsUsingRockets
                                 : IsUsingRockets;
-                        }
                     }
-
-                    if (mode == Orbwalker.OrbWalkingModeType.Combo)
+                    else if (mode == Orbwalker.OrbWalkingModeType.Combo)
                     {
                         if (IsUsingMinigun && Orbwalker.TargetHero != null && Orbwalker.TargetHero.Distance > MinigunRange)
                         {
@@ -124,25 +133,6 @@ namespace SixAIO.Champions
                                 {
                                     return !QPreferRockets || !IsUsingRockets;
                                 }
-                            }
-                        }
-                        else if (mode == Orbwalker.OrbWalkingModeType.LaneClear)
-                        {
-                            if (!UnitManager.EnemyMinions.Any(x => TargetSelector.IsAttackable(x) && x.Distance < MinigunRange) &&
-                                !UnitManager.EnemyJungleMobs.Any(x => TargetSelector.IsAttackable(x) && x.Distance < MinigunRange))
-                            {
-                                if (UnitManager.EnemyMinions.Any(x => TargetSelector.IsAttackable(x) && x.Distance < RocketRange))
-                                {
-                                    return !QPreferRockets || !IsUsingRockets;
-                                }
-                                if (UnitManager.EnemyJungleMobs.Any(x => TargetSelector.IsAttackable(x) && x.Distance < RocketRange))
-                                {
-                                    return !QPreferRockets || !IsUsingRockets;
-                                }
-                            }
-                            else
-                            {
-                                return !QPreferRockets || IsUsingRockets;
                             }
                         }
                     }
@@ -226,7 +216,10 @@ namespace SixAIO.Champions
             {
                 return false;
             }
-
+            if (QMinManaPercentForAOE > UnitManager.MyChampion.ManaPercent)
+            {
+                return false;
+            }
             if (orbTarget is null)
             {
                 return false;
@@ -236,7 +229,9 @@ namespace SixAIO.Champions
             {
                 return true;
             }
-            if (mode == Orbwalker.OrbWalkingModeType.LastHit || mode == Orbwalker.OrbWalkingModeType.Mixed)
+            if (mode == Orbwalker.OrbWalkingModeType.LastHit || 
+                mode == Orbwalker.OrbWalkingModeType.Mixed || 
+                mode == Orbwalker.OrbWalkingModeType.LaneClear)
             {
                 if (UnitManager.EnemyMinions.Any(x => TargetSelector.IsAttackable(x) &&
                                                     x.NetworkID != orbTarget.NetworkID &&
@@ -247,19 +242,7 @@ namespace SixAIO.Champions
                 }
                 if (UnitManager.EnemyJungleMobs.Any(x => TargetSelector.IsAttackable(x) &&
                                                         x.NetworkID != orbTarget.NetworkID &&
-                                                        x.DistanceTo(orbTarget.Position) < QAOERadius &&
-                                                        x.Health <= Oasys.Common.Logic.DamageCalculator.GetMinimumBasicAttackDamage(UnitManager.MyChampion, x)))
-                {
-                    return true;
-                }
-            }
-            else if (mode == Orbwalker.OrbWalkingModeType.LaneClear)
-            {
-                if (UnitManager.EnemyMinions.Any(x => x.NetworkID != orbTarget.NetworkID && TargetSelector.IsAttackable(x) && x.DistanceTo(orbTarget.Position) < QAOERadius))
-                {
-                    return true;
-                }
-                if (UnitManager.EnemyJungleMobs.Any(x => x.NetworkID != orbTarget.NetworkID && TargetSelector.IsAttackable(x) && x.DistanceTo(orbTarget.Position) < QAOERadius))
+                                                        x.DistanceTo(orbTarget.Position) < QAOERadius))
                 {
                     return true;
                 }
@@ -312,6 +295,12 @@ namespace SixAIO.Champions
         {
             get => QSettings.GetItem<Switch>("Use Rockets For AOE").IsOn;
             set => QSettings.GetItem<Switch>("Use Rockets For AOE").IsOn = value;
+        }
+
+        private int QMinManaPercentForAOE
+        {
+            get => QSettings.GetItem<Counter>("Q Min Mana Percent For AOE").Value;
+            set => QSettings.GetItem<Counter>("Q Min Mana Percent For AOE").Value = value;
         }
 
         private int QAOERadius
@@ -400,6 +389,7 @@ namespace SixAIO.Champions
             QSettings.AddItem(new Switch() { Title = "Use Q Laneclear", IsOn = true });
             QSettings.AddItem(new Switch() { Title = "Use Q Lasthit", IsOn = true });
             QSettings.AddItem(new Switch() { Title = "Use Q Harass", IsOn = true });
+            QSettings.AddItem(new Counter() { Title = "Q Min Mana Percent For AOE", MinValue = 0, MaxValue = 100, Value = 80, ValueFrequency = 5 });
             QSettings.AddItem(new Switch() { Title = "Use Rockets For AOE", IsOn = true });
             QSettings.AddItem(new Counter() { Title = "Q AOE Radius", MinValue = 25, MaxValue = 250, Value = 250, ValueFrequency = 25 });
             QSettings.AddItem(new Switch() { Title = "Q prefer rockets", IsOn = false });
