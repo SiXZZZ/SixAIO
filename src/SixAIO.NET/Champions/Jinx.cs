@@ -14,11 +14,22 @@ namespace SixAIO.Champions
 {
     internal sealed class Jinx : Champion
     {
-        private static bool IsQActive()
+        private bool IsQActive()
         {
             var buff = UnitManager.MyChampion.BuffManager.ActiveBuffs.FirstOrDefault(x => x.Name == "JinxQ");
             return buff != null && buff.IsActive && buff.Stacks >= 1;
         }
+        private bool IsUsingRockets => IsQActive();
+        private bool IsUsingMinigun => !IsUsingRockets;
+        private float ExtraRange => 50 + (30 * UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot.Q).Level);
+        private float MinigunRange => Math.Min(QMinigunMaximumRange,
+                                        IsUsingRockets
+                                        ? UnitManager.MyChampion.TrueAttackRange - ExtraRange
+                                        : UnitManager.MyChampion.TrueAttackRange);
+        private float RocketRange => Math.Max(QMinigunMaximumRange,
+                                        IsUsingRockets
+                                        ? UnitManager.MyChampion.TrueAttackRange
+                                        : UnitManager.MyChampion.TrueAttackRange + ExtraRange);
 
         public Jinx()
         {
@@ -34,52 +45,114 @@ namespace SixAIO.Champions
                     {
                         return false;
                     }
+                    if (!UseQHarass && mode == Orbwalker.OrbWalkingModeType.Mixed)
+                    {
+                        return false;
+                    }
+                    if (!UseQLasthit && mode == Orbwalker.OrbWalkingModeType.LastHit)
+                    {
+                        return false;
+                    }
 
-                    var usingRockets = IsQActive();
-                    var usingMinigun = !usingRockets;
-                    var extraRange = 50 + (30 * UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot.Q).Level);
-                    var minigunRange = usingRockets
-                                        ? UnitManager.MyChampion.TrueAttackRange - extraRange
-                                        : UnitManager.MyChampion.TrueAttackRange;
-                    minigunRange = Math.Min(QMinigunMaximumRange, minigunRange);
-
-                    var rocketRange = usingRockets
-                                        ? UnitManager.MyChampion.TrueAttackRange
-                                        : UnitManager.MyChampion.TrueAttackRange + extraRange;
-                    rocketRange = Math.Max(QMinigunMaximumRange, rocketRange);
-
-                    Orbwalker.SelectedTarget = Oasys.Common.Logic.Orbwalker.GetTarget((Oasys.Common.Logic.OrbwalkingMode)mode, rocketRange);
+                    if (mode != Orbwalker.OrbWalkingModeType.Combo)
+                    {
+                        Orbwalker.SelectedTarget = Oasys.Common.Logic.Orbwalker.GetTarget((Oasys.Common.Logic.OrbwalkingMode)mode, RocketRange);
+                    }
+                    else
+                    {
+                        Orbwalker.SelectedTarget = null;
+                    }
 
                     if (mode == Orbwalker.OrbWalkingModeType.LaneClear)
                     {
-                        if (ShouldUseRocketsForAOE(usingRockets, Orbwalker.LaneClearTarget))
+                        if (ShouldUseRocketsForAOE(Orbwalker.SelectedTarget, mode))
                         {
-                            return !usingRockets;
+                            return !IsUsingRockets;
                         }
-
-                        return QPreferRockets
-                            ? !usingRockets
-                            : usingRockets;
+                        else
+                        {
+                            return QPreferRockets
+                                ? !IsUsingRockets
+                                : IsUsingRockets;
+                        }
                     }
 
-                    if (usingMinigun && Orbwalker.TargetHero != null && Orbwalker.TargetHero.Distance > minigunRange)
+                    if (mode == Orbwalker.OrbWalkingModeType.Combo)
+                    {
+                        if (IsUsingMinigun && Orbwalker.TargetHero != null && Orbwalker.TargetHero.Distance > MinigunRange)
+                        {
+                            return true;
+                        }
+                        if (ShouldUseRocketsForAOE(Orbwalker.TargetHero, mode))
+                        {
+                            return !IsUsingRockets;
+                        }
+                        else if (IsUsingRockets && Orbwalker.TargetHero != null && Orbwalker.TargetHero.Distance < MinigunRange)
+                        {
+                            return true;
+                        }
+                    }
+
+                    if (IsUsingMinigun)
+                    {
+                        if (mode == Orbwalker.OrbWalkingModeType.Combo)
+                        {
+                            if (Orbwalker.TargetHero == null)
+                            {
+                                return QPreferRockets
+                                        ? !IsUsingRockets
+                                        : UnitManager.EnemyChampions.Any(x => x.Distance < RocketRange && TargetSelector.IsAttackable(x));
+                            }
+                        }
+                        if (mode == Orbwalker.OrbWalkingModeType.LastHit ||
+                            mode == Orbwalker.OrbWalkingModeType.Mixed)
+                        {
+                            if (!UnitManager.EnemyMinions.Any(x => TargetSelector.IsAttackable(x) &&
+                                                                  x.Distance < MinigunRange &&
+                                                                  x.Health <= Oasys.Common.Logic.DamageCalculator.GetMinimumBasicAttackDamage(UnitManager.MyChampion, x)) &&
+                                !UnitManager.EnemyJungleMobs.Any(x => TargetSelector.IsAttackable(x) &&
+                                                                  x.Distance < MinigunRange &&
+                                                                  x.Health <= Oasys.Common.Logic.DamageCalculator.GetMinimumBasicAttackDamage(UnitManager.MyChampion, x)))
+                            {
+                                if (UnitManager.EnemyMinions.Any(x => TargetSelector.IsAttackable(x) && x.Distance < RocketRange &&
+                                                                      x.Health <= Oasys.Common.Logic.DamageCalculator.GetMinimumBasicAttackDamage(UnitManager.MyChampion, x)))
+                                {
+                                    return !QPreferRockets || !IsUsingRockets;
+                                }
+                                else if (UnitManager.EnemyJungleMobs.Any(x => TargetSelector.IsAttackable(x) && x.Distance < RocketRange &&
+                                                                              x.Health <= Oasys.Common.Logic.DamageCalculator.GetMinimumBasicAttackDamage(UnitManager.MyChampion, x)))
+                                {
+                                    return !QPreferRockets || !IsUsingRockets;
+                                }
+                            }
+                        }
+                        else if (mode == Orbwalker.OrbWalkingModeType.LaneClear)
+                        {
+                            if (!UnitManager.EnemyMinions.Any(x => TargetSelector.IsAttackable(x) && x.Distance < MinigunRange) &&
+                                !UnitManager.EnemyJungleMobs.Any(x => TargetSelector.IsAttackable(x) && x.Distance < MinigunRange))
+                            {
+                                if (UnitManager.EnemyMinions.Any(x => TargetSelector.IsAttackable(x) && x.Distance < RocketRange))
+                                {
+                                    return !QPreferRockets || !IsUsingRockets;
+                                }
+                                if (UnitManager.EnemyJungleMobs.Any(x => TargetSelector.IsAttackable(x) && x.Distance < RocketRange))
+                                {
+                                    return !QPreferRockets || !IsUsingRockets;
+                                }
+                            }
+                            else
+                            {
+                                return !QPreferRockets || IsUsingRockets;
+                            }
+                        }
+                        else
+                        {
+                            return true;
+                        }
+                    }
+                    else
                     {
                         return true;
-                    }
-                    if (ShouldUseRocketsForAOE(usingRockets, Orbwalker.TargetHero))
-                    {
-                        return !usingRockets;
-                    }
-                    else if (usingRockets && Orbwalker.TargetHero != null && Orbwalker.TargetHero.Distance < minigunRange)
-                    {
-                        return true;
-                    }
-
-                    if (!usingRockets && Orbwalker.TargetHero == null)
-                    {
-                        return QPreferRockets
-                                ? !usingRockets
-                                : UnitManager.EnemyChampions.Any(x => x.Distance < rocketRange && TargetSelector.IsAttackable(x));
                     }
 
                     return false;
@@ -95,12 +168,6 @@ namespace SixAIO.Champions
                 Speed = () => 3300,
                 Delay = () => 0.4f,
                 MinimumMana = () => 90,
-                //Damage = (target, spellClass) =>
-                //            target != null
-                //            ? DamageCalculator.GetArmorMod(UnitManager.MyChampion, target) *
-                //            ((10 + spellClass.Level * 40) +
-                //            (UnitManager.MyChampion.UnitStats.TotalAttackDamage * (1.15f + 0.15f * spellClass.Level)))
-                //            : 0,
                 IsEnabled = () => UseW && (!WOnlyOutsideOfAttackRange || !UnitManager.EnemyChampions.Any(TargetSelector.IsInRange)),
                 TargetSelect = (mode) => SpellW.GetTargets(mode, x => x.Distance > WMinimumRange).FirstOrDefault()
             };
@@ -129,13 +196,6 @@ namespace SixAIO.Champions
                 Speed = () => 2000,
                 Delay = () => 0.6f,
                 MinimumMana = () => 100,
-                //Damage = (target, spellClass) =>
-                //            target != null
-                //            ? DamageCalculator.GetMagicResistMod(UnitManager.MyChampion, target) *
-                //                        ((100 + spellClass.Level * 150) +
-                //                        (1.5f*UnitManager.MyChampion.UnitStats.BonusAttackDamage) +
-                //                         (target.Health / target.MaxHealth * 100) < 50))
-                //            : 0,
                 IsEnabled = () => UseR,
                 IsSpellReady = (spellClass, minimumMana, minimumCharges) =>
                                 spellClass.IsSpellReady &&
@@ -162,13 +222,13 @@ namespace SixAIO.Champions
 
         private void Orbwalker_OnOrbwalkerBeforeBasicAttack(float gameTime, GameObjectBase target)
         {
-            if (!IsQActive() && ShouldUseRocketsForAOE(false, target))
+            if (IsUsingMinigun && ShouldUseRocketsForAOE(target, Orbwalker.OrbwalkingMode))
             {
                 SpellCastProvider.CastSpell(CastSlot.Q);
             }
         }
 
-        private bool ShouldUseRocketsForAOE(bool usingRockets, GameObjectBase orbTarget)
+        private bool ShouldUseRocketsForAOE(GameObjectBase orbTarget, Orbwalker.OrbWalkingModeType mode)
         {
             if (!UseRocketsForAOE)
             {
@@ -177,7 +237,7 @@ namespace SixAIO.Champions
 
             if (orbTarget is null)
             {
-                return usingRockets;
+                return false;
             }
 
             var championNear = UnitManager.EnemyChampions.Any(x => x.NetworkID != orbTarget.NetworkID && x.DistanceTo(orbTarget.Position) <= QAOERadius && TargetSelector.IsAttackable(x));
@@ -185,15 +245,33 @@ namespace SixAIO.Champions
             {
                 return true;
             }
-
-            if (orbTarget.IsObject(ObjectTypeFlag.AIMinionClient))
+            if (mode == Orbwalker.OrbWalkingModeType.LastHit || mode == Orbwalker.OrbWalkingModeType.Mixed)
             {
-                var minionNear = UnitManager.EnemyMinions.Any(x => x.NetworkID != orbTarget.NetworkID && x.DistanceTo(orbTarget.Position) <= QAOERadius && TargetSelector.IsAttackable(x));
+                var minionNear = UnitManager.EnemyMinions.Any(x => TargetSelector.IsAttackable(x) &&
+                                                                   x.NetworkID != orbTarget.NetworkID &&
+                                                                   x.DistanceTo(orbTarget.Position) < QAOERadius &&
+                                                                   x.Health <= Oasys.Common.Logic.DamageCalculator.GetMinimumBasicAttackDamage(UnitManager.MyChampion, x));
                 if (minionNear)
                 {
                     return true;
                 }
-                var monsterNear = UnitManager.EnemyJungleMobs.Any(x => x.NetworkID != orbTarget.NetworkID && x.DistanceTo(orbTarget.Position) <= QAOERadius && TargetSelector.IsAttackable(x));
+                var monsterNear = UnitManager.EnemyJungleMobs.Any(x => TargetSelector.IsAttackable(x) &&
+                                                                       x.NetworkID != orbTarget.NetworkID &&
+                                                                       x.DistanceTo(orbTarget.Position) < QAOERadius &&
+                                                                       x.Health <= Oasys.Common.Logic.DamageCalculator.GetMinimumBasicAttackDamage(UnitManager.MyChampion, x));
+                if (monsterNear)
+                {
+                    return true;
+                }
+            }
+            else if (mode == Orbwalker.OrbWalkingModeType.LaneClear)
+            {
+                var minionNear = UnitManager.EnemyMinions.Any(x => x.NetworkID != orbTarget.NetworkID && TargetSelector.IsAttackable(x) && x.DistanceTo(orbTarget.Position) < QAOERadius);
+                if (minionNear)
+                {
+                    return true;
+                }
+                var monsterNear = UnitManager.EnemyJungleMobs.Any(x => x.NetworkID != orbTarget.NetworkID && TargetSelector.IsAttackable(x) && x.DistanceTo(orbTarget.Position) < QAOERadius);
                 if (monsterNear)
                 {
                     return true;
@@ -227,6 +305,22 @@ namespace SixAIO.Champions
             }
         }
 
+        internal override void OnCoreLastHitInput()
+        {
+            if (SpellQ.ExecuteCastSpell(Orbwalker.OrbWalkingModeType.LastHit))
+            {
+                return;
+            }
+        }
+
+        internal override void OnCoreHarassInput()
+        {
+            if (SpellQ.ExecuteCastSpell(Orbwalker.OrbWalkingModeType.Mixed))
+            {
+                return;
+            }
+        }
+        
         private bool UseRocketsForAOE
         {
             get => QSettings.GetItem<Switch>("Use Rockets For AOE").IsOn;
@@ -317,6 +411,8 @@ namespace SixAIO.Champions
 
             QSettings.AddItem(new Switch() { Title = "Use Q", IsOn = true });
             QSettings.AddItem(new Switch() { Title = "Use Q Laneclear", IsOn = true });
+            QSettings.AddItem(new Switch() { Title = "Use Q Lasthit", IsOn = true });
+            QSettings.AddItem(new Switch() { Title = "Use Q Harass", IsOn = true });
             QSettings.AddItem(new Switch() { Title = "Use Rockets For AOE", IsOn = true });
             QSettings.AddItem(new Counter() { Title = "Q AOE Radius", MinValue = 25, MaxValue = 250, Value = 250, ValueFrequency = 25 });
             QSettings.AddItem(new Switch() { Title = "Q prefer rockets", IsOn = false });
