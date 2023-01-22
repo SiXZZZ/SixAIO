@@ -136,6 +136,10 @@ namespace SixAIO.Champions
                             }
                         }
                     }
+                    else
+                    {
+                        return !QPreferRockets;
+                    }
 
                     return false;
                 }
@@ -212,10 +216,6 @@ namespace SixAIO.Champions
 
         private bool ShouldUseRocketsForAOE(GameObjectBase orbTarget, Orbwalker.OrbWalkingModeType mode)
         {
-            if (!UseRocketsForAOE)
-            {
-                return false;
-            }
             if (orbTarget is null)
             {
                 return false;
@@ -226,28 +226,34 @@ namespace SixAIO.Champions
                 return true;
             }
 
-            if (QMinManaPercentForAOE > UnitManager.MyChampion.ManaPercent)
+            if (!UseRocketsForAOE)
             {
                 return false;
             }
 
-            if (mode == Orbwalker.OrbWalkingModeType.LastHit || 
-                mode == Orbwalker.OrbWalkingModeType.Mixed || 
-                mode == Orbwalker.OrbWalkingModeType.LaneClear)
+            if (mode == Orbwalker.OrbWalkingModeType.LastHit ||
+                mode == Orbwalker.OrbWalkingModeType.Mixed)
             {
                 if (UnitManager.EnemyMinions.Any(x => TargetSelector.IsAttackable(x) &&
                                                     x.NetworkID != orbTarget.NetworkID &&
-                                                    x.DistanceTo(orbTarget.Position) < QAOERadius &&
-                                                    x.Health <= Oasys.Common.Logic.DamageCalculator.GetMinimumBasicAttackDamage(UnitManager.MyChampion, x)))
-                {
-                    return true;
-                }
-                if (UnitManager.EnemyJungleMobs.Any(x => TargetSelector.IsAttackable(x) &&
+                                                    x.DistanceTo(orbTarget.Position) < 175 &&
+                                                    x.Health <= Oasys.Common.Logic.DamageCalculator.GetMinimumBasicAttackDamage(UnitManager.MyChampion, x)) ||
+                    UnitManager.EnemyJungleMobs.Any(x => TargetSelector.IsAttackable(x) &&
                                                         x.NetworkID != orbTarget.NetworkID &&
-                                                        x.DistanceTo(orbTarget.Position) < QAOERadius))
+                                                        x.DistanceTo(orbTarget.Position) < 175))
                 {
                     return true;
                 }
+            }
+            else if (mode == Orbwalker.OrbWalkingModeType.LaneClear &&
+                    (UnitManager.EnemyMinions.Any(x => TargetSelector.IsAttackable(x) &&
+                                                    x.NetworkID != orbTarget.NetworkID &&
+                                                    x.DistanceTo(orbTarget.Position) < 175) ||
+                    UnitManager.EnemyJungleMobs.Any(x => TargetSelector.IsAttackable(x) &&
+                                                        x.NetworkID != orbTarget.NetworkID &&
+                                                        x.DistanceTo(orbTarget.Position) < 175)))
+            {
+                return QMinManaPercentForAOE < UnitManager.MyChampion.ManaPercent;
             }
 
             return false;
