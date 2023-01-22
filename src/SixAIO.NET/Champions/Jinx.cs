@@ -216,10 +216,6 @@ namespace SixAIO.Champions
             {
                 return false;
             }
-            if (QMinManaPercentForAOE > UnitManager.MyChampion.ManaPercent)
-            {
-                return false;
-            }
             if (orbTarget is null)
             {
                 return false;
@@ -229,6 +225,12 @@ namespace SixAIO.Champions
             {
                 return true;
             }
+
+            if (QMinManaPercentForAOE > UnitManager.MyChampion.ManaPercent)
+            {
+                return false;
+            }
+
             if (mode == Orbwalker.OrbWalkingModeType.LastHit || 
                 mode == Orbwalker.OrbWalkingModeType.Mixed || 
                 mode == Orbwalker.OrbWalkingModeType.LaneClear)
