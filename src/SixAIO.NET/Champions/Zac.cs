@@ -1,4 +1,5 @@
 ﻿using Oasys.Common.Enums.GameEnums;
+using Oasys.Common.Extensions;
 using Oasys.Common.Menu;
 using Oasys.Common.Menu.ItemComponents;
 using Oasys.Common.Tools.Devices;
@@ -38,7 +39,11 @@ namespace SixAIO.Champions
                 IsCharge = () => true,
                 CastPosition = (pos) =>
                 {
-                    Mouse.SetCursor(pos);
+                    if (pos.IsValid() && pos.X > 0 && pos.X < Mouse.Resolution.X && pos.Y > 0 && pos.Y < Mouse.Resolution.Y)
+                    {
+                        Mouse.SetCursor(pos);
+                    }
+
                     return pos;
                 },
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Circle,
