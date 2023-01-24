@@ -23,7 +23,7 @@ namespace SixAIO.Champions
 
         private static bool IsAxe(GameObjectBase x)
         {
-            return x.Name.Contains("reticle_self", StringComparison.OrdinalIgnoreCase);
+            return x.Name.Contains("reticle", StringComparison.OrdinalIgnoreCase);
         }
 
         private static int PassiveStacks()
