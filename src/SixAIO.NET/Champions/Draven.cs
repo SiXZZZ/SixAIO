@@ -177,6 +177,14 @@ namespace SixAIO.Champions
         private int _cycle = 0;
         internal override void OnCoreMainTick()
         {
+            foreach (var axe in _axes)
+            {
+                if (!IsAxe(axe))
+                {
+                    _axes.Remove(axe);
+                }
+            }
+
             _cycle++;
             if (_cycle % 10 != 0)
             {

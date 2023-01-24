@@ -1,18 +1,32 @@
 ﻿using Oasys.Common.Enums.GameEnums;
 using Oasys.Common.Extensions;
+using Oasys.Common.GameObject;
+using Oasys.Common.GameObject.Clients;
 using Oasys.Common.Menu;
 using Oasys.Common.Menu.ItemComponents;
 using Oasys.SDK;
 using Oasys.SDK.Menu;
+using Oasys.SDK.Rendering;
 using Oasys.SDK.SpellCasting;
+using Oasys.SDK.Tools;
+using SharpDX;
 using SixAIO.Models;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace SixAIO.Champions
 {
     internal sealed class Olaf : Champion
     {
+        private static List<GameObjectBase> _axes = new();
+        private static IEnumerable<GameObjectBase> Axes() => _axes.Where(x => x.Distance <= 2000).Where(IsAxe);
+
+        private static bool IsAxe(GameObjectBase x)
+        {
+            return x.Name.StartsWith("Olaf", StringComparison.OrdinalIgnoreCase) && x.Name.Contains("_Q_Axe_Ally", StringComparison.OrdinalIgnoreCase);
+        }
+
         public Olaf()
         {
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
@@ -47,10 +61,71 @@ namespace SixAIO.Champions
             }
         }
 
+        internal override void OnCreateObject(AIBaseClient obj)
+        {
+            if (IsAxe(obj))
+            {
+                _axes.Add(obj);
+            }
+        }
+
+        internal override void OnDeleteObject(AIBaseClient obj)
+        {
+            _axes.Remove(obj);
+        }
+
+        internal override void OnCoreMainTick()
+        {
+            foreach (var axe in _axes)
+            {
+                if (!IsAxe(axe))
+                {
+                    _axes.Remove(axe);
+                }
+            }
+        }
+
+        internal override void OnCoreRender()
+        {
+            try
+            {
+                if (DrawAxes)
+                {
+                    foreach (var item in Axes())
+                    {
+                        try
+                        {
+                            var color = Oasys.Common.Tools.ColorConverter.GetColor(DrawAxesColor, 255);
+                            RenderFactory.DrawNativeCircle(item.Position, 120, color, 2);
+                            //RenderFactory.DrawText(item.Name, 18, item.W2S, Color.White);
+                        }
+                        catch (Exception)
+                        {
+                        }
+                    }
+                }
+            }
+            catch (Exception)
+            {
+            }
+        }
+
         private int QExtraRange
         {
             get => QSettings.GetItem<Counter>("Q Extra Range").Value;
             set => QSettings.GetItem<Counter>("Q Extra Range").Value = value;
+        }
+
+        private bool DrawAxes
+        {
+            get => QSettings.GetItem<Switch>("Draw Axes").IsOn;
+            set => QSettings.GetItem<Switch>("Draw Axes").IsOn = value;
+        }
+
+        private string DrawAxesColor
+        {
+            get => QSettings.GetItem<ModeDisplay>("Draw Axes Color").SelectedModeName;
+            set => QSettings.GetItem<ModeDisplay>("Draw Axes Color").SelectedModeName = value;
         }
 
         private int WBelowHPPercent
@@ -67,6 +142,8 @@ namespace SixAIO.Champions
             MenuTab.AddGroup(new Group("E Settings"));
 
             QSettings.AddItem(new Switch() { Title = "Use Q", IsOn = true });
+            QSettings.AddItem(new Switch() { Title = "Draw Axes", IsOn = true });
+            QSettings.AddItem(new ModeDisplay() { Title = "Draw Axes Color", ModeNames = Oasys.Common.Tools.ColorConverter.GetColors(), SelectedModeName = "Blue" });
             QSettings.AddItem(new ModeDisplay() { Title = "Q HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
             QSettings.AddItem(new Counter() { Title = "Q Extra Range", MinValue = 0, MaxValue = 500, Value = 50, ValueFrequency = 25 });
 
