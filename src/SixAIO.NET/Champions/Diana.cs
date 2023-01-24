@@ -34,7 +34,7 @@ namespace SixAIO.Champions
                 IsTargetted = () => true,
                 Range = () => 800,
                 IsEnabled = () => UseE,
-                TargetSelect = (mode) => SpellE.GetTargets(mode).FirstOrDefault()
+                TargetSelect = (mode) => SpellE.GetTargets(mode, x => x.BuffManager.ActiveBuffs.Any(buff => buff.Name == "dianamoonlight" && buff.Stacks >= 1)).FirstOrDefault()
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
