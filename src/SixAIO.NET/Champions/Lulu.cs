@@ -1,4 +1,5 @@
 ﻿using Oasys.Common.Enums.GameEnums;
+using Oasys.Common.GameObject.Clients;
 using Oasys.Common.GameObject.ObjectClass;
 using Oasys.Common.Menu;
 using Oasys.Common.Menu.ItemComponents;
@@ -13,6 +14,9 @@ namespace SixAIO.Champions
 {
     internal sealed class Lulu : Champion
     {
+        private AIBaseClient _pix;
+        internal Spell SpellQPix;
+
         public Lulu()
         {
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
@@ -25,6 +29,18 @@ namespace SixAIO.Champions
                 IsEnabled = () => UseQ,
                 MinimumMana = () => QMinMana,
                 TargetSelect = (mode) => SpellQ.GetTargets(mode).FirstOrDefault()
+            };
+            SpellQPix = new Spell(CastSlot.Q, SpellSlot.Q)
+            {
+                PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
+                MinimumHitChance = () => QHitChance,
+                From = () => _pix.Position,
+                Range = () => 875,
+                Radius = () => 120,
+                Speed = () => 1450,
+                IsEnabled = () => UseQ && _pix is not null,
+                MinimumMana = () => QMinMana,
+                TargetSelect = (mode) => SpellQPix.GetTargets(mode).FirstOrDefault()
             };
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
             {
@@ -163,7 +179,7 @@ namespace SixAIO.Champions
                 if (ally.IsAlive && ally.IsCastingSpell)
                 {
                     var spell = ally.GetCurrentCastingSpell();
-                    if (spell != null)
+                    if (spell != null && (spell.SpellSlot == SpellSlot.BasicAttack || spell.IsBasicAttack || spell.IsSpecialAttack))
                     {
                         var target = spell.Targets.FirstOrDefault(x => x.IsAlive && x.IsVisible && x.IsTargetable);
                         if (target != null)
@@ -187,6 +203,7 @@ namespace SixAIO.Champions
             SpellE.ExecuteCastSpell();
             SpellW.ExecuteCastSpell();
             SpellQ.ExecuteCastSpell();
+            SpellQPix.ExecuteCastSpell();
         }
 
         internal override void OnCoreMainTick()
@@ -199,8 +216,9 @@ namespace SixAIO.Champions
                 SpellR.ExecuteCastSpell();
                 SpellE.ExecuteCastSpell();
                 SpellW.ExecuteCastSpell();
-                SpellQ.ExecuteCastSpell();
             }
+
+            _pix ??= UnitManager.AllNativeObjects.FirstOrDefault(x => x.Name.Contains("Pix_Idle", StringComparison.OrdinalIgnoreCase));
         }
 
         private bool WBuffAlly
