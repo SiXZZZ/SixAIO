@@ -23,13 +23,12 @@ namespace SixAIO.Champions
                 //AllowCollision = (target, collisions) => !collisions.Any(),
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
                 MinimumHitChance = () => QHitChance,
-                Range = () => UnitManager.MyChampion.AttackRange + 245,
+                Range = () => UnitManager.MyChampion.TrueAttackRange + 200,
                 Radius = () => 80,
                 Speed = () => 2600,
                 Delay = () => 0f,
                 IsEnabled = () => UseQ,
                 IsSpellReady = (spellClass, minMana, minCharges) => spellClass.IsSpellReady,
-                Damage = (target, spellClass) => GetQDamage(target),
                 TargetSelect = (mode) =>
                 {
                     var target = SpellQ.GetTargets(mode).FirstOrDefault();
@@ -37,15 +36,15 @@ namespace SixAIO.Champions
                     {
                         if (target is null)
                         {
-                            return UnitManager.EnemyTowers.FirstOrDefault(x => TargetSelector.IsAttackable(x) && x.Distance <= SpellQ.Range() + x.BoundingRadius);
+                            target = UnitManager.EnemyTowers.FirstOrDefault(x => TargetSelector.IsAttackable(x) && x.Distance <= SpellQ.Range());
                         }
                         if (target is null)
                         {
-                            return UnitManager.EnemyInhibitors.FirstOrDefault(x => TargetSelector.IsAttackable(x) && x.Distance <= SpellQ.Range() + x.BoundingRadius);
+                            target = UnitManager.EnemyInhibitors.FirstOrDefault(x => TargetSelector.IsAttackable(x) && x.Distance <= SpellQ.Range());
                         }
-                        if (target is null && TargetSelector.IsAttackable(UnitManager.EnemyNexus) && UnitManager.EnemyNexus.Distance <= SpellQ.Range() + UnitManager.EnemyNexus.BoundingRadius)
+                        if (target is null && TargetSelector.IsAttackable(UnitManager.EnemyNexus) && UnitManager.EnemyNexus.Distance <= SpellQ.Range())
                         {
-                            return UnitManager.EnemyNexus;
+                            target = UnitManager.EnemyNexus;
                         }
                     }
                     if (mode == Orbwalker.OrbWalkingModeType.Combo)
@@ -54,11 +53,11 @@ namespace SixAIO.Champions
                     }
                     else if (mode == Orbwalker.OrbWalkingModeType.LastHit)
                     {
-                        return SpellQ.GetTargets(mode, x => x.Health <= SpellQ.Damage(x, SpellQ.SpellClass)).FirstOrDefault();
+                        return SpellQ.GetTargets(mode, x => x.Health <= GetQDamage(x)).FirstOrDefault();
                     }
                     else if (mode == Orbwalker.OrbWalkingModeType.Mixed)
                     {
-                        return SpellQ.GetTargets(mode, x => x.IsObject(ObjectTypeFlag.AIHeroClient) || x.Health <= SpellQ.Damage(x, SpellQ.SpellClass)).FirstOrDefault();
+                        return SpellQ.GetTargets(mode, x => x.IsObject(ObjectTypeFlag.AIHeroClient) || x.Health <= GetQDamage(x)).FirstOrDefault();
                     }
 
                     return target;
