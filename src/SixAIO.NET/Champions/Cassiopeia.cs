@@ -136,7 +136,11 @@ namespace SixAIO.Champions
 
         internal override void OnCoreHarassInput()
         {
-            if (SpellE.ExecuteCastSpell(Orbwalker.OrbWalkingModeType.Mixed) || SpellQ.ExecuteCastSpell(Orbwalker.OrbWalkingModeType.Mixed))
+            if (UseQHarass && SpellQ.ExecuteCastSpell(Orbwalker.OrbWalkingModeType.Mixed))
+            {
+                return;
+            }
+            if (UseEHarass && SpellE.ExecuteCastSpell(Orbwalker.OrbWalkingModeType.Mixed))
             {
                 return;
             }
@@ -202,6 +206,7 @@ namespace SixAIO.Champions
 
             QSettings.AddItem(new Switch() { Title = "Use Q", IsOn = true });
             QSettings.AddItem(new Switch() { Title = "Use Q Laneclear", IsOn = true });
+            QSettings.AddItem(new Switch() { Title = "Use Q Harass", IsOn = true });
             QSettings.AddItem(new ModeDisplay() { Title = "Q HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
 
             WSettings.AddItem(new Switch() { Title = "Use W", IsOn = true });
@@ -210,6 +215,7 @@ namespace SixAIO.Champions
             ESettings.AddItem(new Switch() { Title = "Use E", IsOn = true });
             ESettings.AddItem(new Switch() { Title = "Use E Laneclear", IsOn = true });
             ESettings.AddItem(new Switch() { Title = "Use E Lasthit", IsOn = true });
+            ESettings.AddItem(new Switch() { Title = "Use E Harass", IsOn = true });
             ESettings.AddItem(new Switch() { Title = "Show E range", IsOn = true });
             ESettings.AddItem(new ModeDisplay() { Title = "E range color", ModeNames = Oasys.Common.Tools.ColorConverter.GetColors(), SelectedModeName = "Blue" });
 
