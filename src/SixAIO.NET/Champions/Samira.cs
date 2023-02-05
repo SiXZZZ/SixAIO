@@ -60,6 +60,11 @@ namespace SixAIO.Champions
 
         private bool ShouldE(GameObjectBase target)
         {
+            if (target == null)
+            {
+                return false;
+            }
+
             return AllowEInTowerRange ||
                 (UnitManager.EnemyTowers.All(x => !x.IsAlive || x.Position.Distance(target.Position) >= 850) &&
                 target.Position.Distance(_orderNexusPos) >= 1000 &&
