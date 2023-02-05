@@ -51,12 +51,27 @@ namespace SixAIO.Champions
                 IsEnabled = () => UseE,
                 TargetSelect = (mode) =>
                 {
-                    return mode switch
+                    var target = SpellE.GetTargets(mode).OrderBy(IsPoisoned).ThenBy(x => x.EffectiveMagicHealth).FirstOrDefault();
+                    if (UseELasthit)
                     {
-                        Orbwalker.OrbWalkingModeType.LastHit => SpellE.GetTargets(mode, x => x.PredictHealth(150) <= SpellE.Damage(x, SpellE.SpellClass)).OrderBy(IsPoisoned).ThenBy(x => x.EffectiveMagicHealth).FirstOrDefault(),
-                        Orbwalker.OrbWalkingModeType.Mixed => SpellE.GetTargets(mode, x => x.PredictHealth(150) <= SpellE.Damage(x, SpellE.SpellClass)).OrderBy(IsPoisoned).ThenBy(x => x.EffectiveMagicHealth).FirstOrDefault(),
-                        _ => SpellE.GetTargets(mode).OrderBy(IsPoisoned).ThenBy(x => x.EffectiveMagicHealth).FirstOrDefault()
-                    };
+                        target = SpellE.GetTargets(mode, x => x.PredictHealth(150) <= SpellE.Damage(x, SpellE.SpellClass)).OrderBy(IsPoisoned).ThenBy(x => x.EffectiveMagicHealth).FirstOrDefault();
+                    }
+                    if (UseEHarass && mode == Orbwalker.OrbWalkingModeType.Mixed)
+                    {
+                        target = SpellE.GetTargets(mode, x => x.PredictHealth(150) <= SpellE.Damage(x, SpellE.SpellClass)).OrderBy(IsPoisoned).ThenBy(x => x.EffectiveMagicHealth).FirstOrDefault();
+                    }
+                    if (target is null && !UseELaneclear && mode == Orbwalker.OrbWalkingModeType.LaneClear)
+                    {
+                        return null;
+                    }
+                    if (target is not null)
+                    {
+                        return target;
+                    }
+                    else
+                    {
+                        return SpellE.GetTargets(mode).OrderBy(IsPoisoned).ThenBy(x => x.EffectiveMagicHealth).FirstOrDefault();
+                    }
                 }
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
@@ -140,7 +155,7 @@ namespace SixAIO.Champions
             {
                 return;
             }
-            if (UseEHarass && SpellE.ExecuteCastSpell(Orbwalker.OrbWalkingModeType.Mixed))
+            if (SpellE.ExecuteCastSpell(Orbwalker.OrbWalkingModeType.Mixed))
             {
                 return;
             }
@@ -152,7 +167,7 @@ namespace SixAIO.Champions
             {
                 return;
             }
-            if (UseELaneclear && SpellE.ExecuteCastSpell(Orbwalker.OrbWalkingModeType.LaneClear))
+            if (SpellE.ExecuteCastSpell(Orbwalker.OrbWalkingModeType.LaneClear))
             {
                 return;
             }
@@ -160,7 +175,7 @@ namespace SixAIO.Champions
 
         internal override void OnCoreLastHitInput()
         {
-            if (UseELasthit && SpellE.ExecuteCastSpell(Orbwalker.OrbWalkingModeType.LastHit))
+            if (SpellE.ExecuteCastSpell(Orbwalker.OrbWalkingModeType.LastHit))
             {
                 return;
             }
