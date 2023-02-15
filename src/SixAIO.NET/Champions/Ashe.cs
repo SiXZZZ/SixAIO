@@ -1,9 +1,12 @@
-﻿using Oasys.Common.Enums.GameEnums;
+﻿using Oasys.Common;
+using Oasys.Common.Enums.GameEnums;
 using Oasys.Common.Menu;
 using Oasys.Common.Menu.ItemComponents;
 using Oasys.SDK;
 using Oasys.SDK.Menu;
+using Oasys.SDK.Rendering;
 using Oasys.SDK.SpellCasting;
+using SharpDX;
 using SixAIO.Models;
 using System;
 using System.Linq;
@@ -64,6 +67,13 @@ namespace SixAIO.Champions
             {
                 SpellRSemiAuto.ExecuteCastSpell();
             }
+
+            var toggleRCombo = RSettings.GetItem<KeyBinding>("R Toggle Combo").SelectedKey;
+
+            if (keyBeingPressed == toggleRCombo && pressState == Oasys.Common.Tools.Devices.Keyboard.KeyPressState.Down)
+            {
+                UseR = !UseR;
+            }
         }
 
         internal override void OnCoreMainInput()
@@ -79,6 +89,16 @@ namespace SixAIO.Champions
             if (SpellW.ExecuteCastSpell())
             {
                 return;
+            }
+        }
+
+        internal override void OnCoreRender()
+        {
+            if (UseR)
+            {
+                var w2s = LeagueNativeRendererManager.WorldToScreenSpell(UnitManager.MyChampion.Position);
+                w2s.Y += 20;
+                RenderFactory.DrawText($"Toggle R Enabled", 18, w2s, Color.Blue);
             }
         }
 
@@ -117,6 +137,7 @@ namespace SixAIO.Champions
             RSettings.AddItem(new Switch() { Title = "Allow R cast on minimap", IsOn = true });
             RSettings.AddItem(new Counter() { Title = "R minimum range", MinValue = 0, MaxValue = 30_000, Value = 0, ValueFrequency = 50 });
             RSettings.AddItem(new Counter() { Title = "R maximum range", MinValue = 0, MaxValue = 30_000, Value = 2500, ValueFrequency = 50 });
+            RSettings.AddItem(new KeyBinding("R Toggle Combo", Keys.U));
 
         }
     }
