@@ -22,7 +22,7 @@ namespace SixAIO.Champions
                 MinimumHitChance = () => QHitChance,
                 MinimumMana = () => 100f,
                 Range = () => 1075,
-                Radius = () => 140,
+                Radius = () => 120,
                 Speed = () => 1900,
                 IsEnabled = () => UseQ && SpellQ.SpellClass.SpellData.SpellName == "ThreshQ",
                 TargetSelect = (mode) => SpellQ.GetTargets(mode, x => !TargetSelector.IsInvulnerable(x, Oasys.Common.Logic.DamageType.Magical, false)).FirstOrDefault(),
