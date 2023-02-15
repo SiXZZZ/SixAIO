@@ -92,6 +92,7 @@ namespace SixAIO.Champions
             {
                 var name = UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot.R).SpellData.SpellName;
                 var slotName = name.Replace("LeblancR", "");
+                slotName = slotName.Remove(1);
                 var slot = (CastSlot)Enum.Parse(typeof(CastSlot), slotName);
                 return slot;
             }
