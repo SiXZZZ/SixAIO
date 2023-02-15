@@ -9,6 +9,7 @@ using Oasys.Common.Menu.ItemComponents;
 using Oasys.SDK;
 using Oasys.SDK.Menu;
 using Oasys.SDK.SpellCasting;
+using Oasys.SDK.Tools;
 using SixAIO.Enums;
 using SixAIO.Models;
 using SixAIO.Utilities;
@@ -24,10 +25,31 @@ namespace SixAIO.Champions
     {
         private static TargetSelection _targetSelection;
 
-        private static float GetRDamage(GameObjectBase target)
+        private float GetRDamage(GameObjectBase target)
         {
-            return DamageCalculator.GetMagicResistMod(UnitManager.MyChampion, target) *
+            var eTarget = GetETarget(UnitManager.EnemyChampions);
+            var extraDamage = 0f;
+            if (eTarget is not null && eTarget.NetworkID == target.NetworkID)
+            {
+                var bombBuff = target.BuffManager.GetActiveBuff("tristanaecharge");
+                //Logger.Log(bombBuff);
+                var damage = 60f + 10f * SpellE.SpellClass.Level;
+                damage += 0.5f * UnitManager.MyChampion.UnitStats.TotalAbilityPower;
+                var bonusADScale = (25 + 25 * SpellE.SpellClass.Level) / 100;
+                damage += bonusADScale * UnitManager.MyChampion.UnitStats.BonusAttackDamage;
+
+                var damagePerStack = 18f + 3f * SpellE.SpellClass.Level;
+                var bonusADScalePerStack = (7.5f + 7.5f * SpellE.SpellClass.Level) / 100;
+                damagePerStack += bonusADScalePerStack * UnitManager.MyChampion.UnitStats.BonusAttackDamage;
+                damagePerStack += 0.15f * UnitManager.MyChampion.UnitStats.TotalAbilityPower;
+
+                damage += damagePerStack * bombBuff.Stacks + 1;
+                extraDamage = DamageCalculator.GetArmorMod(UnitManager.MyChampion, target) * damage;
+            }
+
+            var ultDamage = DamageCalculator.GetMagicResistMod(UnitManager.MyChampion, target) *
                    (UnitManager.MyChampion.UnitStats.TotalAbilityPower + 200 + 100 * UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot.R).Level);
+            return ultDamage + extraDamage;
         }
 
         public Tristana()
@@ -78,6 +100,10 @@ namespace SixAIO.Champions
                                                                 !TargetSelector.IsInvulnerable(x, Oasys.Common.Logic.DamageType.Magical, false) &&
                                                                 RSettings.GetItem<Switch>("R - " + x.ModelName).IsOn)
                                                     .OrderBy(x => x.Health);
+            if (!targets.Any())
+            {
+                targets = UnitManager.EnemyChampions.Where(x => x.Distance <= UnitManager.MyChampion.TrueAttackRange && TargetSelector.IsAttackable(x)).OrderBy(x => x.Health);
+            }
 
             var target = targets.FirstOrDefault(x => DamageCalculator.GetTargetHealthAfterBasicAttack(UnitManager.MyChampion, x) + x.NeutralShield + x.MagicalShield + 100 < GetRDamage(x));
             if (target != null)
@@ -119,7 +145,7 @@ namespace SixAIO.Champions
 
         private static GameObjectBase GetETarget<T>(List<T> enemies) where T : GameObjectBase
         {
-            return enemies.FirstOrDefault(x => TargetSelector.IsAttackable(x) && x.Distance <= UnitManager.MyChampion.TrueAttackRange && !x.IsObject(ObjectTypeFlag.BuildingProps) && x.BuffManager.HasActiveBuff("tristanaechargesound"));
+            return enemies.FirstOrDefault(x => TargetSelector.IsAttackable(x) && x.Distance <= UnitManager.MyChampion.TrueAttackRange && !x.IsObject(ObjectTypeFlag.BuildingProps) && x.BuffManager.HasActiveBuff("tristanaecharge"));
         }
 
         private bool UsePushAway
