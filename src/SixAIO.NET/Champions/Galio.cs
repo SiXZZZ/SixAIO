@@ -8,46 +8,56 @@ using System.Linq;
 using Oasys.Common.Menu;
 using Oasys.SDK;
 using Oasys.Common.GameObject;
-using Oasys.Common.GameObject.Clients;
-using Newtonsoft.Json;
+using Oasys.Common.Tools.Devices;
 using SixAIO.Utilities;
-using System.IO;
+using Newtonsoft.Json;
 using System.Collections.Generic;
-using Oasys.SDK.InputProviders;
+using System.IO;
 
 namespace SixAIO.Champions
 {
-    internal sealed class Shen : Champion
+    internal sealed class Galio : Champion
     {
         private static TargetSelection _targetSelection;
-        private AIBaseClient _spirit;
 
-        public Shen()
+        public Galio()
         {
-            SDKSpell.OnSpellCast += SDKSpell_OnSpellCast;
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
+                PredictionMode = () => Prediction.MenuSelected.PredictionType.Circle,
+                MinimumHitChance = () => QHitChance,
+                Range = () => 825,
+                Speed = () => 1400,
+                Radius = () => 120,
                 IsEnabled = () => UseQ,
-                ShouldCast = (mode, target, spellClass, damage) => true,
+                TargetSelect = (mode) => SpellQ.GetTargets(mode).FirstOrDefault()
             };
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
             {
+                IsCharge = () => true,
+                PredictionMode = () => Prediction.MenuSelected.PredictionType.Circle,
+                MinimumHitChance = () => Prediction.MenuSelected.HitChance.VeryHigh,
+                Range = () => SpellW.ChargeTimer.IsRunning
+                                        ? SpellW.SpellClass.IsSpellReady
+                                            ? 175 + SpellW.ChargeTimer.ElapsedMilliseconds / 1000 / 0.25f * 22f
+                                            : 0
+                                        : 175,
+                Radius = () => 10,
+                Speed = () => float.MaxValue,
                 IsEnabled = () => UseW,
-                ShouldCast = (mode, target, spellClass, damage) => UnitManager.EnemyChampions.Any(x =>
-                        _spirit is not null &&
-                        _spirit.DistanceTo(x.Position) <= 300 &&
-                        x.IsAlive &&
-                        TargetSelector.IsAttackable(x)),
+                MinimumMana = () => 50,
+                IsSpellReady = (spellClass, minMana, minCharges) => SpellW.ChargeTimer.IsRunning || UnitManager.MyChampion.Mana > minMana,
+                ShouldCast = (mode, target, spellClass, damage) => target != null && (target.Distance < SpellW.Range() || (!SpellW.ChargeTimer.IsRunning && target.Distance <= 175)),
+                TargetSelect = (mode) => SpellW.GetTargets(mode).FirstOrDefault()
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
                 MinimumHitChance = () => EHitChance,
-                MinimumMana = () => 150,
-                Delay = () => 0f,
-                Range = () => 600,
-                Radius = () => 80,
-                Speed = () => 800 + UnitManager.MyChampion.UnitStats.MoveSpeed,
+                Delay = () => 0.4f,
+                Range = () => 650,
+                Radius = () => 320,
+                Speed = () => 2300,
                 IsEnabled = () => UseE,
                 TargetSelect = (mode) => SpellE.GetTargets(mode).FirstOrDefault()
             };
@@ -60,50 +70,29 @@ namespace SixAIO.Champions
             };
         }
 
-        private void SDKSpell_OnSpellCast(SDKSpell spell, GameObjectBase target)
-        {
-            if (spell != null)
-            {
-                if (spell.CastSlot == CastSlot.E)
-                {
-                    SpellQ.ExecuteCastSpell();
-                }
-                if (spell.CastSlot == CastSlot.Q && UseW)
-                {
-                    KeyboardProvider.PressKey(System.Windows.Forms.Keys.W);
-                }
-            }
-        }
-
-        internal override void OnCreateObject(AIBaseClient obj)
-        {
-            if (obj.Name.Equals("ShenSpiritUnit", StringComparison.OrdinalIgnoreCase))
-            {
-                _spirit = obj;
-            }
-        }
-
         internal override void OnCoreMainInput()
         {
-            SpellE.ExecuteCastSpell();
+            SpellQ.ExecuteCastSpell();
             SpellW.ExecuteCastSpell();
+            SpellE.ExecuteCastSpell();
             SpellR.ExecuteCastSpell();
         }
 
         internal override void InitializeMenu()
         {
-            MenuManager.AddTab(new Tab($"SIXAIO - {nameof(Shen)}"));
+            MenuManager.AddTab(new Tab($"SIXAIO - {nameof(Galio)}"));
             MenuTab.AddGroup(new Group("Q Settings"));
             MenuTab.AddGroup(new Group("W Settings"));
             MenuTab.AddGroup(new Group("E Settings"));
             MenuTab.AddGroup(new Group("R Settings"));
 
             QSettings.AddItem(new Switch() { Title = "Use Q", IsOn = true });
+            QSettings.AddItem(new ModeDisplay() { Title = "Q HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
 
             WSettings.AddItem(new Switch() { Title = "Use W", IsOn = true });
 
             ESettings.AddItem(new Switch() { Title = "Use E", IsOn = true });
-            ESettings.AddItem(new ModeDisplay() { Title = "E HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "VeryHigh" });
+            ESettings.AddItem(new ModeDisplay() { Title = "E HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
 
             RSettings.AddItem(new Switch() { Title = "Use R", IsOn = true });
 
@@ -172,7 +161,7 @@ namespace SixAIO.Champions
                 GameObjectBase tempTarget = null;
                 var tempPrio = 0;
 
-                foreach (var hero in UnitManager.AllyChampions.Where(TargetSelector.IsAttackable))
+                foreach (var hero in UnitManager.AllyChampions.Where(TargetSelector.IsAttackable).Where(x => x.Distance <= 3250 + 750 * SpellR.SpellClass.Level))
                 {
                     try
                     {
