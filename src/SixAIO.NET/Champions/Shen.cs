@@ -56,6 +56,8 @@ namespace SixAIO.Champions
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
+                AllowCastOnMap = () => true,
+                IsTargetted = () => true,
                 IsEnabled = () => UseR && IsAnyAllyLow(),
                 TargetSelect = (mode) => GetPrioritizationTarget()
             };
