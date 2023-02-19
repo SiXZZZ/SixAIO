@@ -136,7 +136,7 @@ namespace SixAIO.Champions
 
         private void Orbwalker_OnOrbwalkerBeforeBasicAttack(float gameTime, GameObjectBase target)
         {
-            if (IsUsingMinigun && ShouldSwapGun(Orbwalker.OrbwalkingMode, target))
+            if (QBeforeAttack && IsUsingMinigun && ShouldSwapGun(Orbwalker.OrbwalkingMode, target))
             {
                 SpellCastProvider.CastSpell(CastSlot.Q);
             }
@@ -266,6 +266,12 @@ namespace SixAIO.Champions
             set => QSettings.GetItem<Switch>("Q prefer rockets").IsOn = value;
         }
 
+        private bool QBeforeAttack
+        {
+            get => QSettings.GetItem<Switch>("Q before attack").IsOn;
+            set => QSettings.GetItem<Switch>("Q before attack").IsOn = value;
+        }
+
         private int QMinigunMaximumRange
         {
             get => QSettings.GetItem<Counter>("Q Minigun Maximum Range").Value;
@@ -343,6 +349,7 @@ namespace SixAIO.Champions
             QSettings.AddItem(new Counter() { Title = "Q Min Mana Percent For AOE Laneclear", MinValue = 0, MaxValue = 100, Value = 80, ValueFrequency = 5 });
             QSettings.AddItem(new Switch() { Title = "Use Rockets For AOE", IsOn = true });
             QSettings.AddItem(new Switch() { Title = "Q prefer rockets", IsOn = false });
+            QSettings.AddItem(new Switch() { Title = "Q before attack", IsOn = false });
             QSettings.AddItem(new Counter() { Title = "Q Minigun Maximum Range", MinValue = 0, MaxValue = 750, Value = 750, ValueFrequency = 25 });
 
             WSettings.AddItem(new Switch() { Title = "Use W", IsOn = true });
