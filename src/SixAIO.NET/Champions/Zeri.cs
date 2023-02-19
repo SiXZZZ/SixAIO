@@ -5,6 +5,7 @@ using Oasys.Common.Menu.ItemComponents;
 using Oasys.SDK;
 using Oasys.SDK.Menu;
 using Oasys.SDK.SpellCasting;
+using Oasys.SDK.Tools;
 using SixAIO.Enums;
 using SixAIO.Models;
 using System;
@@ -23,7 +24,7 @@ namespace SixAIO.Champions
                 //AllowCollision = (target, collisions) => !collisions.Any(),
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
                 MinimumHitChance = () => QHitChance,
-                Range = () => UnitManager.MyChampion.TrueAttackRange + 200,
+                Range = () => UnitManager.MyChampion.TrueAttackRange + 185,
                 Radius = () => 80,
                 Speed = () => 2600,
                 Delay = () => 0f,
@@ -172,7 +173,7 @@ namespace SixAIO.Champions
 
         internal override void OnCoreRender()
         {
-            if (ShowQRange)
+            if (ShowQRange && UnitManager.MyChampion.IsAlive)
             {
                 var color = Oasys.Common.Tools.ColorConverter.GetColor(QRangeColor);
                 Oasys.SDK.Rendering.RenderFactory.DrawNativeCircle(UnitManager.MyChampion.Position, SpellQ.Range(), color, 2);
