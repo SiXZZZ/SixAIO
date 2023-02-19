@@ -34,7 +34,6 @@ namespace SixAIO.Champions
 
         public Jinx()
         {
-            Oasys.Common.Logic.Orbwalker.OnOrbwalkerBeforeBasicAttack += Orbwalker_OnOrbwalkerBeforeBasicAttack;
             Oasys.SDK.InputProviders.KeyboardProvider.OnKeyPress += KeyboardProvider_OnKeyPress;
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
@@ -132,14 +131,6 @@ namespace SixAIO.Champions
                 IsEnabled = () => UseSemiAutoR,
                 TargetSelect = (mode) => SpellRSemiAuto.GetTargets(mode, x => x.Distance > RMinimumRange && x.Distance <= RMaximumRange).FirstOrDefault()
             };
-        }
-
-        private void Orbwalker_OnOrbwalkerBeforeBasicAttack(float gameTime, GameObjectBase target)
-        {
-            if (IsUsingMinigun && ShouldSwapGun(Orbwalker.OrbwalkingMode, target))
-            {
-                SpellCastProvider.CastSpell(CastSlot.Q);
-            }
         }
 
         private bool ShouldSwapGun(Orbwalker.OrbWalkingModeType mode, GameObjectBase target)
