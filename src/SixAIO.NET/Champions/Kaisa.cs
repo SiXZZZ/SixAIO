@@ -11,9 +11,9 @@ using System.Linq;
 
 namespace SixAIO.Champions
 {
-    internal sealed class Kaisa : Champion
+    internal sealed class KaiSa : Champion
     {
-        public Kaisa()
+        public KaiSa()
         {
             Orbwalker.OnOrbwalkerAfterBasicAttack += Orbwalker_OnOrbwalkerAfterBasicAttack;
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
@@ -63,7 +63,7 @@ namespace SixAIO.Champions
 
         internal override void InitializeMenu()
         {
-            MenuManager.AddTab(new Tab($"SIXAIO - {nameof(Kaisa)}"));
+            MenuManager.AddTab(new Tab($"SIXAIO - {nameof(KaiSa)}"));
             MenuTab.AddGroup(new Group("Q Settings"));
             MenuTab.AddGroup(new Group("W Settings"));
 

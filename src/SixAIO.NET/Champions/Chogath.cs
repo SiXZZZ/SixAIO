@@ -11,9 +11,9 @@ using System.Linq;
 
 namespace SixAIO.Champions
 {
-    internal sealed class Chogath : Champion
+    internal sealed class ChoGath : Champion
     {
-        public Chogath()
+        public ChoGath()
         {
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
@@ -74,7 +74,7 @@ namespace SixAIO.Champions
 
         internal override void InitializeMenu()
         {
-            MenuManager.AddTab(new Tab($"SIXAIO - {nameof(Chogath)}"));
+            MenuManager.AddTab(new Tab($"SIXAIO - {nameof(ChoGath)}"));
             MenuTab.AddGroup(new Group("Q Settings"));
             MenuTab.AddGroup(new Group("W Settings"));
             MenuTab.AddGroup(new Group("E Settings"));
