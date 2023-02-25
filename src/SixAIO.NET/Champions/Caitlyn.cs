@@ -60,7 +60,7 @@ namespace SixAIO.Champions
                 Radius = () => 15,
                 Speed = () => 5000,
                 Delay = () => 0.4f,
-                IsEnabled = () => UseW && _lastWCast + 2 <= EngineManager.GameTime,
+                IsEnabled = () => UseW && _lastWCast + 1 <= EngineManager.GameTime,
                 MinimumCharges = () => 1,
                 TargetSelect = (mode) => SpellW.GetTargets(mode).FirstOrDefault()
             };
@@ -68,7 +68,7 @@ namespace SixAIO.Champions
             {
                 IsTargetted = () => true,
                 Range = () => 780,
-                IsEnabled = () => UseW && _lastWCast + 2 <= EngineManager.GameTime,
+                IsEnabled = () => UseW && _lastWCast + 1 <= EngineManager.GameTime,
                 MinimumCharges = () => 1,
                 TargetSelect = (mode) =>
                 {
@@ -84,7 +84,7 @@ namespace SixAIO.Champions
                     }
                     if (target is null)
                     {
-                        target = UnitManager.EnemyChampions.FirstOrDefault(x => x.Distance <= SpellW.Range() && !x.AIManager.IsMoving && !x.AIManager.IsDashing);
+                        target = UnitManager.EnemyChampions.FirstOrDefault(x => x.Distance <= SpellW.Range() && TargetSelector.IsAttackable(x) && !x.AIManager.IsMoving && !x.AIManager.IsDashing);
                     }
 
 
