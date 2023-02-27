@@ -15,6 +15,7 @@ namespace SixAIO.Champions
 {
     internal sealed class Jinx : Champion
     {
+        internal Spell SpellQSimple;
         private bool IsQActive()
         {
             var buff = UnitManager.MyChampion.BuffManager.ActiveBuffs.FirstOrDefault(x => x.Name == "JinxQ");
@@ -36,10 +37,50 @@ namespace SixAIO.Champions
         {
             Oasys.Common.Logic.Orbwalker.OnOrbwalkerBeforeBasicAttack += Orbwalker_OnOrbwalkerBeforeBasicAttack;
             Oasys.SDK.InputProviders.KeyboardProvider.OnKeyPress += KeyboardProvider_OnKeyPress;
+            SpellQSimple = new Spell(CastSlot.Q, SpellSlot.Q)
+            {
+                MinimumMana = () => 20,
+                IsEnabled = () => UseQ && UseSimpleQOnly,
+                ShouldCast = (mode, target, spellClass, damage) =>
+                {
+                    var usingRockets = IsQActive();
+                    var usingMinigun = !usingRockets;
+                    var extraRange = 50 + (30 * UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot.Q).Level);
+                    var minigunRange = usingRockets
+                                        ? UnitManager.MyChampion.TrueAttackRange - extraRange
+                                        : UnitManager.MyChampion.TrueAttackRange;
+                    minigunRange = Math.Min(QMinigunMaximumRange, minigunRange);
+
+                    var rocketRange = usingRockets
+                                        ? UnitManager.MyChampion.TrueAttackRange
+                                        : UnitManager.MyChampion.TrueAttackRange + extraRange;
+                    rocketRange = Math.Max(QMinigunMaximumRange, rocketRange);
+
+                    if (mode != Orbwalker.OrbWalkingModeType.Combo)
+                    {
+                        return QPreferRockets ? !usingRockets : usingRockets;
+                    }
+
+                    if ((usingMinigun && Orbwalker.TargetHero != null && Orbwalker.TargetHero.Distance > minigunRange) ||
+                        (usingRockets && Orbwalker.TargetHero != null && Orbwalker.TargetHero.Distance < minigunRange))
+                    {
+                        return true;
+                    }
+
+                    if (!usingRockets && Orbwalker.TargetHero == null)
+                    {
+                        return QPreferRockets
+                                ? !usingRockets
+                                : UnitManager.EnemyChampions.Any(x => x.Distance < rocketRange && TargetSelector.IsAttackable(x));
+                    }
+
+                    return false;
+                }
+            };
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
                 MinimumMana = () => 20,
-                IsEnabled = () => UseQ,
+                IsEnabled = () => UseQ && !UseSimpleQOnly,
                 ShouldCast = (mode, target, spellClass, damage) =>
                 {
                     Orbwalker.SelectedTarget = null;
@@ -218,7 +259,12 @@ namespace SixAIO.Champions
 
         internal override void OnCoreMainInput()
         {
-            if (SpellQ.ExecuteCastSpell() || SpellE.ExecuteCastSpell() || SpellW.ExecuteCastSpell() || SpellR.ExecuteCastSpell())
+            if (SpellQSimple.ExecuteCastSpell() || SpellQ.ExecuteCastSpell())
+            {
+                return;
+            }
+
+            if (SpellE.ExecuteCastSpell() || SpellW.ExecuteCastSpell() || SpellR.ExecuteCastSpell())
             {
                 return;
             }
@@ -246,6 +292,12 @@ namespace SixAIO.Champions
             {
                 return;
             }
+        }
+
+        private bool UseSimpleQOnly
+        {
+            get => QSettings.GetItem<Switch>("Use Simple Q Only").IsOn;
+            set => QSettings.GetItem<Switch>("Use Simple Q Only").IsOn = value;
         }
 
         private bool UseRocketsForAOE
@@ -342,6 +394,7 @@ namespace SixAIO.Champions
             MenuTab.AddGroup(new Group("E Settings"));
             MenuTab.AddGroup(new Group("R Settings"));
 
+            QSettings.AddItem(new Switch() { Title = "Use Simple Q Only", IsOn = false });
             QSettings.AddItem(new Switch() { Title = "Use Q", IsOn = true });
             QSettings.AddItem(new Switch() { Title = "Use Q Laneclear", IsOn = true });
             QSettings.AddItem(new Switch() { Title = "Use Q Lasthit", IsOn = true });
