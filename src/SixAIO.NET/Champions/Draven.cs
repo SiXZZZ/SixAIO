@@ -1,4 +1,5 @@
 ﻿using Oasys.Common.Enums.GameEnums;
+using Oasys.Common.Extensions;
 using Oasys.Common.GameObject;
 using Oasys.Common.GameObject.Clients;
 using Oasys.Common.Menu;
@@ -24,6 +25,11 @@ namespace SixAIO.Champions
         private static bool IsAxe(GameObjectBase x)
         {
             return x.Name.Contains("reticle", StringComparison.OrdinalIgnoreCase);
+        }
+
+        private static bool IsAxeCatch(GameObjectBase x)
+        {
+            return x.Name.Contains("catch_indicator", StringComparison.OrdinalIgnoreCase) || x.Name.Contains("ReticleCatchSuccess", StringComparison.OrdinalIgnoreCase);
         }
 
         private static int PassiveStacks()
@@ -161,6 +167,11 @@ namespace SixAIO.Champions
             if (IsAxe(obj))
             {
                 _axes.Add(obj);
+            }
+
+            if (obj.Distance <= 500 && IsAxeCatch(obj))
+            {
+                _axes.RemoveAll(x => x.Position.Distance(obj.Position) <= 50);
             }
         }
 
