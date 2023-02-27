@@ -1,5 +1,6 @@
 ﻿using Oasys.Common.Enums.GameEnums;
 using Oasys.Common.Extensions;
+using Oasys.Common.GameObject;
 using Oasys.Common.Menu;
 using Oasys.Common.Menu.ItemComponents;
 using Oasys.SDK;
@@ -7,6 +8,7 @@ using Oasys.SDK.Menu;
 using Oasys.SDK.SpellCasting;
 using SixAIO.Models;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace SixAIO.Champions
@@ -19,7 +21,19 @@ namespace SixAIO.Champions
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
                 IsEnabled = () => UseQ,
-                ShouldCast = (mode, target, spellClass, damage) => UnitManager.EnemyChampions.Any(x => x.Distance <= 360 && TargetSelector.IsAttackable(x))
+                ShouldCast = (mode, target, spellClass, damage) =>
+                {
+                    if (mode == Orbwalker.OrbWalkingModeType.LaneClear && UseQLaneclear)
+                    {
+                        var targets = new List<GameObjectBase>() { };
+                        targets.AddRange(UnitManager.EnemyChampions);
+                        targets.AddRange(UnitManager.EnemyMinions);
+                        targets.AddRange(UnitManager.EnemyJungleMobs);
+                        return targets.Any(x => x.Distance <= 360 && TargetSelector.IsAttackable(x));
+                    }
+
+                    return UnitManager.EnemyChampions.Any(x => x.Distance <= 360 && TargetSelector.IsAttackable(x));
+                }
             };
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
             {
@@ -54,6 +68,10 @@ namespace SixAIO.Champions
             SpellR.ExecuteCastSpell();
         }
 
+        internal override void OnCoreLaneClearInput()
+        {
+            SpellQ.ExecuteCastSpell(Orbwalker.OrbWalkingModeType.LaneClear);
+        }
 
         private int WIfMoreThanEnemiesNear
         {
@@ -88,6 +106,7 @@ namespace SixAIO.Champions
             MenuTab.AddGroup(new Group("R Settings"));
 
             QSettings.AddItem(new Switch() { Title = "Use Q", IsOn = true });
+            QSettings.AddItem(new Switch() { Title = "Use Q Laneclear", IsOn = true });
 
             WSettings.AddItem(new Switch() { Title = "Use W", IsOn = true });
             WSettings.AddItem(new Counter() { Title = "W x >= Enemies Near", MinValue = 0, MaxValue = 5, Value = 1, ValueFrequency = 1 });
