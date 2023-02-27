@@ -17,7 +17,6 @@ namespace SixAIO.Champions
     {
         public Hecarim()
         {
-
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
                 IsEnabled = () => UseQ,
