@@ -2,12 +2,14 @@
 using Oasys.Common.Enums.GameEnums;
 using Oasys.Common.Extensions;
 using Oasys.Common.GameObject.Clients;
+using Oasys.Common.Logic;
 using Oasys.Common.Menu;
 using Oasys.Common.Menu.ItemComponents;
 using Oasys.SDK;
 using Oasys.SDK.Menu;
 using Oasys.SDK.SpellCasting;
 using SharpDX;
+using SharpDX.DXGI;
 using SixAIO.Models;
 using System;
 using System.Collections.Generic;
@@ -32,7 +34,7 @@ namespace SixAIO.Champions
                 Speed = () => 4000,
                 Damage = (target, spellClass) =>
                             target != null
-                            ? DamageCalculator.GetArmorMod(UnitManager.MyChampion, target) *
+                            ? Oasys.SDK.DamageCalculator.GetArmorMod(UnitManager.MyChampion, target) *
                             (25 + spellClass.Level * 25 +
                             (UnitManager.MyChampion.UnitStats.BonusAttackDamage * 0.5f))
                             : 0,
@@ -43,8 +45,8 @@ namespace SixAIO.Champions
             {
                 IsEnabled = () => UseW,
                 ShouldCast = (mode, target, spellClass, damage) =>
-                            TargetSelector.IsAttackable(Orbwalker.TargetHero) &&
-                            TargetSelector.IsInRange(Orbwalker.TargetHero),
+                            Oasys.Common.Logic.TargetSelector.IsAttackable(Oasys.SDK.Orbwalker.TargetHero) &&
+                            Oasys.Common.Logic.TargetSelector.IsInRange(Oasys.SDK.Orbwalker.TargetHero),
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
@@ -56,16 +58,16 @@ namespace SixAIO.Champions
 
         private bool ShouldCastE()
         {
-            return UnitManager.EnemyChampions.Where(x => TargetSelector.IsAttackable(x) &&
-                                                         !TargetSelector.IsInvulnerable(x, Oasys.Common.Logic.DamageType.Physical, false))
+            return UnitManager.EnemyChampions.Where(x => Oasys.Common.Logic.TargetSelector.IsAttackable(x) &&
+                                                         !Oasys.Common.Logic.TargetSelector.IsInvulnerable(x, DamageType.Physical, false))
                                              .Any(x => GetFeathersBetweenMeAndEnemy(x) >= FeathersToHitChampions);
         }
 
         private int GetFeathersBetweenMeAndEnemy(AIBaseClient enemy)
         {
             return Feathers.Count(feather =>
-                    Geometry.DistanceFromPointToLine(enemy.W2S, new Vector2[] { UnitManager.MyChampion.W2S, feather.W2S }) <= enemy.BoundingRadius &&
-                    feather.Distance > enemy.Distance);
+                    Oasys.SDK.Geometry.DistanceFromPointToLine(enemy.Position.To2D(), new Vector2[] { UnitManager.MyChampion.Position.To2D(), feather.Position.To2D() }) <= enemy.BoundingRadius + 40 &&
+                    feather.Distance > enemy.Distance && enemy.DistanceTo(feather.Position) < feather.Distance);
         }
 
         internal override void OnCoreMainInput()
@@ -116,17 +118,29 @@ namespace SixAIO.Champions
 
         internal override void OnCoreRender()
         {
-            if (DrawFeathers && DrawThickness > 0 && UnitManager.MyChampion.IsAlive && UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot.E).Charges >= 1)
+            if (UnitManager.MyChampion.IsAlive && UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot.E).Charges >= 1)
             {
-                var w2s = LeagueNativeRendererManager.WorldToScreenSpell(UnitManager.MyChampion.Position);
                 var color = Oasys.Common.Tools.ColorConverter.GetColor(DrawColor);
-
-                foreach (var feather in Feathers)
+                if (DrawFeathers && DrawThickness > 0)
                 {
-                    var featherW2s = LeagueNativeRendererManager.WorldToScreenSpell(feather.Position);
-                    if (!featherW2s.IsZero)
+                    var w2s = LeagueNativeRendererManager.WorldToScreenSpell(UnitManager.MyChampion.Position);
+
+                    foreach (var feather in Feathers)
                     {
-                        Oasys.SDK.Rendering.RenderFactory.DrawLine(w2s.X, w2s.Y, featherW2s.X, featherW2s.Y, DrawThickness, color);
+                        var featherW2s = LeagueNativeRendererManager.WorldToScreenSpell(feather.Position);
+                        if (!featherW2s.IsZero)
+                        {
+                            Oasys.SDK.Rendering.RenderFactory.DrawLine(w2s.X, w2s.Y, featherW2s.X, featherW2s.Y, DrawThickness, color);
+                        }
+                    }
+                }
+
+                if (DrawFeatherCountCanHit)
+                {
+                    foreach (var enemy in UnitManager.EnemyChampions.Where(x => x.Distance <= 2000 && x.W2S.IsValid() && x.IsAlive))
+                    {
+                        var feathersCanHit = GetFeathersBetweenMeAndEnemy(enemy);
+                        Oasys.SDK.Rendering.RenderFactory.DrawText(feathersCanHit.ToString(), 72, enemy.W2S, color);
                     }
                 }
             }
@@ -141,7 +155,7 @@ namespace SixAIO.Champions
         internal float GetEDamage(AIBaseClient enemy)
         {
             var feathers = GetFeathersBetweenMeAndEnemy(enemy);
-            var armorMod = DamageCalculator.GetArmorMod(UnitManager.MyChampion, enemy);
+            var armorMod = Oasys.SDK.DamageCalculator.GetArmorMod(UnitManager.MyChampion, enemy);
             var physicalDamage = armorMod * ((45 + UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot.E).Level * 10 + UnitManager.MyChampion.UnitStats.BonusAttackDamage * 0.60f) * feathers);
             if (!enemy.IsObject(ObjectTypeFlag.AIHeroClient))
             {
@@ -168,6 +182,12 @@ namespace SixAIO.Champions
         {
             get => MenuTab.GetItem<Switch>("Draw Feathers").IsOn;
             set => MenuTab.GetItem<Switch>("Draw Feathers").IsOn = value;
+        }
+
+        private bool DrawFeatherCountCanHit
+        {
+            get => MenuTab.GetItem<Switch>("Draw Feather Count Hit").IsOn;
+            set => MenuTab.GetItem<Switch>("Draw Feather Count Hit").IsOn = value;
         }
 
         private int DrawThickness
@@ -227,6 +247,7 @@ namespace SixAIO.Champions
             MenuTab.AddGroup(new Group("E Settings"));
 
             MenuTab.AddItem(new Switch() { Title = "Draw Feathers", IsOn = true });
+            MenuTab.AddItem(new Switch() { Title = "Draw Feather Count Hit", IsOn = true });
             MenuTab.AddItem(new Counter() { Title = "Draw Thickness", MinValue = 0, MaxValue = 250, Value = 5, ValueFrequency = 1 });
             MenuTab.AddItem(new ModeDisplay() { Title = "Draw Color", ModeNames = Oasys.Common.Tools.ColorConverter.GetColors(), SelectedModeName = "Blue" });
 
