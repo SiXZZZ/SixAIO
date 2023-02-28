@@ -24,6 +24,11 @@ namespace SixAIO.Champions
                                                  TargetSelector.IsAttackable(x) &&
                                                  !TargetSelector.IsInvulnerable(x, Oasys.Common.Logic.DamageType.Physical, false))
             };
+            SpellW = new Spell(CastSlot.W, SpellSlot.W)
+            {
+                IsEnabled = () => UseW,
+                ShouldCast = (mode, target, spellClass, damage) => TargetSelector.IsAttackable(Orbwalker.TargetHero) && TargetSelector.IsInRange(Orbwalker.TargetHero),
+            };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Circle,
@@ -38,7 +43,7 @@ namespace SixAIO.Champions
 
         internal override void OnCoreMainInput()
         {
-            if (SpellQ.ExecuteCastSpell() || SpellE.ExecuteCastSpell())
+            if (SpellQ.ExecuteCastSpell() || SpellE.ExecuteCastSpell() || SpellW.ExecuteCastSpell())
             {
                 return;
             }
@@ -56,9 +61,12 @@ namespace SixAIO.Champions
         {
             MenuManager.AddTab(new Tab($"SIXAIO - {nameof(MissFortune)}"));
             MenuTab.AddGroup(new Group("Q Settings"));
+            MenuTab.AddGroup(new Group("W Settings"));
             MenuTab.AddGroup(new Group("E Settings"));
 
             QSettings.AddItem(new Switch() { Title = "Use Q", IsOn = true });
+
+            WSettings.AddItem(new Switch() { Title = "Use W", IsOn = true });
 
             ESettings.AddItem(new Switch() { Title = "Use E", IsOn = true });
             ESettings.AddItem(new ModeDisplay() { Title = "E HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
