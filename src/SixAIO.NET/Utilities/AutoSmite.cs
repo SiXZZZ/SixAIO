@@ -1,13 +1,19 @@
-﻿using Oasys.Common.Enums.GameEnums;
+﻿using Oasys.Common;
+using Oasys.Common.Enums.GameEnums;
 using Oasys.Common.EventsProvider;
 using Oasys.Common.GameObject;
 using Oasys.Common.GameObject.Clients.ExtendedInstances.Spells;
 using Oasys.Common.Menu;
 using Oasys.Common.Menu.ItemComponents;
+using Oasys.Common.Tools.Devices;
 using Oasys.SDK;
+using Oasys.SDK.Rendering;
 using Oasys.SDK.SpellCasting;
+using Oasys.SDK.Tools;
+using SharpDX;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 using static Oasys.Common.Logic.Orbwalker;
 
 namespace SixAIO.Utilities
@@ -19,6 +25,12 @@ namespace SixAIO.Utilities
 
         private static Tab Tab => MenuManagerProvider.GetTab($"SIXAIO - Utilities");
         private static Group AutoSmiteGroup => Tab.GetGroup("Auto Smite");
+
+        private static bool LogSmiteAction
+        {
+            get => AutoSmiteGroup.GetItem<Switch>("Log Smite Action").IsOn;
+            set => AutoSmiteGroup.GetItem<Switch>("Log Smite Action").IsOn = value;
+        }
 
         private static bool UseSmite
         {
@@ -124,8 +136,12 @@ namespace SixAIO.Utilities
                 CoreEvents.OnCoreLasthitInputAsync -= OnCoreLasthitInputAsync;
                 return Task.CompletedTask;
             }
+            Keyboard.OnKeyPress += OnKeyPress;
+            CoreEvents.OnCoreRender += CoreEvents_OnCoreRender;
 
             Tab.AddGroup(new Group("Auto Smite"));
+            AutoSmiteGroup.AddItem(new Switch() { Title = "Log Smite Action", IsOn = true });
+            AutoSmiteGroup.AddItem(new KeyBinding("Enabled", Keys.U));
             AutoSmiteGroup.AddItem(new Switch() { Title = "Use Smite", IsOn = true });
             AutoSmiteGroup.AddItem(new Switch() { Title = "Smite On Laneclear", IsOn = true });
             AutoSmiteGroup.AddItem(new Switch() { Title = "Smite On LastHit", IsOn = true });
@@ -142,6 +158,26 @@ namespace SixAIO.Utilities
             AutoSmiteGroup.AddItem(new Switch() { Title = "Crab", IsOn = false });
 
             return Task.CompletedTask;
+        }
+
+        private static void CoreEvents_OnCoreRender()
+        {
+            if (UseSmite)
+            {
+                var w2s = LeagueNativeRendererManager.WorldToScreenSpell(UnitManager.MyChampion.Position);
+                w2s.Y += 20;
+                RenderFactory.DrawText($"Smite Enabled", 18, w2s, Color.Blue);
+            }
+        }
+
+        private static void OnKeyPress(Keys keyBeingPressed, Keyboard.KeyPressState pressState)
+        {
+            var enabledKey = AutoSmiteGroup.GetItem<KeyBinding>("Enabled").SelectedKey;
+
+            if (keyBeingPressed == enabledKey && pressState == Keyboard.KeyPressState.Down)
+            {
+                UseSmite = !UseSmite;
+            }
         }
 
         internal static Task OnCoreMainTick()
@@ -180,23 +216,28 @@ namespace SixAIO.Utilities
             if (UseSmite && SmiteKey?.Charges > 0)
             {
                 jungleTarget = GetJungleTarget(500f);
-                var smiteDamageTrackerBuff = UnitManager.MyChampion.BuffManager.ActiveBuffs.FirstOrDefault(x => x.Name == "itemsmitecounter" && x.Stacks >= 0);
-                var smiteDamage = 600;
-                if (smiteDamageTrackerBuff is not null)
-                {
-                    smiteDamage = smiteDamageTrackerBuff.Stacks switch
-                    {
-                        > 20 and <= 40 => 600,
-                        > 0 and <= 20 => 900,
-                        0 => 1200,
-                        _ => 600
-                    };
-                }
-
                 if (jungleTarget != null)
                 {
+                    var smiteDamageTrackerBuff = UnitManager.MyChampion.BuffManager.ActiveBuffs.FirstOrDefault(x => x.Name == "itemsmitecounter" && x.Stacks >= 0);
+                    var smiteDamage = 600;
+                    if (smiteDamageTrackerBuff is not null)
+                    {
+                        smiteDamage = smiteDamageTrackerBuff.Stacks switch
+                        {
+                            > 20 and <= 40 => 600,
+                            > 0 and <= 20 => 900,
+                            0 => 1200,
+                            _ => 600
+                        };
+                    }
+
                     if (jungleTarget.Health < smiteDamage)
                     {
+                        if (LogSmiteAction)
+                        {
+                            Logger.Log($"Stacks: {smiteDamageTrackerBuff.Stacks} - Target: {jungleTarget.UnitComponentInfo.SkinName} {jungleTarget.Health}HP - Damage: {smiteDamage} - GameTime: {EngineManager.GameTime}");
+                        }
+
                         var tempTargetChamps = OrbSettings.TargetChampionsOnly;
                         OrbSettings.TargetChampionsOnly = false;
                         SpellCastProvider.CastSpell(SmiteSlot, jungleTarget.Position);
@@ -214,16 +255,17 @@ namespace SixAIO.Utilities
             {
                 if (enemy.IsJungle && enemy.IsAlive &&
                     enemy.DistanceTo(UnitManager.MyChampion.Position) <= dist &&
-                    ((Baron && enemy.UnitComponentInfo.SkinName.Contains("SRU_Baron")) ||
-                    (Dragon && enemy.UnitComponentInfo.SkinName.Contains("SRU_Dragon")) ||
-                    (RiftHerald && enemy.UnitComponentInfo.SkinName.Contains("SRU_RiftHerald")) ||
-                    (Red && enemy.UnitComponentInfo.SkinName.Contains("SRU_Red")) ||
-                    (Blue && enemy.UnitComponentInfo.SkinName.Contains("SRU_Blue")) ||
-                    (Crab && enemy.UnitComponentInfo.SkinName.Contains("Sru_Crab")) ||
-                    (Krug && enemy.UnitComponentInfo.SkinName.Contains("SRU_Krug")) ||
-                    (Gromp && enemy.UnitComponentInfo.SkinName.Contains("SRU_Gromp")) ||
-                    (MurkWolf && enemy.UnitComponentInfo.SkinName.Equals("SRU_Murkwolf")) ||
-                    (Razorbeak && enemy.UnitComponentInfo.SkinName.Equals("SRU_Razorbeak"))))
+                    !enemy.UnitComponentInfo.SkinName.Contains("mini", System.StringComparison.OrdinalIgnoreCase) &&
+                    ((Baron && enemy.UnitComponentInfo.SkinName.Contains("SRU_Baron", System.StringComparison.OrdinalIgnoreCase)) ||
+                    (Dragon && enemy.UnitComponentInfo.SkinName.Contains("SRU_Dragon", System.StringComparison.OrdinalIgnoreCase)) ||
+                    (RiftHerald && enemy.UnitComponentInfo.SkinName.Contains("SRU_RiftHerald", System.StringComparison.OrdinalIgnoreCase)) ||
+                    (Red && enemy.UnitComponentInfo.SkinName.Contains("SRU_Red", System.StringComparison.OrdinalIgnoreCase)) ||
+                    (Blue && enemy.UnitComponentInfo.SkinName.Contains("SRU_Blue", System.StringComparison.OrdinalIgnoreCase)) ||
+                    (Crab && enemy.UnitComponentInfo.SkinName.Contains("Sru_Crab", System.StringComparison.OrdinalIgnoreCase)) ||
+                    (Krug && enemy.UnitComponentInfo.SkinName.Contains("SRU_Krug", System.StringComparison.OrdinalIgnoreCase)) ||
+                    (Gromp && enemy.UnitComponentInfo.SkinName.Contains("SRU_Gromp", System.StringComparison.OrdinalIgnoreCase)) ||
+                    (MurkWolf && enemy.UnitComponentInfo.SkinName.Equals("SRU_Murkwolf", System.StringComparison.OrdinalIgnoreCase)) ||
+                    (Razorbeak && enemy.UnitComponentInfo.SkinName.Equals("SRU_Razorbeak", System.StringComparison.OrdinalIgnoreCase))))
                 {
                     return enemy;
                 }

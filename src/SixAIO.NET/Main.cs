@@ -22,7 +22,6 @@ namespace SixAIO
             Logger.Log($"Initialize SiXAIO [{System.Reflection.Assembly.GetExecutingAssembly().GetName().Version}]");
             GameEvents.OnGameLoadComplete += GameEvents_OnGameLoadComplete;
             GameEvents.OnGameLoadComplete += AutoSmite.GameEvents_OnGameLoadComplete;
-            GameEvents.OnGameLoadComplete += ToggleSmite.GameEvents_OnGameLoadComplete;
             GameEvents.OnGameLoadComplete += AutoHeal.GameEvents_OnGameLoadComplete;
             GameEvents.OnGameLoadComplete += AutoCleanse.GameEvents_OnGameLoadComplete;
             GameEvents.OnGameLoadComplete += AutoExhaust.GameEvents_OnGameLoadComplete;
@@ -84,7 +83,6 @@ namespace SixAIO
             CoreEvents.OnCoreLaneclearInputAsync += CoreEvents_OnCoreLaneclearInputAsync;
             CoreEvents.OnCoreLasthitInputAsync += CoreEvents_OnCoreLasthitInputAsync;
             CoreEvents.OnCoreMainTick += AutoSmite.OnCoreMainTick;
-            CoreEvents.OnCoreMainTick += ToggleSmite.OnCoreMainTick;
             CoreEvents.OnCoreLaneclearInputAsync += AutoSmite.OnCoreLaneclearInputAsync;
             CoreEvents.OnCoreLasthitInputAsync += AutoSmite.OnCoreLasthitInputAsync;
             CoreEvents.OnCoreMainTick += AutoHeal.OnCoreMainTick;
