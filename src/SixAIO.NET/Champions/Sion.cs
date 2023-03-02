@@ -7,10 +7,8 @@ using System;
 using System.Linq;
 using Oasys.Common.Menu;
 using Oasys.SDK;
-using Oasys.SDK.Tools;
 using Oasys.Common.Extensions;
 using Oasys.Common.Tools.Devices;
-using System.Runtime.Serialization;
 
 namespace SixAIO.Champions
 {
