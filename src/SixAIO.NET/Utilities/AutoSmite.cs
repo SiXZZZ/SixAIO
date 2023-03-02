@@ -213,36 +213,20 @@ namespace SixAIO.Utilities
         private static Task InputHandler()
         {
             GameObjectBase jungleTarget;
-            if (UseSmite && SmiteKey?.Charges > 0)
+            if (UseSmite && SmiteKey is not null && SmiteKey.Charges > 0)
             {
                 jungleTarget = GetJungleTarget(500f);
-                if (jungleTarget != null)
+                if (jungleTarget != null && jungleTarget.Health < SmiteKey.Damage)
                 {
-                    var smiteDamageTrackerBuff = UnitManager.MyChampion.BuffManager.ActiveBuffs.FirstOrDefault(x => x.Name == "itemsmitecounter" && x.Stacks >= 0);
-                    var smiteDamage = 600;
-                    if (smiteDamageTrackerBuff is not null)
+                    if (LogSmiteAction)
                     {
-                        smiteDamage = smiteDamageTrackerBuff.Stacks switch
-                        {
-                            > 20 and <= 40 => 600,
-                            > 0 and <= 20 => 900,
-                            0 => 1200,
-                            _ => 600
-                        };
+                        Logger.Log($"Target: {jungleTarget.UnitComponentInfo.SkinName} {jungleTarget.Health}HP - Damage: {SmiteKey.Damage} - GameTime: {EngineManager.GameTime}");
                     }
 
-                    if (jungleTarget.Health < smiteDamage)
-                    {
-                        if (LogSmiteAction)
-                        {
-                            Logger.Log($"Stacks: {smiteDamageTrackerBuff.Stacks} - Target: {jungleTarget.UnitComponentInfo.SkinName} {jungleTarget.Health}HP - Damage: {smiteDamage} - GameTime: {EngineManager.GameTime}");
-                        }
-
-                        var tempTargetChamps = OrbSettings.TargetChampionsOnly;
-                        OrbSettings.TargetChampionsOnly = false;
-                        SpellCastProvider.CastSpell(SmiteSlot, jungleTarget.Position);
-                        OrbSettings.TargetChampionsOnly = tempTargetChamps;
-                    }
+                    var tempTargetChamps = OrbSettings.TargetChampionsOnly;
+                    OrbSettings.TargetChampionsOnly = false;
+                    SpellCastProvider.CastSpell(SmiteSlot, jungleTarget.Position);
+                    OrbSettings.TargetChampionsOnly = tempTargetChamps;
                 }
             }
 
