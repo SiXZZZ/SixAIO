@@ -11,6 +11,7 @@ using Oasys.SDK.Rendering;
 using Oasys.SDK.SpellCasting;
 using Oasys.SDK.Tools;
 using SharpDX;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using static Oasys.Common.Logic.Orbwalker;
@@ -209,8 +210,21 @@ namespace SixAIO.Utilities
             return Task.CompletedTask;
         }
 
+        private static float _lastLog;
         private static Task InputHandler()
         {
+            if (LogSmiteAction && EngineManager.GameTime >= _lastLog + 5)
+            {
+                foreach (var item in UnitManager.MyChampion.BuffManager.ActiveBuffs.Where(x => x.Name.Contains("smite", System.StringComparison.OrdinalIgnoreCase) && x.Stacks >= 0))
+                {
+                    Logger.Log($"Damage: {SmiteKey.Damage} - Buff: {item.Name}({item.Stacks}) - GameTime: {EngineManager.GameTime}");
+
+                }
+
+                Logger.Log($"Damage: {SmiteKey.Damage} - GameTime: {EngineManager.GameTime}");
+                _lastLog = EngineManager.GameTime;
+            }
+
             if (UseSmite && SmiteKey is not null && SmiteKey.Charges > 0)
             {
                 var jungleTarget = GetJungleTarget(500f);
