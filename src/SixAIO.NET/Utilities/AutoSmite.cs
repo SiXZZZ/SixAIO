@@ -11,7 +11,6 @@ using Oasys.SDK.Rendering;
 using Oasys.SDK.SpellCasting;
 using Oasys.SDK.Tools;
 using SharpDX;
-using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using static Oasys.Common.Logic.Orbwalker;
@@ -212,10 +211,9 @@ namespace SixAIO.Utilities
 
         private static Task InputHandler()
         {
-            GameObjectBase jungleTarget;
             if (UseSmite && SmiteKey is not null && SmiteKey.Charges > 0)
             {
-                jungleTarget = GetJungleTarget(500f);
+                var jungleTarget = GetJungleTarget(500f);
                 if (jungleTarget != null && jungleTarget.Health < SmiteKey.Damage)
                 {
                     if (LogSmiteAction)

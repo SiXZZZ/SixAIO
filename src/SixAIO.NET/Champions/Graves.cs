@@ -2,6 +2,7 @@
 using Oasys.Common.Enums.GameEnums;
 using Oasys.Common.Extensions;
 using Oasys.Common.GameObject;
+using Oasys.Common.GameObject.Clients.ExtendedInstances.Spells;
 using Oasys.Common.Menu;
 using Oasys.Common.Menu.ItemComponents;
 using Oasys.SDK;
@@ -60,19 +61,34 @@ namespace SixAIO.Champions
                 Range = () => RMaximumRange,
                 Radius = () => 200,
                 Speed = () => 2100,
-                Damage = (target, spellClass) =>
-                            target != null
-                            ? DamageCalculator.GetArmorMod(UnitManager.MyChampion, target) *
-                                ((100 + spellClass.Level * 150) + UnitManager.MyChampion.UnitStats.BonusAttackDamage * 1.5f)
-                            : 0,
-                ShouldCast = (mode, target, spellClass, damage) => target is not null && target.Distance > 1100 ? damage * 0.8f >= target.Health : damage >= target.Health,
                 IsEnabled = () => UseR,
-                TargetSelect = (mode) => SpellR.GetTargets(mode).FirstOrDefault()
+                TargetSelect = (mode) => SpellR.GetTargets(mode, x => x.Distance > 1100
+                                                    ? GetRDamage(x) * 0.8f >= x.Health
+                                                    : GetRDamage(x) >= x.Health)
+                                                .FirstOrDefault()
             };
+        }
+
+        private float GetRDamage(GameObjectBase target)
+        {
+            if (target is null)
+            {
+                return 0;
+            }
+
+            return target != null
+                            ? DamageCalculator.GetArmorMod(UnitManager.MyChampion, target) *
+                                ((100 + SpellR.SpellClass.Level * 150) + UnitManager.MyChampion.UnitStats.BonusAttackDamage * 1.5f)
+                            : 0;
         }
 
         private int DistanceToWall(GameObjectBase target)
         {
+            if (target == null)
+            {
+                return int.MaxValue;
+            }
+
             for (var i = 0; i < 800; i += 5)
             {
                 var pos = UnitManager.MyChampion.Position.Extend(target.Position, target.Distance + i);
@@ -87,6 +103,10 @@ namespace SixAIO.Champions
 
         private bool CanWallBang(GameObjectBase target)
         {
+            if (target == null)
+            {
+                return false;
+            }
             var distance = DistanceToWall(target);
             return distance <= 800 && distance > 0;
         }
