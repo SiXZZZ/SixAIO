@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using Oasys.Common;
 using Oasys.Common.Enums.GameEnums;
 using Oasys.Common.GameObject;
 using Oasys.Common.GameObject.ObjectClass;
@@ -6,7 +7,9 @@ using Oasys.Common.Menu;
 using Oasys.Common.Menu.ItemComponents;
 using Oasys.SDK;
 using Oasys.SDK.Menu;
+using Oasys.SDK.Rendering;
 using Oasys.SDK.SpellCasting;
+using SharpDX;
 using SixAIO.Enums;
 using SixAIO.Models;
 using SixAIO.Utilities;
@@ -14,6 +17,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Windows.Forms;
 
 namespace SixAIO.Champions
 {
@@ -45,6 +49,7 @@ namespace SixAIO.Champions
 
         public Kindred()
         {
+            Oasys.SDK.InputProviders.KeyboardProvider.OnKeyPress += KeyboardProvider_OnKeyPress;
             SDKSpell.OnSpellCast += Spell_OnSpellCast;
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
@@ -89,6 +94,16 @@ namespace SixAIO.Champions
                                             IsCastingSpellOnAlly(enemy, ally)));
                 },
             };
+        }
+
+        private void KeyboardProvider_OnKeyPress(Keys keyBeingPressed, Oasys.Common.Tools.Devices.Keyboard.KeyPressState pressState)
+        {
+            var toggleRCombo = RSettings.GetItem<KeyBinding>("R Toggle Combo").SelectedKey;
+
+            if (keyBeingPressed == toggleRCombo && pressState == Oasys.Common.Tools.Devices.Keyboard.KeyPressState.Down)
+            {
+                UseR = !UseR;
+            }
         }
 
         private bool IsCastingSpellOnAlly(GameObjectBase enemy, GameObjectBase ally)
@@ -137,6 +152,16 @@ namespace SixAIO.Champions
             }
         }
 
+        internal override void OnCoreRender()
+        {
+            if (UseR)
+            {
+                var w2s = LeagueNativeRendererManager.WorldToScreenSpell(UnitManager.MyChampion.Position);
+                w2s.Y += 40;
+                RenderFactory.DrawText($"Toggle R Enabled", 18, w2s, Color.Blue);
+            }
+        }
+
         private DashMode DashModeSelected
         {
             get => (DashMode)Enum.Parse(typeof(DashMode), QSettings.GetItem<ModeDisplay>("Dash Mode").SelectedModeName);
@@ -168,6 +193,7 @@ namespace SixAIO.Champions
             LoadTargetPrioValues();
 
             RSettings.AddItem(new Switch() { Title = "Use R", IsOn = true });
+            RSettings.AddItem(new KeyBinding("R Toggle Combo", Keys.T));
             RSettings.AddItem(new InfoDisplay() { Title = "-Use R if health percent is lower than-" });
             foreach (var ally in UnitManager.AllyChampions)
             {
