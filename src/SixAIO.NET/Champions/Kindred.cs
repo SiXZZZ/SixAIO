@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using Oasys.Common.Enums.GameEnums;
 using Oasys.Common.GameObject;
+using Oasys.Common.GameObject.ObjectClass;
 using Oasys.Common.Menu;
 using Oasys.Common.Menu.ItemComponents;
 using Oasys.SDK;
@@ -69,6 +70,31 @@ namespace SixAIO.Champions
                             ? Orbwalker.TargetHero
                             : UnitManager.EnemyChampions.FirstOrDefault(x => x.IsAlive && x.Distance <= ERange() && TargetSelector.IsAttackable(x) && !TargetSelector.IsInvulnerable(x, Oasys.Common.Logic.DamageType.Physical, false))
             };
+            SpellR = new Spell(CastSlot.R, SpellSlot.R)
+            {
+                IsEnabled = () => UseR,
+                ShouldCast = (mode, _, spellClass, _) =>
+                {
+                    return UnitManager.AllyChampions
+                            .Where(x => !x.IsTargetDummy)
+                            .Any(ally =>
+                                    ally.HealthPercent < (RSettings.GetItem<Counter>(ally.ModelName)?.Value ?? 0) &&
+                                    ally.IsAlive &&
+                                    ally.Distance <= 550 &&
+                                    TargetSelector.IsAttackable(ally, false) &&
+                                        UnitManager.EnemyChampions.Any(enemy =>
+                                            enemy.IsAlive &&
+                                            enemy.Distance <= 3000 &&
+                                            enemy.IsCastingSpell &&
+                                            IsCastingSpellOnAlly(enemy, ally)));
+                },
+            };
+        }
+
+        private bool IsCastingSpellOnAlly(GameObjectBase enemy, GameObjectBase ally)
+        {
+            var spell = enemy.GetCurrentCastingSpell();
+            return spell is not null && spell.TargetIndexes.Any(targetIndex => ally.Index == targetIndex);
         }
 
         private bool ShouldQ() => Qonlyifhaswbuff ? HasWBuff() : true;
@@ -103,6 +129,8 @@ namespace SixAIO.Champions
 
         internal override void OnCoreMainInput()
         {
+            SpellR.ExecuteCastSpell();
+
             if (SpellE.ExecuteCastSpell() || SpellW.ExecuteCastSpell() || SpellQ.ExecuteCastSpell())
             {
                 return;
@@ -124,10 +152,10 @@ namespace SixAIO.Champions
         internal override void InitializeMenu()
         {
             MenuManager.AddTab(new Tab($"SIXAIO - {nameof(Kindred)}"));
-
             MenuTab.AddGroup(new Group("Q Settings"));
             MenuTab.AddGroup(new Group("W Settings"));
             MenuTab.AddGroup(new Group("E Settings"));
+            MenuTab.AddGroup(new Group("R Settings"));
 
             QSettings.AddItem(new Switch() { Title = "Use Q", IsOn = true });
             QSettings.AddItem(new ModeDisplay() { Title = "Dash Mode", ModeNames = DashHelper.ConstructDashModeTable(), SelectedModeName = "ToMouse" });
@@ -138,7 +166,13 @@ namespace SixAIO.Champions
             ESettings.AddItem(new Switch() { Title = "Use E", IsOn = true });
             ESettings.AddItem(new Counter() { Title = "E target range", Value = 1000, MinValue = 0, MaxValue = 2000, ValueFrequency = 50 });
             LoadTargetPrioValues();
-            //RSettings.AddItem(new Switch() { Title = "Use R", IsOn = true });
+
+            RSettings.AddItem(new Switch() { Title = "Use R", IsOn = true });
+            RSettings.AddItem(new InfoDisplay() { Title = "-Use R if health percent is lower than-" });
+            foreach (var ally in UnitManager.AllyChampions)
+            {
+                RSettings.AddItem(new Counter() { Title = ally.ModelName, MinValue = 0, MaxValue = 100, Value = 10, ValueFrequency = 1 });
+            }
         }
 
         internal void LoadTargetPrioValues()
