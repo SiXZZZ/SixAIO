@@ -62,7 +62,7 @@ namespace SixAIO.Champions
                 return target;
             }
 
-            if (UsePushAway)
+            if (UsePushAway && UnitManager.MyChampion.HealthPercent <= OnlyPushAwayBelowHPPercent)
             {
                 return PushAwayModeSelected switch
                 {
@@ -239,6 +239,12 @@ namespace SixAIO.Champions
             set => ESettings.GetItem<ModeDisplay>("Push Away Mode").SelectedModeName = value.ToString();
         }
 
+        private int OnlyPushAwayBelowHPPercent
+        {
+            get => ESettings.GetItem<Counter>("Only Push Away Below HP Percent").Value;
+            set => ESettings.GetItem<Counter>("Only Push Away Below HP Percent").Value = value;
+        }
+
         internal override void InitializeMenu()
         {
             MenuManager.AddTab(new Tab($"SIXAIO - {nameof(Vayne)}"));
@@ -254,6 +260,7 @@ namespace SixAIO.Champions
             ESettings.AddItem(new Switch() { Title = "Draw E", IsOn = false });
             ESettings.AddItem(new Counter() { Title = "Condemn Range", MinValue = 50, MaxValue = 475, Value = 450, ValueFrequency = 25 });
             ESettings.AddItem(new Switch() { Title = "Use Push Away", IsOn = false });
+            ESettings.AddItem(new Counter() { Title = "Only Push Away Below HP Percent", MinValue = 0, MaxValue = 100, Value = 30, ValueFrequency = 5 });
             ESettings.AddItem(new Counter() { Title = "Push Away Range", MinValue = 50, MaxValue = 550, Value = 150, ValueFrequency = 25 });
             ESettings.AddItem(new ModeDisplay() { Title = "Push Away Mode", ModeNames = PushAwayHelper.ConstructPushAwayModeTable(), SelectedModeName = "Everything" });
 
