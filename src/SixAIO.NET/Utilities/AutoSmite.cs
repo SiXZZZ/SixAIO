@@ -213,32 +213,64 @@ namespace SixAIO.Utilities
         private static float _lastLog;
         private static Task InputHandler()
         {
-            if (LogSmiteAction && EngineManager.GameTime >= _lastLog + 5)
+            if (UseSmite && SmiteKey is not null)
             {
-                foreach (var item in UnitManager.MyChampion.BuffManager.ActiveBuffs.Where(x => x.Name.Contains("smite", System.StringComparison.OrdinalIgnoreCase) && x.Stacks >= 0))
+                var damage = 600f;
+                var buffDamage = 0f;
+                //var smiteDamageTrackerAvatarBuff = UnitManager.MyChampion.BuffManager.ActiveBuffs.FirstOrDefault(x => x.Name.Contains("SmiteDamageTrackerAvatar", System.StringComparison.OrdinalIgnoreCase) && x.Stacks >= 0);
+                var smiteBuff = UnitManager.MyChampion.BuffManager.ActiveBuffs.FirstOrDefault(x => x.Name.Contains("itemsmitecounter", System.StringComparison.OrdinalIgnoreCase) && x.Stacks >= 0);
+                if (smiteBuff is not null)
                 {
-                    Logger.Log($"Damage: {SmiteKey.Damage} - Buff: {item.Name}({item.Stacks}) - GameTime: {EngineManager.GameTime}");
-
-                }
-
-                Logger.Log($"Damage: {SmiteKey.Damage} - GameTime: {EngineManager.GameTime}");
-                _lastLog = EngineManager.GameTime;
-            }
-
-            if (UseSmite && SmiteKey is not null && SmiteKey.Charges > 0)
-            {
-                var jungleTarget = GetJungleTarget(500f);
-                if (jungleTarget != null && jungleTarget.Health < SmiteKey.Damage)
-                {
-                    if (LogSmiteAction)
+                    if (smiteBuff.Stacks > 20)
                     {
-                        Logger.Log($"Target: {jungleTarget.UnitComponentInfo.SkinName} {jungleTarget.Health}HP - Damage: {SmiteKey.Damage} - GameTime: {EngineManager.GameTime}");
+                        buffDamage = 600f;
+                    }
+                    else if (smiteBuff.Stacks <= 20 && smiteBuff.Stacks > 0)
+                    {
+                        buffDamage = 900f;
+                    }
+                    else
+                    {
+                        buffDamage = 1200f;
                     }
 
-                    var tempTargetChamps = OrbSettings.TargetChampionsOnly;
-                    OrbSettings.TargetChampionsOnly = false;
-                    SpellCastProvider.CastSpell(SmiteSlot, jungleTarget.Position);
-                    OrbSettings.TargetChampionsOnly = tempTargetChamps;
+                    if (buffDamage > damage)
+                    {
+                        damage = buffDamage;
+                    }
+                }
+
+                if (SmiteKey.Damage > damage)
+                {
+                    damage = SmiteKey.Damage;
+                }
+
+                if (LogSmiteAction && EngineManager.GameTime >= _lastLog + 5)
+                {
+                    foreach (var item in UnitManager.MyChampion.BuffManager.ActiveBuffs.Where(x => x.Name.Contains("smite", System.StringComparison.OrdinalIgnoreCase) && x.Stacks >= 0))
+                    {
+                        Logger.Log($"Damage: {SmiteKey.Damage} - Buff: {item.Name}({item.Stacks}) - GameTime: {EngineManager.GameTime}");
+                    }
+
+                    Logger.Log($"SpellDamage: {SmiteKey.Damage} - BuffDamage: {buffDamage} - ActualDamage: {damage} - Smite Charges: {SmiteKey.Charges} - GameTime: {EngineManager.GameTime}");
+                    _lastLog = EngineManager.GameTime;
+                }
+
+                if (SmiteKey.Charges > 0 && SmiteKey.IsSpellReady)
+                {
+                    var jungleTarget = GetJungleTarget(500f);
+                    if (jungleTarget != null && jungleTarget.Health < damage)
+                    {
+                        if (LogSmiteAction)
+                        {
+                            Logger.Log($"Target: {jungleTarget.UnitComponentInfo.SkinName} {jungleTarget.Health}HP - Damage: {damage} - GameTime: {EngineManager.GameTime}");
+                        }
+
+                        var tempTargetChamps = OrbSettings.TargetChampionsOnly;
+                        OrbSettings.TargetChampionsOnly = false;
+                        SpellCastProvider.CastSpell(SmiteSlot, jungleTarget.Position);
+                        OrbSettings.TargetChampionsOnly = tempTargetChamps;
+                    }
                 }
             }
 
@@ -250,7 +282,7 @@ namespace SixAIO.Utilities
             foreach (var enemy in UnitManager.EnemyJungleMobs)
             {
                 if (enemy.IsJungle && enemy.IsAlive &&
-                    enemy.DistanceTo(UnitManager.MyChampion.Position) <= dist &&
+                    enemy.Distance <= dist &&
                     !enemy.UnitComponentInfo.SkinName.Contains("mini", System.StringComparison.OrdinalIgnoreCase) &&
                     ((Baron && enemy.UnitComponentInfo.SkinName.Contains("SRU_Baron", System.StringComparison.OrdinalIgnoreCase)) ||
                     (Dragon && enemy.UnitComponentInfo.SkinName.Contains("SRU_Dragon", System.StringComparison.OrdinalIgnoreCase)) ||
