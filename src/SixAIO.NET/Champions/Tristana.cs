@@ -110,7 +110,7 @@ namespace SixAIO.Champions
             {
                 return target;
             }
-            if (UsePushAway)
+            if (UsePushAway && UnitManager.MyChampion.HealthPercent <= OnlyPushAwayBelowHPPercent)
             {
                 return PushAwayModeSelected switch
                 {
@@ -158,6 +158,12 @@ namespace SixAIO.Champions
         {
             get => RSettings.GetItem<Counter>("Push Away Range").Value;
             set => RSettings.GetItem<Counter>("Push Away Range").Value = value;
+        }
+
+        private int OnlyPushAwayBelowHPPercent
+        {
+            get => RSettings.GetItem<Counter>("Only Push Away Below HP Percent").Value;
+            set => RSettings.GetItem<Counter>("Only Push Away Below HP Percent").Value = value;
         }
 
         private PushAwayMode PushAwayModeSelected
@@ -268,6 +274,7 @@ namespace SixAIO.Champions
             }
 
             RSettings.AddItem(new Switch() { Title = "Use Push Away", IsOn = false });
+            RSettings.AddItem(new Counter() { Title = "Only Push Away Below HP Percent", MinValue = 0, MaxValue = 100, Value = 30, ValueFrequency = 5 });
             RSettings.AddItem(new Counter() { Title = "Push Away Range", MinValue = 50, MaxValue = 500, Value = 150, ValueFrequency = 25 });
             RSettings.AddItem(new ModeDisplay() { Title = "Push Away Mode", ModeNames = PushAwayHelper.ConstructPushAwayModeTable(), SelectedModeName = "Melee" });
 
