@@ -140,12 +140,12 @@ namespace SixAIO.Utilities
             CoreEvents.OnCoreRender += CoreEvents_OnCoreRender;
 
             Tab.AddGroup(new Group("Auto Smite"));
-            AutoSmiteGroup.AddItem(new Switch() { Title = "Log Smite Action", IsOn = true });
+            AutoSmiteGroup.AddItem(new Switch() { Title = "Log Smite Action", IsOn = false });
             AutoSmiteGroup.AddItem(new KeyBinding("Enabled", Keys.U));
             AutoSmiteGroup.AddItem(new Switch() { Title = "Use Smite", IsOn = true });
             AutoSmiteGroup.AddItem(new Switch() { Title = "Smite On Laneclear", IsOn = true });
             AutoSmiteGroup.AddItem(new Switch() { Title = "Smite On LastHit", IsOn = true });
-            AutoSmiteGroup.AddItem(new Switch() { Title = "Smite On Tick", IsOn = false });
+            AutoSmiteGroup.AddItem(new Switch() { Title = "Smite On Tick", IsOn = true });
             AutoSmiteGroup.AddItem(new Switch() { Title = "Baron", IsOn = true });
             AutoSmiteGroup.AddItem(new Switch() { Title = "Dragon", IsOn = true });
             AutoSmiteGroup.AddItem(new Switch() { Title = "RiftHerald", IsOn = true });

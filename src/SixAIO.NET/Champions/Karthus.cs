@@ -32,9 +32,9 @@ namespace SixAIO.Champions
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Circle,
                 MinimumHitChance = () => QHitChance,
                 Range = () => 875,
-                Speed = () => QSpeed,
+                Speed = () => QSpeed == 0 ? float.Epsilon : QSpeed,
                 Radius = () => 160,
-                Delay = () => (float)((float)((float)QDelay) / 1000f),
+                Delay = () => QDelay == 0 ? 0 : (float)((float)((float)QDelay) / 1000f),
                 IsEnabled = () => UseQ,
                 TargetSelect = (mode) => SpellQ.GetTargets(mode).FirstOrDefault()
             };
