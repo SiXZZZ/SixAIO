@@ -1,15 +1,21 @@
-﻿using Oasys.Common.Enums.GameEnums;
+﻿using Oasys.Common;
+using Oasys.Common.Enums.GameEnums;
+using Oasys.Common.EventsProvider;
 using Oasys.Common.Extensions;
+using Oasys.Common.GameObject.Clients;
+using Oasys.Common.GameObject.Clients.ExtendedInstances.Spells;
 using Oasys.Common.Menu;
 using Oasys.Common.Menu.ItemComponents;
 using Oasys.SDK;
 using Oasys.SDK.Menu;
 using Oasys.SDK.Rendering;
 using Oasys.SDK.SpellCasting;
+using Oasys.SDK.Tools;
 using SharpDX;
 using SixAIO.Models;
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace SixAIO.Champions
@@ -17,13 +23,15 @@ namespace SixAIO.Champions
     internal sealed class Lillia : Champion
     {
         private Spell SpellWLaneclear;
+        private float _lastRCastTime;
 
         public Lillia()
         {
+            GameEvents.OnGameProcessSpell += GameEvents_OnGameProcessSpell;
             Oasys.SDK.InputProviders.KeyboardProvider.OnKeyPress += KeyboardProvider_OnKeyPress;
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
-                IsEnabled = () => UseQ,
+                IsEnabled = () => UseQ && _lastRCastTime + 2 <= EngineManager.GameTime,
                 ShouldCast = (mode, target, spellClass, damage) =>
                 {
                     if (mode == Orbwalker.OrbWalkingModeType.LaneClear)
@@ -43,7 +51,7 @@ namespace SixAIO.Champions
                 Speed = () => 10_000,
                 Radius = () => 100,
                 Delay = () => 0.759f,
-                IsEnabled = () => UseW,
+                IsEnabled = () => UseW && _lastRCastTime + 2 <= EngineManager.GameTime,
                 TargetSelect = (mode) => SpellW.GetTargets(mode).FirstOrDefault()
             };
             SpellWLaneclear = new Spell(CastSlot.W, SpellSlot.W)
@@ -54,7 +62,7 @@ namespace SixAIO.Champions
                 Speed = () => 10_000,
                 Radius = () => 100,
                 Delay = () => 0.759f,
-                IsEnabled = () => UseW,
+                IsEnabled = () => UseW && _lastRCastTime + 2 <= EngineManager.GameTime,
                 TargetSelect = (mode) => SpellWLaneclear.GetTargets(mode).FirstOrDefault()
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
@@ -65,7 +73,7 @@ namespace SixAIO.Champions
                 Radius = () => 120,
                 Range = () => 30000,
                 Delay = () => 0.4f,
-                IsEnabled = () => UseE,
+                IsEnabled = () => UseE && _lastRCastTime + 2 <= EngineManager.GameTime,
                 TargetSelect = (mode) =>
                 {
                     if (mode == Orbwalker.OrbWalkingModeType.LaneClear)
@@ -86,6 +94,19 @@ namespace SixAIO.Champions
             };
         }
 
+        private Task GameEvents_OnGameProcessSpell(AIBaseClient objectProcessingSpell, SpellActiveEntry processingSpellEntry)
+        {
+            if (objectProcessingSpell.IsMe)
+            {
+                if (processingSpellEntry.SpellSlot == SpellSlot.R)
+                {
+                    _lastRCastTime = EngineManager.GameTime;
+                }
+            }
+
+            return Task.CompletedTask;
+        }
+
         private void KeyboardProvider_OnKeyPress(Keys keyBeingPressed, Oasys.Common.Tools.Devices.Keyboard.KeyPressState pressState)
         {
             if (keyBeingPressed == DisableAAKey && pressState == Oasys.Common.Tools.Devices.Keyboard.KeyPressState.Down)
@@ -96,10 +117,10 @@ namespace SixAIO.Champions
 
         internal override void OnCoreMainInput()
         {
-            SpellE.ExecuteCastSpell();
             SpellQ.ExecuteCastSpell();
-            SpellW.ExecuteCastSpell();
+            SpellE.ExecuteCastSpell();
             SpellR.ExecuteCastSpell();
+            SpellW.ExecuteCastSpell();
         }
 
         internal override void OnCoreLaneClearInput()
