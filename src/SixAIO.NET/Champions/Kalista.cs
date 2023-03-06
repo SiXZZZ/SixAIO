@@ -142,16 +142,16 @@ namespace SixAIO.Champions
 
             if (AALaneclearIfNoComboTarget && Orbwalker.TargetHero is null)
             {
-                Orbwalker.SelectedTarget = UnitManager.EnemyMinions.OrderBy(x => x.Distance).FirstOrDefault(x => TargetSelector.IsAttackable(x) && TargetSelector.IsInRange(x));
+                Orbwalker.SelectedTarget = UnitManager.EnemyMinions.OrderBy(x => x.EffectiveArmorHealth).FirstOrDefault(x => TargetSelector.IsAttackable(x) && TargetSelector.IsInRange(x));
                 if (Orbwalker.SelectedTarget is null)
                 {
-                    Orbwalker.SelectedTarget = UnitManager.EnemyTowers.OrderBy(x => x.Distance).FirstOrDefault(x => TargetSelector.IsAttackable(x) && TargetSelector.IsInRange(x));
+                    Orbwalker.SelectedTarget = UnitManager.EnemyTowers.OrderBy(x => x.EffectiveArmorHealth).FirstOrDefault(x => TargetSelector.IsAttackable(x) && TargetSelector.IsInRange(x));
                     if (Orbwalker.SelectedTarget is null)
                     {
-                        Orbwalker.SelectedTarget = UnitManager.EnemyJungleMobs.OrderBy(x => x.Distance).FirstOrDefault(x => TargetSelector.IsAttackable(x) && TargetSelector.IsInRange(x));
+                        Orbwalker.SelectedTarget = UnitManager.EnemyJungleMobs.OrderBy(x => x.EffectiveArmorHealth).FirstOrDefault(x => TargetSelector.IsAttackable(x) && TargetSelector.IsInRange(x));
                         if (Orbwalker.SelectedTarget is null)
                         {
-                            Orbwalker.SelectedTarget = UnitManager.EnemyInhibitors.OrderBy(x => x.Distance).FirstOrDefault(x => TargetSelector.IsAttackable(x) && TargetSelector.IsInRange(x));
+                            Orbwalker.SelectedTarget = UnitManager.EnemyInhibitors.OrderBy(x => x.EffectiveArmorHealth).FirstOrDefault(x => TargetSelector.IsAttackable(x) && TargetSelector.IsInRange(x));
                         }
                     }
                 }
@@ -163,9 +163,25 @@ namespace SixAIO.Champions
             }
         }
 
+        internal override void OnCoreHarassInput()
+        {
+            if (UseEHarass && SpellE.ExecuteCastSpell(Orbwalker.OrbWalkingModeType.Mixed))
+            {
+                return;
+            }
+        }
+
         internal override void OnCoreLaneClearInput()
         {
-            if (SpellE.ExecuteCastSpell(Orbwalker.OrbWalkingModeType.LaneClear))
+            if (UseELaneclear && SpellE.ExecuteCastSpell(Orbwalker.OrbWalkingModeType.LaneClear))
+            {
+                return;
+            }
+        }
+
+        internal override void OnCoreLastHitInput()
+        {
+            if (UseELasthit && SpellE.ExecuteCastSpell(Orbwalker.OrbWalkingModeType.LaneClear))
             {
                 return;
             }
@@ -310,6 +326,9 @@ namespace SixAIO.Champions
             QSettings.AddItem(new FloatCounter() { Title = "Q Only Below Attack Speed", MinValue = 0.5f, MaxValue = 5.0f, Value = 2.5f, ValueFrequency = 0.1f });
 
             ESettings.AddItem(new Switch() { Title = "Use E", IsOn = true });
+            ESettings.AddItem(new Switch() { Title = "Use E Laneclear", IsOn = true });
+            ESettings.AddItem(new Switch() { Title = "Use E Lasthit", IsOn = true });
+            ESettings.AddItem(new Switch() { Title = "Use E Harass", IsOn = true });
             ESettings.AddItem(new Switch() { Title = "Draw E Damage Champions", IsOn = true });
             ESettings.AddItem(new Switch() { Title = "Draw E Damage Minions", IsOn = true });
             ESettings.AddItem(new Switch() { Title = "Draw E Damage Monsters", IsOn = true });
