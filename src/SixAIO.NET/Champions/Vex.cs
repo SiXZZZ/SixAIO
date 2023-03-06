@@ -1,12 +1,16 @@
-﻿using Oasys.Common.Enums.GameEnums;
+﻿using Oasys.Common;
+using Oasys.Common.Enums.GameEnums;
 using Oasys.Common.Menu;
 using Oasys.Common.Menu.ItemComponents;
 using Oasys.SDK;
 using Oasys.SDK.Menu;
+using Oasys.SDK.Rendering;
 using Oasys.SDK.SpellCasting;
+using SharpDX;
 using SixAIO.Models;
 using System;
 using System.Linq;
+using System.Windows.Forms;
 
 namespace SixAIO.Champions
 {
@@ -16,6 +20,7 @@ namespace SixAIO.Champions
 
         public Vex()
         {
+            Oasys.SDK.InputProviders.KeyboardProvider.OnKeyPress += KeyboardProvider_OnKeyPress;
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
                 AllowCollision = (target, collisions) => collisions.Count() <= 1,
@@ -66,11 +71,31 @@ namespace SixAIO.Champions
             };
         }
 
+        private void KeyboardProvider_OnKeyPress(Keys keyBeingPressed, Oasys.Common.Tools.Devices.Keyboard.KeyPressState pressState)
+        {
+            var toggleRCombo = RSettings.GetItem<KeyBinding>("R Toggle Combo").SelectedKey;
+
+            if (keyBeingPressed == toggleRCombo && pressState == Oasys.Common.Tools.Devices.Keyboard.KeyPressState.Down)
+            {
+                UseR = !UseR;
+            }
+        }
+
         internal override void OnCoreMainInput()
         {
             if (SpellQ.ExecuteCastSpell() || SpellQ2.ExecuteCastSpell() || SpellE.ExecuteCastSpell() || SpellW.ExecuteCastSpell() || SpellR.ExecuteCastSpell())
             {
                 return;
+            }
+        }
+
+        internal override void OnCoreRender()
+        {
+            if (UseR)
+            {
+                var w2s = LeagueNativeRendererManager.WorldToScreenSpell(UnitManager.MyChampion.Position);
+                w2s.Y += 20;
+                RenderFactory.DrawText($"Toggle R Enabled", 18, w2s, Color.Blue);
             }
         }
 
@@ -93,7 +118,7 @@ namespace SixAIO.Champions
 
             RSettings.AddItem(new Switch() { Title = "Use R", IsOn = true });
             RSettings.AddItem(new ModeDisplay() { Title = "R HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
-
+            RSettings.AddItem(new KeyBinding("R Toggle Combo", Keys.U));
         }
     }
 }
