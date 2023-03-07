@@ -217,7 +217,7 @@ namespace SixAIO.Utilities
             {
                 var damage = 600f;
                 var buffDamage = 0f;
-                //var smiteDamageTrackerAvatarBuff = UnitManager.MyChampion.BuffManager.ActiveBuffs.FirstOrDefault(x => x.Name.Contains("SmiteDamageTrackerAvatar", System.StringComparison.OrdinalIgnoreCase) && x.Stacks >= 0);
+                var smiteDamageTrackerAvatarBuff = UnitManager.MyChampion.BuffManager.ActiveBuffs.FirstOrDefault(x => x.Name.Contains("SmiteDamageTrackerAvatar", System.StringComparison.OrdinalIgnoreCase) && x.Stacks >= 1);
                 var smiteBuff = UnitManager.MyChampion.BuffManager.ActiveBuffs.FirstOrDefault(x => x.Name.Contains("itemsmitecounter", System.StringComparison.OrdinalIgnoreCase) && x.Stacks >= 0);
                 if (smiteBuff is not null)
                 {
@@ -243,6 +243,19 @@ namespace SixAIO.Utilities
                 if (SmiteKey.Damage > damage)
                 {
                     damage = SmiteKey.Damage;
+                }
+
+                if (smiteDamageTrackerAvatarBuff is not null)
+                {
+                    if (smiteDamageTrackerAvatarBuff.Stacks >= 1)
+                    {
+                        buffDamage = 1200f;
+                    }
+
+                    if (buffDamage > damage)
+                    {
+                        damage = buffDamage;
+                    }
                 }
 
                 if (LogSmiteAction && EngineManager.GameTime >= _lastLog + 5)
