@@ -2,6 +2,7 @@
 using Oasys.Common;
 using Oasys.Common.Enums.GameEnums;
 using Oasys.Common.GameObject;
+using Oasys.Common.GameObject.Clients;
 using Oasys.Common.GameObject.ObjectClass;
 using Oasys.Common.Menu;
 using Oasys.Common.Menu.ItemComponents;
@@ -55,25 +56,99 @@ namespace SixAIO.Champions
             {
                 IsEnabled = () => UseQ,
                 ShouldCast = (mode, target, spellClass, damage) =>
-                            DashModeSelected == DashMode.ToMouse &&
-                            ShouldQ() &&
-                            UnitManager.EnemyChampions.Any(x => x.IsAlive && x.Distance <= 1000 && TargetSelector.IsAttackable(x)),
+                {
+                    if (mode == Orbwalker.OrbWalkingModeType.Combo ||
+                        mode == Orbwalker.OrbWalkingModeType.Mixed)
+                    {
+                        if (!ShouldQ() ||
+                            DashModeSelected != DashMode.ToMouse)
+                        {
+                            return false;
+                        }
+
+                        return UnitManager.EnemyChampions.Any(x => x.IsAlive && x.Distance <= 850 && TargetSelector.IsAttackable(x));
+                    }
+
+                    if (mode == Orbwalker.OrbWalkingModeType.LaneClear)
+                    {
+                        if (DashModeSelected != DashMode.ToMouse)
+                        {
+                            return false;
+                        }
+
+                        return UnitManager.EnemyChampions.Any(x => x.IsAlive && x.Distance <= 650 && TargetSelector.IsAttackable(x)) ||
+                               UnitManager.EnemyMinions.Any(x => x.IsAlive && x.Distance <= 650 && TargetSelector.IsAttackable(x)) ||
+                               UnitManager.EnemyJungleMobs.Any(x => x.IsAlive && x.Distance <= 650 && TargetSelector.IsAttackable(x));
+                    }
+
+                    return false;
+                },
             };
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
             {
                 Delay = () => 0f,
                 IsEnabled = () => UseW,
                 ShouldCast = (mode, target, spellClass, damage) =>
-                            !HasWBuff() &&
-                            UnitManager.EnemyChampions.Any(x => x.IsAlive && x.Distance <= 1000 && TargetSelector.IsAttackable(x)),
+                {
+                    if (HasWBuff())
+                    {
+                        return false;
+                    }
+
+                    if (mode == Orbwalker.OrbWalkingModeType.Combo ||
+                        mode == Orbwalker.OrbWalkingModeType.Mixed)
+                    {
+                        return UnitManager.EnemyChampions.Any(x => x.IsAlive && x.Distance <= 1000 && TargetSelector.IsAttackable(x));
+                    }
+
+                    if (mode == Orbwalker.OrbWalkingModeType.LaneClear)
+                    {
+                        return UnitManager.EnemyChampions.Any(x => x.IsAlive && x.Distance <= 650 && TargetSelector.IsAttackable(x)) ||
+                               UnitManager.EnemyMinions.Any(x => x.IsAlive && x.Distance <= 650 && TargetSelector.IsAttackable(x)) ||
+                               UnitManager.EnemyJungleMobs.Any(x => x.IsAlive && x.Distance <= 650 && TargetSelector.IsAttackable(x));
+                    }
+
+                    return false;
+                },
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
                 IsTargetted = () => true,
                 IsEnabled = () => UseE,
-                TargetSelect = (mode) => TargetSelector.IsAttackable(Orbwalker.TargetHero) && Orbwalker.TargetHero.Distance <= ERange()
-                            ? Orbwalker.TargetHero
-                            : UnitManager.EnemyChampions.FirstOrDefault(x => x.IsAlive && x.Distance <= ERange() && TargetSelector.IsAttackable(x) && !TargetSelector.IsInvulnerable(x, Oasys.Common.Logic.DamageType.Physical, false))
+                ShouldCast = (mode, target, spellClass, damage) => target is not null && target.Distance <= ERange(),
+                TargetSelect = (mode) =>
+                {
+                    if (mode == Orbwalker.OrbWalkingModeType.Combo ||
+                        mode == Orbwalker.OrbWalkingModeType.Mixed)
+                    {
+                        return TargetSelector.IsAttackable(Orbwalker.TargetHero) && Orbwalker.TargetHero.Distance <= ERange()
+                                                ? Orbwalker.TargetHero
+                                                : UnitManager.EnemyChampions.FirstOrDefault(x =>
+                                                                x.IsAlive && x.Distance <= ERange() &&
+                                                                TargetSelector.IsAttackable(x) &&
+                                                                !TargetSelector.IsInvulnerable(x, Oasys.Common.Logic.DamageType.Physical, false));
+                    }
+
+                    if (mode == Orbwalker.OrbWalkingModeType.LaneClear)
+                    {
+                        var heroTarget = TargetSelector.IsAttackable(Orbwalker.TargetHero) && Orbwalker.TargetHero.Distance <= ERange()
+                                                ? Orbwalker.TargetHero
+                                                : UnitManager.EnemyChampions.FirstOrDefault(x =>
+                                                                x.IsAlive && x.Distance <= ERange() &&
+                                                                TargetSelector.IsAttackable(x) &&
+                                                                !TargetSelector.IsInvulnerable(x, Oasys.Common.Logic.DamageType.Physical, false));
+                        if (heroTarget is null)
+                        {
+                            var targets = UnitManager.GetEnemies(ObjectTypeFlag.AIHeroClient, ObjectTypeFlag.AIMinionClient);
+                            return targets
+                                    .Where(x => x.Distance <= 1000)
+                                    .OrderByDescending(x => x.Health)
+                                    .FirstOrDefault(x => x.IsAlive && TargetSelector.IsAttackable(x));
+                        }
+                    }
+
+                    return null;
+                }
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
@@ -152,6 +227,16 @@ namespace SixAIO.Champions
             }
         }
 
+        internal override void OnCoreLaneClearInput()
+        {
+            if ((UseELaneclear && SpellE.ExecuteCastSpell(Orbwalker.OrbWalkingModeType.LaneClear)) ||
+                (UseWLaneclear && SpellW.ExecuteCastSpell(Orbwalker.OrbWalkingModeType.LaneClear)) ||
+                (UseQLaneclear && SpellQ.ExecuteCastSpell(Orbwalker.OrbWalkingModeType.LaneClear)))
+            {
+                return;
+            }
+        }
+
         internal override void OnCoreRender()
         {
             if (UseR)
@@ -183,12 +268,15 @@ namespace SixAIO.Champions
             MenuTab.AddGroup(new Group("R Settings"));
 
             QSettings.AddItem(new Switch() { Title = "Use Q", IsOn = true });
+            QSettings.AddItem(new Switch() { Title = "Use Q Laneclear", IsOn = true });
             QSettings.AddItem(new ModeDisplay() { Title = "Dash Mode", ModeNames = DashHelper.ConstructDashModeTable(), SelectedModeName = "ToMouse" });
             QSettings.AddItem(new Switch() { Title = "Q only if has w buff", IsOn = true });
 
             WSettings.AddItem(new Switch() { Title = "Use W", IsOn = true });
+            WSettings.AddItem(new Switch() { Title = "Use W Laneclear", IsOn = true });
 
             ESettings.AddItem(new Switch() { Title = "Use E", IsOn = true });
+            ESettings.AddItem(new Switch() { Title = "Use E Laneclear", IsOn = true });
             ESettings.AddItem(new Counter() { Title = "E target range", Value = 1000, MinValue = 0, MaxValue = 2000, ValueFrequency = 50 });
             LoadTargetPrioValues();
 
