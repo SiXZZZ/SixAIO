@@ -3,6 +3,7 @@ using Oasys.Common;
 using Oasys.Common.Enums.GameEnums;
 using Oasys.Common.GameObject;
 using Oasys.Common.GameObject.Clients;
+using Oasys.Common.GameObject.Clients.ExtendedInstances.Spells;
 using Oasys.Common.GameObject.ObjectClass;
 using Oasys.Common.Menu;
 using Oasys.Common.Menu.ItemComponents;
@@ -10,6 +11,7 @@ using Oasys.SDK;
 using Oasys.SDK.Menu;
 using Oasys.SDK.Rendering;
 using Oasys.SDK.SpellCasting;
+using Oasys.SDK.Tools;
 using SharpDX;
 using SixAIO.Enums;
 using SixAIO.Models;
@@ -18,7 +20,9 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows.Forms;
+using static Oasys.Common.Logic.Orbwalker;
 
 namespace SixAIO.Champions
 {
@@ -104,7 +108,6 @@ namespace SixAIO.Champions
                     if (mode == Orbwalker.OrbWalkingModeType.LaneClear)
                     {
                         return UnitManager.EnemyChampions.Any(x => x.IsAlive && x.Distance <= 650 && TargetSelector.IsAttackable(x)) ||
-                               UnitManager.EnemyMinions.Any(x => x.IsAlive && x.Distance <= 650 && TargetSelector.IsAttackable(x)) ||
                                UnitManager.EnemyJungleMobs.Any(x => x.IsAlive && x.Distance <= 650 && TargetSelector.IsAttackable(x));
                     }
 
@@ -141,7 +144,7 @@ namespace SixAIO.Champions
                         {
                             var targets = UnitManager.GetEnemies(ObjectTypeFlag.AIHeroClient, ObjectTypeFlag.AIMinionClient);
                             return targets
-                                    .Where(x => x.Distance <= 1000)
+                                    .Where(x => x.Distance <= 1000 && (x.IsJungle || x.IsObject(ObjectTypeFlag.AIHeroClient)))
                                     .OrderByDescending(x => x.Health)
                                     .FirstOrDefault(x => x.IsAlive && TargetSelector.IsAttackable(x));
                         }
@@ -162,11 +165,16 @@ namespace SixAIO.Champions
                                     ally.IsAlive &&
                                     ally.Distance <= 550 &&
                                     TargetSelector.IsAttackable(ally, false) &&
-                                        UnitManager.EnemyChampions.Any(enemy =>
+                                        (UnitManager.EnemyChampions.Any(enemy =>
                                             enemy.IsAlive &&
                                             enemy.Distance <= 3000 &&
                                             enemy.IsCastingSpell &&
-                                            IsCastingSpellOnAlly(enemy, ally)));
+                                            IsCastingSpellOnAlly(enemy, ally)) ||
+                                        UnitManager.EnemyTowers.Any(enemy =>
+                                            enemy.IsAlive &&
+                                            enemy.Distance <= 3000 &&
+                                            enemy.IsCastingSpell &&
+                                            IsCastingSpellOnAlly(enemy, ally))));
                 },
             };
         }
@@ -237,6 +245,11 @@ namespace SixAIO.Champions
             }
         }
 
+        internal override void OnCoreMainTick()
+        {
+            SmiteHandler();
+        }
+
         internal override void OnCoreRender()
         {
             if (UseR)
@@ -259,6 +272,15 @@ namespace SixAIO.Champions
             set => QSettings.GetItem<Switch>("Q only if has w buff").IsOn = value;
         }
 
+        private bool SmiteMarkedJungleCamp
+        {
+            get => MenuTab.GetItem<Switch>("Smite Marked Jungle Camp").IsOn;
+            set => MenuTab.GetItem<Switch>("Smite Marked Jungle Camp").IsOn = value;
+        }
+
+        public SpellClass SmiteKey { get; private set; }
+        public CastSlot SmiteSlot { get; private set; }
+
         internal override void InitializeMenu()
         {
             MenuManager.AddTab(new Tab($"SIXAIO - {nameof(Kindred)}"));
@@ -266,6 +288,8 @@ namespace SixAIO.Champions
             MenuTab.AddGroup(new Group("W Settings"));
             MenuTab.AddGroup(new Group("E Settings"));
             MenuTab.AddGroup(new Group("R Settings"));
+
+            LoadSmiteSettings();
 
             QSettings.AddItem(new Switch() { Title = "Use Q", IsOn = true });
             QSettings.AddItem(new Switch() { Title = "Use Q Laneclear", IsOn = true });
@@ -287,6 +311,114 @@ namespace SixAIO.Champions
             {
                 RSettings.AddItem(new Counter() { Title = ally.ModelName, MinValue = 0, MaxValue = 100, Value = 10, ValueFrequency = 1 });
             }
+        }
+
+        private void LoadSmiteSettings()
+        {
+            var spellBook = UnitManager.MyChampion.GetSpellBook();
+            if (SummonerSpellsProvider.IHaveSpellOnSlot(SummonerSpellsEnum.Smite, SummonerSpellSlot.First))
+            {
+                SmiteKey = spellBook.GetSpellClass(SpellSlot.Summoner1);
+                SmiteSlot = CastSlot.Summoner1;
+            }
+            else if (SummonerSpellsProvider.IHaveSpellOnSlot(SummonerSpellsEnum.Smite, SummonerSpellSlot.Second))
+            {
+                SmiteKey = spellBook.GetSpellClass(SpellSlot.Summoner2);
+                SmiteSlot = CastSlot.Summoner2;
+            }
+            else
+            {
+                return;
+            }
+
+            MenuTab.AddItem(new Switch() { Title = "Smite Marked Jungle Camp", IsOn = true });
+        }
+
+        private void SmiteHandler()
+        {
+            if (SmiteMarkedJungleCamp && SmiteKey is not null)
+            {
+                var damage = 600f;
+                var buffDamage = 0f;
+                var smiteDamageTrackerAvatarBuff = UnitManager.MyChampion.BuffManager.ActiveBuffs.FirstOrDefault(x => x.Name.Contains("SmiteDamageTrackerAvatar", StringComparison.OrdinalIgnoreCase) && x.Stacks >= 1);
+                var smiteBuff = UnitManager.MyChampion.BuffManager.ActiveBuffs.FirstOrDefault(x => x.Name.Contains("itemsmitecounter", StringComparison.OrdinalIgnoreCase) && x.Stacks >= 0);
+                if (smiteBuff is not null)
+                {
+                    if (smiteBuff.Stacks > 20)
+                    {
+                        buffDamage = 600f;
+                    }
+                    else if (smiteBuff.Stacks <= 20 && smiteBuff.Stacks > 0)
+                    {
+                        buffDamage = 900f;
+                    }
+                    else
+                    {
+                        buffDamage = 1200f;
+                    }
+
+                    if (buffDamage > damage)
+                    {
+                        damage = buffDamage;
+                    }
+                }
+
+                if (SmiteKey.Damage > damage)
+                {
+                    damage = SmiteKey.Damage;
+                }
+
+                if (smiteDamageTrackerAvatarBuff is not null)
+                {
+                    if (smiteDamageTrackerAvatarBuff.Stacks >= 1)
+                    {
+                        buffDamage = 1200f;
+                    }
+
+                    if (buffDamage > damage)
+                    {
+                        damage = buffDamage;
+                    }
+                }
+
+                if (SmiteKey.Charges > 0 && SmiteKey.IsSpellReady)
+                {
+                    var jungleTarget = GetJungleTarget(500f);
+                    if (jungleTarget != null && jungleTarget.Health < damage)
+                    {
+                        var tempTargetChamps = OrbSettings.TargetChampionsOnly;
+                        OrbSettings.TargetChampionsOnly = false;
+                        SpellCastProvider.CastSpell(SmiteSlot, jungleTarget.Position);
+                        OrbSettings.TargetChampionsOnly = tempTargetChamps;
+                    }
+                }
+            }
+        }
+
+        public GameObjectBase GetJungleTarget(float dist)
+        {
+            foreach (var enemy in UnitManager.EnemyJungleMobs)
+            {
+                if (enemy.IsJungle && enemy.IsAlive &&
+                    enemy.Distance <= dist &&
+                    enemy.BuffManager.ActiveBuffs.Any(x => x.Name == "kindredhittracker" && x.Stacks >= 1) &&
+                    !enemy.UnitComponentInfo.SkinName.Contains("mini", StringComparison.OrdinalIgnoreCase) &&
+                    ((enemy.UnitComponentInfo.SkinName.Contains("SRU_Baron", StringComparison.OrdinalIgnoreCase)) ||
+                    (enemy.UnitComponentInfo.SkinName.Contains("SRU_Dragon", StringComparison.OrdinalIgnoreCase)) ||
+                    (enemy.UnitComponentInfo.SkinName.Contains("SRU_RiftHerald", StringComparison.OrdinalIgnoreCase)) ||
+                    (enemy.UnitComponentInfo.SkinName.Contains("SRU_Red", StringComparison.OrdinalIgnoreCase)) ||
+                    (enemy.UnitComponentInfo.SkinName.Contains("SRU_Blue", StringComparison.OrdinalIgnoreCase)) ||
+                    (enemy.UnitComponentInfo.SkinName.Contains("Sru_Crab", StringComparison.OrdinalIgnoreCase)) ||
+                    (enemy.UnitComponentInfo.SkinName.Contains("SRU_Krug", StringComparison.OrdinalIgnoreCase)) ||
+                    (enemy.UnitComponentInfo.SkinName.Contains("SRU_Gromp", StringComparison.OrdinalIgnoreCase)) ||
+                    (enemy.UnitComponentInfo.SkinName.Equals("SRU_Murkwolf", StringComparison.OrdinalIgnoreCase)) ||
+                    (enemy.UnitComponentInfo.SkinName.Equals("SRU_Razorbeak", StringComparison.OrdinalIgnoreCase))))
+                {
+                    return enemy;
+                }
+            }
+
+            return null;
         }
 
         internal void LoadTargetPrioValues()
