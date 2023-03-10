@@ -82,11 +82,6 @@ namespace SixAIO.Champions
                     {
                         target = UnitManager.EnemyChampions.FirstOrDefault(x => x.Distance <= SpellW.Range() && x.BuffManager.ActiveBuffs.Any(buff => buff.Name == "ZhonyasRingShield" && buff.Stacks >= 1));
                     }
-                    if (target is null)
-                    {
-                        target = UnitManager.EnemyChampions.FirstOrDefault(x => x.Distance <= SpellW.Range() && TargetSelector.IsAttackable(x) && !x.AIManager.IsMoving && !x.AIManager.IsDashing);
-                    }
-
 
                     return target;
                 }
