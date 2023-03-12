@@ -121,36 +121,32 @@ namespace SixAIO.Champions
                 ShouldCast = (mode, target, spellClass, damage) => target is not null && target.Distance <= ERange(),
                 TargetSelect = (mode) =>
                 {
-                    if (mode == Orbwalker.OrbWalkingModeType.Combo ||
-                        mode == Orbwalker.OrbWalkingModeType.Mixed)
-                    {
-                        return TargetSelector.IsAttackable(Orbwalker.TargetHero) && Orbwalker.TargetHero.Distance <= ERange()
-                                                ? Orbwalker.TargetHero
-                                                : UnitManager.EnemyChampions.FirstOrDefault(x =>
-                                                                x.IsAlive && x.Distance <= ERange() &&
-                                                                TargetSelector.IsAttackable(x) &&
-                                                                !TargetSelector.IsInvulnerable(x, Oasys.Common.Logic.DamageType.Physical, false));
-                    }
-
                     if (mode == Orbwalker.OrbWalkingModeType.LaneClear)
                     {
-                        var heroTarget = TargetSelector.IsAttackable(Orbwalker.TargetHero) && Orbwalker.TargetHero.Distance <= ERange()
-                                                ? Orbwalker.TargetHero
-                                                : UnitManager.EnemyChampions.FirstOrDefault(x =>
-                                                                x.IsAlive && x.Distance <= ERange() &&
-                                                                TargetSelector.IsAttackable(x) &&
-                                                                !TargetSelector.IsInvulnerable(x, Oasys.Common.Logic.DamageType.Physical, false));
+                        var heroTarget = TargetSelector.IsAttackable(Orbwalker.TargetHero) &&
+                                         Orbwalker.TargetHero.Distance <= ERange() &&
+                                         Orbwalker.TargetHero.HealthPercent > ETargetMinimumHealthPercent
+                                            ? Orbwalker.TargetHero
+                                            : UnitManager.EnemyChampions.FirstOrDefault(x =>
+                                                            x.IsAlive && x.Distance <= ERange() &&
+                                                            TargetSelector.IsAttackable(x) &&
+                                                            x.HealthPercent > ETargetMinimumHealthPercent &&
+                                                            !TargetSelector.IsInvulnerable(x, Oasys.Common.Logic.DamageType.Physical, false));
                         if (heroTarget is null)
                         {
-                            var targets = UnitManager.GetEnemies(ObjectTypeFlag.AIHeroClient, ObjectTypeFlag.AIMinionClient);
-                            return targets
-                                    .Where(x => x.Distance <= 1000 && (x.IsJungle || x.IsObject(ObjectTypeFlag.AIHeroClient)))
-                                    .OrderByDescending(x => x.Health)
-                                    .FirstOrDefault(x => x.IsAlive && TargetSelector.IsAttackable(x));
+                            return GetJungleTarget(ERange(), x => x.HealthPercent > ETargetMinimumHealthPercent);
                         }
                     }
 
-                    return null;
+                    return TargetSelector.IsAttackable(Orbwalker.TargetHero) &&
+                           Orbwalker.TargetHero.Distance <= ERange() &&
+                           Orbwalker.TargetHero.HealthPercent > ETargetMinimumHealthPercent
+                                                ? Orbwalker.TargetHero
+                                                : UnitManager.EnemyChampions.FirstOrDefault(x =>
+                                                                x.IsAlive && x.Distance <= ERange() &&
+                                                                TargetSelector.IsAttackable(x) &&
+                                                                x.HealthPercent > ETargetMinimumHealthPercent &&
+                                                                !TargetSelector.IsInvulnerable(x, Oasys.Common.Logic.DamageType.Physical, false));
                 }
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
@@ -278,6 +274,12 @@ namespace SixAIO.Champions
             set => MenuTab.GetItem<Switch>("Smite Marked Jungle Camp").IsOn = value;
         }
 
+        internal int ETargetMinimumHealthPercent
+        {
+            get => ESettings.GetItem<Counter>("E Target Minimum Health Percent").Value;
+            set => ESettings.GetItem<Counter>("E Target Minimum Health Percent").Value = value;
+        }
+
         public SpellClass SmiteKey { get; private set; }
         public CastSlot SmiteSlot { get; private set; }
 
@@ -301,8 +303,7 @@ namespace SixAIO.Champions
 
             ESettings.AddItem(new Switch() { Title = "Use E", IsOn = true });
             ESettings.AddItem(new Switch() { Title = "Use E Laneclear", IsOn = true });
-            ESettings.AddItem(new Counter() { Title = "E target range", Value = 1000, MinValue = 0, MaxValue = 2000, ValueFrequency = 50 });
-            LoadTargetPrioValues();
+            ESettings.AddItem(new Counter() { Title = "E Target Minimum Health Percent", Value = 15, MinValue = 0, MaxValue = 100, ValueFrequency = 1 });
 
             RSettings.AddItem(new Switch() { Title = "Use R", IsOn = true });
             RSettings.AddItem(new KeyBinding("R Toggle Combo", Keys.T));
@@ -420,7 +421,7 @@ namespace SixAIO.Champions
 
                 if (SmiteKey.Charges > 0 && SmiteKey.IsSpellReady)
                 {
-                    var jungleTarget = GetJungleTarget(500f);
+                    var jungleTarget = GetJungleTarget(500f, enemy => enemy.BuffManager.ActiveBuffs.Any(x => x.Name == "kindredhittracker" && x.Stacks >= 1));
                     if (jungleTarget != null && jungleTarget.Health < damage)
                     {
                         var tempTargetChamps = OrbSettings.TargetChampionsOnly;
@@ -432,13 +433,13 @@ namespace SixAIO.Champions
             }
         }
 
-        public GameObjectBase GetJungleTarget(float dist)
+        public GameObjectBase GetJungleTarget(float dist, Func<GameObjectBase, bool> predicate)
         {
             foreach (var enemy in UnitManager.EnemyJungleMobs)
             {
                 if (enemy.IsJungle && enemy.IsAlive &&
                     enemy.Distance <= dist &&
-                    enemy.BuffManager.ActiveBuffs.Any(x => x.Name == "kindredhittracker" && x.Stacks >= 1) &&
+                    predicate(enemy) &&
                     !enemy.UnitComponentInfo.SkinName.Contains("mini", StringComparison.OrdinalIgnoreCase) &&
                     ((enemy.UnitComponentInfo.SkinName.Contains("SRU_Baron", StringComparison.OrdinalIgnoreCase)) ||
                     (enemy.UnitComponentInfo.SkinName.Contains("SRU_Dragon", StringComparison.OrdinalIgnoreCase)) ||
@@ -456,42 +457,6 @@ namespace SixAIO.Champions
             }
 
             return null;
-        }
-
-        internal void LoadTargetPrioValues()
-        {
-            try
-            {
-                using var stream = AppDomain.CurrentDomain.GetAssemblies().SingleOrDefault(assembly => assembly.GetName().Name == "Oasys.Core").GetManifestResourceStream("Oasys.Core.Dependencies.TargetSelection.json");
-                using var reader = new StreamReader(stream);
-                var jsonText = reader.ReadToEnd();
-
-                _targetSelection = JsonConvert.DeserializeObject<TargetSelection>(jsonText);
-                var enemies = UnitManager.EnemyChampions.Where(x => !x.IsTargetDummy);
-
-                InitializeSettings(_targetSelection.TargetPrioritizations.Where(x => enemies.Any(e => e.ModelName.Equals(x.Champion, StringComparison.OrdinalIgnoreCase))));
-            }
-            catch (Exception)
-            {
-            }
-        }
-
-        internal void InitializeSettings(IEnumerable<TargetPrioritization> targetPrioritizations)
-        {
-            try
-            {
-                if (targetPrioritizations.Any())
-                {
-                    ESettings.AddItem(new InfoDisplay() { Title = "-E target prio-" });
-                }
-                foreach (var targetPrioritization in targetPrioritizations)
-                {
-                    ESettings.AddItem(new Counter() { Title = targetPrioritization.Champion, MinValue = 0, MaxValue = 5, Value = targetPrioritization.Prioritization, ValueFrequency = 1 });
-                }
-            }
-            catch (Exception)
-            {
-            }
         }
     }
 }
