@@ -36,20 +36,31 @@ namespace SixAIO.Champions
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
                 AllowCollision = (target, collisions) => !IsEActive,
-                Speed = () => IsEActive ? 1600 : 0,
-                Radius = () => IsEActive ? 100 : 0,
-                Range = () => IsEActive ? 800 : 0,
+                Speed = () => 1600,
+                Radius = () => 100,
+                Range = () => 800,
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
+                MinimumHitChance= () => EHitChance, 
                 IsTargetted = () => !IsEActive,
                 IsEnabled = () => UseE,
                 ShouldCast = (mode, target, spellClass, damage) => target is not null && TargetSelector.IsAttackable(target) && !TargetSelector.IsInRange(target),
-                TargetSelect = (mode) => UnitManager.EnemyChampions.FirstOrDefault(x => x.Distance <= x.TrueAttackRange + 800 && x.IsAlive && TargetSelector.IsAttackable(x))
+                TargetSelect = (mode) => SpellE.GetTargets(mode).FirstOrDefault(),
             };
         }
 
         internal override void OnCoreMainInput()
         {
             if (SpellQ.ExecuteCastSpell() || SpellW.ExecuteCastSpell() || SpellE.ExecuteCastSpell())
+            {
+                return;
+            }
+        }
+
+        internal override void OnCoreLaneClearInput()
+        {
+            if ((UseELaneclear && SpellE.ExecuteCastSpell(Orbwalker.OrbWalkingModeType.LaneClear)) ||
+                (UseWLaneclear && SpellW.ExecuteCastSpell(Orbwalker.OrbWalkingModeType.LaneClear)) ||
+                (UseQLaneclear && SpellQ.ExecuteCastSpell(Orbwalker.OrbWalkingModeType.LaneClear)))
             {
                 return;
             }
@@ -63,11 +74,16 @@ namespace SixAIO.Champions
             MenuTab.AddGroup(new Group("E Settings"));
 
             QSettings.AddItem(new Switch() { Title = "Use Q", IsOn = true });
-            QSettings.AddItem(new ModeDisplay() { Title = "Q HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
+            QSettings.AddItem(new Switch() { Title = "Use Q Laneclear", IsOn = true });
+            QSettings.AddItem(new ModeDisplay() { Title = "Q HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "VeryHigh" });
 
             WSettings.AddItem(new Switch() { Title = "Use W", IsOn = true });
+            WSettings.AddItem(new Switch() { Title = "Use W Laneclear", IsOn = true });
 
             ESettings.AddItem(new Switch() { Title = "Use E", IsOn = true });
+            ESettings.AddItem(new Switch() { Title = "Use E Laneclear", IsOn = true });
+            ESettings.AddItem(new ModeDisplay() { Title = "E HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "VeryHigh" });
+
         }
     }
 }

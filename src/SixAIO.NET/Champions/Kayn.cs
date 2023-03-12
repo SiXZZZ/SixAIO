@@ -23,7 +23,23 @@ namespace SixAIO.Champions
                 Delay = () => 0f,
                 Speed = () => UnitManager.MyChampion.UnitStats.MoveSpeed * 3,
                 IsEnabled = () => UseQ,
-                TargetSelect = (mode) => SpellQ.GetTargets(mode).FirstOrDefault()
+                TargetSelect = (mode) =>
+                {
+                    if (mode == Orbwalker.OrbWalkingModeType.LaneClear)
+                    {
+                        var heroTarget = SpellW.GetTargets(mode).FirstOrDefault();
+                        if (heroTarget is null)
+                        {
+                            var targets = UnitManager.GetEnemies(ObjectTypeFlag.AIHeroClient, ObjectTypeFlag.AIMinionClient);
+                            return targets
+                                    .Where(x => x.Distance <= 1000 && (x.IsJungle || x.IsObject(ObjectTypeFlag.AIHeroClient)))
+                                    .OrderByDescending(x => x.Health)
+                                    .FirstOrDefault(TargetSelector.IsAttackable);
+                        }
+                    }
+
+                    return SpellW.GetTargets(mode).FirstOrDefault();
+                }
             };
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
             {
@@ -33,7 +49,23 @@ namespace SixAIO.Champions
                 Speed = () => 1500,
                 Radius = () => 160,
                 IsEnabled = () => UseW,
-                TargetSelect = (mode) => SpellW.GetTargets(mode).FirstOrDefault()
+                TargetSelect = (mode) =>
+                {
+                    if (mode == Orbwalker.OrbWalkingModeType.LaneClear)
+                    {
+                        var heroTarget = SpellW.GetTargets(mode).FirstOrDefault();
+                        if (heroTarget is null)
+                        {
+                            var targets = UnitManager.GetEnemies(ObjectTypeFlag.AIHeroClient, ObjectTypeFlag.AIMinionClient);
+                            return targets
+                                    .Where(x => x.Distance <= 1000 && (x.IsJungle || x.IsObject(ObjectTypeFlag.AIHeroClient)))
+                                    .OrderByDescending(x => x.Health)
+                                    .FirstOrDefault(TargetSelector.IsAttackable);
+                        }
+                    }
+
+                    return SpellW.GetTargets(mode).FirstOrDefault();
+                }
             };
         }
 
@@ -44,6 +76,16 @@ namespace SixAIO.Champions
                 return;
             }
         }
+
+        internal override void OnCoreLaneClearInput()
+        {
+            if ((UseWLaneclear && SpellW.ExecuteCastSpell(Orbwalker.OrbWalkingModeType.LaneClear)) ||
+                (UseQLaneclear && SpellQ.ExecuteCastSpell(Orbwalker.OrbWalkingModeType.LaneClear)))
+            {
+                return;
+            }
+        }
+
 
         private int QMaximumRange
         {
@@ -64,10 +106,12 @@ namespace SixAIO.Champions
             MenuTab.AddGroup(new Group("W Settings"));
 
             QSettings.AddItem(new Switch() { Title = "Use Q", IsOn = true });
+            QSettings.AddItem(new Switch() { Title = "Use Q Laneclear", IsOn = true });
             QSettings.AddItem(new ModeDisplay() { Title = "Q HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "VeryHigh" });
             QSettings.AddItem(new Counter() { Title = "Q maximum range", MinValue = 0, MaxValue = 700, Value = 600, ValueFrequency = 25 });
 
             WSettings.AddItem(new Switch() { Title = "Use W", IsOn = true });
+            WSettings.AddItem(new Switch() { Title = "Use W Laneclear", IsOn = true });
             WSettings.AddItem(new ModeDisplay() { Title = "W HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "VeryHigh" });
             WSettings.AddItem(new Counter() { Title = "W maximum range", MinValue = 0, MaxValue = 900, Value = 600, ValueFrequency = 25 });
 
