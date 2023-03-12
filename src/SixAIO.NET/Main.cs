@@ -88,6 +88,7 @@ namespace SixAIO
             CoreEvents.OnCoreMainTick += AutoHeal.OnCoreMainTick;
             CoreEvents.OnCoreMainInputAsync += AutoHeal.OnCoreMainInputAsync;
             CoreEvents.OnCoreMainInputAsync += AutoExhaust.OnCoreMainInputAsync;
+            CoreEvents.OnCoreMainTick += AutoExhaust.OnCoreMainTick;
             CoreEvents.OnCoreMainInputRelease += CoreEvents_OnCoreMainInputRelease;
 
             return Task.CompletedTask;

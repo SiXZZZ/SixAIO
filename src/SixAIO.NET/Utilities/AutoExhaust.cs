@@ -33,6 +33,12 @@ namespace SixAIO.Utilities
             set => AutoExhaustGroup.GetItem<Switch>("Exhaust On Combo").IsOn = value;
         }
 
+        private static bool ExhaustOnTick
+        {
+            get => AutoExhaustGroup?.GetItem<Switch>("Exhaust On Tick")?.IsOn ?? false;
+            set => AutoExhaustGroup.GetItem<Switch>("Exhaust On Tick").IsOn = value;
+        }
+
         private static int ExhaustTargetRange
         {
             get => AutoExhaustGroup.GetItem<Counter>("Exhaust target range").Value;
@@ -52,12 +58,14 @@ namespace SixAIO.Utilities
             else
             {
                 CoreEvents.OnCoreMainInputAsync -= OnCoreMainInputAsync;
+                CoreEvents.OnCoreMainTick -= OnCoreMainTick;
                 return Task.CompletedTask;
             }
 
             Tab.AddGroup(new Group("Auto Exhaust"));
             AutoExhaustGroup.AddItem(new Switch() { Title = "Use Exhaust", IsOn = true });
             AutoExhaustGroup.AddItem(new Switch() { Title = "Exhaust On Combo", IsOn = true });
+            AutoExhaustGroup.AddItem(new Switch() { Title = "Exhaust On Tick", IsOn = false });
             AutoExhaustGroup.AddItem(new Counter() { Title = "Exhaust target range", Value = 650, MinValue = 0, MaxValue = 2000, ValueFrequency = 50 });
 
             LoadTargetPrioValues();
@@ -124,7 +132,27 @@ namespace SixAIO.Utilities
         {
             try
             {
-                if (ShouldUseExhaust())
+                if (ExhaustOnCombo && ShouldUseExhaust())
+                {
+                    var exhaustTarget = GetPrioritizationTarget();
+                    if (exhaustTarget is not null && exhaustTarget.Distance <= 650)
+                    {
+                        SpellCastProvider.CastSpell(ExhaustSlot, exhaustTarget.W2S);
+                    }
+                }
+            }
+            catch (Exception)
+            {
+            }
+
+            return Task.CompletedTask;
+        }
+
+        internal static Task OnCoreMainTick()
+        {
+            try
+            {
+                if (ExhaustOnTick && ShouldUseExhaust())
                 {
                     var exhaustTarget = GetPrioritizationTarget();
                     if (exhaustTarget is not null && exhaustTarget.Distance <= 650)
@@ -187,7 +215,7 @@ namespace SixAIO.Utilities
 
         private static bool ShouldUseExhaust()
         {
-            return UseExhaust && ExhaustOnCombo &&
+            return UseExhaust &&
                    UnitManager.MyChampion.IsAlive &&
                    TargetSelector.IsAttackable(UnitManager.MyChampion, false) &&
                    IsAnyAllyLow();
