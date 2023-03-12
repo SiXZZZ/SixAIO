@@ -13,7 +13,7 @@ namespace SixAIO.Utilities
 {
     internal sealed class AutoEverfrost
     {
-        private static Tab Tab => MenuManagerProvider.GetTab("SIXAIO - Utilities");
+        private static Tab Tab => MenuManagerProvider.GetTab("SIXAIO - Items");
         private static Group AutoEverfrostGroup => Tab.GetGroup("Auto Everfrost");
 
         private static bool UseEverfrost
@@ -32,7 +32,7 @@ namespace SixAIO.Utilities
         {
             Tab.AddGroup(new Group("Auto Everfrost"));
             AutoEverfrostGroup.AddItem(new Switch() { Title = "Use Everfrost", IsOn = true });
-            AutoEverfrostGroup.AddItem(new ModeDisplay() { Title = "HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
+            AutoEverfrostGroup.AddItem(new ModeDisplay() { Title = "HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "VeryHigh" });
 
             CoreEvents.OnCoreMainInputAsync += InputHandler;
             return Task.CompletedTask;

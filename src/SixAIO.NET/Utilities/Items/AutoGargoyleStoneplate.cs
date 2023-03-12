@@ -12,7 +12,7 @@ namespace SixAIO.Utilities
 {
     internal sealed class AutoGargoyleStoneplate
     {
-        private static Tab Tab => MenuManagerProvider.GetTab("SIXAIO - Utilities");
+        private static Tab Tab => MenuManagerProvider.GetTab("SIXAIO - Items");
         private static Group AutoGargoyleStoneplateGroup => Tab.GetGroup("Auto Gargoyle");
 
         private static bool UseGargoyleStoneplate

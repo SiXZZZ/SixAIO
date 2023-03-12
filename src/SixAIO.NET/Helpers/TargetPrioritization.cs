@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace SixAIO.Utilities
+namespace SixAIO.Helpers
 {
     internal sealed class TargetSelection
     {

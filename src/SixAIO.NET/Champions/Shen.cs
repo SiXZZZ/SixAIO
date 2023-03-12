@@ -10,10 +10,10 @@ using Oasys.SDK;
 using Oasys.Common.GameObject;
 using Oasys.Common.GameObject.Clients;
 using Newtonsoft.Json;
-using SixAIO.Utilities;
 using System.IO;
 using System.Collections.Generic;
 using Oasys.SDK.InputProviders;
+using SixAIO.Helpers;
 
 namespace SixAIO.Champions
 {

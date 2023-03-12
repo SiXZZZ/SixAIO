@@ -14,7 +14,7 @@ namespace SixAIO.Utilities
 {
     internal sealed class AutoGaleforce
     {
-        private static Tab Tab => MenuManagerProvider.GetTab("SIXAIO - Utilities");
+        private static Tab Tab => MenuManagerProvider.GetTab("SIXAIO - Items");
         private static Group AutoGaleforceGroup => Tab.GetGroup("Auto Galeforce");
 
         private static bool UseGaleforce
@@ -32,7 +32,7 @@ namespace SixAIO.Utilities
         internal static Task GameEvents_OnGameLoadComplete()
         {
             Tab.AddGroup(new Group("Auto Galeforce"));
-            AutoGaleforceGroup.AddItem(new Switch() { Title = "Use Galeforce", IsOn = true });
+            AutoGaleforceGroup.AddItem(new Switch() { Title = "Use Galeforce", IsOn = false });
             AutoGaleforceGroup.AddItem(new ModeDisplay() { Title = "Dash Mode", ModeNames = DashHelper.ConstructDashModeTable(), SelectedModeName = "ToMouse" });
 
             CoreEvents.OnCoreMainInputAsync += InputHandler;

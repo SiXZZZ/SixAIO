@@ -12,7 +12,7 @@ namespace SixAIO.Utilities
 {
     internal sealed class AutoStrideBreaker
     {
-        private static Tab Tab => MenuManagerProvider.GetTab("SIXAIO - Utilities");
+        private static Tab Tab => MenuManagerProvider.GetTab("SIXAIO - Items");
         private static Group AutoStrideBreakerGroup => Tab.GetGroup("Auto Stride Breaker");
 
         private static bool UseStrideBreaker

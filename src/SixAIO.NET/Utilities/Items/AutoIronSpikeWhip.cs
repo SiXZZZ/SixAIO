@@ -12,7 +12,7 @@ namespace SixAIO.Utilities
 {
     internal sealed class AutoIronSpikeWhip
     {
-        private static Tab Tab => MenuManagerProvider.GetTab("SIXAIO - Utilities");
+        private static Tab Tab => MenuManagerProvider.GetTab("SIXAIO - Items");
         private static Group AutoIronSpikeWhipGroup => Tab.GetGroup("Auto Iron Spike Whip");
 
         private static bool UseIronSpikeWhip
@@ -31,7 +31,7 @@ namespace SixAIO.Utilities
         {
             Tab.AddGroup(new Group("Auto Iron Spike Whip"));
             AutoIronSpikeWhipGroup.AddItem(new Switch() { Title = "Use Iron Spike Whip", IsOn = true });
-            AutoIronSpikeWhipGroup.AddItem(new Counter() { Title = "Targets in range", Value = 2, MinValue = 1, MaxValue = 5, ValueFrequency = 1 });
+            AutoIronSpikeWhipGroup.AddItem(new Counter() { Title = "Targets in range", Value = 1, MinValue = 1, MaxValue = 5, ValueFrequency = 1 });
 
             CoreEvents.OnCoreMainInputAsync += InputHandler;
             return Task.CompletedTask;

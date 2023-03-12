@@ -17,7 +17,7 @@ namespace SixAIO.Utilities
     {
         private static float _lastCleanse = 0f;
 
-        private static Tab Tab => MenuManagerProvider.GetTab("SIXAIO - Utilities");
+        private static Tab Tab => MenuManagerProvider.GetTab("SIXAIO - Items");
         private static Group AutoMikaelsBlessingGroup => Tab.GetGroup("Auto Mikaels Blessing");
 
         private static bool LogMikaelsBuff
@@ -44,6 +44,7 @@ namespace SixAIO.Utilities
             Tab.AddGroup(new Group("Auto Mikaels Blessing"));
             AutoMikaelsBlessingGroup.AddItem(new Switch() { Title = "Log Cleanse Buff", IsOn = true });
             AutoMikaelsBlessingGroup.AddItem(new Switch() { Title = "Use Mikaels Blessing", IsOn = true });
+            AutoMikaelsBlessingGroup.AddItem(new Counter() { Title = "Reaction Delay", Value = 100, MinValue = 0, MaxValue = 1000, ValueFrequency = 10 });
 
             AutoMikaelsBlessingGroup.AddItem(new InfoDisplay() { Title = "-Only mikaels debuffs longer than ms-" });
             AutoMikaelsBlessingGroup.AddItem(new Counter() { Title = "Stun", Value = 500, MinValue = 0, MaxValue = 5000, ValueFrequency = 250 });
@@ -59,7 +60,7 @@ namespace SixAIO.Utilities
             AutoMikaelsBlessingGroup.AddItem(new InfoDisplay() { Title = "-Only mikaels allies-" });
             foreach (var allyChampion in UnitManager.AllyChampions.Where(x => !x.IsTargetDummy && x.NetworkID != UnitManager.MyChampion.NetworkID))
             {
-                AutoMikaelsBlessingGroup.AddItem(new Counter() { Title = "Mikaels Ally Prio- " + allyChampion.ModelName, MinValue = 0, MaxValue = 5, Value = 0 });
+                AutoMikaelsBlessingGroup.AddItem(new Counter() { Title = "Mikaels Ally Prio- " + allyChampion.ModelName, MinValue = 0, MaxValue = 5, Value = 1 });
             }
 
             return Task.CompletedTask;
@@ -75,12 +76,10 @@ namespace SixAIO.Utilities
                     {
                         if (itemSwitchOnCombo.IsOn)
                         {
-                            Logger.Log($"[AutoMikaelsBlessing] Activated!");
                             CoreEvents.OnCoreMainInputAsync += InputHandler;
                         }
                         else
                         {
-                            Logger.Log($"[AutoMikaelsBlessing] Deactivated!");
                             CoreEvents.OnCoreMainInputAsync -= InputHandler;
                         }
                     }

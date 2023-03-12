@@ -22,7 +22,7 @@ namespace SixAIO.Utilities
         public static CastSlot CleanseCastSlot;
         public static SpellClass CleanseSpellClass;
 
-        private static Tab Tab => MenuManagerProvider.GetTab("SIXAIO - Utilities");
+        private static Tab Tab => MenuManagerProvider.GetTab("SIXAIO - Summoners");
         private static Group AutoCleanseGroup => Tab.GetGroup("Auto Cleanse");
 
         private static bool LogCleanseBuff
@@ -102,29 +102,29 @@ namespace SixAIO.Utilities
             }
 
             Tab.AddGroup(new Group("Auto Cleanse"));
-            AutoCleanseGroup.AddItem(new Switch() { Title = "Log Cleanse Buff", IsOn = true });
+            AutoCleanseGroup.AddItem(new Switch() { Title = "Log Cleanse Buff", IsOn = false });
             AutoCleanseGroup.AddItem(new Switch() { Title = "Use Cleanse", IsOn = true });
             AutoCleanseGroup.AddItem(new Switch() { Title = "Use Items", IsOn = true });
             AutoCleanseGroup.AddItem(new Switch() { Title = "Cleanse On Combo", IsOn = true });
-            AutoCleanseGroup.AddItem(new Switch() { Title = "Cleanse On Tick", IsOn = false });
+            AutoCleanseGroup.AddItem(new Switch() { Title = "Cleanse On Tick", IsOn = true });
             AutoCleanseGroup.AddItem(new Counter() { Title = "Cleanse Action Interval MS", Value = 1000, MinValue = 50, MaxValue = 5000, ValueFrequency = 50 });
-            AutoCleanseGroup.AddItem(new Counter() { Title = "Summoners Reaction Delay", Value = 200, MinValue = 0, MaxValue = 5000, ValueFrequency = 50 });
+            AutoCleanseGroup.AddItem(new Counter() { Title = "Summoners Reaction Delay", Value = 250, MinValue = 0, MaxValue = 5000, ValueFrequency = 50 });
             AutoCleanseGroup.AddItem(new Switch() { Title = "Exhaust", IsOn = true });
             AutoCleanseGroup.AddItem(new Switch() { Title = "Ignite", IsOn = false });
 
             AutoCleanseGroup.AddItem(new Counter() { Title = "Reaction Delay", Value = 50, MinValue = 0, MaxValue = 5000, ValueFrequency = 50 });
             AutoCleanseGroup.AddItem(new InfoDisplay() { Title = "-Only cleanse debuffs longer than ms-" });
-            AutoCleanseGroup.AddItem(new Counter() { Title = "Stun", Value = 500, MinValue = 0, MaxValue = 5000, ValueFrequency = 250 });
-            AutoCleanseGroup.AddItem(new Counter() { Title = "Snare", Value = 500, MinValue = 0, MaxValue = 5000, ValueFrequency = 250 });
-            AutoCleanseGroup.AddItem(new Counter() { Title = "Slow", Value = 5250, MinValue = 0, MaxValue = 10000, ValueFrequency = 250 });
-            AutoCleanseGroup.AddItem(new Counter() { Title = "Blind", Value = 500, MinValue = 0, MaxValue = 5000, ValueFrequency = 250 });
-            AutoCleanseGroup.AddItem(new Counter() { Title = "Charm", Value = 500, MinValue = 0, MaxValue = 5000, ValueFrequency = 250 });
-            AutoCleanseGroup.AddItem(new Counter() { Title = "Taunt", Value = 500, MinValue = 0, MaxValue = 5000, ValueFrequency = 250 });
-            AutoCleanseGroup.AddItem(new Counter() { Title = "Fear", Value = 500, MinValue = 0, MaxValue = 5000, ValueFrequency = 250 });
-            AutoCleanseGroup.AddItem(new Counter() { Title = "Flee", Value = 500, MinValue = 0, MaxValue = 5000, ValueFrequency = 250 });
-            AutoCleanseGroup.AddItem(new Counter() { Title = "Sleep", Value = 1250, MinValue = 0, MaxValue = 5000, ValueFrequency = 250 });
-            AutoCleanseGroup.AddItem(new Counter() { Title = "Asleep", Value = 1250, MinValue = 0, MaxValue = 5000, ValueFrequency = 250 });
-            AutoCleanseGroup.AddItem(new Counter() { Title = "Polymorph", Value = 1250, MinValue = 0, MaxValue = 5000, ValueFrequency = 250 });
+            AutoCleanseGroup.AddItem(new Counter() { Title = "Stun", Value = 700, MinValue = 0, MaxValue = 5000, ValueFrequency = 50 });
+            AutoCleanseGroup.AddItem(new Counter() { Title = "Snare", Value = 700, MinValue = 0, MaxValue = 5000, ValueFrequency = 50 });
+            AutoCleanseGroup.AddItem(new Counter() { Title = "Slow", Value = 5250, MinValue = 0, MaxValue = 10000, ValueFrequency = 50 });
+            AutoCleanseGroup.AddItem(new Counter() { Title = "Blind", Value = 700, MinValue = 0, MaxValue = 5000, ValueFrequency = 50 });
+            AutoCleanseGroup.AddItem(new Counter() { Title = "Charm", Value = 700, MinValue = 0, MaxValue = 5000, ValueFrequency = 50 });
+            AutoCleanseGroup.AddItem(new Counter() { Title = "Taunt", Value = 700, MinValue = 0, MaxValue = 5000, ValueFrequency = 50 });
+            AutoCleanseGroup.AddItem(new Counter() { Title = "Fear", Value = 700, MinValue = 0, MaxValue = 5000, ValueFrequency = 50 });
+            AutoCleanseGroup.AddItem(new Counter() { Title = "Flee", Value = 700, MinValue = 0, MaxValue = 5000, ValueFrequency = 50 });
+            AutoCleanseGroup.AddItem(new Counter() { Title = "Sleep", Value = 1250, MinValue = 0, MaxValue = 5000, ValueFrequency = 50 });
+            AutoCleanseGroup.AddItem(new Counter() { Title = "Asleep", Value = 1250, MinValue = 0, MaxValue = 5000, ValueFrequency = 50 });
+            AutoCleanseGroup.AddItem(new Counter() { Title = "Polymorph", Value = 1250, MinValue = 0, MaxValue = 5000, ValueFrequency = 50 });
 
             return Task.CompletedTask;
         }
@@ -179,7 +179,7 @@ namespace SixAIO.Utilities
             try
             {
                 var gameTime = GameEngine.GameTime;
-                if ((CleanseOnTick && callFromTick) || CleanseOnCombo)
+                if (CleanseOnTick && callFromTick || CleanseOnCombo)
                 {
                     if (UseCleanse && CleanseSpellClass is not null && CleanseSpellClass?.IsSpellReady == true &&
                         gameTime > _lastCleanse + CleanseActionIntervalMS / 1000f && gameTime > _lastQss + CleanseActionIntervalMS / 1000f &&
@@ -247,7 +247,7 @@ namespace SixAIO.Utilities
         {
             if (shouldCheck)
             {
-                var buff = UnitManager.MyChampion.BuffManager.ActiveBuffs.FirstOrDefault(x => x.Stacks >= 1 && x.IsActive && x.Name == buffName && (float)x.StartTime + (float)((float)SummonersReactionDelay / 1000f) < gameTime);
+                var buff = UnitManager.MyChampion.BuffManager.ActiveBuffs.FirstOrDefault(x => x.Stacks >= 1 && x.IsActive && x.Name == buffName && (float)x.StartTime + (float)(SummonersReactionDelay / 1000f) < gameTime);
                 return LogBuff(buff);
             }
 
@@ -265,7 +265,7 @@ namespace SixAIO.Utilities
                            ? BuffChecker.IsCrowdControllButCanQss
                            : BuffChecker.IsCrowdControllButCanCleanse)
                     .FirstOrDefault(buff =>
-                           buff.StartTime + (float)((float)ReactionDelay / 1000f) < gameTime &&
+                           buff.StartTime + (float)(ReactionDelay / 1000f) < gameTime &&
                            buff.DurationMs < 10_000 &&
                            Math.Min(buff.DurationMs, buff.RemainingDurationMs + ReactionDelay + 100) >= AutoCleanseGroup.GetItem<Counter>(x => x.Title.Contains(buff.EntryType.ToString(), StringComparison.OrdinalIgnoreCase))?.Value);
 

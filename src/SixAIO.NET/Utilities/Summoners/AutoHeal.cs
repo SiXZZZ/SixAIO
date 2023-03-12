@@ -13,7 +13,7 @@ namespace SixAIO.Utilities
     {
         public static CastSlot HealSlot;
 
-        private static Tab Tab => MenuManagerProvider.GetTab($"SIXAIO - Utilities");
+        private static Tab Tab => MenuManagerProvider.GetTab($"SIXAIO - Summoners");
         private static Group AutoHealGroup => Tab.GetGroup("Auto Heal");
 
         private static bool UseHeal

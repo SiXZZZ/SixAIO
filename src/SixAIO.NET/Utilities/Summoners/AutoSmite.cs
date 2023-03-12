@@ -23,7 +23,7 @@ namespace SixAIO.Utilities
         public static SpellClass SmiteKey;
         public static CastSlot SmiteSlot;
 
-        private static Tab Tab => MenuManagerProvider.GetTab($"SIXAIO - Utilities");
+        private static Tab Tab => MenuManagerProvider.GetTab($"SIXAIO - Summoners");
         private static Group AutoSmiteGroup => Tab.GetGroup("Auto Smite");
 
         private static bool LogSmiteAction
@@ -352,16 +352,16 @@ namespace SixAIO.Utilities
                 if (enemy.IsJungle && enemy.IsAlive &&
                     enemy.Distance <= dist &&
                     !enemy.UnitComponentInfo.SkinName.Contains("mini", System.StringComparison.OrdinalIgnoreCase) &&
-                    ((Baron && enemy.UnitComponentInfo.SkinName.Contains("SRU_Baron", System.StringComparison.OrdinalIgnoreCase)) ||
-                    (Dragon && enemy.UnitComponentInfo.SkinName.Contains("SRU_Dragon", System.StringComparison.OrdinalIgnoreCase)) ||
-                    (RiftHerald && enemy.UnitComponentInfo.SkinName.Contains("SRU_RiftHerald", System.StringComparison.OrdinalIgnoreCase)) ||
-                    (Red && enemy.UnitComponentInfo.SkinName.Contains("SRU_Red", System.StringComparison.OrdinalIgnoreCase)) ||
-                    (Blue && enemy.UnitComponentInfo.SkinName.Contains("SRU_Blue", System.StringComparison.OrdinalIgnoreCase)) ||
-                    (Crab && enemy.UnitComponentInfo.SkinName.Contains("Sru_Crab", System.StringComparison.OrdinalIgnoreCase)) ||
-                    (Krug && enemy.UnitComponentInfo.SkinName.Contains("SRU_Krug", System.StringComparison.OrdinalIgnoreCase)) ||
-                    (Gromp && enemy.UnitComponentInfo.SkinName.Contains("SRU_Gromp", System.StringComparison.OrdinalIgnoreCase)) ||
-                    (MurkWolf && enemy.UnitComponentInfo.SkinName.Equals("SRU_Murkwolf", System.StringComparison.OrdinalIgnoreCase)) ||
-                    (Razorbeak && enemy.UnitComponentInfo.SkinName.Equals("SRU_Razorbeak", System.StringComparison.OrdinalIgnoreCase))))
+                    (Baron && enemy.UnitComponentInfo.SkinName.Contains("SRU_Baron", System.StringComparison.OrdinalIgnoreCase) ||
+                    Dragon && enemy.UnitComponentInfo.SkinName.Contains("SRU_Dragon", System.StringComparison.OrdinalIgnoreCase) ||
+                    RiftHerald && enemy.UnitComponentInfo.SkinName.Contains("SRU_RiftHerald", System.StringComparison.OrdinalIgnoreCase) ||
+                    Red && enemy.UnitComponentInfo.SkinName.Contains("SRU_Red", System.StringComparison.OrdinalIgnoreCase) ||
+                    Blue && enemy.UnitComponentInfo.SkinName.Contains("SRU_Blue", System.StringComparison.OrdinalIgnoreCase) ||
+                    Crab && enemy.UnitComponentInfo.SkinName.Contains("Sru_Crab", System.StringComparison.OrdinalIgnoreCase) ||
+                    Krug && enemy.UnitComponentInfo.SkinName.Contains("SRU_Krug", System.StringComparison.OrdinalIgnoreCase) ||
+                    Gromp && enemy.UnitComponentInfo.SkinName.Contains("SRU_Gromp", System.StringComparison.OrdinalIgnoreCase) ||
+                    MurkWolf && enemy.UnitComponentInfo.SkinName.Equals("SRU_Murkwolf", System.StringComparison.OrdinalIgnoreCase) ||
+                    Razorbeak && enemy.UnitComponentInfo.SkinName.Equals("SRU_Razorbeak", System.StringComparison.OrdinalIgnoreCase)))
                 {
                     return enemy;
                 }

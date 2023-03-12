@@ -13,7 +13,7 @@ namespace SixAIO.Utilities
     {
         private static float _lastPotion;
 
-        private static Tab Tab => MenuManagerProvider.GetTab("SIXAIO - Utilities");
+        private static Tab Tab => MenuManagerProvider.GetTab("SIXAIO - Items");
         private static Group AutoPotionGroup => Tab.GetGroup("Auto Potion");
 
         private static bool UsePotion

@@ -12,7 +12,7 @@ namespace SixAIO.Utilities
 {
     internal sealed class AutoRanduins
     {
-        private static Tab Tab => MenuManagerProvider.GetTab("SIXAIO - Utilities");
+        private static Tab Tab => MenuManagerProvider.GetTab("SIXAIO - Items");
         private static Group AutoRanduinsGroup => Tab.GetGroup("Auto Randuins");
 
         private static bool UseRanduins

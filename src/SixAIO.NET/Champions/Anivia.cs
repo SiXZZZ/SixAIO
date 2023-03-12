@@ -8,12 +8,8 @@ using System.Linq;
 using Oasys.Common.Menu;
 using Oasys.SDK;
 using Oasys.Common.GameObject;
-using Oasys.Common.Tools.Devices;
 using Oasys.Common.GameObject.Clients;
-using SharpDX;
-using Oasys.Common;
 using Oasys.Common.Extensions;
-using Oasys.SDK.Tools;
 
 namespace SixAIO.Champions
 {

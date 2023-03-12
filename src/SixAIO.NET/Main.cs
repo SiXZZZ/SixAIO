@@ -35,6 +35,8 @@ namespace SixAIO
             GameEvents.OnGameLoadComplete += AutoStrideBreaker.GameEvents_OnGameLoadComplete;
             GameEvents.OnGameLoadComplete += AutoMikaelsBlessing.GameEvents_OnGameLoadComplete;
             GameEvents.OnGameLoadComplete += AutoPotion.GameEvents_OnGameLoadComplete;
+            GameEvents.OnGameLoadComplete += AntiChat.GameEvents_OnGameLoadComplete;
+            GameEvents.OnGameLoadComplete += AntiAFK.GameEvents_OnGameLoadComplete;
             GameEvents.OnGameMatchComplete += GameEvents_OnGameMatchComplete;
             Oasys.Common.EventsProvider.GameEvents.OnCreateObject += GameEvents_OnCreateObject;
             Oasys.Common.EventsProvider.GameEvents.OnDeleteObject += GameEvents_OnDeleteObject;
@@ -68,6 +70,8 @@ namespace SixAIO
         {
             LoadChampion();
             MenuManager.AddTab(new Tab("SIXAIO - Utilities"));
+            MenuManager.AddTab(new Tab("SIXAIO - Items"));
+            MenuManager.AddTab(new Tab("SIXAIO - Summoners"));
 
             if (_currentChampion is not null)
             {
@@ -89,6 +93,7 @@ namespace SixAIO
             CoreEvents.OnCoreMainInputAsync += AutoHeal.OnCoreMainInputAsync;
             CoreEvents.OnCoreMainInputAsync += AutoExhaust.OnCoreMainInputAsync;
             CoreEvents.OnCoreMainTick += AutoExhaust.OnCoreMainTick;
+            CoreEvents.OnCoreMainTick += AntiChat.OnCoreMainTick;
             CoreEvents.OnCoreMainInputRelease += CoreEvents_OnCoreMainInputRelease;
 
             return Task.CompletedTask;

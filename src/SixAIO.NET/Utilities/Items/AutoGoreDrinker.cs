@@ -12,7 +12,7 @@ namespace SixAIO.Utilities
 {
     internal sealed class AutoGoreDrinker
     {
-        private static Tab Tab => MenuManagerProvider.GetTab("SIXAIO - Utilities");
+        private static Tab Tab => MenuManagerProvider.GetTab("SIXAIO - Items");
         private static Group AutoGoreDrinkerGroup => Tab.GetGroup("Auto Gore Drinker");
 
         private static bool UseGoreDrinker

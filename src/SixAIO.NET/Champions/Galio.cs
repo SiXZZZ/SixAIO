@@ -8,11 +8,10 @@ using System.Linq;
 using Oasys.Common.Menu;
 using Oasys.SDK;
 using Oasys.Common.GameObject;
-using Oasys.Common.Tools.Devices;
-using SixAIO.Utilities;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.IO;
+using SixAIO.Helpers;
 
 namespace SixAIO.Champions
 {

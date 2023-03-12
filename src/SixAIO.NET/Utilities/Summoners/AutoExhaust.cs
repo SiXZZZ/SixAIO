@@ -5,6 +5,7 @@ using Oasys.Common.Menu;
 using Oasys.Common.Menu.ItemComponents;
 using Oasys.SDK;
 using Oasys.SDK.SpellCasting;
+using SixAIO.Helpers;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -18,7 +19,7 @@ namespace SixAIO.Utilities
         public static CastSlot ExhaustSlot;
         private static TargetSelection _targetSelection;
 
-        private static Tab Tab => MenuManagerProvider.GetTab($"SIXAIO - Utilities");
+        private static Tab Tab => MenuManagerProvider.GetTab($"SIXAIO - Summoners");
         private static Group AutoExhaustGroup => Tab.GetGroup("Auto Exhaust");
 
         private static bool UseExhaust
