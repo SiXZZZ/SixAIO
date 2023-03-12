@@ -340,7 +340,6 @@ namespace SixAIO.Champions
             {
                 var damage = 600f;
                 var buffDamage = 0f;
-                var smiteDamageTrackerAvatarBuff = UnitManager.MyChampion.BuffManager.ActiveBuffs.FirstOrDefault(x => x.Name.Contains("SmiteDamageTrackerAvatar", StringComparison.OrdinalIgnoreCase) && x.Stacks >= 1);
                 var smiteBuff = UnitManager.MyChampion.BuffManager.ActiveBuffs.FirstOrDefault(x => x.Name.Contains("itemsmitecounter", StringComparison.OrdinalIgnoreCase) && x.Stacks >= 0);
                 if (smiteBuff is not null)
                 {
@@ -363,11 +362,7 @@ namespace SixAIO.Champions
                     }
                 }
 
-                if (SmiteKey.Damage > damage)
-                {
-                    damage = SmiteKey.Damage;
-                }
-
+                var smiteDamageTrackerAvatarBuff = UnitManager.MyChampion.BuffManager.ActiveBuffs.FirstOrDefault(x => x.Name.Contains("SmiteDamageTrackerAvatar", StringComparison.OrdinalIgnoreCase) && x.Stacks >= 1);
                 if (smiteDamageTrackerAvatarBuff is not null)
                 {
                     if (smiteDamageTrackerAvatarBuff.Stacks >= 1)
@@ -379,6 +374,48 @@ namespace SixAIO.Champions
                     {
                         damage = buffDamage;
                     }
+                }
+
+                var smiteDamageTrackerStalkerBuff = UnitManager.MyChampion.BuffManager.ActiveBuffs.FirstOrDefault(x => x.Name.Contains("SmiteDamageTrackerStalker", StringComparison.OrdinalIgnoreCase) && x.Stacks >= 1);
+                if (smiteDamageTrackerStalkerBuff is not null)
+                {
+                    if (smiteDamageTrackerStalkerBuff.Stacks > 0)
+                    {
+                        buffDamage = smiteDamageTrackerStalkerBuff.Stacks;
+                    }
+
+                    if (buffDamage > damage)
+                    {
+                        damage = buffDamage;
+                    }
+                }
+
+                var itemDamage = 0f;
+                var smiteItem = UnitManager.MyChampion.Inventory.GetItemList().FirstOrDefault(x => x.ID == ItemID.Mosstomper_Seedling || x.ID == ItemID.Scorchclaw_Pup || x.ID == ItemID.Gustwalker_Hatchling);
+                if (smiteItem is not null)
+                {
+                    if (smiteItem.Charges > 20)
+                    {
+                        itemDamage = 600f;
+                    }
+                    else if (smiteItem.Charges <= 20 && smiteItem.Charges > 0)
+                    {
+                        itemDamage = 900f;
+                    }
+                    else
+                    {
+                        itemDamage = 1200f;
+                    }
+
+                    if (itemDamage > damage)
+                    {
+                        damage = itemDamage;
+                    }
+                }
+
+                if (SmiteKey.Damage > damage)
+                {
+                    damage = SmiteKey.Damage;
                 }
 
                 if (SmiteKey.Charges > 0 && SmiteKey.IsSpellReady)
