@@ -22,7 +22,6 @@ namespace SixAIO.Champions
 {
     internal sealed class Senna : Champion
     {
-        private bool _originalTargetChampsOnlySetting;
         public float PassiveStacks()
         {
             var passiveStacks = UnitManager.MyChampion.BuffManager.GetActiveBuff("SennaPassiveStacks");
@@ -135,6 +134,8 @@ namespace SixAIO.Champions
 
         internal override void OnCoreMainInput()
         {
+            Orbwalker.SelectedTarget = null;
+
             if (Orbwalker.TargetChampionsOnly && SpellQ.CanExecuteCastSpell())
             {
                 var tempTargetChamps = OrbSettings.TargetChampionsOnly;
@@ -162,15 +163,11 @@ namespace SixAIO.Champions
 
         internal override void OnCoreLaneClearInput()
         {
+            TargetSoulsWithOrbwalker();
             if (UseQLaneclear && SpellQ.ExecuteCastSpell())
             {
                 return;
             }
-        }
-
-        internal override void OnCoreMainTick()
-        {
-            TargetSoulsWithOrbwalker();
         }
 
         private int RMinimumRange
