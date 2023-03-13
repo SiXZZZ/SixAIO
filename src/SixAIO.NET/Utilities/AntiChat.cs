@@ -2,6 +2,7 @@
 using Oasys.Common.Menu;
 using Oasys.Common.Menu.ItemComponents;
 using Oasys.Common.Tools;
+using Oasys.SDK.Events;
 using Oasys.SDK.InputProviders;
 using System;
 using System.Threading;
@@ -32,6 +33,8 @@ namespace SixAIO.Utilities
             AntiChatGroup.AddItem(new Switch() { Title = "Use Anti Chat", IsOn = false });
             AntiChatGroup.AddItem(new Counter() { Title = "Anti Chat Sleep Timer MS", Value = 1000, MinValue = 0, MaxValue = 2000, ValueFrequency = 50 });
 
+            CoreEvents.OnCoreMainTick += OnCoreMainTick;
+
             return Task.CompletedTask;
         }
 
@@ -47,13 +50,19 @@ namespace SixAIO.Utilities
                 {
                     NativeImport.BlockInput(true);
                     Thread.Sleep(AntiChatSleepTimerMS);
-                    KeyboardProvider.PressKey(System.Windows.Forms.Keys.Escape);
+                    if (EngineManager.ChatClient.IsChatBoxOpen)
+                    {
+                        KeyboardProvider.PressKey(System.Windows.Forms.Keys.Escape);
+                    }
                     NativeImport.BlockInput(false);
                 }
                 else
                 {
                     NativeImport.BlockInput(true);
-                    KeyboardProvider.PressKey(System.Windows.Forms.Keys.Escape);
+                    if (EngineManager.ChatClient.IsChatBoxOpen)
+                    {
+                        KeyboardProvider.PressKey(System.Windows.Forms.Keys.Escape);
+                    }
                     NativeImport.BlockInput(false);
                 }
 

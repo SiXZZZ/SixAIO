@@ -2,6 +2,7 @@
 
 	<PropertyGroup>
 		<TargetFramework>net7.0-windows7</TargetFramework>
+		<LangVersion>10.0</LangVersion>
 		<UseWindowsForms>true</UseWindowsForms>
 		<AssemblyVersion>2.7.7.0</AssemblyVersion>
 		<FileVersion>2.7.7.0</FileVersion>

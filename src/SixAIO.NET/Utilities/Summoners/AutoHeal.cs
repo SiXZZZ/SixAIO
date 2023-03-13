@@ -46,8 +46,6 @@ namespace SixAIO.Utilities
             }
             else
             {
-                CoreEvents.OnCoreMainTick -= OnCoreMainTick;
-                CoreEvents.OnCoreMainInputAsync -= OnCoreMainInputAsync;
                 return Task.CompletedTask;
             }
 
@@ -57,6 +55,9 @@ namespace SixAIO.Utilities
             AutoHealGroup.AddItem(new Switch() { Title = "Heal On Tick", IsOn = false });
 
             LoadAllyHealthPercents();
+
+            CoreEvents.OnCoreMainInputAsync += OnCoreMainInputAsync;
+            CoreEvents.OnCoreMainTick += OnCoreMainTick;
 
             return Task.CompletedTask;
         }

@@ -131,13 +131,8 @@ namespace SixAIO.Utilities
             }
             else
             {
-                CoreEvents.OnCoreMainTick -= OnCoreMainTick;
-                CoreEvents.OnCoreLaneclearInputAsync -= OnCoreLaneclearInputAsync;
-                CoreEvents.OnCoreLasthitInputAsync -= OnCoreLasthitInputAsync;
                 return Task.CompletedTask;
             }
-            Keyboard.OnKeyPress += OnKeyPress;
-            CoreEvents.OnCoreRender += CoreEvents_OnCoreRender;
 
             Tab.AddGroup(new Group("Auto Smite"));
             AutoSmiteGroup.AddItem(new Switch() { Title = "Log Smite Action", IsOn = false });
@@ -156,6 +151,12 @@ namespace SixAIO.Utilities
             AutoSmiteGroup.AddItem(new Switch() { Title = "Gromp", IsOn = false });
             AutoSmiteGroup.AddItem(new Switch() { Title = "Krug", IsOn = false });
             AutoSmiteGroup.AddItem(new Switch() { Title = "Crab", IsOn = false });
+
+            Keyboard.OnKeyPress += OnKeyPress;
+            CoreEvents.OnCoreRender += CoreEvents_OnCoreRender;
+            CoreEvents.OnCoreMainTick += OnCoreMainTick;
+            CoreEvents.OnCoreLaneclearInputAsync += OnCoreLaneclearInputAsync;
+            CoreEvents.OnCoreLasthitInputAsync += OnCoreLasthitInputAsync;
 
             return Task.CompletedTask;
         }

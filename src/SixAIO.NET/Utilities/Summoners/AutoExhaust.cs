@@ -58,8 +58,6 @@ namespace SixAIO.Utilities
             }
             else
             {
-                CoreEvents.OnCoreMainInputAsync -= OnCoreMainInputAsync;
-                CoreEvents.OnCoreMainTick -= OnCoreMainTick;
                 return Task.CompletedTask;
             }
 
@@ -72,6 +70,9 @@ namespace SixAIO.Utilities
             LoadTargetPrioValues();
 
             LoadAllyHealthPercents();
+            
+            CoreEvents.OnCoreMainTick += OnCoreMainTick; 
+            CoreEvents.OnCoreMainInputAsync += OnCoreMainInputAsync;
 
             return Task.CompletedTask;
         }

@@ -1,13 +1,12 @@
 ﻿using Oasys.Common;
 using Oasys.Common.Enums.GameEnums;
-using Oasys.Common.EventsProvider;
 using Oasys.Common.Extensions;
 using Oasys.Common.GameObject.Clients;
 using Oasys.Common.Menu;
 using Oasys.Common.Menu.ItemComponents;
 using Oasys.Common.Tools.Devices;
 using Oasys.SDK;
-using Oasys.SDK.Tools;
+using Oasys.SDK.Events;
 using SharpDX;
 using System;
 using System.Collections.Generic;
