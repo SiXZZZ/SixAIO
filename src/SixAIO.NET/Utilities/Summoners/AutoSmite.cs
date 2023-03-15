@@ -248,7 +248,8 @@ namespace SixAIO.Utilities
                 var smiteDamageTrackerAvatarBuff = UnitManager.MyChampion.BuffManager.ActiveBuffs.FirstOrDefault(x => x.Name.Contains("SmiteDamageTrackerAvatar", System.StringComparison.OrdinalIgnoreCase) && x.Stacks >= 1);
                 if (smiteDamageTrackerAvatarBuff is not null)
                 {
-                    if (smiteDamageTrackerAvatarBuff.Stacks == 1)
+                    if (smiteDamageTrackerAvatarBuff.Stacks == 1 ||
+                        smiteDamageTrackerAvatarBuff.Stacks == 1200)
                     {
                         buffDamage = 1200f;
                     }
