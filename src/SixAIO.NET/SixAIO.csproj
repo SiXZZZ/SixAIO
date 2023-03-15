@@ -4,8 +4,8 @@
 		<TargetFramework>net7.0-windows7</TargetFramework>
 		<LangVersion>10.0</LangVersion>
 		<UseWindowsForms>true</UseWindowsForms>
-		<AssemblyVersion>2.8.0.0</AssemblyVersion>
-		<FileVersion>2.8.0.0</FileVersion>
+		<AssemblyVersion>2.8.0.1</AssemblyVersion>
+		<FileVersion>2.8.0.1</FileVersion>
 	</PropertyGroup>
 
 	<Target Name="PostBuild" AfterTargets="PostBuildEvent">
