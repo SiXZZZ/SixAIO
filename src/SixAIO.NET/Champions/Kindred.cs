@@ -333,11 +333,11 @@ namespace SixAIO.Champions
             if (SmiteMarkedJungleCamp && SmiteKey is not null)
             {
                 var damage = 600f;
-                var buffDamage = 0f;
+                var buffDamage = 600f;
                 var smiteBuff = UnitManager.MyChampion.BuffManager.ActiveBuffs.FirstOrDefault(x => x.Name.Contains("itemsmitecounter", StringComparison.OrdinalIgnoreCase) && x.Stacks >= 0);
                 if (smiteBuff is not null)
                 {
-                    if (smiteBuff.Stacks > 20)
+                    if (smiteBuff.Stacks > 20 && smiteBuff.Stacks <= 40)
                     {
                         buffDamage = 600f;
                     }
@@ -345,7 +345,7 @@ namespace SixAIO.Champions
                     {
                         buffDamage = 900f;
                     }
-                    else
+                    else if (smiteBuff.Stacks == 0)
                     {
                         buffDamage = 1200f;
                     }
@@ -359,7 +359,7 @@ namespace SixAIO.Champions
                 var smiteDamageTrackerAvatarBuff = UnitManager.MyChampion.BuffManager.ActiveBuffs.FirstOrDefault(x => x.Name.Contains("SmiteDamageTrackerAvatar", StringComparison.OrdinalIgnoreCase) && x.Stacks >= 1);
                 if (smiteDamageTrackerAvatarBuff is not null)
                 {
-                    if (smiteDamageTrackerAvatarBuff.Stacks >= 1)
+                    if (smiteDamageTrackerAvatarBuff.Stacks == 1)
                     {
                         buffDamage = 1200f;
                     }
@@ -373,7 +373,7 @@ namespace SixAIO.Champions
                 var smiteDamageTrackerStalkerBuff = UnitManager.MyChampion.BuffManager.ActiveBuffs.FirstOrDefault(x => x.Name.Contains("SmiteDamageTrackerStalker", StringComparison.OrdinalIgnoreCase) && x.Stacks >= 1);
                 if (smiteDamageTrackerStalkerBuff is not null)
                 {
-                    if (smiteDamageTrackerStalkerBuff.Stacks > 0)
+                    if (smiteDamageTrackerStalkerBuff.Stacks >= 600 && smiteDamageTrackerStalkerBuff.Stacks <= 900)
                     {
                         buffDamage = smiteDamageTrackerStalkerBuff.Stacks;
                     }
@@ -384,11 +384,11 @@ namespace SixAIO.Champions
                     }
                 }
 
-                var itemDamage = 0f;
+                var itemDamage = 600f;
                 var smiteItem = UnitManager.MyChampion.Inventory.GetItemList().FirstOrDefault(x => x.ID == ItemID.Mosstomper_Seedling || x.ID == ItemID.Scorchclaw_Pup || x.ID == ItemID.Gustwalker_Hatchling);
                 if (smiteItem is not null)
                 {
-                    if (smiteItem.Charges > 20)
+                    if (smiteItem.Charges > 20 && smiteItem.Charges <= 40)
                     {
                         itemDamage = 600f;
                     }
@@ -396,7 +396,7 @@ namespace SixAIO.Champions
                     {
                         itemDamage = 900f;
                     }
-                    else
+                    else if (smiteItem.Charges == 0)
                     {
                         itemDamage = 1200f;
                     }
