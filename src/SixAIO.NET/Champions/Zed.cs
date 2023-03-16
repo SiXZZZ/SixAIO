@@ -7,7 +7,6 @@ using Oasys.Common.Menu.ItemComponents;
 using Oasys.SDK;
 using Oasys.SDK.Menu;
 using Oasys.SDK.SpellCasting;
-using SixAIO.Enums;
 using SixAIO.Models;
 using System;
 using System.Collections.Generic;
@@ -17,6 +16,14 @@ namespace SixAIO.Champions
 {
     internal sealed class Zed : Champion
     {
+        private Spell SpellQKill;
+        private Spell SpellQShadow1Kill;
+        private Spell SpellQShadow2Kill;
+
+        private Spell SpellEKill;
+        private Spell SpellEShadow1Kill;
+        private Spell SpellEShadow2Kill;
+
         private Spell SpellQShadow1;
         private Spell SpellEShadow1;
         private GameObjectBase _shadow1;
@@ -64,6 +71,41 @@ namespace SixAIO.Champions
                 MinimumMana = () => 80f - SpellQShadow2.SpellClass.Level * 5f,
                 TargetSelect = (mode) => SpellQShadow2.GetTargets(mode).FirstOrDefault()
             };
+            SpellQKill = new Spell(CastSlot.Q, SpellSlot.Q)
+            {
+                PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
+                MinimumHitChance = () => QHitChance,
+                Range = () => 900,
+                Radius = () => 100,
+                Speed = () => 1700,
+                IsEnabled = () => UseQ && AllowQIfCanKill,
+                MinimumMana = () => 80f - SpellQ.SpellClass.Level * 5f,
+                TargetSelect = (mode) => SpellQ.GetTargets(mode, x => x.Health <= QDamage(x)).FirstOrDefault()
+            };
+            SpellQShadow1Kill = new Spell(CastSlot.Q, SpellSlot.Q)
+            {
+                PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
+                MinimumHitChance = () => QHitChance,
+                From = () => _shadow1.Position,
+                Range = () => 900,
+                Radius = () => 100,
+                Speed = () => 1700,
+                IsEnabled = () => UseQ && IsValidShadow(_shadow1),
+                MinimumMana = () => 80f - SpellQShadow1.SpellClass.Level * 5f,
+                TargetSelect = (mode) => SpellQ.GetTargets(mode, x => x.Health <= QDamage(x)).FirstOrDefault()
+            };
+            SpellQShadow2Kill = new Spell(CastSlot.Q, SpellSlot.Q)
+            {
+                PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
+                MinimumHitChance = () => QHitChance,
+                From = () => _shadow2.Position,
+                Range = () => 900,
+                Radius = () => 100,
+                Speed = () => 1700,
+                IsEnabled = () => UseQ && IsValidShadow(_shadow2),
+                MinimumMana = () => 80f - SpellQShadow2.SpellClass.Level * 5f,
+                TargetSelect = (mode) => SpellQ.GetTargets(mode, x => x.Health <= QDamage(x)).FirstOrDefault()
+            };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
                 IsEnabled = () => UseE,
@@ -79,6 +121,51 @@ namespace SixAIO.Champions
                 IsEnabled = () => UseE && IsValidShadow(_shadow2),
                 ShouldCast = (mode, target, spellClass, damage) => UnitManager.EnemyChampions.Any(x => x.Distance(_shadow2.Position) <= 300 && x.IsAlive && TargetSelector.IsAttackable(x)),
             };
+            SpellEKill = new Spell(CastSlot.E, SpellSlot.E)
+            {
+                IsEnabled = () => UseE && AllowEIfCanKill,
+                ShouldCast = (mode, target, spellClass, damage) => UnitManager.EnemyChampions.Any(x => x.Health <= EDamage(x) && x.Distance <= 300 && x.IsAlive && TargetSelector.IsAttackable(x)),
+            };
+            SpellEShadow1Kill = new Spell(CastSlot.E, SpellSlot.E)
+            {
+                IsEnabled = () => UseE && IsValidShadow(_shadow1) && AllowEIfCanKill,
+                ShouldCast = (mode, target, spellClass, damage) => UnitManager.EnemyChampions.Any(x => x.Health <= EDamage(x) && x.Distance(_shadow1.Position) <= 300 && x.IsAlive && TargetSelector.IsAttackable(x)),
+            };
+            SpellEShadow2Kill = new Spell(CastSlot.E, SpellSlot.E)
+            {
+                IsEnabled = () => UseE && IsValidShadow(_shadow2) && AllowEIfCanKill,
+                ShouldCast = (mode, target, spellClass, damage) => UnitManager.EnemyChampions.Any(x => x.Health <= EDamage(x) && x.Distance(_shadow2.Position) <= 300 && x.IsAlive && TargetSelector.IsAttackable(x)),
+            };
+        }
+
+        private float QDamage(GameObjectBase target)
+        {
+            if (target is null)
+            {
+                return 0f;
+            }
+
+            var baseDamage = 35 + 35 * SpellQ.SpellClass.Level;
+            var scaleDamage = 1.1f * UnitManager.MyChampion.UnitStats.BonusAttackDamage;
+            var totalDamage = baseDamage + scaleDamage;
+            var actualDamage = DamageCalculator.CalculateActualDamage(UnitManager.MyChampion, target, totalDamage);
+
+            return actualDamage;
+        }
+
+        private float EDamage(GameObjectBase target)
+        {
+            if (target is null)
+            {
+                return 0f;
+            }
+
+            var baseDamage = 45 + 20 * SpellE.SpellClass.Level;
+            var scaleDamage = 0.65f * UnitManager.MyChampion.UnitStats.BonusAttackDamage;
+            var totalDamage = baseDamage + scaleDamage;
+            var actualDamage = DamageCalculator.CalculateActualDamage(UnitManager.MyChampion, target, totalDamage);
+
+            return actualDamage;
         }
 
         private void CastCombo()
@@ -119,6 +206,18 @@ namespace SixAIO.Champions
             if (hittableQCounter.Count >= MinimumHittableQ)
             {
                 hittableQCounter.ForEach(x => x.ExecuteCastSpell());
+            }
+            
+            if (SpellEKill.ExecuteCastSpell() ||
+                SpellEShadow1Kill.ExecuteCastSpell() ||
+                SpellEShadow2Kill.ExecuteCastSpell())
+            {
+            }
+
+            if (SpellQKill.ExecuteCastSpell() ||
+                SpellQShadow1Kill.ExecuteCastSpell() ||
+                SpellQShadow2Kill.ExecuteCastSpell())
+            {
             }
         }
 
@@ -176,10 +275,22 @@ namespace SixAIO.Champions
             set => QSettings.GetItem<Counter>("Minimum Hittable Q").Value = value;
         }
 
+        private bool AllowQIfCanKill
+        {
+            get => QSettings.GetItem<Switch>("Allow Q If Can Kill").IsOn;
+            set => QSettings.GetItem<Switch>("Allow Q If Can Kill").IsOn = value;
+        }
+
         private int MinimumHittableE
         {
             get => ESettings.GetItem<Counter>("Minimum Hittable E").Value;
             set => ESettings.GetItem<Counter>("Minimum Hittable E").Value = value;
+        }
+
+        private bool AllowEIfCanKill
+        {
+            get => ESettings.GetItem<Switch>("Allow E If Can Kill").IsOn;
+            set => ESettings.GetItem<Switch>("Allow E If Can Kill").IsOn = value;
         }
 
         internal override void InitializeMenu()
@@ -192,9 +303,11 @@ namespace SixAIO.Champions
             QSettings.AddItem(new Switch() { Title = "Use Q", IsOn = true });
             QSettings.AddItem(new ModeDisplay() { Title = "Q HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "VeryHigh" });
             QSettings.AddItem(new Counter() { Title = "Minimum Hittable Q", MinValue = 1, MaxValue = 3, Value = 2, ValueFrequency = 1 });
+            QSettings.AddItem(new Switch() { Title = "Allow Q If Can Kill", IsOn = true });
 
             ESettings.AddItem(new Switch() { Title = "Use E", IsOn = true });
             ESettings.AddItem(new Counter() { Title = "Minimum Hittable E", MinValue = 1, MaxValue = 3, Value = 1, ValueFrequency = 1 });
+            ESettings.AddItem(new Switch() { Title = "Allow E If Can Kill", IsOn = true });
 
         }
     }
