@@ -133,7 +133,7 @@ namespace SixAIO.Utilities
         {
             try
             {
-                if (tabItem.TabName == "SIXAIO - Utilities" && tabItem.GroupName == "Auto Cleanse")
+                if (tabItem.TabName == "SIXAIO - Summoners" && tabItem.GroupName == "Auto Cleanse")
                 {
                     if (tabItem.Title == "Cleanse On Tick" && tabItem is Switch itemSwitchOnTick)
                     {
