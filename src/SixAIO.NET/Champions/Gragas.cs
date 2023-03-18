@@ -9,11 +9,17 @@ using Oasys.Common.Menu;
 using Oasys.SDK;
 using Oasys.Common.GameObject;
 using Oasys.Common.Tools.Devices;
+using Oasys.Common.GameObject.Clients;
+using Oasys.Common.Extensions;
 
 namespace SixAIO.Champions
 {
     internal sealed class Gragas : Champion
     {
+        internal Spell SpellQ2;
+
+        private static GameObjectBase QObject { get; set; }
+
         public Gragas()
         {
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
@@ -25,6 +31,13 @@ namespace SixAIO.Champions
                 Radius = () => 250,
                 IsEnabled = () => UseQ && SpellQ.SpellClass.SpellData.MissileName == "GragasQ",
                 TargetSelect = (mode) => SpellQ.GetTargets(mode).FirstOrDefault()
+            };
+            SpellQ2 = new Spell(CastSlot.Q, SpellSlot.Q)
+            {
+                IsEnabled = () => UseQ &&
+                                  SpellQ.SpellClass.SpellData.MissileName != "GragasQ" &&
+                                  IsQObject(QObject),
+                ShouldCast = (mode, target, spellClass, damage) => UnitManager.EnemyChampions.Any(x => TargetSelector.IsAttackable(x) && x.DistanceTo(QObject.Position) <= 250 && x.IsAlive),
             };
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
             {
@@ -68,12 +81,27 @@ namespace SixAIO.Champions
             return 0;
         }
 
+        private bool IsQObject(GameObjectBase obj)
+        {
+            return obj is not null && obj.IsAlive && obj.Name.Contains("Gragas_") && obj.Name.Contains("_Q_Ally") && obj.Position.IsValid();
+        }
+
+        internal override void OnCreateObject(AIBaseClient obj)
+        {
+            if (IsQObject(obj))
+            {
+                QObject = obj;
+            }
+        }
+
         internal override void OnCoreMainTick()
         {
-            if (SpellQ.SpellClass.SpellData.MissileName != "GragasQ")
+            if (!IsQObject(QObject))
             {
-                Keyboard.SendKey(System.Windows.Forms.Keys.Q);
+                QObject = null;
             }
+
+            SpellQ2.ExecuteCastSpell();
         }
 
         internal override void OnCoreMainInput()
