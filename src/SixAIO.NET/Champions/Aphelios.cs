@@ -215,6 +215,24 @@ namespace SixAIO.Champions
 
         internal override void OnCoreMainInput()
         {
+            Orbwalker.SelectedTarget = null;
+            if (UnitManager.MyChampion.ModelName == "Aphelios")
+            {
+                if (UnitManager.EnemyChampions.Any(HasExtraGunRange()))
+                {
+                    Orbwalker.SelectedTarget = UnitManager.EnemyChampions.Where(TargetSelector.IsAttackable).FirstOrDefault(HasExtraGunRange());
+                }
+
+                static Func<Hero, bool> HasExtraGunRange()
+                {
+                    return x =>
+                    {
+                        var buff = x.BuffManager.ActiveBuffs.FirstOrDefault(x => x.Name == "aphelioscalibrumbonusrangedebuff" && x.Stacks == 1);
+                        return buff != null && buff.IsActive && buff.Stacks == 1 && x.Distance <= 1450;
+                    };
+                }
+            }
+
             if (SpellQ.ExecuteCastSpell())
             {
                 return;

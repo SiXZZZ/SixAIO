@@ -144,7 +144,7 @@ namespace SixAIO.Champions
 
         private static GameObjectBase GetETarget<T>(List<T> enemies) where T : GameObjectBase
         {
-            return enemies.FirstOrDefault(x => TargetSelector.IsAttackable(x) && x.Distance <= UnitManager.MyChampion.TrueAttackRange && !x.IsObject(ObjectTypeFlag.BuildingProps) && x.BuffManager.HasActiveBuff("tristanaecharge"));
+            return enemies.FirstOrDefault(x => TargetSelector.IsAttackable(x) && x.Distance <= UnitManager.MyChampion.TrueAttackRange && !x.IsObject(ObjectTypeFlag.BuildingProps) && x.BuffManager.ActiveBuffs.Any(x => x.Name == "tristanaecharge" && x.Stacks >= 1));
         }
 
         private bool UsePushAway

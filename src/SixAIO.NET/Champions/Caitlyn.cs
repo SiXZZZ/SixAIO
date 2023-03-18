@@ -127,9 +127,15 @@ namespace SixAIO.Champions
 
         internal override void OnCoreMainInput()
         {
-            if (UnitManager.EnemyChampions.Any(x => TargetSelector.IsAttackable(x) && (x.BuffManager.HasActiveBuff("CaitlynWSnare") || x.BuffManager.HasActiveBuff("CaitlynEMissile")) && x.Distance <= 1300))
+            Orbwalker.SelectedTarget = null;
+            if (UnitManager.EnemyChampions.Any(x => TargetSelector.IsAttackable(x) &&
+                                                    (x.BuffManager.ActiveBuffs.Any(x => (x.Name == "CaitlynWSnare" || x.Name == "CaitlynEMissile") && x.Stacks >= 1) &&
+                                                    x.Distance <= 1300)))
             {
-                Orbwalker.SelectedTarget = UnitManager.EnemyChampions.FirstOrDefault(x => TargetSelector.IsAttackable(x) && (x.BuffManager.HasActiveBuff("CaitlynWSnare") || x.BuffManager.HasActiveBuff("CaitlynEMissile")) && x.Distance <= 1300);
+                Orbwalker.SelectedTarget = UnitManager.EnemyChampions
+                                                    .FirstOrDefault(x => TargetSelector.IsAttackable(x) &&
+                                                                        (x.BuffManager.ActiveBuffs.Any(x => (x.Name == "CaitlynWSnare" || x.Name == "CaitlynEMissile") && x.Stacks >= 1) &&
+                                                                        x.Distance <= 1300));
             }
 
             if (SpellWTargetted.ExecuteCastSpell() || SpellW.ExecuteCastSpell())
