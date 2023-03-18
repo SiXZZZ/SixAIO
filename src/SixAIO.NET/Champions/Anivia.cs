@@ -122,9 +122,6 @@ namespace SixAIO.Champions
             {
                 RObject = null;
             }
-
-            SpellQ2.ExecuteCastSpell();
-            SpellR2.ExecuteCastSpell();
         }
 
         private bool IsRObject(GameObjectBase obj)

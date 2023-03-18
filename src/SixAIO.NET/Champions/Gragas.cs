@@ -37,7 +37,7 @@ namespace SixAIO.Champions
                 IsEnabled = () => UseQ &&
                                   SpellQ.SpellClass.SpellData.MissileName != "GragasQ" &&
                                   IsQObject(QObject),
-                ShouldCast = (mode, target, spellClass, damage) => UnitManager.EnemyChampions.Any(x => TargetSelector.IsAttackable(x) && x.DistanceTo(QObject.Position) <= 250 && x.IsAlive),
+                ShouldCast = (mode, target, spellClass, damage) => UnitManager.EnemyChampions.Any(x => TargetSelector.IsAttackable(x) && x.DistanceTo(QObject.Position) <= 300 && x.IsAlive),
             };
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
             {
@@ -100,13 +100,12 @@ namespace SixAIO.Champions
             {
                 QObject = null;
             }
-
-            SpellQ2.ExecuteCastSpell();
         }
 
         internal override void OnCoreMainInput()
         {
             SpellQ.ExecuteCastSpell();
+            SpellQ2.ExecuteCastSpell();
             SpellW.ExecuteCastSpell();
             SpellE.ExecuteCastSpell();
             SpellR.ExecuteCastSpell();
