@@ -77,15 +77,16 @@ namespace SixAIO
         private static Task GameEvents_OnGameLoadComplete()
         {
             LoadChampion();
-            MenuManager.AddTab(new Tab("SIXAIO - Utilities"));
-            MenuManager.AddTab(new Tab("SIXAIO - Items"));
-            MenuManager.AddTab(new Tab("SIXAIO - Summoners"));
 
             if (_currentChampion is not null)
             {
                 Logger.Log($"Initialize Menu [{_currentChampion?.GetType().Name}]");
                 _currentChampion?.InitializeMenu();
             }
+
+            MenuManager.AddTab(new Tab("SIXAIO - Summoners"));
+            MenuManager.AddTab(new Tab("SIXAIO - Items"));
+            MenuManager.AddTab(new Tab("SIXAIO - Utilities"));
 
             CoreEvents.OnCoreRender += CoreEvents_OnCoreRender;
             CoreEvents.OnCoreMainTick += CoreEvents_OnCoreMainTick;
