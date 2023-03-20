@@ -1,4 +1,4 @@
-﻿using Oasys.Common.Enums.GameEnums;
+using Oasys.Common.Enums.GameEnums;
 using Oasys.Common.Menu;
 using Oasys.Common.Menu.ItemComponents;
 using Oasys.SDK;
@@ -35,6 +35,21 @@ namespace SixAIO.Champions
             };
         }
 
+        internal override void OnCoreRender()
+        {
+            if (UnitManager.MyChampion.IsAlive)
+            {
+                bool drawQ = DrawSettings.GetItem<Switch>("Draw Q Range").IsOn;
+                var qColor = Oasys.Common.Tools.ColorConverter.GetColor(DrawSettings.GetItem<ModeDisplay>("Draw Q Color").SelectedModeName);
+                float qRange = 850;
+
+                if (drawQ)
+                {
+                    Oasys.SDK.Rendering.RenderFactory.DrawNativeCircle(UnitManager.MyChampion.Position, qRange, qColor, 3);
+                }
+            }
+        }
+
         internal override void OnCoreMainInput()
         {
             if (SpellQ.ExecuteCastSpell() || SpellR.ExecuteCastSpell())
@@ -58,7 +73,11 @@ namespace SixAIO.Champions
             QSettings.AddItem(new ModeDisplay() { Title = "Q HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
 
             RSettings.AddItem(new Switch() { Title = "Use R", IsOn = true });
-            RSettings.AddItem(new Counter() { Title = "Below health percent", MinValue = 0, MaxValue = 100, Value = 40, ValueFrequency = 5 });
+            RSettings.AddItem(new Counter() { Title = "Below health percent", MinValue = 0, MaxValue = 100, Value = 40, ValueFrequency = 5 }); 
+            
+            MenuTab.AddGroup(new Group("Draw Settings"));
+            DrawSettings.AddItem(new Switch() { Title = "Draw Q Range", IsOn = true });
+            DrawSettings.AddItem(new ModeDisplay() { Title = "Draw Q Color", ModeNames = Oasys.Common.Tools.ColorConverter.GetColors(), SelectedModeName = "Blue" });
         }
     }
 }
