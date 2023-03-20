@@ -24,6 +24,7 @@ namespace SixAIO.Models
         internal Group WSettings => MenuTab.GetGroup("W Settings");
         internal Group ESettings => MenuTab.GetGroup("E Settings");
         internal Group RSettings => MenuTab.GetGroup("R Settings");
+        internal Group DrawSettings => MenuTab.GetGroup("Draw Settings");
 
         internal bool UseQ
         {
