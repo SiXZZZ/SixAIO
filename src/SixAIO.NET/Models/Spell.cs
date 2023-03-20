@@ -1,4 +1,5 @@
 ﻿using Oasys.Common.Enums.GameEnums;
+using Oasys.Common.Extensions;
 using Oasys.SDK;
 using Oasys.SDK.SpellCasting;
 using SharpDX;
@@ -20,7 +21,7 @@ namespace SixAIO.Models
         {
             if (UnitManager.MyChampion.IsAlive && ShouldDraw())
             {
-                Oasys.SDK.Rendering.RenderFactory.DrawNativeCircle(From(), Range(), DrawColor(), 3);
+                Oasys.SDK.Rendering.RenderFactory.DrawNativeCircle(UnitManager.MyChampion.Position, Range(), DrawColor(), 1);
             }
         }
     }

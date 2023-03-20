@@ -18,7 +18,7 @@ namespace SixAIO.Helpers
 
         private static string GetColorName(SpellSlot slot)
         {
-            return _colors[(int)slot].ToString();
+            return ColorConverter.GetColors().FirstOrDefault(x => ColorConverter.GetColor(x).Equals(_colors[(int)slot])).ToString();
         }
 
         internal static void BuildDrawOptions(Tab menuTab, params SpellSlot[] spellSlots)
