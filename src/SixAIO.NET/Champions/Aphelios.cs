@@ -1,4 +1,4 @@
-﻿using Oasys.Common.Enums.GameEnums;
+using Oasys.Common.Enums.GameEnums;
 using Oasys.Common.GameObject;
 using Oasys.Common.GameObject.Clients.ExtendedInstances.Spells;
 using Oasys.Common.GameObject.ObjectClass;
@@ -238,6 +238,20 @@ namespace SixAIO.Champions
                 return;
             }
         }
+        internal override void OnCoreRender()
+        {
+            if (UnitManager.MyChampion.IsAlive)
+            {
+                bool drawQ = DrawSettings.GetItem<Switch>("Draw Gun Range").IsOn;
+                var qColor = Oasys.Common.Tools.ColorConverter.GetColor(DrawSettings.GetItem<ModeDisplay>("Draw Gun Color").SelectedModeName);
+                float qRange = QRange();
+
+                if (drawQ && qRange != 0f && qRange != 30_000f)
+                {
+                    Oasys.SDK.Rendering.RenderFactory.DrawNativeCircle(UnitManager.MyChampion.Position, qRange, qColor, 3);
+                }
+            }
+        }
 
         internal bool UseSeverum
         {
@@ -339,6 +353,11 @@ namespace SixAIO.Champions
 
             GravitumSettings.AddItem(new Switch() { Title = "Use Gravitum", IsOn = true });
             GravitumSettings.AddItem(new Counter() { Title = "Gravitum can root", MinValue = 0, MaxValue = 5, Value = 2, ValueFrequency = 1 });
+
+
+            MenuTab.AddGroup(new Group("Draw Settings"));
+            DrawSettings.AddItem(new Switch() { Title = "Draw Gun Range", IsOn = true });
+            DrawSettings.AddItem(new ModeDisplay() { Title = "Draw Gun Color", ModeNames = Oasys.Common.Tools.ColorConverter.GetColors(), SelectedModeName = "Blue" });
         }
     }
 }
