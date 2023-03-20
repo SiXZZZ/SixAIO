@@ -121,30 +121,42 @@ namespace SixAIO.Champions
 
         internal override void OnCoreRender()
         {
-            if (UnitManager.MyChampion.IsAlive && UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot.E).Charges >= 1)
+            if (UnitManager.MyChampion.IsAlive)
             {
-                var color = Oasys.Common.Tools.ColorConverter.GetColor(DrawColor);
-                if (DrawFeathers && DrawThickness > 0)
+                if (UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot.E).Charges >= 1)
                 {
-                    var w2s = LeagueNativeRendererManager.WorldToScreenSpell(UnitManager.MyChampion.Position);
-
-                    foreach (var feather in Feathers)
+                    var color = Oasys.Common.Tools.ColorConverter.GetColor(DrawColor);
+                    if (DrawFeathers && DrawThickness > 0)
                     {
-                        var featherW2s = LeagueNativeRendererManager.WorldToScreenSpell(feather.Position);
-                        if (!featherW2s.IsZero)
+                        var w2s = LeagueNativeRendererManager.WorldToScreenSpell(UnitManager.MyChampion.Position);
+
+                        foreach (var feather in Feathers)
                         {
-                            Oasys.SDK.Rendering.RenderFactory.DrawLine(w2s.X, w2s.Y, featherW2s.X, featherW2s.Y, DrawThickness, color);
+                            var featherW2s = LeagueNativeRendererManager.WorldToScreenSpell(feather.Position);
+                            if (!featherW2s.IsZero)
+                            {
+                                Oasys.SDK.Rendering.RenderFactory.DrawLine(w2s.X, w2s.Y, featherW2s.X, featherW2s.Y, DrawThickness, color);
+                            }
+                        }
+                    }
+
+                    if (DrawFeatherCountCanHit)
+                    {
+                        foreach (var enemy in UnitManager.EnemyChampions.Where(x => x.Distance <= 2000 && x.W2S.IsValid() && x.IsAlive))
+                        {
+                            var feathersCanHit = GetFeathersBetweenMeAndEnemy(enemy);
+                            Oasys.SDK.Rendering.RenderFactory.DrawText(feathersCanHit.ToString(), 72, enemy.W2S, color);
                         }
                     }
                 }
 
-                if (DrawFeatherCountCanHit)
+                bool drawQ = DrawSettings.GetItem<Switch>("Draw Q Range").IsOn;
+                var qColor = Oasys.Common.Tools.ColorConverter.GetColor(DrawSettings.GetItem<ModeDisplay>("Draw Q Color").SelectedModeName);
+                float qRange = 1100;
+
+                if (drawQ)
                 {
-                    foreach (var enemy in UnitManager.EnemyChampions.Where(x => x.Distance <= 2000 && x.W2S.IsValid() && x.IsAlive))
-                    {
-                        var feathersCanHit = GetFeathersBetweenMeAndEnemy(enemy);
-                        Oasys.SDK.Rendering.RenderFactory.DrawText(feathersCanHit.ToString(), 72, enemy.W2S, color);
-                    }
+                    Oasys.SDK.Rendering.RenderFactory.DrawNativeCircle(UnitManager.MyChampion.Position, qRange, qColor, 3);
                 }
             }
 
@@ -255,6 +267,9 @@ namespace SixAIO.Champions
             ESettings.AddItem(new Counter() { Title = "Champions Can Root", MinValue = 1, MaxValue = 5, Value = 2, ValueFrequency = 1 });
             ESettings.AddItem(new Counter() { Title = "Champions Can Kill", MinValue = 1, MaxValue = 5, Value = 2, ValueFrequency = 1 });
 
+            MenuTab.AddGroup(new Group("Draw Settings"));
+            DrawSettings.AddItem(new Switch() { Title = "Draw Q Range", IsOn = true });
+            DrawSettings.AddItem(new ModeDisplay() { Title = "Draw Q Color", ModeNames = Oasys.Common.Tools.ColorConverter.GetColors(), SelectedModeName = "Green" });
         }
     }
 }
