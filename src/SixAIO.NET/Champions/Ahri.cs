@@ -5,6 +5,7 @@ using Oasys.SDK;
 using Oasys.SDK.Menu;
 using Oasys.SDK.SpellCasting;
 using SixAIO.Enums;
+using SixAIO.Extensions;
 using SixAIO.Models;
 using System;
 using System.Linq;
@@ -17,6 +18,8 @@ namespace SixAIO.Champions
         {
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
+                ShouldDraw = () => DrawQRange,
+                DrawColor = () => DrawQColor,
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
                 MinimumHitChance = () => QHitChance,
                 Range = () => 900,
@@ -32,11 +35,16 @@ namespace SixAIO.Champions
             };
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
             {
+                ShouldDraw = () => DrawWRange,
+                DrawColor = () => DrawWColor,
+                Range = () => 700,
                 IsEnabled = () => UseW,
                 ShouldCast = (mode, target, spellClass, damage) => UnitManager.EnemyChampions.Any(x => x.Distance <= 700 && x.IsAlive && TargetSelector.IsAttackable(x)),
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
+                ShouldDraw = () => DrawERange,
+                DrawColor = () => DrawEColor,
                 AllowCollision = (target, collisions) => !collisions.Any(),
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
                 MinimumHitChance = () => EHitChance,
@@ -48,6 +56,9 @@ namespace SixAIO.Champions
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
+                ShouldDraw = () => DrawRRange,
+                DrawColor = () => DrawRColor,
+                Range = () => 500,
                 Delay = () => 0f,
                 IsEnabled = () => UseR,
                 ShouldCast = (mode, target, spellClass, damage) =>
@@ -70,6 +81,14 @@ namespace SixAIO.Champions
             {
                 Orbwalker.SelectedTarget = UnitManager.EnemyChampions.FirstOrDefault(x => x.BuffManager.ActiveBuffs.Any(buff => buff.IsActive && buff.Name == "AhriSeduce"));
             }
+        }
+
+        internal override void OnCoreRender()
+        {
+            SpellQ.DrawRange();
+            SpellW.DrawRange();
+            SpellE.DrawRange();
+            SpellR.DrawRange();
         }
 
         internal bool QPrioTargetsWithCharm
@@ -103,6 +122,8 @@ namespace SixAIO.Champions
 
             RSettings.AddItem(new Switch() { Title = "Use R", IsOn = true });
             RSettings.AddItem(new ModeDisplay() { Title = "R Dash Mode", ModeNames = DashHelper.ConstructDashModeTable(), SelectedModeName = "ToMouse" });
+
+            MenuTab.AddDrawOptions(SpellSlot.Q, SpellSlot.W, SpellSlot.E, SpellSlot.R);
         }
     }
 }

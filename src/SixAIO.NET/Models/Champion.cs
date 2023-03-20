@@ -2,6 +2,7 @@
 using Oasys.Common.Menu;
 using Oasys.Common.Menu.ItemComponents;
 using Oasys.SDK.Tools;
+using SharpDX;
 using System;
 using System.Windows.Forms;
 
@@ -24,6 +25,20 @@ namespace SixAIO.Models
         internal Group WSettings => MenuTab.GetGroup("W Settings");
         internal Group ESettings => MenuTab.GetGroup("E Settings");
         internal Group RSettings => MenuTab.GetGroup("R Settings");
+        internal Group DrawSettings => MenuTab.GetGroup("Draw Settings");
+
+        internal Color DrawQColor => Oasys.Common.Tools.ColorConverter.GetColor(DrawSettings.GetItem<ModeDisplay>("Draw Q Color").SelectedModeName);
+        internal bool DrawQRange => DrawSettings.GetItem<Switch>("Draw Q Range").IsOn;
+
+        internal Color DrawWColor => Oasys.Common.Tools.ColorConverter.GetColor(DrawSettings.GetItem<ModeDisplay>("Draw W Color").SelectedModeName);
+        internal bool DrawWRange => DrawSettings.GetItem<Switch>("Draw W Range").IsOn;
+
+        internal Color DrawEColor => Oasys.Common.Tools.ColorConverter.GetColor(DrawSettings.GetItem<ModeDisplay>("Draw E Color").SelectedModeName);
+        internal bool DrawERange => DrawSettings.GetItem<Switch>("Draw E Range").IsOn;
+
+        internal Color DrawRColor => Oasys.Common.Tools.ColorConverter.GetColor(DrawSettings.GetItem<ModeDisplay>("Draw R Color").SelectedModeName);
+        internal bool DrawRRange => DrawSettings.GetItem<Switch>("Draw R Range").IsOn;
+
 
         internal bool UseQ
         {
