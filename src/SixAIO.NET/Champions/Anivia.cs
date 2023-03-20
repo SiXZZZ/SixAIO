@@ -1,4 +1,4 @@
-﻿using Oasys.Common.Enums.GameEnums;
+using Oasys.Common.Enums.GameEnums;
 using Oasys.Common.Menu.ItemComponents;
 using Oasys.SDK.Menu;
 using Oasys.SDK.SpellCasting;
@@ -77,6 +77,39 @@ namespace SixAIO.Champions
                 IsEnabled = () => UseR && IsRObject(RObject) && UnitManager.MyChampion.BuffManager.ActiveBuffs.Any(x => x.Name == "GlacialStorm" && x.Stacks >= 1),
                 ShouldCast = (mode, target, spellClass, damage) => !UnitManager.EnemyChampions.Any(x => TargetSelector.IsAttackable(x) && x.DistanceTo(RObject.Position) <= 400 && x.IsAlive),
             };
+        }
+
+        internal override void OnCoreRender()
+        {
+            if (UnitManager.MyChampion.IsAlive)
+            {
+                bool drawQ = DrawSettings.GetItem<Switch>("Draw Q Range").IsOn;
+                var qColor = Oasys.Common.Tools.ColorConverter.GetColor(DrawSettings.GetItem<ModeDisplay>("Draw Q Color").SelectedModeName);
+                float qRange = 1100;
+
+                if (drawQ)
+                {
+                    Oasys.SDK.Rendering.RenderFactory.DrawNativeCircle(UnitManager.MyChampion.Position, qRange, qColor, 3);
+                }
+
+                bool drawE = DrawSettings.GetItem<Switch>("Draw E Range").IsOn;
+                var eColor = Oasys.Common.Tools.ColorConverter.GetColor(DrawSettings.GetItem<ModeDisplay>("Draw E Color").SelectedModeName);
+                float eRange = 600;
+
+                if (drawE)
+                {
+                    Oasys.SDK.Rendering.RenderFactory.DrawNativeCircle(UnitManager.MyChampion.Position, eRange, eColor, 3);
+                }
+
+                bool drawR = DrawSettings.GetItem<Switch>("Draw R Range").IsOn;
+                var rColor = Oasys.Common.Tools.ColorConverter.GetColor(DrawSettings.GetItem<ModeDisplay>("Draw R Color").SelectedModeName);
+                float rRange = 750;
+
+                if (drawR)
+                {
+                    Oasys.SDK.Rendering.RenderFactory.DrawNativeCircle(UnitManager.MyChampion.Position, rRange, rColor, 3);
+                }
+            }
         }
 
         private float EDamage(GameObjectBase target)
@@ -163,6 +196,13 @@ namespace SixAIO.Champions
             RSettings.AddItem(new Switch() { Title = "Use R", IsOn = true });
             RSettings.AddItem(new ModeDisplay() { Title = "R HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
 
+            MenuTab.AddGroup(new Group("Draw Settings"));
+            DrawSettings.AddItem(new Switch() { Title = "Draw Q Range", IsOn = true });
+            DrawSettings.AddItem(new ModeDisplay() { Title = "Draw Q Color", ModeNames = Oasys.Common.Tools.ColorConverter.GetColors(), SelectedModeName = "Blue" });
+            DrawSettings.AddItem(new Switch() { Title = "Draw E Range", IsOn = true });
+            DrawSettings.AddItem(new ModeDisplay() { Title = "Draw E Color", ModeNames = Oasys.Common.Tools.ColorConverter.GetColors(), SelectedModeName = "Green" });
+            DrawSettings.AddItem(new Switch() { Title = "Draw R Range", IsOn = true });
+            DrawSettings.AddItem(new ModeDisplay() { Title = "Draw R Color", ModeNames = Oasys.Common.Tools.ColorConverter.GetColors(), SelectedModeName = "White" });
         }
     }
 }
