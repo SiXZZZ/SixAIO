@@ -1,10 +1,11 @@
-﻿using Oasys.Common.Enums.GameEnums;
+using Oasys.Common.Enums.GameEnums;
 using Oasys.Common.Extensions;
 using Oasys.Common.Menu;
 using Oasys.Common.Menu.ItemComponents;
 using Oasys.SDK;
 using Oasys.SDK.Menu;
 using Oasys.SDK.SpellCasting;
+using SixAIO.Extensions;
 using SixAIO.Models;
 using System;
 using System.Linq;
@@ -34,6 +35,8 @@ namespace SixAIO.Champions
             };
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
             {
+                ShouldDraw = () => DrawWRange,
+                DrawColor = () => DrawWColor,
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Cone,
                 MinimumHitChance = () => WHitChance,
                 Range = () => 650,
@@ -45,6 +48,8 @@ namespace SixAIO.Champions
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
+                ShouldDraw = () => DrawRRange,
+                DrawColor = () => DrawRColor,
                 IsTargetted = () => true,
                 Range = () => 475,
                 IsEnabled = () => UseR,
@@ -53,6 +58,11 @@ namespace SixAIO.Champions
                             UnitManager.Enemies.Count(x => x.Position.Distance(target.Position) < 500) <= 2,
                 TargetSelect = (mode) => SpellR.GetTargets(mode, x => !TargetSelector.IsInvulnerable(x, Oasys.Common.Logic.DamageType.Magical, false)).FirstOrDefault()
             };
+        }
+        internal override void OnCoreRender()
+        {
+            SpellW.DrawRange();
+            SpellR.DrawRange();
         }
 
         private void Orbwalker_OnOrbwalkerAfterBasicAttack(float gameTime, Oasys.Common.GameObject.GameObjectBase target)
@@ -84,6 +94,8 @@ namespace SixAIO.Champions
             WSettings.AddItem(new ModeDisplay() { Title = "W HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
 
             RSettings.AddItem(new Switch() { Title = "Use R", IsOn = true });
+
+            MenuTab.AddDrawOptions(SpellSlot.W, SpellSlot.R);
 
         }
     }
