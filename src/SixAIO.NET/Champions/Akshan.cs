@@ -1,9 +1,10 @@
-﻿using Oasys.Common.Enums.GameEnums;
+using Oasys.Common.Enums.GameEnums;
 using Oasys.Common.Menu;
 using Oasys.Common.Menu.ItemComponents;
 using Oasys.SDK;
 using Oasys.SDK.Menu;
 using Oasys.SDK.SpellCasting;
+using SixAIO.Extensions;
 using SixAIO.Models;
 using System;
 using System.Linq;
@@ -16,6 +17,8 @@ namespace SixAIO.Champions
         {
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
+                ShouldDraw = () => DrawQRange,
+                DrawColor = () => DrawQColor,
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
                 MinimumHitChance = () => QHitChance,
                 Range = () => 850,
@@ -26,6 +29,8 @@ namespace SixAIO.Champions
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
+                ShouldDraw = () => DrawRRange,
+                DrawColor = () => DrawRColor,
                 AllowCastOnMap = () => AllowRCastOnMinimap,
                 IsTargetted = () => true,
                 Delay = () => 3f,
@@ -33,6 +38,12 @@ namespace SixAIO.Champions
                 IsEnabled = () => UseR,
                 TargetSelect = (mode) => SpellR.GetTargets(mode, x => x.HealthPercent <= RHealthPercent).FirstOrDefault()
             };
+        }
+
+        internal override void OnCoreRender()
+        {
+            SpellQ.DrawRange();
+            SpellR.DrawRange();
         }
 
         internal override void OnCoreMainInput()
@@ -59,6 +70,8 @@ namespace SixAIO.Champions
 
             RSettings.AddItem(new Switch() { Title = "Use R", IsOn = true });
             RSettings.AddItem(new Counter() { Title = "Below health percent", MinValue = 0, MaxValue = 100, Value = 40, ValueFrequency = 5 });
+
+            MenuTab.AddDrawOptions(SpellSlot.Q, SpellSlot.R);
         }
     }
 }
