@@ -1,4 +1,4 @@
-﻿using Oasys.Common.Enums.GameEnums;
+using Oasys.Common.Enums.GameEnums;
 using Oasys.Common.GameObject;
 using Oasys.Common.GameObject.Clients.ExtendedInstances.Spells;
 using Oasys.Common.Menu;
@@ -13,6 +13,7 @@ using Oasys.Common.Extensions;
 using System.Windows.Forms;
 using Oasys.SDK.Rendering;
 using SharpDX;
+using SixAIO.Extensions;
 
 namespace SixAIO.Champions
 {
@@ -23,6 +24,8 @@ namespace SixAIO.Champions
             Oasys.SDK.InputProviders.KeyboardProvider.OnKeyPress += KeyboardProvider_OnKeyPress;
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
+                ShouldDraw = () => DrawQRange,
+                DrawColor = () => DrawQColor,
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Circle,
                 MinimumHitChance = () => QHitChance,
                 Range = () => 850,
@@ -44,6 +47,8 @@ namespace SixAIO.Champions
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
+                ShouldDraw = () => DrawERange,
+                DrawColor = () => DrawEColor,
                 Delay = () => 0.125f,
                 IsTargetted = () => true,
                 Range = () => 700 + UnitManager.MyChampion.BoundingRadius,
@@ -76,6 +81,8 @@ namespace SixAIO.Champions
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
+                ShouldDraw = () => DrawRRange,
+                DrawColor = () => DrawRColor,
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Cone,
                 MinimumHitChance = () => RHitChance,
                 Range = () => 800,
@@ -194,6 +201,10 @@ namespace SixAIO.Champions
                 var color = Oasys.Common.Tools.ColorConverter.GetColor(ERangeColor);
                 RenderFactory.DrawNativeCircle(UnitManager.MyChampion.Position, SpellE.Range(), color, 2);
             }
+
+            SpellQ.DrawRange();
+            SpellE.DrawRange();
+            SpellR.DrawRange();
         }
 
         private bool ShowERange
@@ -240,7 +251,8 @@ namespace SixAIO.Champions
             RSettings.AddItem(new Switch() { Title = "Use Semi Auto R", IsOn = true });
             RSettings.AddItem(new KeyBinding() { Title = "Semi Auto R Key", SelectedKey = Keys.T });
             RSettings.AddItem(new ModeDisplay() { Title = "Semi Auto R HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
-
+            
+            MenuTab.AddDrawOptions(SpellSlot.Q, SpellSlot.E, SpellSlot.R);
         }
     }
 }
