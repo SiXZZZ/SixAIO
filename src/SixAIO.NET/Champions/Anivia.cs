@@ -1,4 +1,4 @@
-﻿using Oasys.Common.Enums.GameEnums;
+using Oasys.Common.Enums.GameEnums;
 using Oasys.Common.Menu.ItemComponents;
 using Oasys.SDK.Menu;
 using Oasys.SDK.SpellCasting;
@@ -10,6 +10,7 @@ using Oasys.SDK;
 using Oasys.Common.GameObject;
 using Oasys.Common.GameObject.Clients;
 using Oasys.Common.Extensions;
+using SixAIO.Extensions;
 
 namespace SixAIO.Champions
 {
@@ -26,6 +27,8 @@ namespace SixAIO.Champions
         {
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
+                ShouldDraw = () => DrawQRange,
+                DrawColor = () => DrawQColor,
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Circle,
                 MinimumHitChance = () => QHitChance,
                 Range = () => 1100,
@@ -41,6 +44,8 @@ namespace SixAIO.Champions
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
+                ShouldDraw = () => DrawERange,
+                DrawColor = () => DrawEColor,
                 IsTargetted = () => true,
                 Range = () => 600f,
                 IsEnabled = () => UseE,
@@ -64,6 +69,8 @@ namespace SixAIO.Champions
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
+                ShouldDraw = () => DrawRRange,
+                DrawColor = () => DrawRColor,
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Circle,
                 MinimumHitChance = () => RHitChance,
                 Range = () => 750,
@@ -134,6 +141,13 @@ namespace SixAIO.Champions
             return obj is not null && obj.IsAlive && obj.Name == "FlashFrostSpell" && obj.Position.IsValid();
         }
 
+        internal override void OnCoreRender()
+        {
+            SpellQ.DrawRange();
+            SpellE.DrawRange();
+            SpellR.DrawRange();
+        }
+
         //internal override void OnCoreRender()
         //{
         //    if (IsQObject(QObject))
@@ -163,6 +177,8 @@ namespace SixAIO.Champions
             RSettings.AddItem(new Switch() { Title = "Use R", IsOn = true });
             RSettings.AddItem(new ModeDisplay() { Title = "R HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
 
+
+            MenuTab.AddDrawOptions(SpellSlot.Q, SpellSlot.E, SpellSlot.R);
         }
     }
 }
