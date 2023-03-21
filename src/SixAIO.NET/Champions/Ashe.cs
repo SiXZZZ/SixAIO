@@ -1,4 +1,4 @@
-﻿using Oasys.Common;
+using Oasys.Common;
 using Oasys.Common.Enums.GameEnums;
 using Oasys.Common.Menu;
 using Oasys.Common.Menu.ItemComponents;
@@ -7,6 +7,7 @@ using Oasys.SDK.Menu;
 using Oasys.SDK.Rendering;
 using Oasys.SDK.SpellCasting;
 using SharpDX;
+using SixAIO.Extensions;
 using SixAIO.Models;
 using System;
 using System.Linq;
@@ -28,6 +29,8 @@ namespace SixAIO.Champions
             };
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
             {
+                ShouldDraw = () => DrawWRange,
+                DrawColor = () => DrawWColor,
                 AllowCollision = (target, collisions) => !collisions.Any(),
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Cone,
                 MinimumHitChance = () => WHitChance,
@@ -100,6 +103,9 @@ namespace SixAIO.Champions
                 w2s.Y += 20;
                 RenderFactory.DrawText($"Toggle R Enabled", 18, w2s, Color.Blue);
             }
+
+
+            SpellW.DrawRange();
         }
 
         private int RMinimumRange
@@ -139,6 +145,7 @@ namespace SixAIO.Champions
             RSettings.AddItem(new Counter() { Title = "R maximum range", MinValue = 0, MaxValue = 30_000, Value = 2500, ValueFrequency = 50 });
             RSettings.AddItem(new KeyBinding("R Toggle Combo", Keys.U));
 
+            MenuTab.AddDrawOptions(SpellSlot.W);
         }
     }
 }
