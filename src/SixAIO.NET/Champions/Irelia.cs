@@ -9,6 +9,7 @@ using Oasys.SDK;
 using Oasys.SDK.Menu;
 using Oasys.SDK.SpellCasting;
 using SharpDX;
+using SixAIO.Extensions;
 using SixAIO.Models;
 using System;
 using System.Linq;
@@ -41,6 +42,8 @@ namespace SixAIO.Champions
             Orbwalker.OnOrbwalkerAfterBasicAttack += Orbwalker_OnOrbwalkerAfterBasicAttack;
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
+                ShouldDraw = () => DrawQRange,
+                DrawColor = () => DrawQColor,
                 IsTargetted = () => true,
                 Speed = () => 1400 + UnitManager.MyChampion.UnitStats.MoveSpeed,
                 Range = () => 600f,
@@ -80,6 +83,8 @@ namespace SixAIO.Champions
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
+                ShouldDraw = () => DrawERange,
+                DrawColor = () => DrawEColor,
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
                 MinimumHitChance = () => EHitChance,
                 Speed = () => 2000,
@@ -91,6 +96,8 @@ namespace SixAIO.Champions
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
+                ShouldDraw = () => DrawRRange,
+                DrawColor = () => DrawRColor,
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
                 MinimumHitChance = () => RHitChance,
                 Speed = () => 2000,
@@ -202,6 +209,13 @@ namespace SixAIO.Champions
             SpellQ.ExecuteCastSpell();
         }
 
+        internal override void OnCoreRender()
+        {
+            SpellQ.DrawRange();
+            SpellE.DrawRange();
+            SpellR.DrawRange();
+        }
+
         internal override void OnCoreMainInput()
         {
             if (Orbwalker.TargetChampionsOnly && SpellQ.CanExecuteCastSpell())
@@ -266,7 +280,6 @@ namespace SixAIO.Champions
         {
             MenuManager.AddTab(new Tab($"SIXAIO - {nameof(Irelia)}"));
             MenuTab.AddGroup(new Group("Q Settings"));
-            MenuTab.AddGroup(new Group("W Settings"));
             MenuTab.AddGroup(new Group("E Settings"));
             MenuTab.AddGroup(new Group("R Settings"));
 
@@ -275,15 +288,16 @@ namespace SixAIO.Champions
             QSettings.AddItem(new Switch() { Title = "Q Minions in combo on max stacks", IsOn = true });
             QSettings.AddItem(new Switch() { Title = "Allow Q in tower range", IsOn = true });
 
-            WSettings.AddItem(new Switch() { Title = "Use W", IsOn = true });
-
             ESettings.AddItem(new Switch() { Title = "Use E", IsOn = true });
             ESettings.AddItem(new ModeDisplay() { Title = "E HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "VeryHigh" });
 
             RSettings.AddItem(new Switch() { Title = "Use R", IsOn = true });
             RSettings.AddItem(new ModeDisplay() { Title = "R HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "VeryHigh" });
             RSettings.AddItem(new Counter() { Title = "R maximum range", MinValue = 0, MaxValue = 1000, Value = 950, ValueFrequency = 50 });
-            
+
+
+            MenuTab.AddDrawOptions(SpellSlot.Q, SpellSlot.E, SpellSlot.R);
+
         }
     }
 }

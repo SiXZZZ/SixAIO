@@ -5,6 +5,7 @@ using Oasys.Common.Menu.ItemComponents;
 using Oasys.SDK;
 using Oasys.SDK.Menu;
 using Oasys.SDK.SpellCasting;
+using SixAIO.Extensions;
 using SixAIO.Models;
 using System;
 using System.Linq;
@@ -114,6 +115,8 @@ namespace SixAIO.Champions
             };
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
             {
+                ShouldDraw = () => DrawWRange,
+                DrawColor = () => DrawWColor,
                 AllowCollision = (target, collisions) => !collisions.Any(),
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
                 MinimumHitChance = () => WHitChance,
@@ -127,6 +130,8 @@ namespace SixAIO.Champions
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
+                ShouldDraw = () => DrawERange,
+                DrawColor = () => DrawEColor,
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Circle,
                 MinimumHitChance = () => EHitChance,
                 Radius = () => 120,
@@ -142,10 +147,12 @@ namespace SixAIO.Champions
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
+                ShouldDraw = () => DrawRRange,
+                DrawColor = () => DrawRColor,
                 AllowCastOnMap = () => AllowRCastOnMinimap,
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
                 MinimumHitChance = () => RHitChance,
-                Range = () => 30000,
+                Range = () => RMaximumRange,
                 Radius = () => 280,
                 Speed = () => 2000,
                 Delay = () => 0.6f,
@@ -254,6 +261,13 @@ namespace SixAIO.Champions
             {
                 SpellRSemiAuto.ExecuteCastSpell();
             }
+        }
+
+        internal override void OnCoreRender()
+        {
+            SpellW.DrawRange();
+            SpellE.DrawRange();
+            SpellR.DrawRange();
         }
 
         internal override void OnCoreMainInput()
@@ -430,6 +444,9 @@ namespace SixAIO.Champions
             RSettings.AddItem(new Counter() { Title = "R minimum range", MinValue = 0, MaxValue = 30_000, Value = 0, ValueFrequency = 50 });
             RSettings.AddItem(new Counter() { Title = "R maximum range", MinValue = 0, MaxValue = 30_000, Value = 30_000, ValueFrequency = 50 });
             RSettings.AddItem(new Counter() { Title = "R Target Max HP Percent", MinValue = 10, MaxValue = 100, Value = 50, ValueFrequency = 5 });
+
+
+            MenuTab.AddDrawOptions(SpellSlot.W, SpellSlot.E, SpellSlot.R);
         }
     }
 }

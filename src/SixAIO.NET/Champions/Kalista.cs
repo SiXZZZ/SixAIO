@@ -10,6 +10,7 @@ using Oasys.SDK.Rendering;
 using Oasys.SDK.SpellCasting;
 using Oasys.SDK.Tools;
 using SharpDX;
+using SixAIO.Extensions;
 using SixAIO.Models;
 using System;
 using System.Linq;
@@ -25,6 +26,8 @@ namespace SixAIO.Champions
         {
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
+                ShouldDraw = () => DrawQRange,
+                DrawColor = () => DrawQColor,
                 AllowCollision = (target, collisions) => !collisions.Any(),
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
                 MinimumHitChance = () => QHitChance,
@@ -37,13 +40,19 @@ namespace SixAIO.Champions
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
+                ShouldDraw = () => DrawERange,
+                DrawColor = () => DrawEColor,
                 IsEnabled = () => UseE,
+                Range = () => 1100,
                 ShouldCast = (mode, target, spellClass, damage) => ShouldCastE(mode),
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
+                ShouldDraw = () => DrawRRange,
+                DrawColor = () => DrawRColor,
                 Delay = () => 0f,
                 IsEnabled = () => UseR,
+                Range = () => 1100,
                 ShouldCast = (mode, target, spellClass, damage) => BindedAlly != null && BindedAlly.IsAlive && BindedAlly.Distance <= 1100 && BindedAlly.HealthPercent < RHealthPercent
             };
         }
@@ -136,6 +145,38 @@ namespace SixAIO.Champions
             };
         }
 
+        internal override void OnCoreRender()
+        {
+            SpellQ.DrawRange();
+            SpellE.DrawRange();
+            SpellR.DrawRange();
+
+            if (SpellE.SpellClass.IsSpellReady)
+            {
+                if (DrawEDamageChampions)
+                {
+                    foreach (var enemy in UnitManager.EnemyChampions.ToList().Where(x => x.IsAlive && x.Distance <= 2000 && x.W2S.IsValid()).ToList())
+                    {
+                        RenderFactory.DrawHPBarDamage(enemy, GetEDamage(enemy), EDamageColor);
+                    }
+                }
+                if (DrawEDamageMinions)
+                {
+                    foreach (var enemy in UnitManager.EnemyMinions.ToList().Where(x => x.IsAlive && x.Distance <= 2000 && x.W2S.IsValid()).ToList())
+                    {
+                        RenderFactory.DrawHPBarDamage(enemy, GetEDamage(enemy), EDamageColor);
+                    }
+                }
+                if (DrawEDamageMonsters)
+                {
+                    foreach (var enemy in UnitManager.EnemyJungleMobs.ToList().Where(x => x.IsAlive && x.Distance <= 2000 && x.W2S.IsValid()).ToList())
+                    {
+                        RenderFactory.DrawHPBarDamage(enemy, GetEDamage(enemy), EDamageColor);
+                    }
+                }
+            }
+        }
+
         internal override void OnCoreMainInput()
         {
             Orbwalker.SelectedTarget = null;
@@ -184,34 +225,6 @@ namespace SixAIO.Champions
             if (UseELasthit && SpellE.ExecuteCastSpell(Orbwalker.OrbWalkingModeType.LaneClear))
             {
                 return;
-            }
-        }
-
-        internal override void OnCoreRender()
-        {
-            if (SpellE.SpellClass.IsSpellReady)
-            {
-                if (DrawEDamageChampions)
-                {
-                    foreach (var enemy in UnitManager.EnemyChampions.ToList().Where(x => x.IsAlive && x.Distance <= 2000 && x.W2S.IsValid()).ToList())
-                    {
-                        RenderFactory.DrawHPBarDamage(enemy, GetEDamage(enemy), EDamageColor);
-                    }
-                }
-                if (DrawEDamageMinions)
-                {
-                    foreach (var enemy in UnitManager.EnemyMinions.ToList().Where(x => x.IsAlive && x.Distance <= 2000 && x.W2S.IsValid()).ToList())
-                    {
-                        RenderFactory.DrawHPBarDamage(enemy, GetEDamage(enemy), EDamageColor);
-                    }
-                }
-                if (DrawEDamageMonsters)
-                {
-                    foreach (var enemy in UnitManager.EnemyJungleMobs.ToList().Where(x => x.IsAlive && x.Distance <= 2000 && x.W2S.IsValid()).ToList())
-                    {
-                        RenderFactory.DrawHPBarDamage(enemy, GetEDamage(enemy), EDamageColor);
-                    }
-                }
             }
         }
 
@@ -350,6 +363,9 @@ namespace SixAIO.Champions
 
             _originalTargetChampsOnlySetting = Oasys.Common.Settings.Orbwalker.HoldTargetChampsOnly;
             SetTargetChampsOnly(false);
+
+
+            MenuTab.AddDrawOptions(SpellSlot.Q, SpellSlot.E, SpellSlot.R);
         }
 
         private void SetTargetChampsOnly(bool value)

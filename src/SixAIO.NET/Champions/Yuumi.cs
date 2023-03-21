@@ -6,6 +6,7 @@ using Oasys.Common.Tools.Devices;
 using Oasys.SDK;
 using Oasys.SDK.Menu;
 using Oasys.SDK.SpellCasting;
+using SixAIO.Extensions;
 using SixAIO.Models;
 using System;
 using System.Linq;
@@ -18,6 +19,8 @@ namespace SixAIO.Champions
         {
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
+                ShouldDraw = () => DrawQRange,
+                DrawColor = () => DrawQColor,
                 AllowCollision = (target, collisions) => !collisions.Any(),
                 AllowCancelBasicAttack = () => true,
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
@@ -32,6 +35,8 @@ namespace SixAIO.Champions
             };
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
             {
+                ShouldDraw = () => DrawWRange,
+                DrawColor = () => DrawWColor,
                 AllowCancelBasicAttack = () => true,
                 IsTargetted = () => true,
                 IsEnabled = () => UseW && !UnitManager.MyChampion.BuffManager.ActiveBuffs.Any(x => x.Name == "YuumiWAttach" && x.Stacks >= 1),
@@ -45,6 +50,8 @@ namespace SixAIO.Champions
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
+                ShouldDraw = () => DrawERange,
+                DrawColor = () => DrawEColor,
                 AllowCancelBasicAttack = () => true,
                 IsTargetted = () => true,
                 IsEnabled = () => UseE &&
@@ -81,8 +88,10 @@ namespace SixAIO.Champions
                     return target;
                 }
             };
-            SpellR = new Spell(CastSlot.R, SpellSlot.R)
+SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
+                ShouldDraw = () => DrawRRange,
+                DrawColor = () => DrawRColor,
                 AllowCancelBasicAttack = () => true,
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
                 MinimumHitChance = () => RHitChance,
@@ -139,6 +148,14 @@ namespace SixAIO.Champions
             }
 
             return false;
+        }
+
+        internal override void OnCoreRender()
+        {
+            SpellQ.DrawRange();
+            SpellW.DrawRange();
+            SpellE.DrawRange();
+            SpellR.DrawRange();
         }
 
         internal override void OnCoreMainInput()
@@ -234,6 +251,9 @@ namespace SixAIO.Champions
 
             RSettings.AddItem(new Switch() { Title = "Use R", IsOn = true });
             RSettings.AddItem(new ModeDisplay() { Title = "R HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
+
+
+            MenuTab.AddDrawOptions(SpellSlot.Q, SpellSlot.W, SpellSlot.E, SpellSlot.R);
 
         }
     }

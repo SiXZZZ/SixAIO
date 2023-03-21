@@ -5,6 +5,7 @@ using Oasys.Common.Menu.ItemComponents;
 using Oasys.SDK;
 using Oasys.SDK.Menu;
 using Oasys.SDK.SpellCasting;
+using SixAIO.Extensions;
 using SixAIO.Models;
 using System;
 using System.Linq;
@@ -17,6 +18,8 @@ namespace SixAIO.Champions
         {
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
+                ShouldDraw = () => DrawQRange,
+                DrawColor = () => DrawQColor,
                 AllowCollision = (target, collisions) => target.IsObject(ObjectTypeFlag.AIMinionClient)
                                                         ? QAllowLaneclearMinionCollision
                                                         : !collisions.Any(),
@@ -49,6 +52,8 @@ namespace SixAIO.Champions
             };
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
             {
+                ShouldDraw = () => DrawWRange,
+                DrawColor = () => DrawWColor,
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Circle,
                 MinimumHitChance = () => WHitChance,
                 Range = () => 900,
@@ -60,6 +65,8 @@ namespace SixAIO.Champions
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
+                ShouldDraw = () => DrawERange,
+                DrawColor = () => DrawEColor,
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Circle,
                 MinimumHitChance = () => EHitChance,
                 Range = () => 900,
@@ -69,8 +76,10 @@ namespace SixAIO.Champions
                 IsEnabled = () => UseE,
                 TargetSelect = (mode) => SpellE.GetTargets(mode).FirstOrDefault()
             };
-            SpellR = new Spell(CastSlot.R, SpellSlot.R)
+SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
+                ShouldDraw = () => DrawRRange,
+                DrawColor = () => DrawRColor,
                 IsTargetted = () => true,
                 IsEnabled = () => UseR,
                 TargetSelect = (mode) => UnitManager.EnemyChampions.Where(x => x.Distance <= 650 &&
@@ -110,6 +119,14 @@ namespace SixAIO.Champions
             }
             return (1 + (extraDamagePercent / 100f)) * DamageCalculator.GetMagicResistMod(UnitManager.MyChampion, target) *
                    ((UnitManager.MyChampion.UnitStats.TotalAbilityPower * 0.75f) + 100 + 75 * UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot.R).Level);
+        }
+
+        internal override void OnCoreRender()
+        {
+            SpellQ.DrawRange();
+            SpellW.DrawRange();
+            SpellE.DrawRange();
+            SpellR.DrawRange();
         }
 
         internal override void OnCoreMainInput()
@@ -174,6 +191,9 @@ namespace SixAIO.Champions
 
 
             RSettings.AddItem(new Switch() { Title = "Use R", IsOn = true });
+
+
+            MenuTab.AddDrawOptions(SpellSlot.Q, SpellSlot.W, SpellSlot.E, SpellSlot.R);
         }
     }
 }

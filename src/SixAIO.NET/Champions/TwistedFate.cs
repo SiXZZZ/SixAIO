@@ -4,6 +4,7 @@ using Oasys.Common.Menu.ItemComponents;
 using Oasys.SDK;
 using Oasys.SDK.Menu;
 using Oasys.SDK.SpellCasting;
+using SixAIO.Extensions;
 using SixAIO.Models;
 using System;
 using System.Linq;
@@ -39,6 +40,8 @@ namespace SixAIO.Champions
             Oasys.SDK.InputProviders.KeyboardProvider.OnKeyPress += KeyboardProvider_OnKeyPress;
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
+                ShouldDraw = () => DrawQRange,
+                DrawColor = () => DrawQColor,
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
                 MinimumHitChance = () => QHitChance,
                 Range = () => 1450,
@@ -49,6 +52,8 @@ namespace SixAIO.Champions
             };
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
             {
+                ShouldDraw = () => DrawWRange,
+                DrawColor = () => DrawWColor,
                 IsEnabled = () => UseW,
                 ShouldCast = (mode, target, spellClass, damage) => GetCard() switch
                 {
@@ -142,6 +147,14 @@ namespace SixAIO.Champions
             }
         }
 
+        internal override void OnCoreRender()
+        {
+            SpellQ.DrawRange();
+            SpellW.DrawRange();
+            SpellE.DrawRange();
+            SpellR.DrawRange();
+        }
+
         internal override void OnCoreMainInput()
         {
             if (SpellQ.ExecuteCastSpell() || SpellW.ExecuteCastSpell())
@@ -167,6 +180,9 @@ namespace SixAIO.Champions
             WSettings.AddItem(new KeyBinding() { Title = "Yellow Card", SelectedKey = Keys.W });
             WSettings.AddItem(new KeyBinding() { Title = "Blue Card", SelectedKey = Keys.E });
             WSettings.AddItem(new KeyBinding() { Title = "Red Card", SelectedKey = Keys.T });
+
+
+            MenuTab.AddDrawOptions(SpellSlot.Q, SpellSlot.W, SpellSlot.E, SpellSlot.R);
         }
     }
 }

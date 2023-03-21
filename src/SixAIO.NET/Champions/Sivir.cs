@@ -4,6 +4,7 @@ using Oasys.Common.Menu.ItemComponents;
 using Oasys.SDK;
 using Oasys.SDK.Menu;
 using Oasys.SDK.SpellCasting;
+using SixAIO.Extensions;
 using SixAIO.Models;
 using System;
 using System.Linq;
@@ -17,6 +18,8 @@ namespace SixAIO.Champions
             Spell.OnSpellCast += Spell_OnSpellCast;
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
+                ShouldDraw = () => DrawQRange,
+                DrawColor = () => DrawQColor,
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
                 MinimumHitChance = () => QHitChance,
                 Range = () => 1250,
@@ -41,6 +44,11 @@ namespace SixAIO.Champions
             }
         }
 
+        internal override void OnCoreRender()
+        {
+            SpellQ.DrawRange();
+        }
+
         internal override void OnCoreMainInput()
         {
             if (SpellW.ExecuteCastSpell() || SpellQ.ExecuteCastSpell())
@@ -59,6 +67,9 @@ namespace SixAIO.Champions
             QSettings.AddItem(new ModeDisplay() { Title = "Q HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
 
             WSettings.AddItem(new Switch() { Title = "Use W", IsOn = true });
+
+
+            MenuTab.AddDrawOptions(SpellSlot.Q);
 
         }
     }

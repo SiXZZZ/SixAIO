@@ -4,6 +4,7 @@ using Oasys.Common.Menu.ItemComponents;
 using Oasys.SDK;
 using Oasys.SDK.Menu;
 using Oasys.SDK.SpellCasting;
+using SixAIO.Extensions;
 using SixAIO.Models;
 using System;
 using System.Linq;
@@ -16,6 +17,8 @@ namespace SixAIO.Champions
         {
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
+                ShouldDraw = () => DrawQRange,
+                DrawColor = () => DrawQColor,
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Circle,
                 MinimumHitChance = () => QHitChance,
                 Range = () => QMaximumRange,
@@ -43,6 +46,8 @@ namespace SixAIO.Champions
             };
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
             {
+                ShouldDraw = () => DrawWRange,
+                DrawColor = () => DrawWColor,
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
                 MinimumHitChance = () => WHitChance,
                 Range = () => WMaximumRange,
@@ -67,6 +72,12 @@ namespace SixAIO.Champions
                     return SpellW.GetTargets(mode).FirstOrDefault();
                 }
             };
+        }
+
+        internal override void OnCoreRender()
+        {
+            SpellQ.DrawRange();
+            SpellW.DrawRange();
         }
 
         internal override void OnCoreMainInput()
@@ -114,6 +125,9 @@ namespace SixAIO.Champions
             WSettings.AddItem(new Switch() { Title = "Use W Laneclear", IsOn = true });
             WSettings.AddItem(new ModeDisplay() { Title = "W HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "VeryHigh" });
             WSettings.AddItem(new Counter() { Title = "W maximum range", MinValue = 0, MaxValue = 900, Value = 600, ValueFrequency = 25 });
+
+
+            MenuTab.AddDrawOptions(SpellSlot.Q, SpellSlot.W);
 
         }
     }

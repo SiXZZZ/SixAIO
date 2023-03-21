@@ -6,6 +6,7 @@ using Oasys.SDK;
 using Oasys.SDK.Menu;
 using Oasys.SDK.SpellCasting;
 using SixAIO.Enums;
+using SixAIO.Extensions;
 using SixAIO.Models;
 using System;
 using System.Linq;
@@ -24,6 +25,8 @@ namespace SixAIO.Champions
         {
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
+                ShouldDraw = () => DrawQRange,
+                DrawColor = () => DrawQColor,
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
                 MinimumHitChance = () => QHitChance,
                 Range = () => 1100,
@@ -34,6 +37,8 @@ namespace SixAIO.Champions
             };
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
             {
+                ShouldDraw = () => DrawWRange,
+                DrawColor = () => DrawWColor,
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Circle,
                 MinimumHitChance = () => WHitChance,
                 Range = () => 1600,
@@ -45,6 +50,8 @@ namespace SixAIO.Champions
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
+                ShouldDraw = () => DrawERange,
+                DrawColor = () => DrawEColor,
                 IsEnabled = () => UseE,
                 ShouldCast = (mode, target, spellClass, damage) =>
                             DashModeSelected == DashMode.ToMouse &&
@@ -54,6 +61,8 @@ namespace SixAIO.Champions
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
+                ShouldDraw = () => DrawRRange,
+                DrawColor = () => DrawRColor,
                 IsEnabled = () => UseR && IsEkkoUltReady,
                 ShouldCast = (mode, target, spellClass, damage) => UnitManager.EnemyChampions.Count(x => x.IsAlive && x.IsTargetable && x.DistanceTo(_ekkoRTrailEnd.Position) < REnemiesCloserThan) > RIfMoreThanEnemiesNear,
             };
@@ -73,6 +82,12 @@ namespace SixAIO.Champions
             {
                 _ekkoRTrailEnd = UnitManager.AllNativeObjects.FirstOrDefault(IsEkkoUltValid);
             }
+        }
+
+        internal override void OnCoreRender()
+        {
+            SpellQ.DrawRange();
+            SpellW.DrawRange();
         }
 
         internal override void OnCoreMainInput()
@@ -120,6 +135,9 @@ namespace SixAIO.Champions
             RSettings.AddItem(new Switch() { Title = "Use R", IsOn = true });
             RSettings.AddItem(new Counter() { Title = "R If More Than Enemies Near Clone", MinValue = 0, MaxValue = 5, Value = 0, ValueFrequency = 1 });
             RSettings.AddItem(new Counter() { Title = "R Enemies Closer To Clone Than", MinValue = 50, MaxValue = 400, Value = 150, ValueFrequency = 25 });
+
+
+            MenuTab.AddDrawOptions(SpellSlot.Q, SpellSlot.W);
         }
     }
 }

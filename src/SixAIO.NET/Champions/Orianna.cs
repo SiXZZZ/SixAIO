@@ -7,6 +7,7 @@ using Oasys.SDK;
 using Oasys.SDK.Menu;
 using Oasys.SDK.SpellCasting;
 using SharpDX;
+using SixAIO.Extensions;
 using SixAIO.Models;
 using System;
 using System.Linq;
@@ -31,6 +32,8 @@ namespace SixAIO.Champions
         {
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
+                ShouldDraw = () => DrawQRange,
+                DrawColor = () => DrawQColor,
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
                 MinimumHitChance = () => QHitChance,
                 From = GetBallPosition,
@@ -47,15 +50,19 @@ namespace SixAIO.Champions
                 Delay = () => 0f,
                 IsEnabled = () => UseW,
                 MinimumMana = () => WMinMana,
+                Range = () => 200,
                 ShouldCast = (mode, target, spellClass, damage) =>
                             UnitManager.EnemyChampions.Any(enemy => enemy.IsAlive && enemy.DistanceTo(GetBallPosition()) < 200 && TargetSelector.IsAttackable(enemy)) ||
                             (WSpeedAlly && UnitManager.AllyChampions.Any(ally => ally.IsAlive && ally.DistanceTo(GetBallPosition()) < 200 && TargetSelector.IsAttackable(ally, false))),
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
+                ShouldDraw = () => DrawERange,
+                DrawColor = () => DrawEColor,
                 Delay = () => 0f,
                 IsEnabled = () => UseE,
                 MinimumMana = () => EMinMana,
+                Range = () => 1100,
                 TargetSelect = (mode) =>
                 {
                     Hero target = null;
@@ -92,22 +99,25 @@ namespace SixAIO.Champions
             };
         }
 
-        internal override void OnCoreMainInput()
-        {
-            if (SpellR.ExecuteCastSpell() || SpellE.ExecuteCastSpell() || SpellW.ExecuteCastSpell() || SpellQ.ExecuteCastSpell())
-            {
-                return;
-            }
-        }
-
         internal override void OnCoreRender()
         {
+            SpellQ.DrawRange();
+
+
 #if DEBUG
             if (Ball != null && !Ball.W2S.IsZero)
             {
                 Oasys.SDK.Rendering.RenderFactory.DrawText("Orianna Ball", 18, GetBallPosition().ToW2S(), Color.Blue);
             }
 #endif
+        }
+
+        internal override void OnCoreMainInput()
+        {
+            if (SpellR.ExecuteCastSpell() || SpellE.ExecuteCastSpell() || SpellW.ExecuteCastSpell() || SpellQ.ExecuteCastSpell())
+            {
+                return;
+            }
         }
 
         internal override void OnCoreMainTick()
@@ -187,6 +197,9 @@ namespace SixAIO.Champions
             RSettings.AddItem(new Switch() { Title = "Use R", IsOn = true });
             RSettings.AddItem(new Counter() { Title = "R Min Mana", MinValue = 0, MaxValue = 500, Value = 100, ValueFrequency = 10 });
             RSettings.AddItem(new Counter() { Title = "R Ult enemies", MinValue = 1, MaxValue = 5, Value = 2, ValueFrequency = 1 });
+
+
+            MenuTab.AddDrawOptions(SpellSlot.Q);
 
         }
     }

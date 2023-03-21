@@ -4,6 +4,7 @@ using Oasys.Common.Menu.ItemComponents;
 using Oasys.SDK;
 using Oasys.SDK.Menu;
 using Oasys.SDK.SpellCasting;
+using SixAIO.Extensions;
 using SixAIO.Models;
 using System;
 using System.Linq;
@@ -16,6 +17,8 @@ namespace SixAIO.Champions
         {
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
+                ShouldDraw = () => DrawQRange,
+                DrawColor = () => DrawQColor,
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Circle,
                 MinimumHitChance = () => QHitChance,
                 Range = () => 900,
@@ -34,6 +37,8 @@ namespace SixAIO.Champions
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
+                ShouldDraw = () => DrawERange,
+                DrawColor = () => DrawEColor,
                 IsTargetted = () => true,
                 Range = () => 550,
                 IsEnabled = () => UseE,
@@ -41,15 +46,25 @@ namespace SixAIO.Champions
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
+                ShouldDraw = () => DrawRRange,
+                DrawColor = () => DrawRColor,
                 IsTargetted = () => true,
                 Delay = () => 0f,
                 IsEnabled = () => UseR,
+                Range = () => 900,
                 TargetSelect = (mode) =>
                 UnitManager.AllyChampions
                         .Where(ally => RSettings.GetItem<Counter>("Ult Ally - " + ally?.ModelName)?.Value > 0)
                         .OrderByDescending(ally => RSettings.GetItem<Counter>("Ult Ally - " + ally?.ModelName)?.Value)
                         .FirstOrDefault(ally => ally.IsAlive && ally.Distance <= 900 && TargetSelector.IsAttackable(ally, false) && ally.HealthPercent < RBuffHealthPercent)
             };
+        }
+
+        internal override void OnCoreRender()
+        {
+            SpellQ.DrawRange();
+            SpellE.DrawRange();
+            SpellR.DrawRange();
         }
 
         internal override void OnCoreMainInput()
@@ -91,6 +106,9 @@ namespace SixAIO.Champions
             {
                 RSettings.AddItem(new Counter() { Title = "Ult Ally - " + allyChampion.ModelName, MinValue = 0, MaxValue = 5, Value = 0 });
             }
+
+
+            MenuTab.AddDrawOptions(SpellSlot.Q, SpellSlot.E, SpellSlot.R);
         }
     }
 }

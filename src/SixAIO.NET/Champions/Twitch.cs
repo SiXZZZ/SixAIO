@@ -10,6 +10,7 @@ using Oasys.SDK.Menu;
 using Oasys.SDK.Rendering;
 using Oasys.SDK.SpellCasting;
 using SharpDX;
+using SixAIO.Extensions;
 using SixAIO.Models;
 using System;
 using System.Linq;
@@ -31,6 +32,8 @@ namespace SixAIO.Champions
             };
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
             {
+                ShouldDraw = () => DrawWRange,
+                DrawColor = () => DrawWColor,
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Circle,
                 MinimumHitChance = () => WHitChance,
                 Range = () => 950,
@@ -41,7 +44,10 @@ namespace SixAIO.Champions
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
+                ShouldDraw = () => DrawERange,
+                DrawColor = () => DrawEColor,
                 IsEnabled = () => UseE,
+                Range = () => 1200,
                 ShouldCast = (mode, target, spellClass, damage) => ShouldCastE(mode),
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
@@ -106,6 +112,9 @@ namespace SixAIO.Champions
 
         internal override void OnCoreRender()
         {
+            SpellW.DrawRange();
+            SpellE.DrawRange();
+
             if (DrawQTime)
             {
                 var qBuff = UnitManager.MyChampion.BuffManager.ActiveBuffs.FirstOrDefault(x => x.Name == "TwitchHideInShadows" && x.Stacks >= 1);
@@ -317,6 +326,9 @@ namespace SixAIO.Champions
             RSettings.AddItem(new Switch() { Title = "Draw R Time", IsOn = true });
             RSettings.AddItem(new Counter() { Title = "R If More Than Enemies Near", MinValue = 0, MaxValue = 5, Value = 2, ValueFrequency = 1 });
             RSettings.AddItem(new Counter() { Title = "R Enemies Closer Than", MinValue = 50, MaxValue = 1500, Value = 1100, ValueFrequency = 50 });
+
+
+            MenuTab.AddDrawOptions(SpellSlot.W, SpellSlot.E);
         }
     }
 }

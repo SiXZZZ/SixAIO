@@ -10,6 +10,7 @@ using Oasys.SDK.Menu;
 using Oasys.SDK.SpellCasting;
 using SharpDX;
 using SixAIO.Enums;
+using SixAIO.Extensions;
 using SixAIO.Models;
 using System;
 using System.Linq;
@@ -25,6 +26,8 @@ namespace SixAIO.Champions
             Orbwalker.OnOrbwalkerAfterBasicAttack += Orbwalker_OnOrbwalkerAfterBasicAttack;
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
+                ShouldDraw = () => DrawQRange,
+                DrawColor = () => DrawQColor,
                 IsEnabled = () => UseQ,
                 ShouldCast = (mode, target, spellClass, damage) =>
                             DashModeSelected == DashMode.ToMouse &&
@@ -34,9 +37,12 @@ namespace SixAIO.Champions
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
+                ShouldDraw = () => DrawERange,
+                DrawColor = () => DrawEColor,
                 AllowCancelBasicAttack = () => EAllowCancelBasicAttack,
                 IsTargetted = () => true,
                 IsEnabled = () => UseE,
+                Range = () => 550,
                 TargetSelect = (mode) => TargetSelectE()
             };
         }
@@ -52,7 +58,7 @@ namespace SixAIO.Champions
         private GameObjectBase TargetSelectE()
         {
             var targets = UnitManager.EnemyChampions.Where(x => x.IsAlive &&
-                                                                x.Distance <= 550 + x.BoundingRadius+ UnitManager.MyChampion.BoundingRadius &&
+                                                                x.Distance <= 550 + x.BoundingRadius + UnitManager.MyChampion.BoundingRadius &&
                                                                 TargetSelector.IsAttackable(x) &&
                                                                 !TargetSelector.IsInvulnerable(x, DamageType.Magical, false))
                                                     .OrderBy(x => x.Health);
@@ -166,10 +172,12 @@ namespace SixAIO.Champions
 
         internal override void OnCoreRender()
         {
+            SpellE.DrawRange();
+
             if (DrawE && SpellE.SpellClass.IsSpellReady)
             {
                 foreach (var target in UnitManager.EnemyChampions.Where(x => TargetSelector.IsAttackable(x) &&
-                                                                         x.Distance <= 550 + x.BoundingRadius+ UnitManager.MyChampion.BoundingRadius &&
+                                                                         x.Distance <= 550 + x.BoundingRadius + UnitManager.MyChampion.BoundingRadius &&
                                                                          x.IsAlive))
                 {
                     //for (var i = 0; i < CondemnRange; i += 5)
@@ -263,6 +271,9 @@ namespace SixAIO.Champions
             ESettings.AddItem(new Counter() { Title = "Only Push Away Below HP Percent", MinValue = 0, MaxValue = 100, Value = 30, ValueFrequency = 5 });
             ESettings.AddItem(new Counter() { Title = "Push Away Range", MinValue = 50, MaxValue = 550, Value = 150, ValueFrequency = 25 });
             ESettings.AddItem(new ModeDisplay() { Title = "Push Away Mode", ModeNames = PushAwayHelper.ConstructPushAwayModeTable(), SelectedModeName = "Everything" });
+
+
+            MenuTab.AddDrawOptions(SpellSlot.E);
 
         }
     }

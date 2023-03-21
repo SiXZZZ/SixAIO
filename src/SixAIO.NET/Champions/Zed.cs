@@ -7,6 +7,7 @@ using Oasys.Common.Menu.ItemComponents;
 using Oasys.SDK;
 using Oasys.SDK.Menu;
 using Oasys.SDK.SpellCasting;
+using SixAIO.Extensions;
 using SixAIO.Models;
 using System;
 using System.Collections.Generic;
@@ -38,6 +39,8 @@ namespace SixAIO.Champions
         {
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
+                ShouldDraw = () => DrawQRange,
+                DrawColor = () => DrawQColor,
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
                 MinimumHitChance = () => QHitChance,
                 Range = () => 900,
@@ -108,7 +111,10 @@ namespace SixAIO.Champions
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
+                ShouldDraw = () => DrawERange,
+                DrawColor = () => DrawEColor,
                 IsEnabled = () => UseE,
+                Range = () => 300,
                 ShouldCast = (mode, target, spellClass, damage) => UnitManager.EnemyChampions.Any(x => x.Distance <= 300 && x.IsAlive && TargetSelector.IsAttackable(x)),
             };
             SpellEShadow1 = new Spell(CastSlot.E, SpellSlot.E)
@@ -221,6 +227,12 @@ namespace SixAIO.Champions
             }
         }
 
+        internal override void OnCoreRender()
+        {
+            SpellQ.DrawRange();
+            SpellE.DrawRange();
+        }
+
         internal override void OnCoreMainInput()
         {
             CastCombo();
@@ -308,6 +320,9 @@ namespace SixAIO.Champions
             ESettings.AddItem(new Switch() { Title = "Use E", IsOn = true });
             ESettings.AddItem(new Counter() { Title = "Minimum Hittable E", MinValue = 1, MaxValue = 3, Value = 1, ValueFrequency = 1 });
             ESettings.AddItem(new Switch() { Title = "Allow E If Can Kill", IsOn = true });
+
+
+            MenuTab.AddDrawOptions(SpellSlot.Q, SpellSlot.E);
 
         }
     }

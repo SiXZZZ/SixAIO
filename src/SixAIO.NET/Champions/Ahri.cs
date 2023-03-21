@@ -67,6 +67,14 @@ namespace SixAIO.Champions
             };
         }
 
+        internal override void OnCoreRender()
+        {
+            SpellQ.DrawRange();
+            SpellW.DrawRange();
+            SpellE.DrawRange();
+            SpellR.DrawRange();
+        }
+
         internal override void OnCoreMainInput()
         {
             if (SpellE.ExecuteCastSpell() || SpellQ.ExecuteCastSpell() || SpellW.ExecuteCastSpell() || SpellR.ExecuteCastSpell())
@@ -81,14 +89,6 @@ namespace SixAIO.Champions
             {
                 Orbwalker.SelectedTarget = UnitManager.EnemyChampions.FirstOrDefault(x => x.BuffManager.ActiveBuffs.Any(buff => buff.IsActive && buff.Name == "AhriSeduce"));
             }
-        }
-
-        internal override void OnCoreRender()
-        {
-            SpellQ.DrawRange();
-            SpellW.DrawRange();
-            SpellE.DrawRange();
-            SpellR.DrawRange();
         }
 
         internal bool QPrioTargetsWithCharm

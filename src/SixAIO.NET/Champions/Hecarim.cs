@@ -6,6 +6,7 @@ using Oasys.Common.Menu.ItemComponents;
 using Oasys.SDK;
 using Oasys.SDK.Menu;
 using Oasys.SDK.SpellCasting;
+using SixAIO.Extensions;
 using SixAIO.Models;
 using System;
 using System.Collections.Generic;
@@ -19,7 +20,10 @@ namespace SixAIO.Champions
         {
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
+                ShouldDraw = () => DrawQRange,
+                DrawColor = () => DrawQColor,
                 IsEnabled = () => UseQ,
+                Range = () => 360,
                 ShouldCast = (mode, target, spellClass, damage) =>
                 {
                     if (mode == Orbwalker.OrbWalkingModeType.LaneClear && UseQLaneclear)
@@ -36,17 +40,24 @@ namespace SixAIO.Champions
             };
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
             {
+                ShouldDraw = () => DrawWRange,
+                DrawColor = () => DrawWColor,
                 IsEnabled = () => UseW,
+                Range = () => WEnemiesCloserThan,
                 ShouldCast = (mode, target, spellClass, damage) => WIfMoreThanEnemiesNear <= UnitManager.EnemyChampions.Count(enemy =>
                                                                    TargetSelector.IsAttackable(enemy) && enemy.Distance < WEnemiesCloserThan)
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
+                ShouldDraw = () => DrawERange,
+                DrawColor = () => DrawEColor,
                 IsEnabled = () => UseE,
                 ShouldCast = (mode, target, spellClass, damage) => UnitManager.EnemyChampions.Any(x => x.Distance <= 350 && TargetSelector.IsAttackable(x))
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
+                ShouldDraw = () => DrawRRange,
+                DrawColor = () => DrawRColor,
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
                 MinimumHitChance = () => RHitChance,
                 Range = () => 1470,
@@ -57,6 +68,13 @@ namespace SixAIO.Champions
                                                                       TargetSelector.IsAttackable(enemy) && enemy.Distance(x) < REnemiesCloserThan))
                                                 .FirstOrDefault()
             };
+        }
+
+        internal override void OnCoreRender()
+        {
+            SpellQ.DrawRange();
+            SpellW.DrawRange();
+            SpellR.DrawRange();
         }
 
         internal override void OnCoreMainInput()
@@ -118,6 +136,9 @@ namespace SixAIO.Champions
             RSettings.AddItem(new ModeDisplay() { Title = "R HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "VeryHigh" });
             RSettings.AddItem(new Counter() { Title = "R x >= Enemies Near Target", MinValue = 1, MaxValue = 5, Value = 1, ValueFrequency = 1 });
             RSettings.AddItem(new Counter() { Title = "R Enemies Closer Than", MinValue = 50, MaxValue = 450, Value = 300, ValueFrequency = 50 });
+
+
+            MenuTab.AddDrawOptions(SpellSlot.Q, SpellSlot.W, SpellSlot.R);
         }
     }
 }

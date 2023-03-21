@@ -12,6 +12,7 @@ using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.IO;
 using SixAIO.Helpers;
+using SixAIO.Extensions;
 
 namespace SixAIO.Champions
 {
@@ -23,6 +24,8 @@ namespace SixAIO.Champions
         {
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
+                ShouldDraw = () => DrawQRange,
+                DrawColor = () => DrawQColor,
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Circle,
                 MinimumHitChance = () => QHitChance,
                 Range = () => 825,
@@ -33,6 +36,8 @@ namespace SixAIO.Champions
             };
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
             {
+                ShouldDraw = () => DrawWRange,
+                DrawColor = () => DrawWColor,
                 IsCharge = () => true,
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Circle,
                 MinimumHitChance = () => Prediction.MenuSelected.HitChance.VeryHigh,
@@ -51,6 +56,8 @@ namespace SixAIO.Champions
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
+                ShouldDraw = () => DrawERange,
+                DrawColor = () => DrawEColor,
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
                 MinimumHitChance = () => EHitChance,
                 Delay = () => 0.4f,
@@ -62,11 +69,22 @@ namespace SixAIO.Champions
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
+                ShouldDraw = () => DrawRRange,
+                DrawColor = () => DrawRColor,
                 AllowCastOnMap = () => true,
                 IsTargetted = () => true,
                 IsEnabled = () => UseR && IsAnyAllyLow(),
+                Range = () => 3250 + 750 * SpellR.SpellClass.Level,
                 TargetSelect = (mode) => GetPrioritizationTarget()
             };
+        }
+
+        internal override void OnCoreRender()
+        {
+            SpellQ.DrawRange();
+            SpellW.DrawRange();
+            SpellE.DrawRange();
+            SpellR.DrawRange();
         }
 
         internal override void OnCoreMainInput()
@@ -98,6 +116,9 @@ namespace SixAIO.Champions
             LoadTargetPrioValues();
 
             LoadAllyHealthPercents();
+
+
+            MenuTab.AddDrawOptions(SpellSlot.Q, SpellSlot.W, SpellSlot.E, SpellSlot.R);
         }
 
         internal void LoadTargetPrioValues()
@@ -160,7 +181,7 @@ namespace SixAIO.Champions
                 GameObjectBase tempTarget = null;
                 var tempPrio = 0;
 
-                foreach (var hero in UnitManager.AllyChampions.Where(TargetSelector.IsAttackable).Where(x => x.Distance <= 3250 + 750 * SpellR.SpellClass.Level))
+                foreach (var hero in UnitManager.AllyChampions.Where(TargetSelector.IsAttackable).Where(x => x.Distance <= SpellR.Range()))
                 {
                     try
                     {

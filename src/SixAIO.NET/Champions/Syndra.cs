@@ -10,6 +10,7 @@ using Oasys.SDK.Menu;
 using Oasys.SDK.SpellCasting;
 using SharpDX;
 using SixAIO.Enums;
+using SixAIO.Extensions;
 using SixAIO.Models;
 using System;
 using System.Collections.Generic;
@@ -36,6 +37,8 @@ namespace SixAIO.Champions
         {
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
+                ShouldDraw = () => DrawQRange,
+                DrawColor = () => DrawQColor,
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Circle,
                 MinimumHitChance = () => QHitChance,
                 Range = () => 800,
@@ -46,16 +49,22 @@ namespace SixAIO.Champions
             };
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
             {
+                ShouldDraw = () => DrawWRange,
+                DrawColor = () => DrawWColor,
                 IsTargetted = () => true,
                 IsEnabled = () => UseW,
+                Range = () => 925,
                 TargetSelect = (mode) => !IsWActive && SpellQ.GetTargets(mode).FirstOrDefault() is not null
                                             ? Orbs.FirstOrDefault(x => x.Distance <= 925) ?? (GameObjectBase)UnitManager.EnemyMinions.FirstOrDefault(x => x.Distance <= 925)
                                             : SpellQ.GetTargets(mode).FirstOrDefault()
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
+                ShouldDraw = () => DrawERange,
+                DrawColor = () => DrawEColor,
                 IsTargetted = () => true,
                 IsEnabled = () => UseE,
+                Range = () => 1000,
                 TargetSelect = (mode) =>
                 {
                     var targets = UnitManager.EnemyChampions
@@ -89,6 +98,8 @@ namespace SixAIO.Champions
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
+                ShouldDraw = () => DrawRRange,
+                DrawColor = () => DrawRColor,
                 IsTargetted = () => true,
                 Delay = () => 0f,
                 IsEnabled = () => UseR,
@@ -165,6 +176,14 @@ namespace SixAIO.Champions
         //    }
         //}
 
+        internal override void OnCoreRender()
+        {
+            SpellQ.DrawRange();
+            SpellW.DrawRange();
+            SpellE.DrawRange();
+            SpellR.DrawRange();
+        }
+
         internal override void OnCoreMainInput()
         {
             if (SpellR.ExecuteCastSpell() || SpellE.ExecuteCastSpell() || SpellW.ExecuteCastSpell() || SpellQ.ExecuteCastSpell())
@@ -210,6 +229,9 @@ namespace SixAIO.Champions
             ESettings.AddItem(new ModeDisplay() { Title = "Push Away Mode", ModeNames = PushAwayHelper.ConstructPushAwayModeTable(), SelectedModeName = "Everything" });
 
             RSettings.AddItem(new Switch() { Title = "Use R", IsOn = true });
+
+
+            MenuTab.AddDrawOptions(SpellSlot.Q, SpellSlot.W, SpellSlot.E, SpellSlot.R);
         }
     }
 }

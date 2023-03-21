@@ -6,6 +6,7 @@ using Oasys.SDK.Menu;
 using Oasys.SDK.Rendering;
 using Oasys.SDK.SpellCasting;
 using SharpDX;
+using SixAIO.Extensions;
 using SixAIO.Models;
 using System;
 using System.Linq;
@@ -20,6 +21,8 @@ namespace SixAIO.Champions
             Oasys.SDK.InputProviders.KeyboardProvider.OnKeyPress += KeyboardProvider_OnKeyPress;
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
+                ShouldDraw = () => DrawQRange,
+                DrawColor = () => DrawQColor,
                 IsSpellReady = (spellClass, minMana, minCharges) => spellClass.IsSpellReady,
                 IsTargetted = () => true,
                 Range = () => 600,
@@ -54,6 +57,8 @@ namespace SixAIO.Champions
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
+                ShouldDraw = () => DrawERange,
+                DrawColor = () => DrawEColor,
                 IsSpellReady = (spellClass, minMana, minCharges) => spellClass.IsSpellReady,
                 IsCharge = () => true,
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
@@ -71,8 +76,10 @@ namespace SixAIO.Champions
                 ShouldCast = (mode, target, spellClass, damage) => target != null && (target.Distance < SpellE.Range() || (!SpellE.ChargeTimer.IsRunning && target.Distance <= 600)),
                 TargetSelect = (mode) => SpellE.GetTargets(mode).FirstOrDefault()
             };
-            SpellR = new Spell(CastSlot.R, SpellSlot.R)
+SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
+                ShouldDraw = () => DrawRRange,
+                DrawColor = () => DrawRColor,
                 IsSpellReady = (spellClass, minMana, minCharges) => spellClass.IsSpellReady,
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Circle,
                 MinimumHitChance = () => RHitChance,
@@ -90,6 +97,21 @@ namespace SixAIO.Champions
             if (keyBeingPressed == DisableAAKey && pressState == Oasys.Common.Tools.Devices.Keyboard.KeyPressState.Down)
             {
                 Orbwalker.AllowAttacking = !Orbwalker.AllowAttacking;
+            }
+        }
+
+        internal override void OnCoreRender()
+        {
+            SpellQ.DrawRange();
+            SpellW.DrawRange();
+            SpellE.DrawRange();
+            SpellR.DrawRange();
+
+            if (!Orbwalker.AllowAttacking)
+            {
+                var pos = UnitManager.MyChampion.W2S;
+                pos.Y -= 20;
+                RenderFactory.DrawText("AA Disabled", 1, pos, Color.White);
             }
         }
 
@@ -124,17 +146,6 @@ namespace SixAIO.Champions
             }
         }
 
-
-        internal override void OnCoreRender()
-        {
-            if (!Orbwalker.AllowAttacking)
-            {
-                var pos = UnitManager.MyChampion.W2S;
-                pos.Y -= 20;
-                RenderFactory.DrawText("AA Disabled", 1, pos, Color.White);
-            }
-        }
-
         public Keys DisableAAKey => MenuTab.GetItem<KeyBinding>("Disable AA Key").SelectedKey;
 
         internal override void InitializeMenu()
@@ -154,6 +165,9 @@ namespace SixAIO.Champions
 
             RSettings.AddItem(new Switch() { Title = "Use R", IsOn = true });
             RSettings.AddItem(new ModeDisplay() { Title = "R HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
+
+
+            MenuTab.AddDrawOptions(SpellSlot.Q, SpellSlot.W, SpellSlot.E, SpellSlot.R);
         }
     }
 }

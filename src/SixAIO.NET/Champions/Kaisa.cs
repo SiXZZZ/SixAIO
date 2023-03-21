@@ -5,6 +5,7 @@ using Oasys.Common.Menu.ItemComponents;
 using Oasys.SDK;
 using Oasys.SDK.Menu;
 using Oasys.SDK.SpellCasting;
+using SixAIO.Extensions;
 using SixAIO.Models;
 using System;
 using System.Linq;
@@ -29,6 +30,8 @@ namespace SixAIO.Champions
             };
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
             {
+                ShouldDraw = () => DrawWRange,
+                DrawColor = () => DrawWColor,
                 AllowCastOnMap = () => AllowWCastOnMinimap,
                 AllowCollision = (target, collisions) => !collisions.Any(),
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
@@ -45,6 +48,11 @@ namespace SixAIO.Champions
         private void Orbwalker_OnOrbwalkerAfterBasicAttack(float gameTime, GameObjectBase target)
         {
             SpellQ.ExecuteCastSpell();
+        }
+
+        internal override void OnCoreRender()
+        {
+            SpellW.DrawRange();
         }
 
         internal override void OnCoreMainInput()
@@ -73,6 +81,9 @@ namespace SixAIO.Champions
             WSettings.AddItem(new Switch() { Title = "Use W", IsOn = true });
             WSettings.AddItem(new ModeDisplay() { Title = "W HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
             WSettings.AddItem(new Switch() { Title = "Allow W cast on minimap", IsOn = true });
+
+
+            MenuTab.AddDrawOptions(SpellSlot.W);
 
         }
     }

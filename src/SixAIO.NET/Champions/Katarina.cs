@@ -6,6 +6,7 @@ using Oasys.Common.Menu.ItemComponents;
 using Oasys.SDK;
 using Oasys.SDK.Menu;
 using Oasys.SDK.SpellCasting;
+using SixAIO.Extensions;
 using SixAIO.Models;
 using System;
 using System.Collections.Generic;
@@ -26,6 +27,8 @@ namespace SixAIO.Champions
             SDKSpell.OnSpellCast += Spell_OnSpellCast;
             PokeSpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
+                ShouldDraw = () => DrawQRange,
+                DrawColor = () => DrawQColor,
                 IsSpellReady = (spellClass, minMana, minCharges) => spellClass.IsSpellReady,
                 IsTargetted = () => true,
                 Range = () => 625,
@@ -34,12 +37,16 @@ namespace SixAIO.Champions
             };
             PokeSpellW = new Spell(CastSlot.W, SpellSlot.W)
             {
+                ShouldDraw = () => DrawWRange,
+                DrawColor = () => DrawWColor,
                 IsSpellReady = (spellClass, minMana, minCharges) => spellClass.IsSpellReady,
                 IsEnabled = () => UseW,
                 ShouldCast = (mode, target, spellClass, damage) => !SpellE.SpellClass.IsSpellReady && UnitManager.EnemyChampions.Any(x => TargetSelector.IsAttackable(x) && x.Distance < REnemiesCloserThan),
             };
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
+                ShouldDraw = () => DrawQRange,
+                DrawColor = () => DrawQColor,
                 IsSpellReady = (spellClass, minMana, minCharges) => spellClass.IsSpellReady,
                 IsTargetted = () => true,
                 Range = () => 625,
@@ -54,6 +61,8 @@ namespace SixAIO.Champions
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
+                ShouldDraw = () => DrawERange,
+                DrawColor = () => DrawEColor,
                 IsSpellReady = (spellClass, minMana, minCharges) => spellClass.IsSpellReady,
                 IsTargetted = () => true,
                 Range = () => 775,
@@ -79,6 +88,9 @@ namespace SixAIO.Champions
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
+                ShouldDraw = () => DrawRRange,
+                DrawColor = () => DrawRColor,
+                Range = () => 775,
                 IsSpellReady = (spellClass, minMana, minCharges) => spellClass.IsSpellReady,
                 IsEnabled = () => UseR,
                 ShouldCast = (mode, target, spellClass, damage) =>
@@ -105,6 +117,13 @@ namespace SixAIO.Champions
                 SpellQ.ExecuteCastSpell();
                 SpellR.ExecuteCastSpell();
             }
+        }
+
+        internal override void OnCoreRender()
+        {
+            SpellQ.DrawRange();
+            SpellE.DrawRange();
+            SpellR.DrawRange();
         }
 
         internal override void OnCoreMainInput()
@@ -230,6 +249,9 @@ namespace SixAIO.Champions
             RSettings.AddItem(new Switch() { Title = "Only R if cant E", IsOn = true });
             RSettings.AddItem(new Counter() { Title = "R If More Than Enemies Near", MinValue = 0, MaxValue = 5, Value = 0, ValueFrequency = 1 });
             RSettings.AddItem(new Counter() { Title = "R Enemies Closer Than", MinValue = 50, MaxValue = 550, Value = 550, ValueFrequency = 50 });
+
+
+            MenuTab.AddDrawOptions(SpellSlot.Q, SpellSlot.E, SpellSlot.R);
         }
     }
 }

@@ -6,6 +6,7 @@ using Oasys.Common.Menu.ItemComponents;
 using Oasys.SDK;
 using Oasys.SDK.Menu;
 using Oasys.SDK.SpellCasting;
+using SixAIO.Extensions;
 using SixAIO.Models;
 using System;
 using System.Linq;
@@ -28,12 +29,17 @@ namespace SixAIO.Champions
             };
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
             {
+                ShouldDraw = () => DrawWRange,
+                DrawColor = () => DrawWColor,
+                Range = () => 450,
                 IsSpellReady = (spellClass, minMana, minCharges) => spellClass.IsSpellReady,
                 IsEnabled = () => UseW && !IsUltActive && (!IsEmpowered || CanUseEmpoweredW),
                 ShouldCast = (mode, target, spellClass, damage) => UnitManager.MyChampion.HealthPercent <= WIfHealthPercentBelow || UnitManager.EnemyChampions.Any(x => TargetSelector.IsAttackable(x) && x.Distance <= 450 && x.IsAlive),
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
+                ShouldDraw = () => DrawERange,
+                DrawColor = () => DrawEColor,
                 IsSpellReady = (spellClass, minMana, minCharges) => spellClass.IsSpellReady,
                 AllowCollision = (target, collisions) => !collisions.Any(),
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
@@ -49,6 +55,12 @@ namespace SixAIO.Champions
         private void Orbwalker_OnOrbwalkerAfterBasicAttack(float gameTime, GameObjectBase target)
         {
             SpellQ.ExecuteCastSpell();
+        }
+
+        internal override void OnCoreRender()
+        {
+            SpellW.DrawRange();
+            SpellE.DrawRange();
         }
 
         internal override void OnCoreMainInput()
@@ -122,6 +134,9 @@ namespace SixAIO.Champions
             ESettings.AddItem(new Switch() { Title = "Only E Out Of AA Range", IsOn = true });
             ESettings.AddItem(new ModeDisplay() { Title = "E HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "VeryHigh" });
             ESettings.AddItem(new Counter() { Title = "E Maximum Range", MinValue = 0, MaxValue = 1000, Value = 950, ValueFrequency = 50 });
+
+
+            MenuTab.AddDrawOptions(SpellSlot.W, SpellSlot.E);
 
         }
     }

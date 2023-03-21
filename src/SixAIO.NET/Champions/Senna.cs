@@ -17,6 +17,7 @@ using Orbwalker = Oasys.SDK.Orbwalker;
 using TargetSelector = Oasys.Common.Logic.TargetSelector;
 using DamageCalculator = Oasys.SDK.DamageCalculator;
 using static Oasys.Common.Logic.Orbwalker;
+using SixAIO.Extensions;
 
 namespace SixAIO.Champions
 {
@@ -56,6 +57,8 @@ namespace SixAIO.Champions
             };
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
             {
+                ShouldDraw = () => DrawWRange,
+                DrawColor = () => DrawWColor,
                 AllowCollision = (target, collisions) => !collisions.Any(),
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
                 MinimumHitChance = () => WHitChance,
@@ -67,10 +70,12 @@ namespace SixAIO.Champions
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
+                ShouldDraw = () => DrawRRange,
+                DrawColor = () => DrawRColor,
                 AllowCastOnMap = () => AllowRCastOnMinimap,
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
                 MinimumHitChance = () => RHitChance,
-                Range = () => 30000,
+                Range = () => RMaximumRange,
                 Radius = () => 320,
                 Speed = () => 20000,
                 Delay = () => 1f,
@@ -130,6 +135,12 @@ namespace SixAIO.Champions
         {
             var soul = UnitManager.EnemyJungleMobs.FirstOrDefault(x => x.ModelName == "SennaSoul" && TargetSelector.IsInRange(x));
             Orbwalker.SelectedTarget = soul;
+        }
+
+        internal override void OnCoreRender()
+        {
+            SpellW.DrawRange();
+            SpellR.DrawRange();
         }
 
         internal override void OnCoreMainInput()
@@ -203,6 +214,9 @@ namespace SixAIO.Champions
             RSettings.AddItem(new Switch() { Title = "Allow R cast on minimap", IsOn = true });
             RSettings.AddItem(new Counter() { Title = "R minimum range", MinValue = 0, MaxValue = 30_000, Value = 0, ValueFrequency = 50 });
             RSettings.AddItem(new Counter() { Title = "R maximum range", MinValue = 0, MaxValue = 30_000, Value = 30_000, ValueFrequency = 50 });
+
+
+            MenuTab.AddDrawOptions(SpellSlot.W, SpellSlot.R);
 
         }
     }

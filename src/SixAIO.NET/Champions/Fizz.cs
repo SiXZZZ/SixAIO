@@ -8,6 +8,7 @@ using System.Linq;
 using Oasys.Common.Menu;
 using Oasys.SDK;
 using Oasys.Common.GameObject;
+using SixAIO.Extensions;
 
 namespace SixAIO.Champions
 {
@@ -22,6 +23,8 @@ namespace SixAIO.Champions
             Orbwalker.OnOrbwalkerAfterBasicAttack += Orbwalker_OnOrbwalkerAfterBasicAttack;
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
+                ShouldDraw = () => DrawQRange,
+                DrawColor = () => DrawQColor,
                 IsTargetted = () => true,
                 Range = () => 550,
                 IsEnabled = () => UseQ,
@@ -46,6 +49,8 @@ namespace SixAIO.Champions
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
+                ShouldDraw = () => DrawRRange,
+                DrawColor = () => DrawRColor,
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
                 MinimumHitChance = () => RHitChance,
                 Range = () => 1300,
@@ -92,6 +97,12 @@ namespace SixAIO.Champions
             }
         }
 
+        internal override void OnCoreRender()
+        {
+            SpellQ.DrawRange();
+            SpellR.DrawRange();
+        }
+
         internal override void OnCoreMainInput()
         {
             SpellR.ExecuteCastSpell();
@@ -118,6 +129,9 @@ namespace SixAIO.Champions
 
             RSettings.AddItem(new Switch() { Title = "Use R", IsOn = true });
             RSettings.AddItem(new ModeDisplay() { Title = "R HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "VeryHigh" });
+
+
+            MenuTab.AddDrawOptions(SpellSlot.Q, SpellSlot.R);
 
         }
     }

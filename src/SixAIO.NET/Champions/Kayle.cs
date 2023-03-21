@@ -5,6 +5,7 @@ using Oasys.Common.Menu.ItemComponents;
 using Oasys.SDK;
 using Oasys.SDK.Menu;
 using Oasys.SDK.SpellCasting;
+using SixAIO.Extensions;
 using SixAIO.Models;
 using System;
 using System.Linq;
@@ -17,6 +18,8 @@ namespace SixAIO.Champions
         {
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
+                ShouldDraw = () => DrawQRange,
+                DrawColor = () => DrawQColor,
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
                 MinimumHitChance = () => QHitChance,
                 Range = () => 875,
@@ -98,6 +101,11 @@ namespace SixAIO.Champions
             return result;
         }
 
+        internal override void OnCoreRender()
+        {
+            SpellQ.DrawRange();
+        }
+
         internal override void OnCoreMainInput()
         {
             if (SpellE.ExecuteCastSpell() || SpellQ.ExecuteCastSpell() || SpellW.ExecuteCastSpell() || SpellR.ExecuteCastSpell())
@@ -160,6 +168,9 @@ namespace SixAIO.Champions
             RSettings.AddItem(new Counter() { Title = "R Below Health Percent", Value = 20, MinValue = 0, MaxValue = 100, ValueFrequency = 5 });
             RSettings.AddItem(new Counter() { Title = "R If More Than Enemies Near", MinValue = 0, MaxValue = 5, Value = 2, ValueFrequency = 1 });
             RSettings.AddItem(new Counter() { Title = "R Enemies Closer Than", MinValue = 50, MaxValue = 600, Value = 350, ValueFrequency = 50 });
+
+
+            MenuTab.AddDrawOptions(SpellSlot.Q);
         }
     }
 }

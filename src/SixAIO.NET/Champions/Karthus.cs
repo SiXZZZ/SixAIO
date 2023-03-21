@@ -10,6 +10,7 @@ using Oasys.SDK.Menu;
 using Oasys.SDK.Rendering;
 using Oasys.SDK.SpellCasting;
 using SharpDX;
+using SixAIO.Extensions;
 using SixAIO.Models;
 using System;
 using System.Linq;
@@ -29,6 +30,8 @@ namespace SixAIO.Champions
         {
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
+                ShouldDraw = () => DrawQRange,
+                DrawColor = () => DrawQColor,
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Circle,
                 MinimumHitChance = () => QHitChance,
                 Range = () => 875,
@@ -40,6 +43,8 @@ namespace SixAIO.Champions
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
+                ShouldDraw = () => DrawERange,
+                DrawColor = () => DrawEColor,
                 Range = () => 550f,
                 Delay = () => 0f,
                 IsEnabled = () => UseE,
@@ -84,22 +89,10 @@ namespace SixAIO.Champions
             return DamageCalculator.GetMagicResistMod(UnitManager.MyChampion, target) * dmg;
         }
 
-        internal override void OnCoreMainInput()
-        {
-            SpellQ.ExecuteCastSpell();
-            SpellE.ExecuteCastSpell();
-        }
-
-        internal override void OnCoreLaneClearInput()
-        {
-            if (UseQLaneclear && SpellQ.ExecuteCastSpell(Orbwalker.OrbWalkingModeType.LaneClear))
-            {
-                return;
-            }
-        }
-
         internal override void OnCoreRender()
         {
+            SpellQ.DrawRange();
+
             if (DrawR)
             {
                 var enemies = UnitManager.EnemyChampions.Where(x => x.IsAlive && x.IsTargetable &&
@@ -136,6 +129,20 @@ namespace SixAIO.Champions
                 {
                     RenderFactory.DrawHPBarDamage(enemy, GetRDamage(enemy), RDamageColor);
                 }
+            }
+        }
+
+        internal override void OnCoreMainInput()
+        {
+            SpellQ.ExecuteCastSpell();
+            SpellE.ExecuteCastSpell();
+        }
+
+        internal override void OnCoreLaneClearInput()
+        {
+            if (UseQLaneclear && SpellQ.ExecuteCastSpell(Orbwalker.OrbWalkingModeType.LaneClear))
+            {
+                return;
             }
         }
 
@@ -203,6 +210,9 @@ namespace SixAIO.Champions
             RSettings.AddItem(new Switch() { Title = "Draw R", IsOn = true });
             RSettings.AddItem(new Switch() { Title = "Draw R Damage", IsOn = true });
             RSettings.AddItem(new ModeDisplay() { Title = "R Damage Color", ModeNames = ColorConverter.GetColors(), SelectedModeName = "White" });
+
+
+            MenuTab.AddDrawOptions(SpellSlot.Q);
         }
     }
 }

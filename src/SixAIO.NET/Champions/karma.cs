@@ -6,6 +6,7 @@ using Oasys.Common.Menu.ItemComponents;
 using Oasys.SDK;
 using Oasys.SDK.Menu;
 using Oasys.SDK.SpellCasting;
+using SixAIO.Extensions;
 using SixAIO.Models;
 using System;
 using System.Linq;
@@ -19,6 +20,8 @@ namespace SixAIO.Champions
             Spell.OnSpellCast += Spell_OnSpellCast;
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
+                ShouldDraw = () => DrawQRange,
+                DrawColor = () => DrawQColor,
                 AllowCollision = (target, collisions) => !collisions.Any(),
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
                 MinimumHitChance = () => QHitChance,
@@ -30,6 +33,8 @@ namespace SixAIO.Champions
             };
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
             {
+                ShouldDraw = () => DrawWRange,
+                DrawColor = () => DrawWColor,
                 IsTargetted = () => true,
                 IsEnabled = () => UseW,
                 Range = () => 675,
@@ -37,8 +42,11 @@ namespace SixAIO.Champions
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
+                ShouldDraw = () => DrawERange,
+                DrawColor = () => DrawEColor,
                 IsTargetted = () => true,
                 IsEnabled = () => UseE,
+                Range = () => 800,
                 TargetSelect = (mode) => UnitManager.AllyChampions
                                             .FirstOrDefault(ally => ally.IsAlive && ally.Distance <= 800 && TargetSelector.IsAttackable(ally, false) &&
                                                                     AnyEnemyIsCastingSpell(ally) &&
@@ -46,6 +54,8 @@ namespace SixAIO.Champions
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
+                ShouldDraw = () => DrawRRange,
+                DrawColor = () => DrawRColor,
                 IsEnabled = () => UseR,
                 ShouldCast = (mode, target, spellClass, damage) => SpellQ.GetTargets(mode).Any()
             };
@@ -76,6 +86,13 @@ namespace SixAIO.Champions
             }
 
             return false;
+        }
+
+        internal override void OnCoreRender()
+        {
+            SpellQ.DrawRange();
+            SpellW.DrawRange();
+            SpellE.DrawRange();
         }
 
         internal override void OnCoreMainInput()
@@ -109,6 +126,9 @@ namespace SixAIO.Champions
             ESettings.AddItem(new Counter() { Title = "E Shield Health Percent", MinValue = 0, MaxValue = 100, Value = 70, ValueFrequency = 5 });
 
             RSettings.AddItem(new Switch() { Title = "Use R", IsOn = true });
+
+
+            MenuTab.AddDrawOptions(SpellSlot.Q, SpellSlot.W, SpellSlot.E);
 
         }
     }

@@ -13,6 +13,7 @@ using Oasys.Common.Extensions;
 using System.Windows.Forms;
 using Oasys.SDK.Rendering;
 using SharpDX;
+using SixAIO.Extensions;
 
 namespace SixAIO.Champions
 {
@@ -23,6 +24,8 @@ namespace SixAIO.Champions
             Oasys.SDK.InputProviders.KeyboardProvider.OnKeyPress += KeyboardProvider_OnKeyPress;
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
+                ShouldDraw = () => DrawQRange,
+                DrawColor = () => DrawQColor,
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Circle,
                 MinimumHitChance = () => QHitChance,
                 Range = () => 850,
@@ -34,6 +37,8 @@ namespace SixAIO.Champions
             };
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
             {
+                ShouldDraw = () => DrawWRange,
+                DrawColor = () => DrawWColor,
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Circle,
                 MinimumHitChance = () => WHitChance,
                 Range = () => 850,
@@ -44,6 +49,8 @@ namespace SixAIO.Champions
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
+                ShouldDraw = () => DrawERange,
+                DrawColor = () => DrawEColor,
                 Delay = () => 0.125f,
                 IsTargetted = () => true,
                 Range = () => 700 + UnitManager.MyChampion.BoundingRadius,
@@ -76,6 +83,8 @@ namespace SixAIO.Champions
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
+                ShouldDraw = () => DrawRRange,
+                DrawColor = () => DrawRColor,
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Cone,
                 MinimumHitChance = () => RHitChance,
                 Range = () => 800,
@@ -141,6 +150,21 @@ namespace SixAIO.Champions
                     (buff.Name.Contains("cassiopeiaqdebuff", StringComparison.OrdinalIgnoreCase) || buff.Name.Contains("cassiopeiawpoison", StringComparison.OrdinalIgnoreCase)));
         }
 
+        internal override void OnCoreRender()
+        {
+            SpellQ.DrawRange();
+            SpellW.DrawRange();
+            SpellE.DrawRange();
+            SpellR.DrawRange();
+
+            if (!Orbwalker.AllowAttacking)
+            {
+                var pos = UnitManager.MyChampion.W2S;
+                pos.Y -= 20;
+                RenderFactory.DrawText("AA Disabled", 18, pos, Color.White);
+            }
+        }
+
         internal override void OnCoreMainInput()
         {
             SpellR.ExecuteCastSpell();
@@ -181,33 +205,6 @@ namespace SixAIO.Champions
             }
         }
 
-        internal override void OnCoreRender()
-        {
-            if (!Orbwalker.AllowAttacking)
-            {
-                var pos = UnitManager.MyChampion.W2S;
-                pos.Y -= 20;
-                RenderFactory.DrawText("AA Disabled", 18, pos, Color.White);
-            }
-            if (ShowERange)
-            {
-                var color = Oasys.Common.Tools.ColorConverter.GetColor(ERangeColor);
-                RenderFactory.DrawNativeCircle(UnitManager.MyChampion.Position, SpellE.Range(), color, 2);
-            }
-        }
-
-        private bool ShowERange
-        {
-            get => ESettings.GetItem<Switch>("Show E range").IsOn;
-            set => ESettings.GetItem<Switch>("Show E range").IsOn = value;
-        }
-
-        private string ERangeColor
-        {
-            get => ESettings.GetItem<ModeDisplay>("E range color").SelectedModeName;
-            set => ESettings.GetItem<ModeDisplay>("E range color").SelectedModeName = value;
-        }
-
         public Keys DisableAAKey => MenuTab.GetItem<KeyBinding>("Disable AA Key").SelectedKey;
 
         internal override void InitializeMenu()
@@ -231,8 +228,6 @@ namespace SixAIO.Champions
             ESettings.AddItem(new Switch() { Title = "Use E Laneclear", IsOn = true });
             ESettings.AddItem(new Switch() { Title = "Use E Lasthit", IsOn = true });
             ESettings.AddItem(new Switch() { Title = "Use E Harass", IsOn = true });
-            ESettings.AddItem(new Switch() { Title = "Show E range", IsOn = true });
-            ESettings.AddItem(new ModeDisplay() { Title = "E range color", ModeNames = Oasys.Common.Tools.ColorConverter.GetColors(), SelectedModeName = "Blue" });
 
             RSettings.AddItem(new Switch() { Title = "Use R", IsOn = true });
             RSettings.AddItem(new ModeDisplay() { Title = "R HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
@@ -240,6 +235,9 @@ namespace SixAIO.Champions
             RSettings.AddItem(new Switch() { Title = "Use Semi Auto R", IsOn = true });
             RSettings.AddItem(new KeyBinding() { Title = "Semi Auto R Key", SelectedKey = Keys.T });
             RSettings.AddItem(new ModeDisplay() { Title = "Semi Auto R HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
+
+
+            MenuTab.AddDrawOptions(SpellSlot.Q, SpellSlot.W, SpellSlot.E, SpellSlot.R);
 
         }
     }

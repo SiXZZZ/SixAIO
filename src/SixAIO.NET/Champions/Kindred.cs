@@ -10,6 +10,7 @@ using Oasys.SDK.Rendering;
 using Oasys.SDK.SpellCasting;
 using SharpDX;
 using SixAIO.Enums;
+using SixAIO.Extensions;
 using SixAIO.Helpers;
 using SixAIO.Models;
 using System;
@@ -109,8 +110,11 @@ namespace SixAIO.Champions
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
+                ShouldDraw = () => DrawERange,
+                DrawColor = () => DrawEColor,
                 IsTargetted = () => true,
                 IsEnabled = () => UseE,
+                Range = () => ERange(),
                 ShouldCast = (mode, target, spellClass, damage) => target is not null && target.Distance <= ERange(),
                 TargetSelect = (mode) =>
                 {
@@ -214,6 +218,18 @@ namespace SixAIO.Champions
             >= 25 => 750
         };
 
+        internal override void OnCoreRender()
+        {
+            SpellE.DrawRange();
+
+            if (UseR)
+            {
+                var w2s = LeagueNativeRendererManager.WorldToScreenSpell(UnitManager.MyChampion.Position);
+                w2s.Y += 40;
+                RenderFactory.DrawText($"Toggle R Enabled", 18, w2s, Color.Blue);
+            }
+        }
+
         internal override void OnCoreMainInput()
         {
             SpellR.ExecuteCastSpell();
@@ -237,16 +253,6 @@ namespace SixAIO.Champions
         internal override void OnCoreMainTick()
         {
             SmiteHandler();
-        }
-
-        internal override void OnCoreRender()
-        {
-            if (UseR)
-            {
-                var w2s = LeagueNativeRendererManager.WorldToScreenSpell(UnitManager.MyChampion.Position);
-                w2s.Y += 40;
-                RenderFactory.DrawText($"Toggle R Enabled", 18, w2s, Color.Blue);
-            }
         }
 
         private DashMode DashModeSelected
@@ -305,6 +311,9 @@ namespace SixAIO.Champions
             {
                 RSettings.AddItem(new Counter() { Title = ally.ModelName, MinValue = 0, MaxValue = 100, Value = 10, ValueFrequency = 1 });
             }
+
+
+            MenuTab.AddDrawOptions(SpellSlot.E);
         }
 
         private void LoadSmiteSettings()

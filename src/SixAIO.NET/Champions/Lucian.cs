@@ -10,6 +10,7 @@ using Oasys.SDK.Menu;
 using Oasys.SDK.SpellCasting;
 using SharpDX;
 using SixAIO.Enums;
+using SixAIO.Extensions;
 using SixAIO.Models;
 using System;
 using System.Linq;
@@ -77,6 +78,8 @@ namespace SixAIO.Champions
             };
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
             {
+                ShouldDraw = () => DrawWRange,
+                DrawColor = () => DrawWColor,
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
                 MinimumHitChance = () => WHitChance,
                 Range = () => 900,
@@ -95,6 +98,8 @@ namespace SixAIO.Champions
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
+                ShouldDraw = () => DrawRRange,
+                DrawColor = () => DrawRColor,
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
                 MinimumHitChance = () => RHitChance,
                 Range = () => 1200,
@@ -142,6 +147,12 @@ namespace SixAIO.Champions
                         TargetSelector.IsAttackable(minion) &&
                         Geometry.DistanceFromPointToLine(enemyPosW2s, new Vector2[] { myPosW2s, minion.W2S }) <= width / 2 &&
                         minion.W2S.Distance(enemyPosW2s) < myPosW2s.Distance(enemyPosW2s));
+        }
+
+        internal override void OnCoreRender()
+        {
+            SpellW.DrawRange();
+            SpellR.DrawRange();
         }
 
         internal override void OnCoreMainInput()
@@ -222,6 +233,9 @@ namespace SixAIO.Champions
             RSettings.AddItem(new Switch() { Title = "Use Semi Auto R", IsOn = true });
             RSettings.AddItem(new KeyBinding() { Title = "Semi Auto R Key", SelectedKey = Keys.T });
             RSettings.AddItem(new ModeDisplay() { Title = "Semi Auto R HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
+
+
+            MenuTab.AddDrawOptions(SpellSlot.W, SpellSlot.R);
         }
     }
 }

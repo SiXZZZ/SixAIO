@@ -7,6 +7,7 @@ using Oasys.SDK.Menu;
 using Oasys.SDK.Rendering;
 using Oasys.SDK.SpellCasting;
 using SharpDX;
+using SixAIO.Extensions;
 using SixAIO.Models;
 using System;
 using System.Linq;
@@ -21,6 +22,8 @@ namespace SixAIO.Champions
             Oasys.SDK.InputProviders.KeyboardProvider.OnKeyPress += KeyboardProvider_OnKeyPress;
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
+                ShouldDraw = () => DrawQRange,
+                DrawColor = () => DrawQColor,
                 IsEnabled = () => UseQ,
                 IsSpellReady = (spellClass, minimumMana, minimumCharges) => spellClass.IsSpellReady && UnitManager.MyChampion.Mana > 50 &&
                                                UnitManager.MyChampion.BuffManager.GetBuffList().Any(x => x.IsActive && x.Stacks >= 4 && x.Name == "asheqcastready"),
@@ -28,6 +31,8 @@ namespace SixAIO.Champions
             };
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
             {
+                ShouldDraw = () => DrawWRange,
+                DrawColor = () => DrawWColor,
                 AllowCollision = (target, collisions) => !collisions.Any(),
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Cone,
                 MinimumHitChance = () => WHitChance,
@@ -39,10 +44,12 @@ namespace SixAIO.Champions
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
+                ShouldDraw = () => DrawRRange,
+                DrawColor = () => DrawRColor,
                 AllowCastOnMap = () => AllowRCastOnMinimap,
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
                 MinimumHitChance = () => RHitChance,
-                Range = () => 30_000,
+                Range = () => RMaximumRange,
                 Radius = () => 350,
                 Speed = () => 1600,
                 IsEnabled = () => UseR,
@@ -76,6 +83,19 @@ namespace SixAIO.Champions
             }
         }
 
+        internal override void OnCoreRender()
+        {
+            SpellW.DrawRange();
+            SpellR.DrawRange();
+
+            if (UseR)
+            {
+                var w2s = LeagueNativeRendererManager.WorldToScreenSpell(UnitManager.MyChampion.Position);
+                w2s.Y += 20;
+                RenderFactory.DrawText($"Toggle R Enabled", 18, w2s, Color.Blue);
+            }
+        }
+
         internal override void OnCoreMainInput()
         {
             if (SpellQ.ExecuteCastSpell() || SpellW.ExecuteCastSpell() || SpellR.ExecuteCastSpell())
@@ -89,16 +109,6 @@ namespace SixAIO.Champions
             if (SpellW.ExecuteCastSpell())
             {
                 return;
-            }
-        }
-
-        internal override void OnCoreRender()
-        {
-            if (UseR)
-            {
-                var w2s = LeagueNativeRendererManager.WorldToScreenSpell(UnitManager.MyChampion.Position);
-                w2s.Y += 20;
-                RenderFactory.DrawText($"Toggle R Enabled", 18, w2s, Color.Blue);
             }
         }
 
@@ -138,6 +148,9 @@ namespace SixAIO.Champions
             RSettings.AddItem(new Counter() { Title = "R minimum range", MinValue = 0, MaxValue = 30_000, Value = 0, ValueFrequency = 50 });
             RSettings.AddItem(new Counter() { Title = "R maximum range", MinValue = 0, MaxValue = 30_000, Value = 2500, ValueFrequency = 50 });
             RSettings.AddItem(new KeyBinding("R Toggle Combo", Keys.U));
+
+
+            MenuTab.AddDrawOptions(SpellSlot.W, SpellSlot.R);
 
         }
     }

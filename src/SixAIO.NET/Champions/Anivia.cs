@@ -10,6 +10,7 @@ using Oasys.SDK;
 using Oasys.Common.GameObject;
 using Oasys.Common.GameObject.Clients;
 using Oasys.Common.Extensions;
+using SixAIO.Extensions;
 
 namespace SixAIO.Champions
 {
@@ -26,6 +27,8 @@ namespace SixAIO.Champions
         {
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
+                ShouldDraw = () => DrawQRange,
+                DrawColor = () => DrawQColor,
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Circle,
                 MinimumHitChance = () => QHitChance,
                 Range = () => 1100,
@@ -41,6 +44,8 @@ namespace SixAIO.Champions
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
+                ShouldDraw = () => DrawERange,
+                DrawColor = () => DrawEColor,
                 IsTargetted = () => true,
                 Range = () => 600f,
                 IsEnabled = () => UseE,
@@ -62,8 +67,10 @@ namespace SixAIO.Champions
                     return SpellE.GetTargets(mode).FirstOrDefault();
                 }
             };
-            SpellR = new Spell(CastSlot.R, SpellSlot.R)
+SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
+                ShouldDraw = () => DrawRRange,
+                DrawColor = () => DrawRColor,
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Circle,
                 MinimumHitChance = () => RHitChance,
                 Range = () => 750,
@@ -89,6 +96,14 @@ namespace SixAIO.Champions
                 dmg *= 2;
             }
             return DamageCalculator.CalculateActualDamage(UnitManager.MyChampion, target, 0, dmg, 0);
+        }
+
+        internal override void OnCoreRender()
+        {
+            SpellQ.DrawRange();
+            SpellW.DrawRange();
+            SpellE.DrawRange();
+            SpellR.DrawRange();
         }
 
         internal override void OnCoreMainInput()
@@ -162,6 +177,9 @@ namespace SixAIO.Champions
 
             RSettings.AddItem(new Switch() { Title = "Use R", IsOn = true });
             RSettings.AddItem(new ModeDisplay() { Title = "R HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
+
+
+            MenuTab.AddDrawOptions(SpellSlot.Q, SpellSlot.E, SpellSlot.R);
 
         }
     }

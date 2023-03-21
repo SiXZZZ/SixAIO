@@ -5,6 +5,7 @@ using Oasys.Common.Menu.ItemComponents;
 using Oasys.SDK;
 using Oasys.SDK.Menu;
 using Oasys.SDK.SpellCasting;
+using SixAIO.Extensions;
 using SixAIO.Models;
 using System;
 using System.Linq;
@@ -14,16 +15,21 @@ namespace SixAIO.Champions
     internal sealed class Darius : Champion
     {
         private bool IsQActive => UnitManager.MyChampion.BuffManager.ActiveBuffs.Any(x => x.IsActive && x.Stacks >= 1 && x.Name.Equals("dariusqcast", StringComparison.OrdinalIgnoreCase));
-        
+
         public Darius()
         {
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
+                ShouldDraw = () => DrawQRange,
+                DrawColor = () => DrawQColor,
                 IsEnabled = () => UseQ && !IsQActive,
+                Range = () => 460,
                 ShouldCast = (mode, target, spellClass, damage) => UnitManager.EnemyChampions.Any(x => x.Distance <= 460 && TargetSelector.IsAttackable(x)),
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
+                ShouldDraw = () => DrawERange,
+                DrawColor = () => DrawEColor,
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Cone,
                 MinimumHitChance = () => EHitChance,
                 Range = () => 500,
@@ -34,8 +40,11 @@ namespace SixAIO.Champions
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
+                ShouldDraw = () => DrawRRange,
+                DrawColor = () => DrawRColor,
                 IsTargetted = () => true,
                 IsEnabled = () => UseR && !IsQActive,
+                Range = () => 475,
                 TargetSelect = (mode) => UnitManager.EnemyChampions.Where(x => x.Distance <= 475 && TargetSelector.IsAttackable(x)).FirstOrDefault(RCanKill)
             };
         }
@@ -66,6 +75,13 @@ namespace SixAIO.Champions
             return stackMod * (baseDamage + scaleDamage);
         }
 
+        internal override void OnCoreRender()
+        {
+            SpellQ.DrawRange();
+            SpellE.DrawRange();
+            SpellR.DrawRange();
+        }
+
         internal override void OnCoreMainInput()
         {
             if (SpellQ.ExecuteCastSpell() || SpellE.ExecuteCastSpell() || SpellR.ExecuteCastSpell())
@@ -87,6 +103,9 @@ namespace SixAIO.Champions
             ESettings.AddItem(new ModeDisplay() { Title = "E HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
 
             RSettings.AddItem(new Switch() { Title = "Use R", IsOn = true });
+
+
+            MenuTab.AddDrawOptions(SpellSlot.Q, SpellSlot.E, SpellSlot.R);
         }
     }
 }

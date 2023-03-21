@@ -11,6 +11,7 @@ using Oasys.SDK.Menu;
 using Oasys.SDK.Rendering;
 using Oasys.SDK.SpellCasting;
 using SharpDX;
+using SixAIO.Extensions;
 using SixAIO.Models;
 using System;
 using System.Linq;
@@ -30,6 +31,9 @@ namespace SixAIO.Champions
             Oasys.SDK.InputProviders.KeyboardProvider.OnKeyPress += KeyboardProvider_OnKeyPress;
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
+                ShouldDraw = () => DrawQRange,
+                DrawColor = () => DrawQColor,
+                Range = () => 380,
                 IsEnabled = () => UseQ && _lastRCastTime + 2 <= EngineManager.GameTime,
                 ShouldCast = (mode, target, spellClass, damage) =>
                 {
@@ -44,6 +48,8 @@ namespace SixAIO.Champions
             };
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
             {
+                ShouldDraw = () => DrawWRange,
+                DrawColor = () => DrawWColor,
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Circle,
                 MinimumHitChance = () => WHitChance,
                 Range = () => 500,
@@ -66,6 +72,8 @@ namespace SixAIO.Champions
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
+                ShouldDraw = () => DrawERange,
+                DrawColor = () => DrawEColor,
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
                 MinimumHitChance = () => EHitChance,
                 Speed = () => 1400,
@@ -84,7 +92,10 @@ namespace SixAIO.Champions
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
+                ShouldDraw = () => DrawRRange,
+                DrawColor = () => DrawRColor,
                 IsEnabled = () => UseR,
+                Range = () => REnemiesCloserThan,
                 ShouldCast = (mode, target, spellClass, damage) =>
                         RIfMoreThanEnemiesNear < UnitManager.EnemyChampions.Count(x =>
                                     TargetSelector.IsAttackable(x) &&
@@ -114,6 +125,20 @@ namespace SixAIO.Champions
             }
         }
 
+        internal override void OnCoreRender()
+        {
+            SpellQ.DrawRange();
+            SpellW.DrawRange();
+            SpellR.DrawRange();
+
+            if (!Orbwalker.AllowAttacking)
+            {
+                var pos = UnitManager.MyChampion.W2S;
+                pos.Y -= 20;
+                RenderFactory.DrawText("AA Disabled", 18, pos, Color.White);
+            }
+        }
+
         internal override void OnCoreMainInput()
         {
             SpellQ.ExecuteCastSpell();
@@ -135,16 +160,6 @@ namespace SixAIO.Champions
             if (UseQLaneclear && SpellQ.ExecuteCastSpell(Orbwalker.OrbWalkingModeType.LaneClear))
             {
                 return;
-            }
-        }
-
-        internal override void OnCoreRender()
-        {
-            if (!Orbwalker.AllowAttacking)
-            {
-                var pos = UnitManager.MyChampion.W2S;
-                pos.Y -= 20;
-                RenderFactory.DrawText("AA Disabled", 18, pos, Color.White);
             }
         }
 
@@ -187,6 +202,9 @@ namespace SixAIO.Champions
             RSettings.AddItem(new Switch() { Title = "Use R", IsOn = true });
             RSettings.AddItem(new Counter() { Title = "R If More Than Enemies Near", MinValue = 0, MaxValue = 5, Value = 1, ValueFrequency = 1 });
             RSettings.AddItem(new Counter() { Title = "R Enemies Closer Than", MinValue = 100, MaxValue = 20_000, Value = 1500, ValueFrequency = 100 });
+
+
+            MenuTab.AddDrawOptions(SpellSlot.Q, SpellSlot.W, SpellSlot.R);
         }
     }
 }

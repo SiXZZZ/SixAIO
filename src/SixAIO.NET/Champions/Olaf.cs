@@ -8,6 +8,7 @@ using Oasys.SDK;
 using Oasys.SDK.Menu;
 using Oasys.SDK.Rendering;
 using Oasys.SDK.SpellCasting;
+using SixAIO.Extensions;
 using SixAIO.Models;
 using System;
 using System.Collections.Generic;
@@ -29,6 +30,8 @@ namespace SixAIO.Champions
         {
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
+                ShouldDraw = () => DrawQRange,
+                DrawColor = () => DrawQColor,
                 CastPosition = (castPos) => SpellQ.From().ToW2S().Extend(castPos, SpellQ.From().ToW2S().Distance(castPos) + QExtraRange),
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
                 MinimumHitChance = () => QHitChance,
@@ -49,6 +52,33 @@ namespace SixAIO.Champions
                 IsEnabled = () => UseE,
                 TargetSelect = (mode) => Orbwalker.TargetHero
             };
+        }
+
+        internal override void OnCoreRender()
+        {
+            SpellQ.DrawRange();
+            
+            try
+            {
+                if (DrawAxes)
+                {
+                    foreach (var item in Axes())
+                    {
+                        try
+                        {
+                            var color = Oasys.Common.Tools.ColorConverter.GetColor(DrawAxesColor, 255);
+                            RenderFactory.DrawNativeCircle(item.Position, 120, color, 2);
+                            //RenderFactory.DrawText(item.Name, 18, item.W2S, Color.White);
+                        }
+                        catch (Exception)
+                        {
+                        }
+                    }
+                }
+            }
+            catch (Exception)
+            {
+            }
         }
 
         internal override void OnCoreMainInput()
@@ -80,31 +110,6 @@ namespace SixAIO.Champions
                 {
                     _axes.Remove(axe);
                 }
-            }
-        }
-
-        internal override void OnCoreRender()
-        {
-            try
-            {
-                if (DrawAxes)
-                {
-                    foreach (var item in Axes())
-                    {
-                        try
-                        {
-                            var color = Oasys.Common.Tools.ColorConverter.GetColor(DrawAxesColor, 255);
-                            RenderFactory.DrawNativeCircle(item.Position, 120, color, 2);
-                            //RenderFactory.DrawText(item.Name, 18, item.W2S, Color.White);
-                        }
-                        catch (Exception)
-                        {
-                        }
-                    }
-                }
-            }
-            catch (Exception)
-            {
             }
         }
 
@@ -149,6 +154,9 @@ namespace SixAIO.Champions
             WSettings.AddItem(new Counter() { Title = "W Below HP Percent", MinValue = 0, MaxValue = 100, Value = 30, ValueFrequency = 5 });
 
             ESettings.AddItem(new Switch() { Title = "Use E", IsOn = true });
+
+
+            MenuTab.AddDrawOptions(SpellSlot.Q);
         }
     }
 }

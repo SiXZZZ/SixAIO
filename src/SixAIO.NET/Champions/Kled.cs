@@ -7,6 +7,7 @@ using System;
 using System.Linq;
 using Oasys.Common.Menu;
 using Oasys.SDK;
+using SixAIO.Extensions;
 
 namespace SixAIO.Champions
 {
@@ -16,6 +17,8 @@ namespace SixAIO.Champions
         {
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
+                ShouldDraw = () => DrawQRange,
+                DrawColor = () => DrawQColor,
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
                 MinimumHitChance = () => QHitChance,
                 Range = () => 800,
@@ -27,6 +30,8 @@ namespace SixAIO.Champions
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
+                ShouldDraw = () => DrawERange,
+                DrawColor = () => DrawEColor,
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
                 MinimumHitChance = () => EHitChance,
                 Delay = () => 0f,
@@ -37,6 +42,12 @@ namespace SixAIO.Champions
                 IsSpellReady = (spellClass, minimumMana, minimumCharges) => spellClass.IsSpellReady,
                 TargetSelect = (mode) => SpellE.GetTargets(mode).FirstOrDefault()
             };
+        }
+
+        internal override void OnCoreRender()
+        {
+            SpellQ.DrawRange();
+            SpellE.DrawRange();
         }
 
         internal override void OnCoreMainInput()
@@ -58,6 +69,7 @@ namespace SixAIO.Champions
             ESettings.AddItem(new ModeDisplay() { Title = "E HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "VeryHigh" });
 
 
+            MenuTab.AddDrawOptions(SpellSlot.Q, SpellSlot.E);
         }
     }
 }

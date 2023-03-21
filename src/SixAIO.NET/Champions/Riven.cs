@@ -7,6 +7,7 @@ using Oasys.Common.Menu.ItemComponents;
 using Oasys.SDK;
 using Oasys.SDK.Menu;
 using Oasys.SDK.SpellCasting;
+using SixAIO.Extensions;
 using SixAIO.Models;
 using System;
 using System.Linq;
@@ -261,7 +262,6 @@ namespace SixAIO.Champions
 
             RSettings.AddItem(new Switch() { Title = "Use R2", IsOn = true });
             RSettings.AddItem(new ModeDisplay() { Title = "R2 HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
-
         }
     }
 }

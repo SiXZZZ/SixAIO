@@ -4,6 +4,7 @@ using Oasys.Common.Menu.ItemComponents;
 using Oasys.SDK;
 using Oasys.SDK.Menu;
 using Oasys.SDK.SpellCasting;
+using SixAIO.Extensions;
 using SixAIO.Models;
 using System;
 using System.Linq;
@@ -22,6 +23,8 @@ namespace SixAIO.Champions
         {
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
+                ShouldDraw = () => DrawQRange,
+                DrawColor = () => DrawQColor,
                 IsSpellReady = (spellClass, minMana, minCharges) => spellClass.IsSpellReady,
                 AllowCollision = (target, collisions) => !collisions.Any(),
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
@@ -36,12 +39,14 @@ namespace SixAIO.Champions
             {
                 IsSpellReady = (spellClass, minMana, minCharges) => spellClass.IsSpellReady,
                 IsEnabled = () => UseW,
+                Range = () => 350,
                 ShouldCast = (mode, target, spellClass, damage) => UnitManager.EnemyChampions.Any(x => TargetSelector.IsAttackable(x) && x.Distance <= 350 && x.IsAlive),
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
                 IsSpellReady = (spellClass, minMana, minCharges) => spellClass.IsSpellReady,
                 IsEnabled = () => UseE,
+                Range = () => 350,
                 ShouldCast = (mode, target, spellClass, damage) => UnitManager.EnemyChampions.Any(x => TargetSelector.IsAttackable(x) && x.Distance <= 350 && x.IsAlive),
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
@@ -50,6 +55,11 @@ namespace SixAIO.Champions
                 IsEnabled = () => UseR && RHealthPercent > UnitManager.MyChampion.HealthPercent,
                 ShouldCast = (mode, target, spellClass, damage) => UnitManager.EnemyChampions.Count(x => TargetSelector.IsAttackable(x) && x.Distance < REnemiesCloserThan) > RIfMoreThanEnemiesNear,
             };
+        }
+
+        internal override void OnCoreRender()
+        {
+            SpellQ.DrawRange();
         }
 
         internal override void OnCoreMainInput()
@@ -97,6 +107,9 @@ namespace SixAIO.Champions
             RSettings.AddItem(new Counter() { Title = "R Health Percent", MinValue = 0, MaxValue = 100, Value = 20, ValueFrequency = 5 });
             RSettings.AddItem(new Counter() { Title = "R If More Than Enemies Near", MinValue = 0, MaxValue = 5, Value = 1, ValueFrequency = 1 });
             RSettings.AddItem(new Counter() { Title = "R Enemies Closer Than", MinValue = 50, MaxValue = 1500, Value = 650, ValueFrequency = 50 });
+
+
+            MenuTab.AddDrawOptions(SpellSlot.Q);
         }
     }
 }

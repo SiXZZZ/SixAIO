@@ -6,6 +6,7 @@ using Oasys.Common.Menu.ItemComponents;
 using Oasys.SDK;
 using Oasys.SDK.Menu;
 using Oasys.SDK.SpellCasting;
+using SixAIO.Extensions;
 using SixAIO.Models;
 using System;
 using System.Collections.Generic;
@@ -27,6 +28,8 @@ namespace SixAIO.Champions
         {
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
+                ShouldDraw = () => DrawQRange,
+                DrawColor = () => DrawQColor,
                 IsTargetted = () => true,
                 Range = () => 375,
                 IsEnabled = () => UseQ,
@@ -34,6 +37,8 @@ namespace SixAIO.Champions
             };
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
             {
+                ShouldDraw = () => DrawWRange,
+                DrawColor = () => DrawWColor,
                 AllowCollision = (target, collisions) => !collisions.Any(),
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
                 MinimumHitChance = () => WHitChance,
@@ -45,6 +50,8 @@ namespace SixAIO.Champions
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
+                ShouldDraw = () => DrawERange,
+                DrawColor = () => DrawEColor,
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Circle,
                 MinimumHitChance = () => EHitChance,
                 Range = () => 900,
@@ -110,6 +117,13 @@ namespace SixAIO.Champions
             return Isolations().Any(x => x.DistanceTo(target.Position) <= 50);
         }
 
+        internal override void OnCoreRender()
+        {
+            SpellQ.DrawRange();
+            SpellW.DrawRange();
+            SpellE.DrawRange();
+        }
+
         internal override void OnCoreMainInput()
         {
             SpellW.ExecuteCastSpell();
@@ -173,6 +187,8 @@ namespace SixAIO.Champions
             ESettings.AddItem(new Switch() { Title = "Only E If Can Kill", IsOn = true });
             ESettings.AddItem(new Counter() { Title = "E Minimum Jump Range", MinValue = 0, MaxValue = 900, Value = 500, ValueFrequency = 25 });
 
+
+            MenuTab.AddDrawOptions(SpellSlot.Q, SpellSlot.W, SpellSlot.E);
         }
     }
 }

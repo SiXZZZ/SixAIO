@@ -9,6 +9,7 @@ using Oasys.SDK.Menu;
 using Oasys.SDK.Rendering;
 using Oasys.SDK.SpellCasting;
 using SharpDX;
+using SixAIO.Extensions;
 using SixAIO.Models;
 using System;
 using System.Collections.Generic;
@@ -64,6 +65,8 @@ namespace SixAIO.Champions
             Oasys.SDK.InputProviders.KeyboardProvider.OnKeyPress += KeyboardProvider_OnKeyPress;
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
+                ShouldDraw = () => DrawQRange,
+                DrawColor = () => DrawQColor,
                 Delay = () => 0f,
                 IsEnabled = () => UseQ,
                 ShouldCast = (mode, target, spellClass, damage) =>
@@ -73,6 +76,8 @@ namespace SixAIO.Champions
             };
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
             {
+                ShouldDraw = () => DrawWRange,
+                DrawColor = () => DrawWColor,
                 Delay = () => 0f,
                 IsEnabled = () => UseW,
                 ShouldCast = (mode, target, spellClass, damage) =>
@@ -82,6 +87,8 @@ namespace SixAIO.Champions
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
+                ShouldDraw = () => DrawERange,
+                DrawColor = () => DrawEColor,
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
                 MinimumHitChance = () => EHitChance,
                 Range = () => EMaximumRange,
@@ -92,11 +99,13 @@ namespace SixAIO.Champions
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
+                ShouldDraw = () => DrawRRange,
+                DrawColor = () => DrawRColor,
                 AllowCastOnMap = () => AllowRCastOnMinimap,
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
                 MinimumHitChance = () => RHitChance,
                 Delay = () => 0.5f,
-                Range = () => 30000,
+                Range = () => RMaximumRange,
                 Radius = () => 320,
                 Speed = () => 2000,
                 IsEnabled = () => UseR,
@@ -121,6 +130,47 @@ namespace SixAIO.Champions
             if (keyBeingPressed == SemiAutoRKey && pressState == Oasys.Common.Tools.Devices.Keyboard.KeyPressState.Down)
             {
                 SpellRSemiAuto.ExecuteCastSpell();
+            }
+        }
+
+        internal override void OnCoreRender()
+        {
+            SpellE.DrawRange();
+            SpellR.DrawRange();
+
+            try
+            {
+                if (DrawQCatchRange && !Oasys.Common.Tools.Devices.Mouse.InUse)
+                {
+                    switch (QCatchMode)
+                    {
+                        case CatchMode.Mouse:
+                            RenderFactory.DrawNativeCircle(GameEngine.WorldMousePosition, QCatchRange, Color.White, 2);
+                            break;
+                        case CatchMode.Self:
+                            RenderFactory.DrawNativeCircle(UnitManager.MyChampion.Position, QCatchRange, Color.White, 2);
+                            break;
+                    }
+                }
+
+                if (DrawAxes)
+                {
+                    foreach (var item in Axes())
+                    {
+                        try
+                        {
+                            var color = Oasys.Common.Tools.ColorConverter.GetColor(DrawAxesColor, 255);
+                            RenderFactory.DrawNativeCircle(item.Position, 120, color, 2);
+                            //RenderFactory.DrawText(item.Name, 18, item.W2S, Color.White);
+                        }
+                        catch (Exception)
+                        {
+                        }
+                    }
+                }
+            }
+            catch (Exception)
+            {
             }
         }
 
@@ -208,44 +258,6 @@ namespace SixAIO.Champions
                 !Oasys.SDK.InputProviders.KeyboardProvider.IsKeyPressed(Oasys.Common.Settings.Orbwalker.GetLasthitKey()))
             {
                 Orbwalker.ForceMovePosition = Vector2.Zero;
-            }
-        }
-
-        internal override void OnCoreRender()
-        {
-            try
-            {
-                if (DrawQCatchRange && !Oasys.Common.Tools.Devices.Mouse.InUse)
-                {
-                    switch (QCatchMode)
-                    {
-                        case CatchMode.Mouse:
-                            RenderFactory.DrawNativeCircle(GameEngine.WorldMousePosition, QCatchRange, Color.White, 2);
-                            break;
-                        case CatchMode.Self:
-                            RenderFactory.DrawNativeCircle(UnitManager.MyChampion.Position, QCatchRange, Color.White, 2);
-                            break;
-                    }
-                }
-
-                if (DrawAxes)
-                {
-                    foreach (var item in Axes())
-                    {
-                        try
-                        {
-                            var color = Oasys.Common.Tools.ColorConverter.GetColor(DrawAxesColor, 255);
-                            RenderFactory.DrawNativeCircle(item.Position, 120, color, 2);
-                            //RenderFactory.DrawText(item.Name, 18, item.W2S, Color.White);
-                        }
-                        catch (Exception)
-                        {
-                        }
-                    }
-                }
-            }
-            catch (Exception)
-            {
             }
         }
 
@@ -358,6 +370,9 @@ namespace SixAIO.Champions
             RSettings.AddItem(new Counter() { Title = "R minimum range", MinValue = 0, MaxValue = 30_000, Value = 0, ValueFrequency = 50 });
             RSettings.AddItem(new Counter() { Title = "R maximum range", MinValue = 0, MaxValue = 30_000, Value = 30_000, ValueFrequency = 50 });
             RSettings.AddItem(new Counter() { Title = "R Target Max HP Percent", MinValue = 10, MaxValue = 100, Value = 50, ValueFrequency = 5 });
+
+
+            MenuTab.AddDrawOptions(SpellSlot.E, SpellSlot.R);
         }
     }
 }

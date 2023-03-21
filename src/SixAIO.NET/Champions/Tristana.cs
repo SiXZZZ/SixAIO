@@ -10,6 +10,7 @@ using Oasys.SDK;
 using Oasys.SDK.Menu;
 using Oasys.SDK.SpellCasting;
 using SixAIO.Enums;
+using SixAIO.Extensions;
 using SixAIO.Helpers;
 using SixAIO.Models;
 using System;
@@ -123,7 +124,7 @@ namespace SixAIO.Champions
 
             return null;
         }
-
+        
         internal override void OnCoreMainInput()
         {
             Orbwalker.SelectedTarget = GetETarget(UnitManager.EnemyChampions);
@@ -276,7 +277,6 @@ namespace SixAIO.Champions
             RSettings.AddItem(new Counter() { Title = "Only Push Away Below HP Percent", MinValue = 0, MaxValue = 100, Value = 30, ValueFrequency = 5 });
             RSettings.AddItem(new Counter() { Title = "Push Away Range", MinValue = 50, MaxValue = 500, Value = 150, ValueFrequency = 25 });
             RSettings.AddItem(new ModeDisplay() { Title = "Push Away Mode", ModeNames = PushAwayHelper.ConstructPushAwayModeTable(), SelectedModeName = "Melee" });
-
         }
     }
 }

@@ -7,6 +7,7 @@ using Oasys.Common.Menu.ItemComponents;
 using Oasys.SDK;
 using Oasys.SDK.Menu;
 using Oasys.SDK.SpellCasting;
+using SixAIO.Extensions;
 using SixAIO.Models;
 using System;
 using System.Collections.Generic;
@@ -39,6 +40,8 @@ namespace SixAIO.Champions
         {
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
+                ShouldDraw = () => DrawQRange,
+                DrawColor = () => DrawQColor,
                 ShouldCast = QShouldCast,
                 AllowCollision = QAllowCollision,
                 PredictionMode = QPredictionMode,
@@ -213,6 +216,11 @@ namespace SixAIO.Champions
             return enemy.BuffManager.HasActiveBuff("ApheliosGravitumDebuff");
         }
 
+        internal override void OnCoreRender()
+        {
+            SpellQ.DrawRange();
+        }
+
         internal override void OnCoreMainInput()
         {
             Orbwalker.SelectedTarget = null;
@@ -339,6 +347,9 @@ namespace SixAIO.Champions
 
             GravitumSettings.AddItem(new Switch() { Title = "Use Gravitum", IsOn = true });
             GravitumSettings.AddItem(new Counter() { Title = "Gravitum can root", MinValue = 0, MaxValue = 5, Value = 2, ValueFrequency = 1 });
+
+
+            MenuTab.AddDrawOptions(SpellSlot.Q);
         }
     }
 }

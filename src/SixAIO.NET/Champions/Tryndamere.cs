@@ -5,6 +5,7 @@ using Oasys.Common.Menu.ItemComponents;
 using Oasys.SDK;
 using Oasys.SDK.Menu;
 using Oasys.SDK.SpellCasting;
+using SixAIO.Extensions;
 using SixAIO.Models;
 using System;
 using System.Linq;
@@ -24,6 +25,8 @@ namespace SixAIO.Champions
             };
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
             {
+                ShouldDraw = () => DrawWRange,
+                DrawColor = () => DrawWColor,
                 IsSpellReady = (spellClass, minMana, minCharges) => spellClass.IsSpellReady,
                 IsTargetted = () => true,
                 Range = () => 850,
@@ -32,6 +35,8 @@ namespace SixAIO.Champions
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
+                ShouldDraw = () => DrawERange,
+                DrawColor = () => DrawEColor,
                 IsSpellReady = (spellClass, minMana, minCharges) => spellClass.IsSpellReady,
                 AllowCollision = (target, collisions) => true,
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
@@ -50,6 +55,12 @@ namespace SixAIO.Champions
                 IsEnabled = () => UseR,
                 ShouldCast = (mode, target, spellClass, damage) => UnitManager.MyChampion.IsAlive && UnitManager.MyChampion.HealthPercent < RHealthPercent
             };
+        }
+
+        internal override void OnCoreRender()
+        {
+            SpellW.DrawRange();
+            SpellE.DrawRange();
         }
 
         internal override void OnCoreMainInput()
@@ -91,6 +102,9 @@ namespace SixAIO.Champions
 
             RSettings.AddItem(new Switch() { Title = "Use R", IsOn = true });
             RSettings.AddItem(new Counter() { Title = "R Health Percent", MinValue = 0, MaxValue = 100, Value = 10, ValueFrequency = 5 });
+
+
+            MenuTab.AddDrawOptions(SpellSlot.W, SpellSlot.E);
 
         }
     }

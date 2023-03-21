@@ -4,6 +4,7 @@ using Oasys.Common.Menu.ItemComponents;
 using Oasys.SDK;
 using Oasys.SDK.Menu;
 using Oasys.SDK.SpellCasting;
+using SixAIO.Extensions;
 using SixAIO.Models;
 using System;
 using System.Linq;
@@ -16,6 +17,8 @@ namespace SixAIO.Champions
         {
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
+                ShouldDraw = () => DrawQRange,
+                DrawColor = () => DrawQColor,
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Circle,
                 MinimumHitChance = () => QHitChance,
                 Range = () => 800,
@@ -26,14 +29,19 @@ namespace SixAIO.Champions
             };
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
             {
+                ShouldDraw = () => DrawWRange,
+                DrawColor = () => DrawWColor,
                 IsTargetted = () => true,
                 IsEnabled = () => UseW,
+                Range = () => 550,
                 TargetSelect = (mode) => UnitManager.AllyChampions.Where(x => !x.IsTargetDummy && !x.IsMe)
                                         .OrderByDescending(x => WSettings.GetItem<Counter>("Heal Ally Prio- " + x?.ModelName)?.Value)
                                         .FirstOrDefault(x => x.Distance <= 550 && TargetSelector.IsAttackable(x, false) && x.HealthPercent <= WHealthPercent)
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
+                ShouldDraw = () => DrawERange,
+                DrawColor = () => DrawEColor,
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Circle,
                 MinimumHitChance = () => EHitChance,
                 Range = () => 930,
@@ -50,6 +58,13 @@ namespace SixAIO.Champions
                             .Where(x => !x.IsTargetDummy && RSettings?.GetItem<Switch>("Heal - " + x.ModelName)?.IsOn == true)
                             .Count(x => TargetSelector.IsAttackable(x, false) && x.HealthPercent <= RHealthPercent) >= RAlliesToHeal
             };
+        }
+
+        internal override void OnCoreRender()
+        {
+            SpellQ.DrawRange();
+            SpellW.DrawRange();
+            SpellE.DrawRange();
         }
 
         internal override void OnCoreMainInput()
@@ -108,6 +123,9 @@ namespace SixAIO.Champions
             {
                 RSettings.AddItem(new Switch() { Title = "Heal - " + allyChampion.ModelName, IsOn = true });
             }
+
+
+            MenuTab.AddDrawOptions(SpellSlot.Q, SpellSlot.W, SpellSlot.E);
         }
     }
 }

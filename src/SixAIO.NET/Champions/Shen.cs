@@ -14,6 +14,7 @@ using System.IO;
 using System.Collections.Generic;
 using Oasys.SDK.InputProviders;
 using SixAIO.Helpers;
+using SixAIO.Extensions;
 
 namespace SixAIO.Champions
 {
@@ -41,6 +42,8 @@ namespace SixAIO.Champions
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
+                ShouldDraw = () => DrawERange,
+                DrawColor = () => DrawEColor,
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
                 MinimumHitChance = () => EHitChance,
                 MinimumMana = () => 150,
@@ -83,6 +86,11 @@ namespace SixAIO.Champions
             }
         }
 
+        internal override void OnCoreRender()
+        {
+            SpellE.DrawRange();
+        }
+
         internal override void OnCoreMainInput()
         {
             SpellE.ExecuteCastSpell();
@@ -110,6 +118,9 @@ namespace SixAIO.Champions
             LoadTargetPrioValues();
 
             LoadAllyHealthPercents();
+
+
+            MenuTab.AddDrawOptions(SpellSlot.E);
         }
 
         internal void LoadTargetPrioValues()
