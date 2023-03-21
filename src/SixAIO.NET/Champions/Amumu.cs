@@ -1,9 +1,10 @@
-﻿using Oasys.Common.Enums.GameEnums;
+using Oasys.Common.Enums.GameEnums;
 using Oasys.Common.Menu;
 using Oasys.Common.Menu.ItemComponents;
 using Oasys.SDK;
 using Oasys.SDK.Menu;
 using Oasys.SDK.SpellCasting;
+using SixAIO.Extensions;
 using SixAIO.Models;
 using System;
 using System.Linq;
@@ -22,6 +23,8 @@ namespace SixAIO.Champions
         {
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
+                ShouldDraw = () => DrawQRange,
+                DrawColor = () => DrawQColor,
                 AllowCollision = (target, collisions) => !collisions.Any(),
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
                 MinimumHitChance = () => QHitChance,
@@ -35,8 +38,11 @@ namespace SixAIO.Champions
             };
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
             {
+                ShouldDraw = () => DrawWRange,
+                DrawColor = () => DrawWColor,
                 IsEnabled = () => UseW,
                 MinimumMana = () => WMinMana,
+                Range = () => 350,
                 ShouldCast = (mode, target, spellClass, damage) =>
                 {
                     var enemyIsNear = UnitManager.EnemyChampions.Any(x => TargetSelector.IsAttackable(x) && x.Distance <= 350 && x.IsAlive);
@@ -52,8 +58,11 @@ namespace SixAIO.Champions
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
+                ShouldDraw = () => DrawRRange,
+                DrawColor = () => DrawRColor,
                 IsEnabled = () => UseR,
                 MinimumMana = () => RMinMana,
+                Range = () => 550,
                 ShouldCast = (mode, target, spellClass, damage) => UnitManager.EnemyChampions.Count(x => TargetSelector.IsAttackable(x) && x.Distance < REnemiesCloserThan) > RIfMoreThanEnemiesNear,
             };
         }
@@ -64,6 +73,13 @@ namespace SixAIO.Champions
             {
                 return;
             }
+        }
+
+        internal override void OnCoreRender()
+        {
+            SpellQ.DrawRange();
+            SpellW.DrawRange();
+            SpellR.DrawRange();
         }
 
         private int RIfMoreThanEnemiesNear
@@ -99,6 +115,8 @@ namespace SixAIO.Champions
             RSettings.AddItem(new Counter() { Title = "R Min Mana", MinValue = 0, MaxValue = 500, Value = 150, ValueFrequency = 10 });
             RSettings.AddItem(new Counter() { Title = "R If More Than Enemies Near", MinValue = 0, MaxValue = 5, Value = 2, ValueFrequency = 1 });
             RSettings.AddItem(new Counter() { Title = "R Enemies Closer Than", MinValue = 50, MaxValue = 600, Value = 350, ValueFrequency = 50 });
+
+            MenuTab.AddDrawOptions(SpellSlot.Q, SpellSlot.W, SpellSlot.R);
         }
     }
 }
