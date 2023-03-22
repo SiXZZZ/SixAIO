@@ -91,6 +91,7 @@ namespace SixAIO.Champions
                 IsSpellReady = (spellClass, minMana, minCharges) => spellClass.IsSpellReady,
                 IsTargetted = () => true,
                 IsEnabled = () => UseE,
+                Range = () => 450,
                 ShouldCast = (mode, target, spellClass, damage) => target != null && !UnitManager.EnemyChampions.Any(x => TargetSelector.IsInRange(x) && TargetSelector.IsAttackable(x)),
                 TargetSelect = (mode) =>
                 {
@@ -230,7 +231,6 @@ namespace SixAIO.Champions
         internal override void OnCoreRender()
         {
             SpellQ.DrawRange();
-            SpellW.DrawRange();
             SpellE.DrawRange();
             SpellR.DrawRange();
         }
@@ -331,7 +331,7 @@ namespace SixAIO.Champions
             RSettings.AddItem(new Counter() { Title = "R Ult enemies", MinValue = 1, MaxValue = 5, Value = 1, ValueFrequency = 1 });
 
 
-            MenuTab.AddDrawOptions(SpellSlot.Q, SpellSlot.W, SpellSlot.E, SpellSlot.R);
+            MenuTab.AddDrawOptions(SpellSlot.Q, SpellSlot.E, SpellSlot.R);
 
         }
     }
