@@ -104,7 +104,7 @@ namespace SixAIO.Champions
                 IsEnabled = () => UseE && (OnlyEWithQ ? SpellQ.SpellClass.IsSpellReady : true),
                 TargetSelect = (mode) => SpellE.GetTargets(mode, x => x.Distance <= EMaximumRange).FirstOrDefault()
             };
-SpellR = new Spell(CastSlot.R, SpellSlot.R)
+            SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
                 ShouldDraw = () => DrawRRange,
                 DrawColor = () => DrawRColor,

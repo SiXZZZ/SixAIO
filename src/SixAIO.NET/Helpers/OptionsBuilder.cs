@@ -28,7 +28,7 @@ namespace SixAIO.Helpers
 
             foreach (var slot in spellSlots.Distinct())
             {
-                drawSettings.AddItem(new Switch() { Title = $"Draw {slot} Range", IsOn = true });
+                drawSettings.AddItem(new Switch() { Title = $"Draw {slot} Range", IsOn = false });
                 drawSettings.AddItem(new ModeDisplay() { Title = $"Draw {slot} Color", ModeNames = ColorConverter.GetColors(), SelectedModeName = GetColorName(slot) });
             }
         }

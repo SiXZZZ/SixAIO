@@ -68,6 +68,7 @@ namespace SixAIO.Champions
                 DrawColor = () => DrawEColor,
                 IsTargetted = () => true,
                 IsEnabled = () => UseE,
+                Range = () => 800,
                 TargetSelect = (mode) => UnitManager.AllyChampions
                                             .Where(ally => ESettings.GetItem<Counter>("E Buff Ally Prio- " + ally?.ModelName)?.Value > 0)
                                             .OrderByDescending(ally => ESettings.GetItem<Counter>("E Buff Ally Prio- " + ally?.ModelName)?.Value)

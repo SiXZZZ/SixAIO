@@ -54,8 +54,6 @@ namespace SixAIO.Champions
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
-                ShouldDraw = () => DrawRRange,
-                DrawColor = () => DrawRColor,
                 IsEnabled = () => UseR,
                 ShouldCast = (mode, target, spellClass, damage) => SpellQ.GetTargets(mode).Any()
             };

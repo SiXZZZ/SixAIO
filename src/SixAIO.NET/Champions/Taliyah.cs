@@ -83,7 +83,6 @@ namespace SixAIO.Champions
             SpellQ.DrawRange();
             SpellW.DrawRange();
             SpellE.DrawRange();
-            SpellR.DrawRange();
         }
 
         internal override void OnCoreMainInput()
@@ -194,7 +193,7 @@ namespace SixAIO.Champions
             ESettings.AddItem(new ModeDisplay() { Title = "E HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
 
 
-            MenuTab.AddDrawOptions(SpellSlot.Q, SpellSlot.W, SpellSlot.E, SpellSlot.R);
+            MenuTab.AddDrawOptions(SpellSlot.Q, SpellSlot.W, SpellSlot.E);
         }
     }
 }

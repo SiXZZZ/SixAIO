@@ -44,12 +44,13 @@ namespace SixAIO.Champions
                 IsEnabled = () => UseE,
                 TargetSelect = (mode) => SpellE.GetTargets(mode).FirstOrDefault(),
             };
-SpellR = new Spell(CastSlot.R, SpellSlot.R)
+            SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
                 ShouldDraw = () => DrawRRange,
                 DrawColor = () => DrawRColor,
                 IsEnabled = () => UseR,
                 MinimumMana = () => RMinMana,
+                Range = () => REnemiesCloserThan,
                 ShouldCast = (mode, target, spellClass, damage) => UnitManager.EnemyChampions.Count(x => TargetSelector.IsAttackable(x) && x.Distance < REnemiesCloserThan) > RIfMoreThanEnemiesNear,
             };
         }
@@ -57,7 +58,6 @@ SpellR = new Spell(CastSlot.R, SpellSlot.R)
         internal override void OnCoreRender()
         {
             SpellQ.DrawRange();
-            SpellW.DrawRange();
             SpellE.DrawRange();
             SpellR.DrawRange();
         }
@@ -101,7 +101,7 @@ SpellR = new Spell(CastSlot.R, SpellSlot.R)
             RSettings.AddItem(new Counter() { Title = "R Enemies Closer Than", MinValue = 50, MaxValue = 600, Value = 600, ValueFrequency = 50 });
 
 
-            MenuTab.AddDrawOptions(SpellSlot.Q, SpellSlot.W, SpellSlot.E, SpellSlot.R);
+            MenuTab.AddDrawOptions(SpellSlot.Q, SpellSlot.E, SpellSlot.R);
         }
     }
 }

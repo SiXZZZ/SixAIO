@@ -27,8 +27,6 @@ namespace SixAIO.Champions
             SDKSpell.OnSpellCast += Spell_OnSpellCast;
             PokeSpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
-                ShouldDraw = () => DrawQRange,
-                DrawColor = () => DrawQColor,
                 IsSpellReady = (spellClass, minMana, minCharges) => spellClass.IsSpellReady,
                 IsTargetted = () => true,
                 Range = () => 625,
@@ -37,8 +35,6 @@ namespace SixAIO.Champions
             };
             PokeSpellW = new Spell(CastSlot.W, SpellSlot.W)
             {
-                ShouldDraw = () => DrawWRange,
-                DrawColor = () => DrawWColor,
                 IsSpellReady = (spellClass, minMana, minCharges) => spellClass.IsSpellReady,
                 IsEnabled = () => UseW,
                 ShouldCast = (mode, target, spellClass, damage) => !SpellE.SpellClass.IsSpellReady && UnitManager.EnemyChampions.Any(x => TargetSelector.IsAttackable(x) && x.Distance < REnemiesCloserThan),

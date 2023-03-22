@@ -21,6 +21,7 @@ namespace SixAIO.Champions
                 DrawColor = () => DrawQColor,
                 Delay = () => 0f,
                 IsEnabled = () => UseQ,
+                Range = () => 800,
                 ShouldCast = (mode, target, spellClass, damage) => UnitManager.EnemyChampions.Any(x => x.Distance <= 800 && x.IsAlive && TargetSelector.IsAttackable(x)),
             };
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
@@ -30,6 +31,7 @@ namespace SixAIO.Champions
                 Delay = () => 0f,
                 IsEnabled = () => UseW,
                 MinimumMana = () => WMinMana,
+                Range = () => 800,
                 ShouldCast = (mode, target, spellClass, damage) => UnitManager.AllyChampions.Any(x => x.Distance <= 800 && x.IsAlive && x.HealthPercent < WBuffHealthPercent),
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
@@ -38,6 +40,7 @@ namespace SixAIO.Champions
                 DrawColor = () => DrawEColor,
                 Delay = () => 0f,
                 IsEnabled = () => UseE,
+                Range = () => 400,
                 ShouldCast = (mode, target, spellClass, damage) => UnitManager.AllyChampions.Any(x => x.Distance <= 400 && x.IsAlive),
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)

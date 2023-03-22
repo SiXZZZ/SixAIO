@@ -47,8 +47,6 @@ namespace SixAIO.Champions
             };
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
             {
-                ShouldDraw = () => DrawWRange,
-                DrawColor = () => DrawWColor,
                 IsEnabled = () => UseW,
                 ShouldCast = (mode, target, spellClass, damage) =>
                             Oasys.Common.Logic.TargetSelector.IsAttackable(Oasys.SDK.Orbwalker.TargetHero) &&
@@ -56,8 +54,6 @@ namespace SixAIO.Champions
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
-                ShouldDraw = () => DrawERange,
-                DrawColor = () => DrawEColor,
                 IsEnabled = () => UseE,
                 MinimumCharges = () => 1,
                 ShouldCast = (mode, target, spellClass, damage) => ShouldCastE(),
@@ -78,14 +74,6 @@ namespace SixAIO.Champions
             return Feathers.Count(feather =>
                     Oasys.SDK.Geometry.DistanceFromPointToLine(enemy.Position.To2D(), new Vector2[] { UnitManager.MyChampion.Position.To2D(), feather.Position.To2D() }) <= enemy.BoundingRadius + 40 &&
                     feather.Distance > enemy.Distance && enemy.DistanceTo(feather.Position) < feather.Distance);
-        }
-
-        internal override void OnCoreRender()
-        {
-            SpellQ.DrawRange();
-            SpellW.DrawRange();
-            SpellE.DrawRange();
-            SpellR.DrawRange();
         }
 
         internal override void OnCoreMainInput()
@@ -136,6 +124,8 @@ namespace SixAIO.Champions
 
         internal override void OnCoreRender()
         {
+            SpellQ.DrawRange();
+
             if (UnitManager.MyChampion.IsAlive && UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot.E).Charges >= 1)
             {
                 var color = Oasys.Common.Tools.ColorConverter.GetColor(DrawColor);
@@ -271,7 +261,7 @@ namespace SixAIO.Champions
             ESettings.AddItem(new Counter() { Title = "Champions Can Kill", MinValue = 1, MaxValue = 5, Value = 2, ValueFrequency = 1 });
 
 
-            MenuTab.AddDrawOptions(SpellSlot.Q, SpellSlot.W, SpellSlot.E, SpellSlot.R);
+            MenuTab.AddDrawOptions(SpellSlot.Q);
 
         }
     }

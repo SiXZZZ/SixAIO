@@ -59,7 +59,7 @@ namespace SixAIO.Champions
                 IsEnabled = () => UseW,
                 TargetSelect = (mode) => SpellW.GetTargets(mode).FirstOrDefault()
             };
-SpellR = new Spell(CastSlot.R, SpellSlot.R)
+            SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
                 ShouldDraw = () => DrawRRange,
                 DrawColor = () => DrawRColor,

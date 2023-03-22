@@ -43,8 +43,6 @@ namespace SixAIO.Champions
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
-                ShouldDraw = () => DrawERange,
-                DrawColor = () => DrawEColor,
                 Range = () => 550f,
                 Delay = () => 0f,
                 IsEnabled = () => UseE,

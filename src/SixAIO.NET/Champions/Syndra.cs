@@ -103,7 +103,8 @@ namespace SixAIO.Champions
                 IsTargetted = () => true,
                 Delay = () => 0f,
                 IsEnabled = () => UseR,
-                TargetSelect = (mode) => UnitManager.EnemyChampions.Where(x => x.Distance <= (UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot.R).Level >= 3 ? 750 : 675) &&
+                Range = () => (SpellR.SpellClass.Level >= 3 ? 750 : 675),
+                TargetSelect = (mode) => UnitManager.EnemyChampions.Where(x => x.Distance <= SpellR.Range() &&
                                             TargetSelector.IsAttackable(x) &&
                                             !TargetSelector.IsInvulnerable(x, Oasys.Common.Logic.DamageType.Magical, false))
                                             .FirstOrDefault(RCanKill)

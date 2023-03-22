@@ -143,13 +143,14 @@ namespace SixAIO.Champions
                     return null;
                 }
             };
-SpellR = new Spell(CastSlot.R, SpellSlot.R)
+            SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
                 ShouldDraw = () => DrawRRange,
                 DrawColor = () => DrawRColor,
                 IsSpellReady = (spellClass, minMana, minCharges) => spellClass.IsSpellReady,
                 IsTargetted = () => true,
                 IsEnabled = () => UseR,
+                Range = () => 1400,
                 ShouldCast = (mode, target, spellClass, damage) =>
                     RUltEnemies <= UnitManager.EnemyChampions.Count(x => x.Distance <= 1400 && TargetSelector.IsAttackable(x) && BuffChecker.IsKnockedUpOrBack(x))
             };

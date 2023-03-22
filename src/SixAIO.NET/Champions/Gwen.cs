@@ -42,8 +42,6 @@ namespace SixAIO.Champions
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
-                ShouldDraw = () => DrawERange,
-                DrawColor = () => DrawEColor,
                 IsEnabled = () => UseE,
                 ShouldCast = (mode, target, spellClass, damage) =>
                             DashModeSelected == DashMode.ToMouse &&
@@ -51,7 +49,7 @@ namespace SixAIO.Champions
                             TargetSelector.IsAttackable(Orbwalker.TargetHero) &&
                             TargetSelector.IsInRange(Orbwalker.TargetHero),
             };
-SpellR = new Spell(CastSlot.R, SpellSlot.R)
+            SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
                 ShouldDraw = () => DrawRRange,
                 DrawColor = () => DrawRColor,
@@ -102,8 +100,6 @@ SpellR = new Spell(CastSlot.R, SpellSlot.R)
         internal override void OnCoreRender()
         {
             SpellQ.DrawRange();
-            SpellW.DrawRange();
-            SpellE.DrawRange();
             SpellR.DrawRange();
         }
 
@@ -156,7 +152,7 @@ SpellR = new Spell(CastSlot.R, SpellSlot.R)
             RSettings.AddItem(new Counter() { Title = "R maximum range", MinValue = 0, MaxValue = 1350, Value = 1350, ValueFrequency = 50 });
 
 
-            MenuTab.AddDrawOptions(SpellSlot.Q, SpellSlot.W, SpellSlot.E, SpellSlot.R);
+            MenuTab.AddDrawOptions(SpellSlot.Q, SpellSlot.R);
 
         }
     }

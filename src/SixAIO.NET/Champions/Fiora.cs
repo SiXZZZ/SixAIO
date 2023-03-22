@@ -83,8 +83,6 @@ namespace SixAIO.Champions
             Orbwalker.OnOrbwalkerAfterBasicAttack += Orbwalker_OnOrbwalkerAfterBasicAttack;
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
-                ShouldDraw = () => DrawERange,
-                DrawColor = () => DrawEColor,
                 IsEnabled = () => UseE,
                 ShouldCast = (mode, target, spellClass, damage) => TargetSelector.IsAttackable(Orbwalker.TargetHero) && TargetSelector.IsInRange(Orbwalker.TargetHero),
             };
@@ -93,14 +91,6 @@ namespace SixAIO.Champions
         private void Orbwalker_OnOrbwalkerAfterBasicAttack(float gameTime, GameObjectBase target)
         {
             SpellE.ExecuteCastSpell();
-        }
-
-        internal override void OnCoreRender()
-        {
-            SpellQ.DrawRange();
-            SpellW.DrawRange();
-            SpellE.DrawRange();
-            SpellR.DrawRange();
         }
 
         internal override void OnCoreMainInput()
@@ -162,9 +152,6 @@ namespace SixAIO.Champions
             WSettings.AddItem(new Switch() { Title = "Use W", IsOn = true });
 
             ESettings.AddItem(new Switch() { Title = "Use E", IsOn = true });
-
-
-            MenuTab.AddDrawOptions(SpellSlot.Q, SpellSlot.W, SpellSlot.E, SpellSlot.R);
 
         }
     }

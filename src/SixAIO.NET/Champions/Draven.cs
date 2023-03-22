@@ -65,8 +65,6 @@ namespace SixAIO.Champions
             Oasys.SDK.InputProviders.KeyboardProvider.OnKeyPress += KeyboardProvider_OnKeyPress;
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
-                ShouldDraw = () => DrawQRange,
-                DrawColor = () => DrawQColor,
                 Delay = () => 0f,
                 IsEnabled = () => UseQ,
                 ShouldCast = (mode, target, spellClass, damage) =>
@@ -76,8 +74,6 @@ namespace SixAIO.Champions
             };
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
             {
-                ShouldDraw = () => DrawWRange,
-                DrawColor = () => DrawWColor,
                 Delay = () => 0f,
                 IsEnabled = () => UseW,
                 ShouldCast = (mode, target, spellClass, damage) =>

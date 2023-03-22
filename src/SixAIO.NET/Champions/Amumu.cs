@@ -42,6 +42,7 @@ namespace SixAIO.Champions
                 DrawColor = () => DrawWColor,
                 IsEnabled = () => UseW,
                 MinimumMana = () => WMinMana,
+                Range = () => 350,
                 ShouldCast = (mode, target, spellClass, damage) =>
                 {
                     var enemyIsNear = UnitManager.EnemyChampions.Any(x => TargetSelector.IsAttackable(x) && x.Distance <= 350 && x.IsAlive);
@@ -55,14 +56,16 @@ namespace SixAIO.Champions
                 ShouldDraw = () => DrawERange,
                 DrawColor = () => DrawEColor,
                 IsEnabled = () => UseE,
+                Range = () => 350,
                 ShouldCast = (mode, target, spellClass, damage) => UnitManager.EnemyChampions.Any(x => TargetSelector.IsAttackable(x) && x.Distance <= 350 && x.IsAlive),
             };
-SpellR = new Spell(CastSlot.R, SpellSlot.R)
+            SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
                 ShouldDraw = () => DrawRRange,
                 DrawColor = () => DrawRColor,
                 IsEnabled = () => UseR,
                 MinimumMana = () => RMinMana,
+                Range = () => REnemiesCloserThan,
                 ShouldCast = (mode, target, spellClass, damage) => UnitManager.EnemyChampions.Count(x => TargetSelector.IsAttackable(x) && x.Distance < REnemiesCloserThan) > RIfMoreThanEnemiesNear,
             };
         }

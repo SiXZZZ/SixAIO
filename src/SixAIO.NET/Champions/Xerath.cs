@@ -62,7 +62,7 @@ namespace SixAIO.Champions
                 IsEnabled = () => UseE && !UnitManager.MyChampion.BuffManager.ActiveBuffs.Any(x => x.Name == "XerathLocusOfPower2" && x.Stacks >= 1),
                 TargetSelect = (mode) => SpellE.GetTargets(mode).FirstOrDefault()
             };
-SpellR = new Spell(CastSlot.R, SpellSlot.R)
+            SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
                 ShouldDraw = () => DrawRRange,
                 DrawColor = () => DrawRColor,

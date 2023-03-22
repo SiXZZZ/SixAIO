@@ -50,8 +50,6 @@ namespace SixAIO.Champions
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
-                ShouldDraw = () => DrawERange,
-                DrawColor = () => DrawEColor,
                 IsEnabled = () => UseE,
                 ShouldCast = (mode, target, spellClass, damage) =>
                             DashModeSelected == DashMode.ToMouse &&
@@ -61,8 +59,6 @@ namespace SixAIO.Champions
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
-                ShouldDraw = () => DrawRRange,
-                DrawColor = () => DrawRColor,
                 IsEnabled = () => UseR && IsEkkoUltReady,
                 ShouldCast = (mode, target, spellClass, damage) => UnitManager.EnemyChampions.Count(x => x.IsAlive && x.IsTargetable && x.DistanceTo(_ekkoRTrailEnd.Position) < REnemiesCloserThan) > RIfMoreThanEnemiesNear,
             };

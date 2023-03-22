@@ -43,8 +43,6 @@ namespace SixAIO.Champions
         internal override void OnCoreRender()
         {
             SpellQ.DrawRange();
-            SpellW.DrawRange();
-            SpellE.DrawRange();
             SpellR.DrawRange();
         }
 

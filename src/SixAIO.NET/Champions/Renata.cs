@@ -36,6 +36,7 @@ namespace SixAIO.Champions
                 DrawColor = () => DrawWColor,
                 IsTargetted = () => true,
                 IsEnabled = () => UseW,
+                Range = () => 800,
                 TargetSelect = (mode) => UnitManager.AllyChampions.FirstOrDefault(ally => ally.IsAlive && ally.Distance <= 800 && TargetSelector.IsAttackable(ally, false) &&
                                                                     AnyEnemyIsCastingSpell(ally) &&
                                                                     ally.HealthPercent < WShieldHealthPercent)

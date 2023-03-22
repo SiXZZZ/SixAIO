@@ -56,6 +56,7 @@ namespace SixAIO.Champions
                 ShouldDraw = () => DrawRRange,
                 DrawColor = () => DrawRColor,
                 IsEnabled = () => UseR,
+                Range = () => REnemiesCloserThan,
                 ShouldCast = (mode, target, spellClass, damage) => UnitManager.EnemyChampions.Count(x => TargetSelector.IsAttackable(x) && x.Distance < REnemiesCloserThan) > RIfMoreThanEnemiesNear,
             };
         }

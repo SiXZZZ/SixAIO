@@ -77,7 +77,7 @@ namespace SixAIO.Champions
                 IsEnabled = () => UseE,
                 TargetSelect = (mode) => SpellE.GetTargets(mode, x => (EOnlyIfXGTEWStacks == 0 || WStacks(x) >= EOnlyIfXGTEWStacks)).FirstOrDefault()
             };
-SpellR = new Spell(CastSlot.R, SpellSlot.R)
+            SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
                 ShouldDraw = () => DrawRRange,
                 DrawColor = () => DrawRColor,
@@ -98,7 +98,6 @@ SpellR = new Spell(CastSlot.R, SpellSlot.R)
         internal override void OnCoreRender()
         {
             SpellQ.DrawRange();
-            SpellW.DrawRange();
             SpellE.DrawRange();
             SpellR.DrawRange();
         }
@@ -180,7 +179,7 @@ SpellR = new Spell(CastSlot.R, SpellSlot.R)
             RSettings.AddItem(new Counter() { Title = "Only R if x >= W stacks", MinValue = 0, MaxValue = 3, Value = 0, ValueFrequency = 1 });
 
 
-            MenuTab.AddDrawOptions(SpellSlot.Q, SpellSlot.W, SpellSlot.E, SpellSlot.R);
+            MenuTab.AddDrawOptions(SpellSlot.Q, SpellSlot.E, SpellSlot.R);
         }
     }
 }

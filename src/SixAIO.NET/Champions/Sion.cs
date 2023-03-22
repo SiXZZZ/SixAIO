@@ -78,8 +78,6 @@ namespace SixAIO.Champions
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
-                ShouldDraw = () => DrawRRange,
-                DrawColor = () => DrawRColor,
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
                 MinimumHitChance = () => RHitChance,
                 Range = () => 1500,
@@ -94,7 +92,6 @@ namespace SixAIO.Champions
         {
             SpellQ.DrawRange();
             SpellE.DrawRange();
-            SpellR.DrawRange();
         }
 
         internal override void OnCoreMainInput()
@@ -126,7 +123,7 @@ namespace SixAIO.Champions
             RSettings.AddItem(new ModeDisplay() { Title = "R HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
 
 
-            MenuTab.AddDrawOptions(SpellSlot.Q, SpellSlot.E, SpellSlot.R);
+            MenuTab.AddDrawOptions(SpellSlot.Q, SpellSlot.E);
 
         }
     }

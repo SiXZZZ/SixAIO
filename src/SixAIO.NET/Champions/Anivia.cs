@@ -67,7 +67,7 @@ namespace SixAIO.Champions
                     return SpellE.GetTargets(mode).FirstOrDefault();
                 }
             };
-SpellR = new Spell(CastSlot.R, SpellSlot.R)
+            SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
                 ShouldDraw = () => DrawRRange,
                 DrawColor = () => DrawRColor,
@@ -101,7 +101,6 @@ SpellR = new Spell(CastSlot.R, SpellSlot.R)
         internal override void OnCoreRender()
         {
             SpellQ.DrawRange();
-            SpellW.DrawRange();
             SpellE.DrawRange();
             SpellR.DrawRange();
         }

@@ -92,19 +92,18 @@ namespace SixAIO.Champions
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
-                ShouldDraw = () => DrawERange,
-                DrawColor = () => DrawEColor,
                 Delay = () => 0f,
                 IsEnabled = () => UseE,
                 ShouldCast = (mode, target, spellClass, damage) =>
                             DashModeSelected == DashMode.ToMouse &&
                             UnitManager.EnemyChampions.Any(x => x.Distance <= x.TrueAttackRange + 500 && x.IsAlive && TargetSelector.IsAttackable(x)),
             };
-SpellR = new Spell(CastSlot.R, SpellSlot.R)
+            SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
                 ShouldDraw = () => DrawRRange,
                 DrawColor = () => DrawRColor,
                 IsEnabled = () => UseR,
+                Range = () => REnemiesCloserThan,
                 ShouldCast = (mode, target, spellClass, damage) => UnitManager.EnemyChampions.Count(x => TargetSelector.IsAttackable(x) && x.Distance < REnemiesCloserThan) > RIfMoreThanEnemiesNear,
             };
         }
@@ -132,14 +131,6 @@ SpellR = new Spell(CastSlot.R, SpellSlot.R)
         {
             var buff = UnitManager.MyChampion.BuffManager.GetBuffByName("zeriqpassiveready", false, true);
             return buff != null && buff.IsActive && buff.Stacks >= 1;
-        }
-
-        internal override void OnCoreRender()
-        {
-            SpellQ.DrawRange();
-            SpellW.DrawRange();
-            SpellE.DrawRange();
-            SpellR.DrawRange();
         }
 
         internal override void OnCoreMainInput()
@@ -189,11 +180,9 @@ SpellR = new Spell(CastSlot.R, SpellSlot.R)
 
         internal override void OnCoreRender()
         {
-            if (ShowQRange && UnitManager.MyChampion.IsAlive)
-            {
-                var color = Oasys.Common.Tools.ColorConverter.GetColor(QRangeColor);
-                Oasys.SDK.Rendering.RenderFactory.DrawNativeCircle(UnitManager.MyChampion.Position, SpellQ.Range(), color, 2);
-            }
+            SpellQ.DrawRange();
+            SpellW.DrawRange();
+            SpellR.DrawRange();
         }
 
         private bool OnlyBasicAttackOnFullCharge
@@ -206,18 +195,6 @@ SpellR = new Spell(CastSlot.R, SpellSlot.R)
         {
             get => BasicAttackSettings.GetItem<Switch>("Only basic attack on champions").IsOn;
             set => BasicAttackSettings.GetItem<Switch>("Only basic attack on champions").IsOn = value;
-        }
-
-        private bool ShowQRange
-        {
-            get => QSettings.GetItem<Switch>("Show Q range").IsOn;
-            set => QSettings.GetItem<Switch>("Show Q range").IsOn = value;
-        }
-
-        private string QRangeColor
-        {
-            get => QSettings.GetItem<ModeDisplay>("Q range color").SelectedModeName;
-            set => QSettings.GetItem<ModeDisplay>("Q range color").SelectedModeName = value;
         }
 
         private DashMode DashModeSelected
@@ -255,9 +232,7 @@ SpellR = new Spell(CastSlot.R, SpellSlot.R)
             QSettings.AddItem(new Switch() { Title = "Use Q Harass", IsOn = true });
             QSettings.AddItem(new Switch() { Title = "Use Q Lasthit", IsOn = true });
             QSettings.AddItem(new ModeDisplay() { Title = "Q HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
-            QSettings.AddItem(new Switch() { Title = "Show Q range", IsOn = true });
-            QSettings.AddItem(new ModeDisplay() { Title = "Q range color", ModeNames = Oasys.Common.Tools.ColorConverter.GetColors(), SelectedModeName = "Blue" });
-
+            
             WSettings.AddItem(new Switch() { Title = "Use W", IsOn = true });
             WSettings.AddItem(new ModeDisplay() { Title = "W HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
 
@@ -273,7 +248,7 @@ SpellR = new Spell(CastSlot.R, SpellSlot.R)
             RSettings.AddItem(new Counter() { Title = "R Enemies Closer Than", MinValue = 50, MaxValue = 850, Value = 750, ValueFrequency = 50 });
 
 
-            MenuTab.AddDrawOptions(SpellSlot.Q, SpellSlot.W, SpellSlot.E, SpellSlot.R);
+            MenuTab.AddDrawOptions(SpellSlot.Q, SpellSlot.W, SpellSlot.R);
         }
     }
 }

@@ -60,7 +60,7 @@ namespace SixAIO.Champions
                 AllowCastOnMap = () => AllowRCastOnMinimap,
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
                 MinimumHitChance = () => SemiAutoRHitChance,
-                Range = () => 30_000,
+                Range = () => RMaximumRange,
                 Radius = () => 350,
                 Speed = () => 1600,
                 IsEnabled = () => UseSemiAutoR,

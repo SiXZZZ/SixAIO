@@ -150,9 +150,6 @@ namespace SixAIO.Champions
         internal override void OnCoreRender()
         {
             SpellQ.DrawRange();
-            SpellW.DrawRange();
-            SpellE.DrawRange();
-            SpellR.DrawRange();
         }
 
         internal override void OnCoreMainInput()
@@ -182,7 +179,7 @@ namespace SixAIO.Champions
             WSettings.AddItem(new KeyBinding() { Title = "Red Card", SelectedKey = Keys.T });
 
 
-            MenuTab.AddDrawOptions(SpellSlot.Q, SpellSlot.W, SpellSlot.E, SpellSlot.R);
+            MenuTab.AddDrawOptions(SpellSlot.Q);
         }
     }
 }
