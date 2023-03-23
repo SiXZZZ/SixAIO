@@ -16,6 +16,7 @@ namespace SixAIO.Champions
     internal sealed class Jinx : Champion
     {
         internal Spell SpellQSimple;
+        internal Spell SpellRKill;
         private bool IsQActive()
         {
             var buff = UnitManager.MyChampion.BuffManager.ActiveBuffs.FirstOrDefault(x => x.Name == "JinxQ");
@@ -179,6 +180,47 @@ namespace SixAIO.Champions
                 IsEnabled = () => UseSemiAutoR,
                 TargetSelect = (mode) => SpellRSemiAuto.GetTargets(mode, x => x.Distance > RMinimumRange && x.Distance <= RMaximumRange).FirstOrDefault()
             };
+            SpellRKill = new Spell(CastSlot.R, SpellSlot.R)
+            {
+                PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
+                MinimumHitChance = () => Prediction.MenuSelected.HitChance.High,
+                Range = () => 800,
+                Radius = () => 280,
+                Speed = () => 1700,
+                Delay = () => 0.6f,
+                MinimumMana = () => 100,
+                IsEnabled = () => RTargetKillable,
+                IsSpellReady = (spellClass, minimumMana, minimumCharges) =>
+                                spellClass.IsSpellReady &&
+                                UnitManager.MyChampion.Mana >= spellClass.SpellData.ResourceCost &&
+                                UnitManager.MyChampion.Mana >= minimumMana &&
+                                spellClass.Charges >= minimumCharges,
+                TargetSelect = (mode) => SpellRKill.GetTargets(mode, x => x.Distance < 800 && RCanKill(x)).FirstOrDefault(),
+            };
+        }
+
+        private bool RCanKill(GameObjectBase target)
+        {
+            if (target == null) return false;
+
+            var possibleDamage = 10 + (((int) target.DistanceToPlayer() / 100)*6); //eg. 671 distance, /100 = 6, 6*6 = 36%+10% = 46% damage of ult possible
+           
+            var ultDamages = new[] {0, 300, 450, 600 }[UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot.R).Level];
+            var bonusAD = UnitManager.MyChampion.UnitStats.BonusAttackDamage * 1.5f; // 150%
+
+            //calc possible damage first
+            var fullNormalDamage = (ultDamages + bonusAD) / 100 * possibleDamage;
+
+            var missingHealth = new[] {0, 0.25f, 0.30f, 0.35f }[UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot.R).Level] * (target.MaxHealth - target.Health);
+
+            var calculate = DamageCalculator.CalculateActualDamage(UnitManager.MyChampion, target, fullNormalDamage + missingHealth);
+
+            if (calculate > target.Health)
+            {
+                return true;
+            }
+
+            return false;
         }
 
         private void Orbwalker_OnOrbwalkerBeforeBasicAttack(float gameTime, GameObjectBase target)
@@ -277,7 +319,7 @@ namespace SixAIO.Champions
                 return;
             }
 
-            if (SpellE.ExecuteCastSpell() || SpellW.ExecuteCastSpell() || SpellR.ExecuteCastSpell())
+            if (SpellE.ExecuteCastSpell() || SpellW.ExecuteCastSpell() || SpellR.ExecuteCastSpell() || SpellRKill.ExecuteCastSpell())
             {
                 return;
             }
@@ -397,6 +439,11 @@ namespace SixAIO.Champions
             set => RSettings.GetItem<Counter>("R Target Max HP Percent").Value = value;
         }
 
+        private bool RTargetKillable
+        {
+            get => RSettings.GetItem<Switch>("R if killable in AA range").IsOn;
+            set => RSettings.GetItem<Switch>("R if killable in AA range").IsOn = value;
+        }
 
         internal override void InitializeMenu()
         {
@@ -445,6 +492,8 @@ namespace SixAIO.Champions
             RSettings.AddItem(new Counter() { Title = "R maximum range", MinValue = 0, MaxValue = 30_000, Value = 30_000, ValueFrequency = 50 });
             RSettings.AddItem(new Counter() { Title = "R Target Max HP Percent", MinValue = 10, MaxValue = 100, Value = 50, ValueFrequency = 5 });
 
+            RSettings.AddItem(new InfoDisplay() { Title = "ouija", Information = "Ouija was here" });
+            RSettings.AddItem(new Switch() { Title = "R if killable in AA range", IsOn = true });
 
             MenuTab.AddDrawOptions(SpellSlot.W, SpellSlot.E, SpellSlot.R);
         }
