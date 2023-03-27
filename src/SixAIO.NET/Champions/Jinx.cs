@@ -16,6 +16,8 @@ namespace SixAIO.Champions
     internal sealed class Jinx : Champion
     {
         internal Spell SpellQSimple;
+        internal Spell SpellRKill;
+
         private bool IsQActive()
         {
             var buff = UnitManager.MyChampion.BuffManager.ActiveBuffs.FirstOrDefault(x => x.Name == "JinxQ");
@@ -179,6 +181,40 @@ namespace SixAIO.Champions
                 IsEnabled = () => UseSemiAutoR,
                 TargetSelect = (mode) => SpellRSemiAuto.GetTargets(mode, x => x.Distance > RMinimumRange && x.Distance <= RMaximumRange).FirstOrDefault()
             };
+            SpellRKill = new Spell(CastSlot.R, SpellSlot.R)
+            {
+                PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
+                MinimumHitChance = () => RHitChance,
+                Range = () => RMaximumRange,
+                Radius = () => 280,
+                Speed = () => 2000,
+                Delay = () => 0.6f,
+                MinimumMana = () => 100,
+                IsEnabled = () => RIfTargetKillable,
+                IsSpellReady = (spellClass, minimumMana, minimumCharges) =>
+                                spellClass.IsSpellReady &&
+                                UnitManager.MyChampion.Mana >= spellClass.SpellData.ResourceCost &&
+                                UnitManager.MyChampion.Mana >= minimumMana &&
+                                spellClass.Charges >= minimumCharges,
+                TargetSelect = (mode) => SpellRKill.GetTargets(mode, RCanKill).FirstOrDefault(),
+            };
+        }
+
+        private bool RCanKill(GameObjectBase target)
+        {
+            if (target is null)
+            {
+                return false;
+            }
+            var spellRLevel = SpellR.SpellClass.Level;
+            var distanceScale = Math.Max(1, Math.Min(100, 10f + (target.Distance / 100f * 6f)));
+            var baseDamage = spellRLevel * 150 + 150;
+            var bonusAD = UnitManager.MyChampion.UnitStats.BonusAttackDamage * 1.5f;
+            var fullNormalDamage = (baseDamage + bonusAD) / 100 * distanceScale;
+            var missingHealthDamage = (spellRLevel * 0.05f + 0.2f) * target.MissingHealth;
+            var totalDamage = fullNormalDamage + missingHealthDamage;
+            var actualDamage = DamageCalculator.CalculateActualDamage(UnitManager.MyChampion, target, totalDamage);
+            return actualDamage > target.Health;
         }
 
         private void Orbwalker_OnOrbwalkerBeforeBasicAttack(float gameTime, GameObjectBase target)
@@ -277,7 +313,10 @@ namespace SixAIO.Champions
                 return;
             }
 
-            if (SpellE.ExecuteCastSpell() || SpellW.ExecuteCastSpell() || SpellR.ExecuteCastSpell())
+            if (SpellE.ExecuteCastSpell() ||
+                SpellW.ExecuteCastSpell() ||
+                SpellR.ExecuteCastSpell() ||
+                SpellRKill.ExecuteCastSpell())
             {
                 return;
             }
@@ -397,6 +436,11 @@ namespace SixAIO.Champions
             set => RSettings.GetItem<Counter>("R Target Max HP Percent").Value = value;
         }
 
+        private bool RIfTargetKillable
+        {
+            get => RSettings.GetItem<Switch>("R If Killable").IsOn;
+            set => RSettings.GetItem<Switch>("R If Killable").IsOn = value;
+        }
 
         internal override void InitializeMenu()
         {
@@ -445,6 +489,7 @@ namespace SixAIO.Champions
             RSettings.AddItem(new Counter() { Title = "R maximum range", MinValue = 0, MaxValue = 30_000, Value = 30_000, ValueFrequency = 50 });
             RSettings.AddItem(new Counter() { Title = "R Target Max HP Percent", MinValue = 10, MaxValue = 100, Value = 50, ValueFrequency = 5 });
 
+            RSettings.AddItem(new Switch() { Title = "R If Killable", IsOn = true });
 
             MenuTab.AddDrawOptions(SpellSlot.W, SpellSlot.E, SpellSlot.R);
         }
