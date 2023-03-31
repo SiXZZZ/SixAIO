@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using Oasys.Common;
 using Oasys.Common.Enums.GameEnums;
 using Oasys.Common.GameObject;
 using Oasys.Common.GameObject.Clients;
@@ -6,6 +7,7 @@ using Oasys.Common.GameObject.Clients.ExtendedInstances.Spells;
 using Oasys.Common.GameObject.ObjectClass;
 using Oasys.Common.Menu;
 using Oasys.Common.Menu.ItemComponents;
+using Oasys.Common.Tools;
 using Oasys.SDK;
 using Oasys.SDK.Menu;
 using Oasys.SDK.SpellCasting;
@@ -53,6 +55,7 @@ namespace SixAIO.Champions
 
         public Tristana()
         {
+            Spell.OnSpellCast += Spell_OnSpellCast;
             Oasys.Common.EventsProvider.GameEvents.OnGameProcessSpell += GameEvents_OnGameProcessSpell;
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
@@ -80,6 +83,19 @@ namespace SixAIO.Champions
                 IsEnabled = () => UseR,
                 TargetSelect = (mode) => TargetSelectR()
             };
+        }
+
+        private void Spell_OnSpellCast(SDKSpell spell, GameObjectBase target)
+        {
+            if (spell.SpellSlot == SpellSlot.E)
+            {
+                Orbwalker.AllowMoving = false;
+                Oasys.Common.Logic.Orbwalker.OrbSettings.LastBasicAttack = EngineManager.GameTime + UnitManager.MyChampion.GetAttackCastDelay();
+                DelayAction.Add(250 + (int)(UnitManager.MyChampion.GetAttackCastDelay() * 1000), () =>
+                {
+                    Orbwalker.AllowMoving = true;
+                });
+            }
         }
 
         private Task GameEvents_OnGameProcessSpell(AIBaseClient objectProcessingSpell, SpellActiveEntry processingSpellEntry)
