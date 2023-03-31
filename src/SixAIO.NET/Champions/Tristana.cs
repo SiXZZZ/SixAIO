@@ -10,7 +10,6 @@ using Oasys.SDK;
 using Oasys.SDK.Menu;
 using Oasys.SDK.SpellCasting;
 using SixAIO.Enums;
-using SixAIO.Extensions;
 using SixAIO.Helpers;
 using SixAIO.Models;
 using System;
@@ -31,7 +30,7 @@ namespace SixAIO.Champions
             var extraDamage = 0f;
             if (eTarget is not null && eTarget.NetworkID == target.NetworkID)
             {
-                var bombBuff = target.BuffManager.GetActiveBuff("tristanaecharge");
+                var bombBuff = target.BuffManager.ActiveBuffs.FirstOrDefault(x => x.Name == "tristanaecharge" && x.Stacks >= 1);
                 //Logger.Log(bombBuff);
                 var damage = 60f + 10f * SpellE.SpellClass.Level;
                 damage += 0.5f * UnitManager.MyChampion.UnitStats.TotalAbilityPower;
@@ -67,9 +66,9 @@ namespace SixAIO.Champions
                 IsTargetted = () => true,
                 IsEnabled = () => UseE,
                 TargetSelect = (mode) => UseTargetselector
-                ? TargetSelector.GetBestChampionTarget(Orbwalker.SelectedHero)
+                ? Oasys.Common.Logic.TargetSelector.GetBestHeroTarget(Orbwalker.SelectedHero, x => x.Distance <= ETargetRange)
                 : GetPrioritizationTarget(),
-                ShouldCast = (mode, target, spellClass, damage) => target is not null && target.Distance <= 517 + 8 * UnitManager.MyChampion.Level
+                ShouldCast = (mode, target, spellClass, damage) => TargetSelector.IsAttackable(target) && TargetSelector.IsInRange(target)
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
@@ -124,7 +123,7 @@ namespace SixAIO.Champions
 
             return null;
         }
-        
+
         internal override void OnCoreMainInput()
         {
             Orbwalker.SelectedTarget = GetETarget(UnitManager.EnemyChampions);
@@ -139,13 +138,26 @@ namespace SixAIO.Champions
 
         internal override void OnCoreLaneClearInput()
         {
-            Orbwalker.SelectedTarget = GetETarget(UnitManager.Enemies);
+            Orbwalker.SelectedTarget = GetETarget(UnitManager.EnemyChampions);
+            if (Orbwalker.SelectedTarget is null)
+            {
+                Orbwalker.SelectedTarget = GetETarget(UnitManager.EnemyMinions);
+                if (Orbwalker.SelectedTarget is null)
+                {
+                    Orbwalker.SelectedTarget = GetETarget(UnitManager.EnemyJungleMobs);
+                    Orbwalker.SelectedTarget ??= GetETarget(UnitManager.EnemyTowers);
+                }
+            }
+
             SpellQ.ExecuteCastSpell();
         }
 
         private static GameObjectBase GetETarget<T>(List<T> enemies) where T : GameObjectBase
         {
-            return enemies.FirstOrDefault(x => TargetSelector.IsAttackable(x) && x.Distance <= UnitManager.MyChampion.TrueAttackRange && !x.IsObject(ObjectTypeFlag.BuildingProps) && x.BuffManager.ActiveBuffs.Any(x => x.Name == "tristanaecharge" && x.Stacks >= 1));
+            return enemies.FirstOrDefault(enemy =>
+                                TargetSelector.IsAttackable(enemy) &&
+                                TargetSelector.IsInRange(enemy) &&
+                                enemy.BuffManager.ActiveBuffs.Any(buff => buff.Name == "tristanaecharge" && buff.Stacks >= 1));
         }
 
         private bool UsePushAway
