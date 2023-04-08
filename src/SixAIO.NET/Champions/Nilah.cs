@@ -75,7 +75,7 @@ namespace SixAIO.Champions
             if (enemy.IsCastingSpell)
             {
                 var spell = enemy.GetCurrentCastingSpell();
-                if (spell != null && spell.IsBasicAttack && spell.Targets.Any(x => x.NetworkID == UnitManager.MyChampion.NetworkID))
+                if (spell != null && spell.SpellSlot == SpellSlot.BasicAttack && spell.Targets.Any(x => x.NetworkID == UnitManager.MyChampion.NetworkID))
                 {
                     return true;
                 }

@@ -31,7 +31,6 @@ namespace SixAIO.Champions
             {
                 ShouldDraw = () => DrawRRange,
                 DrawColor = () => DrawRColor,
-                AllowCastOnMap = () => AllowRCastOnMinimap,
                 IsTargetted = () => true,
                 Delay = () => 3f,
                 Range = () => 2500f,

@@ -101,7 +101,7 @@ namespace SixAIO.Champions
                         var target = spell.Targets.FirstOrDefault(x => x.IsAlive && x.IsVisible && x.IsTargetable);
                         if (target != null)
                         {
-                            return (spell.IsBasicAttack && target.IsAlive && UnitManager.EnemyChampions.Any(x => x.IsAlive && x.NetworkID == target.NetworkID)) ||
+                            return (spell.SpellSlot == SpellSlot.BasicAttack&& target.IsAlive && UnitManager.EnemyChampions.Any(x => x.IsAlive && x.NetworkID == target.NetworkID)) ||
                                    (ally.ModelName == "Zeri" && spell.SpellSlot == SpellSlot.Q);
                         }
                     }
