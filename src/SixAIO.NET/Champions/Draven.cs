@@ -187,7 +187,7 @@ namespace SixAIO.Champions
                 var axes = Axes();
                 if (axes.Any())
                 {
-                    var catchAxe = axes.Where(x => (QCatchMode == CatchMode.Mouse && x.DistanceTo(GameEngine.WorldMousePosition) <= QCatchRange) ||
+                    var catchAxe = axes.Where(x => (QCatchMode == CatchMode.Mouse && x.Position.Distance(GameEngine.WorldMousePosition) <= QCatchRange) ||
                                                    (QCatchMode == CatchMode.Self && x.Distance <= QCatchRange))
                                        .OrderBy(x => x.DistanceTo(GameEngine.WorldMousePosition))
                                        .FirstOrDefault();

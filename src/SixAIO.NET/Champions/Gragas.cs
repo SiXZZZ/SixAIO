@@ -37,9 +37,7 @@ namespace SixAIO.Champions
             };
             SpellQ2 = new Spell(CastSlot.Q, SpellSlot.Q)
             {
-                IsEnabled = () => UseQ &&
-                                  SpellQ.SpellClass.SpellData.MissileName != "GragasQ" &&
-                                  IsQObject(QObject),
+                IsEnabled = () => UseQ && IsQObject(QObject),
                 ShouldCast = (mode, target, spellClass, damage) => UnitManager.EnemyChampions.Any(x => TargetSelector.IsAttackable(x) && x.DistanceTo(QObject.Position) <= 300 && x.IsAlive),
             };
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
@@ -90,7 +88,7 @@ namespace SixAIO.Champions
 
         private bool IsQObject(GameObjectBase obj)
         {
-            return obj is not null && obj.IsAlive && obj.Name.Contains("Gragas_") && obj.Name.Contains("_Q_Ally") && obj.Position.IsValid();
+            return obj is not null && obj.Name.Contains("Gragas_") && obj.Name.Contains("_Q_Ally") && obj.Position.IsValid();
         }
 
         internal override void OnCreateObject(AIBaseClient obj)
