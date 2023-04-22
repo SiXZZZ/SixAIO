@@ -18,6 +18,7 @@ using TargetSelector = Oasys.Common.Logic.TargetSelector;
 using DamageCalculator = Oasys.SDK.DamageCalculator;
 using static Oasys.Common.Logic.Orbwalker;
 using SixAIO.Extensions;
+using Oasys.Common.GameObject.Clients.ExtendedInstances.Spells;
 
 namespace SixAIO.Champions
 {
@@ -79,18 +80,21 @@ namespace SixAIO.Champions
                 Radius = () => 320,
                 Speed = () => 20000,
                 Delay = () => 1f,
-                Damage = (target, spellClass) =>
-                            target != null
-                            ? DamageCalculator.GetArmorMod(UnitManager.MyChampion, target) *
-                                        ((125 + spellClass.Level * 125) +
-                                        (UnitManager.MyChampion.UnitStats.BonusAttackDamage) +
-                                        (UnitManager.MyChampion.UnitStats.TotalAbilityPower * 0.7f))
-                            : 0,
                 IsEnabled = () => UseR,
                 MinimumMana = () => RMinMana,
                 ShouldCast = (mode, target, spellClass, damage) => target != null && target.Health < damage,
-                TargetSelect = (mode) => SpellR.GetTargets(mode, x => x.Distance > RMinimumRange && x.Distance <= RMaximumRange && x.Health <= SpellR.Damage(x, SpellR.SpellClass)).FirstOrDefault()
+                TargetSelect = (mode) => SpellR.GetTargets(mode, x => x.Distance > RMinimumRange && x.Distance <= RMaximumRange && x.Health <= GetRDamage(x)).FirstOrDefault()
             };
+        }
+
+        private float GetRDamage(GameObjectBase target)
+        {
+            return target != null
+                            ? DamageCalculator.GetArmorMod(UnitManager.MyChampion, target) *
+                                        ((100 + SpellR.SpellClass.Level * 150) +
+                                        (UnitManager.MyChampion.UnitStats.BonusAttackDamage * 1.15f) +
+                                        (UnitManager.MyChampion.UnitStats.TotalAbilityPower * 0.7f))
+                            : 0;
         }
 
         private GameObjectBase GetMinionBetweenMeAndEnemy(Hero enemy, int width, float range)

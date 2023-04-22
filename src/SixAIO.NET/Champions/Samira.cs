@@ -31,14 +31,14 @@ namespace SixAIO.Champions
                 Range = () => 950,
                 Radius = () => 130,
                 Speed = () => 2600,
-                IsEnabled = () => UseQ,
+                IsEnabled = () => UseQ && !UnitManager.MyChampion.BuffManager.ActiveBuffs.Any(x => x.Name == "SamiraR" && x.Stacks >= 1),
                 MinimumMana = () => QMinMana,
                 TargetSelect = (mode) => SpellQ.GetTargets(mode).FirstOrDefault()
             };
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
             {
                 IsCharge = () => true,
-                IsEnabled = () => UseW,
+                IsEnabled = () => UseW && !UnitManager.MyChampion.BuffManager.ActiveBuffs.Any(x => x.Name == "SamiraR" && x.Stacks >= 1),
                 ShouldCast = (mode, target, spellClass, damage) => UnitManager.EnemyChampions.Any(x => TargetSelector.IsAttackable(x) && x.Distance < 325),
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
@@ -56,12 +56,11 @@ namespace SixAIO.Champions
                 ShouldDraw = () => DrawRRange,
                 DrawColor = () => DrawRColor,
                 IsSpellReady = (spellClass, minMana, minCharges) => spellClass.IsSpellReady,
-                IsEnabled = () => UseR,
+                IsEnabled = () => UseR && !UnitManager.MyChampion.BuffManager.ActiveBuffs.Any(x => x.Name == "SamiraR" && x.Stacks >= 1),
                 Range = () => 600,
                 ShouldCast = (mode, target, spellClass, damage) => UnitManager.EnemyChampions.Count(x => TargetSelector.IsAttackable(x) && x.Distance < 600) > 0,
             };
         }
-
 
         private static readonly Vector3 _orderNexusPos = new Vector3(405, 95, 425);
         private static readonly Vector3 _chaosNexusPos = new Vector3(14300, 90, 14400);

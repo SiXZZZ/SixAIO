@@ -60,7 +60,7 @@ namespace SixAIO.Champions
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
                 IsSpellReady = (spellClass, minMana, minCharges) => spellClass.IsSpellReady,
-                IsEnabled = () => UseQ,
+                IsEnabled = () => UseQ && !UnitManager.MyChampion.BuffManager.ActiveBuffs.Any(x => x.Name == "TristanaQ" && x.Stacks >= 1),
                 ShouldCast = (mode, target, spellClass, damage) => GetETarget(UnitManager.EnemyChampions) is not null
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
@@ -69,17 +69,13 @@ namespace SixAIO.Champions
                 IsTargetted = () => true,
                 IsEnabled = () => UseE,
                 TargetSelect = (mode) => UseTargetselector
-                ? Oasys.Common.Logic.TargetSelector.GetBestHeroTarget(Orbwalker.SelectedHero, x => x.Distance <= ETargetRange)
+                ? Oasys.Common.Logic.TargetSelector.GetBestHeroTarget(Orbwalker.SelectedHero, x => x.Distance <= ETargetRange && !x.BuffManager.ActiveBuffs.Any(x => x.Name == "tristanaecharge" && x.Stacks >= 1))
                 : GetPrioritizationTarget(),
                 ShouldCast = (mode, target, spellClass, damage) => TargetSelector.IsAttackable(target) && TargetSelector.IsInRange(target)
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
                 IsTargetted = () => true,
-                Damage = (target, spellClass) =>
-                            target != null
-                            ? GetRDamage(target)
-                            : 0,
                 IsEnabled = () => UseR,
                 TargetSelect = (mode) => TargetSelectR()
             };
@@ -243,7 +239,10 @@ namespace SixAIO.Champions
                 GameObjectBase tempTarget = null;
                 var tempPrio = 0;
 
-                foreach (var hero in UnitManager.EnemyChampions.Where(x => x.Distance <= ETargetRange && TargetSelector.IsAttackable(x)))
+                foreach (var hero in UnitManager.EnemyChampions
+                                                .Where(x => x.Distance <= ETargetRange &&
+                                                            TargetSelector.IsAttackable(x) &&
+                                                            !x.BuffManager.ActiveBuffs.Any(x => x.Name == "tristanaecharge" && x.Stacks >= 1)))
                 {
                     try
                     {

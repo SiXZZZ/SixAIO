@@ -28,7 +28,6 @@ namespace SixAIO.Champions
                 Range = () => 950,
                 Radius = () => 140,
                 Speed = () => 2200,
-                Damage = (target, spellClass) => GetQDamage(target),
                 IsEnabled = () => UseQ,
                 TargetSelect = (mode) =>
                 {
@@ -38,11 +37,11 @@ namespace SixAIO.Champions
                     }
                     else if (mode == Orbwalker.OrbWalkingModeType.LastHit)
                     {
-                        return SpellQ.GetTargets(mode, x => x.Health <= SpellQ.Damage(x, SpellQ.SpellClass)).FirstOrDefault();
+                        return SpellQ.GetTargets(mode, x => x.Health <= GetQDamage(x)).FirstOrDefault();
                     }
                     else if (mode == Orbwalker.OrbWalkingModeType.Mixed)
                     {
-                        return SpellQ.GetTargets(mode, x => x.IsObject(ObjectTypeFlag.AIHeroClient) || x.Health <= SpellQ.Damage(x, SpellQ.SpellClass)).FirstOrDefault();
+                        return SpellQ.GetTargets(mode, x => x.IsObject(ObjectTypeFlag.AIHeroClient) || x.Health <= GetQDamage(x)).FirstOrDefault();
                     }
                     else
                     {

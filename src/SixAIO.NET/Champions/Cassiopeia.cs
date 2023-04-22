@@ -54,18 +54,17 @@ namespace SixAIO.Champions
                 Delay = () => 0.125f,
                 IsTargetted = () => true,
                 Range = () => 700 + UnitManager.MyChampion.BoundingRadius,
-                Damage = GetEDamage,
                 IsEnabled = () => UseE,
                 TargetSelect = (mode) =>
                 {
                     var target = SpellE.GetTargets(mode).OrderBy(IsPoisoned).ThenBy(x => x.EffectiveMagicHealth).FirstOrDefault();
                     if (UseELasthit)
                     {
-                        target = SpellE.GetTargets(mode, x => x.PredictHealth(150) <= SpellE.Damage(x, SpellE.SpellClass)).OrderBy(IsPoisoned).ThenBy(x => x.EffectiveMagicHealth).FirstOrDefault();
+                        target = SpellE.GetTargets(mode, x => x.PredictHealth(150) <= GetEDamage(x, SpellE.SpellClass)).OrderBy(IsPoisoned).ThenBy(x => x.EffectiveMagicHealth).FirstOrDefault();
                     }
                     if (UseEHarass && mode == Orbwalker.OrbWalkingModeType.Mixed)
                     {
-                        target = SpellE.GetTargets(mode, x => x.PredictHealth(150) <= SpellE.Damage(x, SpellE.SpellClass)).OrderBy(IsPoisoned).ThenBy(x => x.EffectiveMagicHealth).FirstOrDefault();
+                        target = SpellE.GetTargets(mode, x => x.PredictHealth(150) <= GetEDamage(x, SpellE.SpellClass)).OrderBy(IsPoisoned).ThenBy(x => x.EffectiveMagicHealth).FirstOrDefault();
                     }
                     if (target is null && !UseELaneclear && mode == Orbwalker.OrbWalkingModeType.LaneClear)
                     {

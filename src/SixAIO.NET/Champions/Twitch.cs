@@ -52,7 +52,7 @@ namespace SixAIO.Champions
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
-                IsEnabled = () => UseR,
+                IsEnabled = () => UseR && !UnitManager.MyChampion.BuffManager.ActiveBuffs.Any(x => x.Name == "TwitchFullAutomatic" && x.Stacks >= 1),
                 ShouldCast = (mode, target, spellClass, damage) => UnitManager.EnemyChampions.Count(x => TargetSelector.IsAttackable(x) && x.Distance < REnemiesCloserThan) > RIfMoreThanEnemiesNear,
             };
         }

@@ -36,12 +36,6 @@ namespace SixAIO.Champions
                 Range = () => 1100,
                 Radius = () => 150,
                 Speed = () => 4000,
-                Damage = (target, spellClass) =>
-                            target != null
-                            ? Oasys.SDK.DamageCalculator.GetArmorMod(UnitManager.MyChampion, target) *
-                            (25 + spellClass.Level * 25 +
-                            (UnitManager.MyChampion.UnitStats.BonusAttackDamage * 0.5f))
-                            : 0,
                 IsEnabled = () => UseQ,
                 TargetSelect = (mode) => SpellQ.GetTargets(mode).FirstOrDefault()
             };

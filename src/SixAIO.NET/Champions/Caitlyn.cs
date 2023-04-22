@@ -1,6 +1,7 @@
 ﻿using Oasys.Common;
 using Oasys.Common.Enums.GameEnums;
 using Oasys.Common.GameObject;
+using Oasys.Common.GameObject.Clients.ExtendedInstances.Spells;
 using Oasys.Common.Menu;
 using Oasys.Common.Menu.ItemComponents;
 using Oasys.SDK;
@@ -44,12 +45,6 @@ namespace SixAIO.Champions
                 Radius = () => 120,
                 Speed = () => 2200,
                 Delay = () => 0.625f,
-                Damage = (target, spellClass) =>
-                            target != null
-                            ? DamageCalculator.GetArmorMod(UnitManager.MyChampion, target) *
-                            ((10 + spellClass.Level * 40) +
-                            (UnitManager.MyChampion.UnitStats.TotalAttackDamage * (1.15f + 0.15f * spellClass.Level)))
-                            : 0,
                 IsEnabled = () => UseQ,
                 TargetSelect = (mode) => QOnlyOnHeadshotTargets
                         ? SpellQ.GetTargets(mode, x => x.BuffManager.ActiveBuffs.Any(b => b.Stacks >= 1 && b.Name == "CaitlynWSnare" || b.Name == "CaitlynEMissile")).FirstOrDefault()
@@ -112,17 +107,19 @@ namespace SixAIO.Champions
                 IsTargetted = () => true,
                 Delay = () => 1f,
                 Range = () => 3500f,
-                Damage = (target, spellClass) =>
-                            target != null
-                            ? DamageCalculator.GetArmorMod(UnitManager.MyChampion, target) *
-                            ((75 + spellClass.Level * 225) +
-                            (UnitManager.MyChampion.UnitStats.BonusAttackDamage * 2f))
-                            : 0,
                 IsEnabled = () => UseR,
                 IsSpellReady = (spellClass, minimumMana, minimumCharges) => spellClass.IsSpellReady && UnitManager.MyChampion.Mana >= spellClass.SpellData.ResourceCost && !UnitManager.EnemyChampions.Any(x => x.Distance < RSafeRange),
-                ShouldCast = (mode, target, spellClass, damage) => target != null && target.Health < damage,
-                TargetSelect = (mode) => SpellR.GetTargets(mode).FirstOrDefault()
+                TargetSelect = (mode) => SpellR.GetTargets(mode, x => x.Health <= GetRDamage(x)).FirstOrDefault()
             };
+        }
+
+        private float GetRDamage(GameObjectBase target)
+        {
+            return target != null
+                ? DamageCalculator.GetArmorMod(UnitManager.MyChampion, target) *
+                ((75 + SpellR.SpellClass.Level * 225) +
+                (UnitManager.MyChampion.UnitStats.BonusAttackDamage * 2f))
+                : 0;
         }
 
         private void Spell_OnSpellCast(SDKSpell spell, GameObjectBase target)

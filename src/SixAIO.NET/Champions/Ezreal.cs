@@ -1,4 +1,6 @@
 ﻿using Oasys.Common.Enums.GameEnums;
+using Oasys.Common.GameObject;
+using Oasys.Common.GameObject.Clients.ExtendedInstances.Spells;
 using Oasys.Common.Menu;
 using Oasys.Common.Menu.ItemComponents;
 using Oasys.SDK;
@@ -28,14 +30,7 @@ namespace SixAIO.Champions
                 Range = () => 1150,
                 Radius = () => 120,
                 Speed = () => 2000,
-                Damage = (target, spellClass) =>
-                            target != null
-                            ? DamageCalculator.CalculateActualDamage(UnitManager.MyChampion, target,
-                                ((-5 + spellClass.Level * 25) +
-                                (UnitManager.MyChampion.UnitStats.TotalAttackDamage * 1.3f) +
-                                (UnitManager.MyChampion.UnitStats.TotalAbilityPower * 0.15f)))
-                            : 0,
-                IsEnabled = () => UseQ,
+                IsEnabled = () => UseQ && Orbwalker.CanMove,
                 MinimumMana = () => QMinMana,
                 TargetSelect = (mode) =>
                 {
@@ -49,15 +44,18 @@ namespace SixAIO.Champions
                     }
                     else if (mode == Orbwalker.OrbWalkingModeType.LastHit)
                     {
-                        return SpellQ.GetTargets(mode, x => x.Health <= SpellQ.Damage(x, SpellQ.SpellClass)).FirstOrDefault();
+                        return SpellQ.GetTargets(mode, x => x.Health <= GetQDamage(x)).FirstOrDefault();
                     }
                     else if (mode == Orbwalker.OrbWalkingModeType.Mixed)
                     {
-                        return SpellQ.GetTargets(mode, x => x.IsObject(ObjectTypeFlag.AIHeroClient) || x.Health <= SpellQ.Damage(x, SpellQ.SpellClass)).FirstOrDefault();
+                        return SpellQ.GetTargets(mode, x => x.IsObject(ObjectTypeFlag.AIHeroClient) || x.Health <= GetQDamage(x)).FirstOrDefault();
                     }
                     else
                     {
-                        return SpellQ.GetTargets(mode).FirstOrDefault();
+                        var targets = SpellQ.GetTargets(mode);
+                        return targets.Count() > 1
+                            ? targets.Where(x => x.NetworkID != Orbwalker.LaneClearTarget?.NetworkID).FirstOrDefault()
+                            : targets.FirstOrDefault();
                     }
                 }
             };
@@ -108,16 +106,8 @@ namespace SixAIO.Champions
                 Radius = () => 320,
                 Speed = () => 2000,
                 Delay = () => 1f,
-                Damage = (target, spellClass) =>
-                            target != null
-                            ? DamageCalculator.GetMagicResistMod(UnitManager.MyChampion, target) *
-                                        ((200 + spellClass.Level * 150) +
-                                        (UnitManager.MyChampion.UnitStats.BonusAttackDamage) +
-                                        (UnitManager.MyChampion.UnitStats.TotalAbilityPower))
-                            : 0,
                 IsEnabled = () => UseR,
                 MinimumMana = () => RMinMana,
-                ShouldCast = (mode, target, spellClass, damage) => target != null && target.Health < damage,
                 TargetSelect = (mode) => PrioTargetsWithW
                                             ? SpellR.GetTargets(mode, x => x.HealthPercent <= RTargetMaxHPPercent && x.Distance > RMinimumRange && x.Distance <= RMaximumRange)
                                                     .OrderByDescending(x => x.BuffManager.ActiveBuffs.Any(buff => buff.IsActive && buff.Stacks >= 1 && buff.Name == "ezrealwattach"))
@@ -143,6 +133,16 @@ namespace SixAIO.Champions
                                             : SpellRSemiAuto.GetTargets(mode, x => x.Distance > RMinimumRange && x.Distance <= RMaximumRange)
                                                             .FirstOrDefault()
             };
+        }
+
+        private float GetQDamage(GameObjectBase target)
+        {
+            return target != null
+            ? DamageCalculator.CalculateActualDamage(UnitManager.MyChampion, target,
+                ((-5 + SpellQ.SpellClass.Level * 25) +
+                (UnitManager.MyChampion.UnitStats.TotalAttackDamage * 1.3f) +
+                (UnitManager.MyChampion.UnitStats.TotalAbilityPower * 0.15f)))
+            : 0;
         }
 
         private void KeyboardProvider_OnKeyPress(Keys keyBeingPressed, Oasys.Common.Tools.Devices.Keyboard.KeyPressState pressState)

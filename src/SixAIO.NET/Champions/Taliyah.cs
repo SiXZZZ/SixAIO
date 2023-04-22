@@ -97,8 +97,8 @@ namespace SixAIO.Champions
             }
             else
             {
-                CastW();
                 SpellE.ExecuteCastSpell();
+                CastW();
             }
 
             SpellQ.ExecuteCastSpell();
@@ -106,16 +106,19 @@ namespace SixAIO.Champions
 
         internal void CastW()
         {
-            var target = SpellW.GetTargets(Orbwalker.OrbWalkingModeType.Combo).FirstOrDefault();
-            if (target != null)
+            if (SpellW.IsSpellReady(SpellW.SpellClass, SpellW.MinimumMana(), SpellW.MinimumCharges()))
             {
-                var targetPos = target.Position;
-                var predictResult = SpellW.GetPrediction(target);
-                var castPos = targetPos.Extend(UnitManager.MyChampion.Position + (predictResult.CastPosition - UnitManager.MyChampion.Position).Normalized(), 50).ToW2S();
-                var mousePosRestore = Pos.MousePosition;
-                MouseAction(castPos, () => Keyboard.SendKeyDown((short)CastSlot.W));
-                MouseAction(UnitManager.MyChampion.W2S, () => Keyboard.SendKeyUp((short)CastSlot.W));
-                Mouse.SetCursor(mousePosRestore);
+                var target = SpellW.GetTargets(Orbwalker.OrbWalkingModeType.Combo).FirstOrDefault();
+                if (target != null)
+                {
+                    var targetPos = target.Position;
+                    var predictResult = SpellW.GetPrediction(target);
+                    var castPos = targetPos.Extend(UnitManager.MyChampion.Position + (predictResult.CastPosition - UnitManager.MyChampion.Position).Normalized(), 50).ToW2S();
+                    var mousePosRestore = Pos.MousePosition;
+                    MouseAction(castPos, () => Keyboard.SendKeyDown((short)CastSlot.W));
+                    MouseAction(UnitManager.MyChampion.W2S, () => Keyboard.SendKeyUp((short)CastSlot.W));
+                    Mouse.SetCursor(mousePosRestore);
+                }
             }
         }
 

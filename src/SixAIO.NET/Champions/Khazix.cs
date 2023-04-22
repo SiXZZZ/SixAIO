@@ -21,7 +21,10 @@ namespace SixAIO.Champions
 
         private static bool IsIsolation(GameObjectBase obj)
         {
-            return obj.Name.Contains("Khazix", StringComparison.OrdinalIgnoreCase) && obj.Name.Contains("SingleEnemy_Indicator", StringComparison.OrdinalIgnoreCase);
+            return obj is not null &&
+                   obj.Name is not null &&
+                   obj.Name.Contains("Khazix", StringComparison.OrdinalIgnoreCase) &&
+                   obj.Name.Contains("SingleEnemy_Indicator", StringComparison.OrdinalIgnoreCase);
         }
 
         public Khazix()

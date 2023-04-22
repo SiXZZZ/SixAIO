@@ -1,6 +1,7 @@
 ﻿using Oasys.Common.Enums.GameEnums;
 using Oasys.Common.Extensions;
 using Oasys.Common.GameObject;
+using Oasys.Common.GameObject.Clients.ExtendedInstances.Spells;
 using Oasys.Common.GameObject.ObjectClass;
 using Oasys.Common.Menu;
 using Oasys.Common.Menu.ItemComponents;
@@ -34,7 +35,6 @@ namespace SixAIO.Champions
                 Range = () => 1150,
                 Radius = () => 80,
                 Speed = () => 2400,
-                Damage = (target, spellClass) => -45 + (65 * spellClass.Level) + UnitManager.MyChampion.UnitStats.TotalAttackDamage,
                 IsEnabled = () => UseQ && (!OnlyQifcantAA || Orbwalker.TargetHero is null) && (UnitManager.MyChampion.AttackSpeed <= QOnlyBelowAttackSpeed || UnitManager.EnemyChampions.All(x => x.Distance > UnitManager.MyChampion.TrueAttackRange)),
                 TargetSelect = (mode) => SpellQ.GetTargets(mode).FirstOrDefault()
             };

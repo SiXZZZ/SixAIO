@@ -40,7 +40,7 @@ namespace SixAIO.Champions
             };
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
             {
-                IsEnabled = () => UseW,
+                IsEnabled = () => UseW && !UnitManager.MyChampion.BuffManager.ActiveBuffs.Any(x => x.Name == "KogMawBioArcaneBarrage" && x.Stacks >= 1),
                 MinimumMana = () => WMinMana,
                 ShouldCast = (mode, target, spellClass, damage) => UnitManager.EnemyChampions.Any(x => x.Distance < GetAttackRangeWithWActive() && TargetSelector.IsAttackable(x))
             };
@@ -67,13 +67,6 @@ namespace SixAIO.Champions
                 Radius = () => 240,
                 Speed = () => 1500,
                 Delay = () => 0.9f,
-                Damage = (target, spellClass) =>
-                            target != null
-                            ? DamageCalculator.GetMagicResistMod(UnitManager.MyChampion, target) *
-                                        ((200 + spellClass.Level * 150) +
-                                        (UnitManager.MyChampion.UnitStats.BonusAttackDamage) +
-                                        (UnitManager.MyChampion.UnitStats.TotalAbilityPower))
-                            : 0,
                 IsEnabled = () => UseR && UltCost <= RMaxManaCost,
                 MinimumMana = () => RMinMana,
                 TargetSelect = (mode) => SpellR.GetTargets(mode, x => x.HealthPercent <= RTargetMaxHPPercent && ROnlyOutSideAttackRange(x) && x.Distance <= RMaximumRange).FirstOrDefault()

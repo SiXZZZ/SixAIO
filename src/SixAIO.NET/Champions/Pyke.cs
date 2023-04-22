@@ -64,9 +64,7 @@ namespace SixAIO.Champions
                 Radius = () => 250,
                 Speed = () => 2500,
                 IsEnabled = () => UseR,
-                Damage = (target, spellClass) => GetRDamage(target),
-                ShouldCast = (mode, target, spellClass, damage) => target != null && target.Health < damage,
-                TargetSelect = (mode) => SpellR.GetTargets(mode).FirstOrDefault()
+                TargetSelect = (mode) => SpellR.GetTargets(mode, x => x.Health <= GetRDamage(x)).FirstOrDefault()
             };
         }
 

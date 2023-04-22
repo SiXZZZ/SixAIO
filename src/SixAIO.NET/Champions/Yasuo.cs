@@ -45,18 +45,12 @@ namespace SixAIO.Champions
                 Range = () => UnitManager.MyChampion.AIManager.IsDashing ? 250 : GetQState() == 3 ? 1150 : 450,
                 From = () => UnitManager.MyChampion.AIManager.IsDashing ? UnitManager.MyChampion.AIManager.NavEndPosition : UnitManager.MyChampion.AIManager.ServerPosition,
                 IsEnabled = () => UseQ,
-                Damage = (target, spellClass) =>
-                            target != null
-                            ? DamageCalculator.CalculateActualDamage(UnitManager.MyChampion, target,
-                                (-5 + spellClass.Level * 25) +
-                                (UnitManager.MyChampion.UnitStats.TotalAttackDamage * 1.05f))
-                            : 0,
                 ShouldCast = (mode, target, spellClass, damage) => target != null || (UnitManager.MyChampion.AIManager.IsDashing && (UnitManager.EnemyChampions.Any(x => SpellQ.From().Distance(x.Position) <= SpellQ.Range() && TargetSelector.IsAttackable(x)) || GetQState() < 3)),
                 TargetSelect = (mode) =>
                 {
                     if (mode == Orbwalker.OrbWalkingModeType.LastHit)
                     {
-                        return SpellQ.GetTargets(mode, x => x.Health <= SpellQ.Damage(x, SpellQ.SpellClass)).FirstOrDefault();
+                        return SpellQ.GetTargets(mode, x => x.Health <= GetQDamage(x)).FirstOrDefault();
                     }
                     else
                     {
@@ -155,6 +149,15 @@ namespace SixAIO.Champions
                 ShouldCast = (mode, target, spellClass, damage) =>
                     RUltEnemies <= UnitManager.EnemyChampions.Count(x => x.Distance <= 1400 && TargetSelector.IsAttackable(x) && BuffChecker.IsKnockedUpOrBack(x))
             };
+        }
+
+        private float GetQDamage(GameObjectBase target)
+        {
+            return target != null
+                ? DamageCalculator.CalculateActualDamage(UnitManager.MyChampion, target,
+                    (-5 + SpellQ.SpellClass.Level * 25) +
+                    (UnitManager.MyChampion.UnitStats.TotalAttackDamage * 1.05f))
+                : 0;
         }
 
         private static readonly Vector3 _orderNexusPos = new Vector3(405, 95, 425);

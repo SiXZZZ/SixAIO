@@ -1,4 +1,6 @@
 ﻿using Oasys.Common.Enums.GameEnums;
+using Oasys.Common.GameObject;
+using Oasys.Common.GameObject.Clients.ExtendedInstances.Spells;
 using Oasys.Common.Menu;
 using Oasys.Common.Menu.ItemComponents;
 using Oasys.SDK;
@@ -27,14 +29,6 @@ namespace SixAIO.Champions
                 IsTargetted = () => true,
                 Range = () => 600,
                 IsEnabled = () => UseQ,
-                Damage = (target, spellClass) =>
-                            target != null
-                            ? DamageCalculator.CalculateActualDamage(UnitManager.MyChampion, target, 0,
-                            UnitManager.MyChampion.Mana >= 2
-                            ? ((111 + spellClass.Level * 37) + (UnitManager.MyChampion.UnitStats.TotalAbilityPower * 1.11f))
-                            : ((60 + spellClass.Level * 20) + (UnitManager.MyChampion.UnitStats.TotalAbilityPower * 0.6f))
-                                , 0)
-                            : 0,
                 TargetSelect = (mode) =>
                 {
                     if (mode == Orbwalker.OrbWalkingModeType.Combo)
@@ -43,11 +37,11 @@ namespace SixAIO.Champions
                     }
                     else if (mode == Orbwalker.OrbWalkingModeType.LastHit)
                     {
-                        return SpellQ.GetTargets(mode, x => x.Health <= SpellQ.Damage(x, SpellQ.SpellClass)).FirstOrDefault();
+                        return SpellQ.GetTargets(mode, x => x.Health <= GetQDamage(x)).FirstOrDefault();
                     }
                     else if (mode == Orbwalker.OrbWalkingModeType.Mixed)
                     {
-                        return SpellQ.GetTargets(mode, x => x.IsObject(ObjectTypeFlag.AIHeroClient) || x.Health <= SpellQ.Damage(x, SpellQ.SpellClass)).FirstOrDefault();
+                        return SpellQ.GetTargets(mode, x => x.IsObject(ObjectTypeFlag.AIHeroClient) || x.Health <= GetQDamage(x)).FirstOrDefault();
                     }
                     else
                     {
@@ -90,6 +84,17 @@ namespace SixAIO.Champions
                 IsEnabled = () => UseR,
                 TargetSelect = (mode) => SpellR.GetTargets(mode).FirstOrDefault()
             };
+        }
+
+        private float GetQDamage(GameObjectBase target)
+        {
+            return target != null
+                ? DamageCalculator.CalculateActualDamage(UnitManager.MyChampion, target, 0,
+                    UnitManager.MyChampion.Mana >= 2
+                    ? ((111 + SpellQ.SpellClass.Level * 37) + (UnitManager.MyChampion.UnitStats.TotalAbilityPower * 1.11f))
+                    : ((60 + SpellQ.SpellClass.Level * 20) + (UnitManager.MyChampion.UnitStats.TotalAbilityPower * 0.6f))
+                    , 0)
+                : 0;
         }
 
         private void KeyboardProvider_OnKeyPress(Keys keyBeingPressed, Oasys.Common.Tools.Devices.Keyboard.KeyPressState pressState)

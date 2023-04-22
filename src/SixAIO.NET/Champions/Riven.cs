@@ -118,7 +118,6 @@ namespace SixAIO.Champions
                 Range = () => 1100f,
                 Speed = () => 1600f,
                 Radius = () => 200,
-                Damage = GetRDamage,
                 IsEnabled = () => UseR2,
                 IsSpellReady = (spellClass, minMana, minCharges) => spellClass.IsSpellReady && IsWindSlashReady(),
                 ShouldCast = (mode, target, spellClass, damage) =>

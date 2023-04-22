@@ -1,5 +1,6 @@
 ﻿using Oasys.Common.Enums.GameEnums;
 using Oasys.Common.GameObject;
+using Oasys.Common.GameObject.Clients.ExtendedInstances.Spells;
 using Oasys.Common.Menu;
 using Oasys.Common.Menu.ItemComponents;
 using Oasys.SDK;
@@ -55,23 +56,23 @@ namespace SixAIO.Champions
                 Radius = () => 180,
                 Speed = () => 2000,
                 Delay = () => 0.35f,
-                Damage = (target, spellClass) =>
-                {
-                    if (target == null)
-                    {
-                        return 0;
-                    }
-
-                    var baseDamage = 125 * spellClass.Level;
-                    var scaleDamage = 0.75f * UnitManager.MyChampion.UnitStats.TotalAbilityPower;
-                    var dmgMod = target.HealthPercent < 30 ? 2.4f : 1f;
-
-                    return DamageCalculator.GetMagicResistMod(UnitManager.MyChampion, target) * (dmgMod * (baseDamage + scaleDamage));
-                },
                 IsEnabled = () => UseR,
-                ShouldCast = (mode, target, spellClass, damage) => target != null && target.Health < damage,
-                TargetSelect = (mode) => SpellR.GetTargets(mode).FirstOrDefault()
+                TargetSelect = (mode) => SpellR.GetTargets(mode, x => x.Health <= GetRDamage(x)).FirstOrDefault()
             };
+        }
+
+        private float GetRDamage(GameObjectBase target)
+        {
+            if (target == null)
+            {
+                return 0;
+            }
+
+            var baseDamage = 125 * SpellR.SpellClass.Level;
+            var scaleDamage = 0.75f * UnitManager.MyChampion.UnitStats.TotalAbilityPower;
+            var dmgMod = target.HealthPercent < 30 ? 2.4f : 1f;
+
+            return DamageCalculator.GetMagicResistMod(UnitManager.MyChampion, target) * (dmgMod * (baseDamage + scaleDamage));
         }
 
         internal override void OnCoreRender()
