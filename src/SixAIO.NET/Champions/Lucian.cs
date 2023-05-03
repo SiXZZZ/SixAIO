@@ -66,7 +66,7 @@ namespace SixAIO.Champions
                     }
                     foreach (var target in targets)
                     {
-                        var targetMinion = GetMinionBetweenMeAndEnemy(target, 120);
+                        var targetMinion = GetMinionBetweenMeAndEnemy(target, 60);
                         if (targetMinion != null)
                         {
                             return targetMinion;

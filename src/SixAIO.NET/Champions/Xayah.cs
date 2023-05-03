@@ -66,7 +66,7 @@ namespace SixAIO.Champions
         private int GetFeathersBetweenMeAndEnemy(AIBaseClient enemy)
         {
             return Feathers.Count(feather =>
-                    Oasys.SDK.Geometry.DistanceFromPointToLine(enemy.Position.To2D(), new Vector2[] { UnitManager.MyChampion.Position.To2D(), feather.Position.To2D() }) <= enemy.BoundingRadius + 40 &&
+                    Oasys.SDK.Geometry.DistanceFromPointToLine(enemy.Position.To2D(), new Vector2[] { UnitManager.MyChampion.Position.To2D(), feather.Position.To2D() }) <= enemy.BoundingRadius &&
                     feather.Distance > enemy.Distance && enemy.DistanceTo(feather.Position) < feather.Distance);
         }
 
