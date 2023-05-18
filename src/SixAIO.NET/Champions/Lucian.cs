@@ -55,7 +55,7 @@ namespace SixAIO.Champions
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
                 IsTargetted = () => true,
-                IsEnabled = () => UseQ && !IsPassiveActive && !IsUltActive() && !UnitManager.MyChampion.AIManager.IsDashing,
+                IsEnabled = () => UseQ && Orbwalker.CanMove && !IsPassiveActive && !IsUltActive() && !UnitManager.MyChampion.AIManager.IsDashing,
                 TargetSelect = (mode) =>
                 {
                     var range = 500 + UnitManager.MyChampion.BoundingRadius;
@@ -85,12 +85,12 @@ namespace SixAIO.Champions
                 Range = () => 900,
                 Radius = () => 110,
                 Speed = () => 1600,
-                IsEnabled = () => UseW && !IsPassiveActive && !IsUltActive() && !UnitManager.MyChampion.AIManager.IsDashing && (!OnlyWIfQENotReady || QEOnCooldown()),
+                IsEnabled = () => UseW && Orbwalker.CanMove && !IsPassiveActive && !IsUltActive() && !UnitManager.MyChampion.AIManager.IsDashing && (!OnlyWIfQENotReady || QEOnCooldown()),
                 TargetSelect = (mode) => SpellW.GetTargets(mode).FirstOrDefault()
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
-                IsEnabled = () => UseE && !IsPassiveActive && !IsUltActive(),
+                IsEnabled = () => UseE && Orbwalker.CanMove && !IsPassiveActive && !IsUltActive(),
                 ShouldCast = (mode, target, spellClass, damage) =>
                             DashModeSelected == DashMode.ToMouse &&
                             TargetSelector.IsAttackable(Orbwalker.TargetHero) &&
@@ -106,7 +106,7 @@ namespace SixAIO.Champions
                 Radius = () => 220,
                 Speed = () => 2200,
                 Delay = () => 0f,
-                IsEnabled = () => UseR && !IsPassiveActive && !IsUltActive(),
+                IsEnabled = () => UseR && Orbwalker.CanMove && !IsPassiveActive && !IsUltActive(),
                 ShouldCast = (mode, target, spellClass, damage) => target is not null && AllSpellsOnCooldown(),
                 TargetSelect = (mode) => SpellR.GetTargets(mode).FirstOrDefault()
             };
@@ -118,7 +118,7 @@ namespace SixAIO.Champions
                 Radius = () => 220,
                 Speed = () => 2200,
                 Delay = () => 0f,
-                IsEnabled = () => UseSemiAutoR && !IsUltActive(),
+                IsEnabled = () => UseSemiAutoR && Orbwalker.CanMove && !IsUltActive(),
                 TargetSelect = (mode) => SpellRSemiAuto.GetTargets(mode).FirstOrDefault()
             };
         }

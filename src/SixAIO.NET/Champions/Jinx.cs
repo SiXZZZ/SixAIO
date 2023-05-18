@@ -37,12 +37,13 @@ namespace SixAIO.Champions
 
         public Jinx()
         {
+            Orbwalker.OnOrbwalkerAfterBasicAttack += Orbwalker_OnOrbwalkerAfterBasicAttack;
             Oasys.Common.Logic.Orbwalker.OnOrbwalkerBeforeBasicAttack += Orbwalker_OnOrbwalkerBeforeBasicAttack;
             Oasys.SDK.InputProviders.KeyboardProvider.OnKeyPress += KeyboardProvider_OnKeyPress;
             SpellQSimple = new Spell(CastSlot.Q, SpellSlot.Q)
             {
                 MinimumMana = () => 20,
-                IsEnabled = () => UseQ && UseSimpleQOnly,
+                IsEnabled = () => UseQ && UseSimpleQOnly && Orbwalker.CanMove,
                 ShouldCast = (mode, target, spellClass, damage) =>
                 {
                     var usingRockets = IsQActive();
@@ -82,7 +83,7 @@ namespace SixAIO.Champions
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
                 MinimumMana = () => 20,
-                IsEnabled = () => UseQ && !UseSimpleQOnly,
+                IsEnabled = () => UseQ && !UseSimpleQOnly && Orbwalker.CanMove,
                 ShouldCast = (mode, target, spellClass, damage) =>
                 {
                     Orbwalker.SelectedTarget = null;
@@ -128,7 +129,7 @@ namespace SixAIO.Champions
                 Delay = () => 0.4f,
                 MinimumMana = () => 90,
                 IsEnabled = () => UseW && (!WOnlyOutsideOfAttackRange || !UnitManager.EnemyChampions.Any(TargetSelector.IsInRange)),
-                TargetSelect = (mode) => SpellW.GetTargets(mode, x => x.Distance > WMinimumRange).FirstOrDefault()
+                TargetSelect = (mode) => SpellW.GetTargets(mode, x => x.Distance > WMinimumRange && (!Orbwalker.CanBasicAttack || !TargetSelector.IsInRange(x))).FirstOrDefault()
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
@@ -166,7 +167,7 @@ namespace SixAIO.Champions
                                 UnitManager.MyChampion.Mana >= minimumMana &&
                                 spellClass.Charges >= minimumCharges &&
                                 !ROnlyOutsideOfAttackRange || !UnitManager.EnemyChampions.Any(TargetSelector.IsInRange),
-                TargetSelect = (mode) => SpellR.GetTargets(mode, x => x.HealthPercent <= RTargetMaxHPPercent && x.Distance > RMinimumRange && x.Distance <= RMaximumRange).FirstOrDefault()
+                TargetSelect = (mode) => SpellR.GetTargets(mode, x => x.HealthPercent <= RTargetMaxHPPercent && x.Distance > RMinimumRange && x.Distance <= RMaximumRange && (!Orbwalker.CanBasicAttack || !TargetSelector.IsInRange(x))).FirstOrDefault()
             };
             SpellRSemiAuto = new Spell(CastSlot.R, SpellSlot.R)
             {
@@ -198,6 +199,11 @@ namespace SixAIO.Champions
                                 spellClass.Charges >= minimumCharges,
                 TargetSelect = (mode) => SpellRKill.GetTargets(mode, RCanKill).FirstOrDefault(),
             };
+        }
+
+        private void Orbwalker_OnOrbwalkerAfterBasicAttack(float gameTime, GameObjectBase target)
+        {
+            SpellW.ExecuteCastSpell();
         }
 
         private bool RCanKill(GameObjectBase target)

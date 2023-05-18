@@ -7,6 +7,7 @@ using Oasys.Common.Menu.ItemComponents;
 using Oasys.SDK;
 using Oasys.SDK.Menu;
 using Oasys.SDK.SpellCasting;
+using Oasys.SDK.Tools;
 using SixAIO.Extensions;
 using SixAIO.Models;
 using System;
@@ -42,7 +43,6 @@ namespace SixAIO.Champions
             {
                 ShouldDraw = () => DrawQRange,
                 DrawColor = () => DrawQColor,
-                ShouldCast = QShouldCast,
                 AllowCollision = QAllowCollision,
                 PredictionMode = QPredictionMode,
                 MinimumHitChance = GetQHitChance,
@@ -51,29 +51,23 @@ namespace SixAIO.Champions
                 Speed = QSpeed,
                 IsEnabled = QIsEnabled,
                 MinimumMana = QMinimumMana,
+                ShouldCast = QShouldCast,
                 TargetSelect = QTargetSelect
             };
-            //SpellR = new Spell(CastSlot.R, SpellSlot.R)
-            //{
-            //    AllowCastOnMap = () => AllowRCastOnMinimap,
-            //    PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
-            //    MinimumHitChance = () => RHitChance,
-            //    Range = () => 30000,
-            //    Radius = () => 320,
-            //    Speed = () => 2000,
-            //    Delay = () => 1f,
-            //    Damage = (target, spellClass) =>
-            //                target != null
-            //                ? DamageCalculator.GetMagicResistMod(UnitManager.MyChampion, target) *
-            //                            ((200 + spellClass.Level * 150) +
-            //                            (UnitManager.MyChampion.UnitStats.BonusAttackDamage) +
-            //                            (UnitManager.MyChampion.UnitStats.TotalAbilityPower))
-            //                : 0,
-            //    IsEnabled = () => UseR,
-            //    MinimumMana = () => RMinMana,
-            //    ShouldCast = (mode, target, spellClass, damage) => target != null && target.Health < damage,
-            //    TargetSelect = (mode) => SpellR.GetTargets(mode).FirstOrDefault()
-            //};
+            SpellR = new Spell(CastSlot.R, SpellSlot.R)
+            {
+                ShouldDraw = () => DrawRRange,
+                DrawColor = () => DrawRColor,
+                PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
+                MinimumHitChance = () => GetRHitChance(),
+                Range = () => 1300,
+                Radius = () => 200,
+                Speed = () => 1000,
+                Delay = () => 0.6f,
+                IsEnabled = RIsEnabled,
+                MinimumMana = () => 100,
+                TargetSelect = RTargetSelect
+            };
         }
 
         private GameObjectBase QTargetSelect(Orbwalker.OrbWalkingModeType mode)
@@ -90,6 +84,27 @@ namespace SixAIO.Champions
                 GunType.ApheliosCalibrumQ => SpellQ.GetTargets(mode).FirstOrDefault(),
                 _ => null
             };
+        }
+
+        private GameObjectBase RTargetSelect(Orbwalker.OrbWalkingModeType mode)
+        {
+            if (mode != Orbwalker.OrbWalkingModeType.Combo)
+            {
+                return null;
+            }
+
+            var moonlightVigilCanHit = GetGunType() switch
+            {
+                GunType.ApheliosSeverumQ => RSeverumSettings.GetItem<Counter>("Moonlight Vigil Severum Can Hit").Value,
+                GunType.ApheliosInfernumQ => RInfernumSettings.GetItem<Counter>("Moonlight Vigil Infernum Can Hit").Value,
+                GunType.ApheliosCrescendumQ => RCrescendumSettings.GetItem<Counter>("Moonlight Vigil Crescendum Can Hit").Value,
+                GunType.ApheliosCalibrumQ => RCalibrumSettings.GetItem<Counter>("Moonlight Vigil Calibrum Can Hit").Value,
+                GunType.ApheliosGravitumQ => RGravitumSettings.GetItem<Counter>("Moonlight Vigil Gravitum Can Hit").Value,
+                _ => 5,
+            };
+
+            return SpellR.GetTargets(mode, target => moonlightVigilCanHit <= UnitManager.EnemyChampions.Count(enemy => target.DistanceTo(enemy.Position) <= SpellR.Radius()))
+                         .FirstOrDefault();
         }
 
         private float QMinimumMana()
@@ -109,11 +124,25 @@ namespace SixAIO.Champions
         {
             return GetGunType() switch
             {
-                GunType.ApheliosSeverumQ => UseSeverum,
+                GunType.ApheliosSeverumQ => UseSeverum && UnitManager.MyChampion.HealthPercent <= SeverumHealthPercentLessThan,
                 GunType.ApheliosInfernumQ => UseInfernum,
                 GunType.ApheliosCrescendumQ => UseCrescendum,
                 GunType.ApheliosCalibrumQ => UseCalibrum,
                 GunType.ApheliosGravitumQ => UseGravitum,
+                _ => false
+            };
+        }
+
+        private bool RIsEnabled()
+        {
+            return GetGunType() switch
+            {
+                GunType.ApheliosSeverumQ => RSeverumSettings.GetItem<Switch>("Use Moonlight Vigil Severum").IsOn &&
+                                            UnitManager.MyChampion.HealthPercent <= RSeverumSettings.GetItem<Counter>("Moonlight Vigil Severum Health Percent Less Than").Value,
+                GunType.ApheliosInfernumQ => RInfernumSettings.GetItem<Switch>("Use Moonlight Vigil Infernum").IsOn,
+                GunType.ApheliosCrescendumQ => RCrescendumSettings.GetItem<Switch>("Use Moonlight Vigil Crescendum").IsOn,
+                GunType.ApheliosCalibrumQ => RCalibrumSettings.GetItem<Switch>("Use Moonlight Vigil Calibrum").IsOn,
+                GunType.ApheliosGravitumQ => RGravitumSettings.GetItem<Switch>("Use Moonlight Vigil Gravitum").IsOn,
                 _ => false
             };
         }
@@ -167,6 +196,21 @@ namespace SixAIO.Champions
             };
         }
 
+        private Prediction.MenuSelected.HitChance GetRHitChance()
+        {
+            var setting = GetGunType() switch
+            {
+                GunType.ApheliosSeverumQ => RSeverumSettings.GetItem<ModeDisplay>("Moonlight Vigil Severum HitChance").SelectedModeName,
+                GunType.ApheliosInfernumQ => RInfernumSettings.GetItem<ModeDisplay>("Moonlight Vigil Infernum HitChance").SelectedModeName,
+                GunType.ApheliosCrescendumQ => RCrescendumSettings.GetItem<ModeDisplay>("Moonlight Vigil Crescendum HitChance").SelectedModeName,
+                GunType.ApheliosCalibrumQ => RCalibrumSettings.GetItem<ModeDisplay>("Moonlight Vigil Calibrum HitChance").SelectedModeName,
+                GunType.ApheliosGravitumQ => RGravitumSettings.GetItem<ModeDisplay>("Moonlight Vigil Gravitum HitChance").SelectedModeName,
+                _ => Prediction.MenuSelected.HitChance.Immobile.ToString(),
+            };
+
+            return (Prediction.MenuSelected.HitChance)Enum.Parse(typeof(Prediction.MenuSelected.HitChance), setting);
+        }
+
         private Prediction.MenuSelected.PredictionType QPredictionMode()
         {
             return GetGunType() switch
@@ -202,7 +246,7 @@ namespace SixAIO.Champions
 
             return GetGunType() switch
             {
-                GunType.ApheliosSeverumQ => UnitManager.MyChampion.HealthPercent <= SeverumHealthPercentLessThan && UnitManager.EnemyChampions.Any(enemy => enemy.IsAlive && enemy.Distance <= SpellQ.Range()),
+                GunType.ApheliosSeverumQ => UnitManager.EnemyChampions.Any(enemy => enemy.IsAlive && enemy.Distance <= SpellQ.Range()),
                 GunType.ApheliosInfernumQ => target != null,
                 GunType.ApheliosCrescendumQ => target != null && target.Distance <= CrescendumEnemyIsCloserThan && spellClass.IsSpellReady,
                 GunType.ApheliosCalibrumQ => target != null && (!CalibrumOnlyOutsideOfAttackRange || UnitManager.EnemyChampions.All(x => x.Distance >= UnitManager.MyChampion.TrueAttackRange)) && spellClass.IsSpellReady,
@@ -213,143 +257,172 @@ namespace SixAIO.Champions
 
         private bool HasGravitum(Hero enemy)
         {
-            return enemy.BuffManager.HasActiveBuff("ApheliosGravitumDebuff");
+            return enemy.BuffManager.ActiveBuffs.Any(x => x.Name == "ApheliosGravitumDebuff" && x.Stacks >= 1);
         }
 
         internal override void OnCoreRender()
         {
             SpellQ.DrawRange();
+            SpellR.DrawRange();
         }
 
         internal override void OnCoreMainInput()
         {
-            Orbwalker.SelectedTarget = null;
-            if (UnitManager.MyChampion.ModelName == "Aphelios")
-            {
-                if (UnitManager.EnemyChampions.Any(HasExtraGunRange()))
-                {
-                    Orbwalker.SelectedTarget = UnitManager.EnemyChampions.Where(TargetSelector.IsAttackable).FirstOrDefault(HasExtraGunRange());
-                }
-
-                static Func<Hero, bool> HasExtraGunRange()
-                {
-                    return x =>
-                    {
-                        var buff = x.BuffManager.ActiveBuffs.FirstOrDefault(x => x.Name == "aphelioscalibrumbonusrangedebuff" && x.Stacks == 1);
-                        return buff != null && buff.IsActive && buff.Stacks == 1 && x.Distance <= 1450;
-                    };
-                }
-            }
-
-            if (SpellQ.ExecuteCastSpell())
-            {
-                return;
-            }
+            Orbwalker.SelectedTarget = UnitManager.EnemyChampions
+                                                  .Where(TargetSelector.IsAttackable)
+                                                  .FirstOrDefault(enemy => enemy.Distance <= 1450 &&
+                                                                           enemy.BuffManager.ActiveBuffs.Any(x => x.Name == "aphelioscalibrumbonusrangedebuff" &&
+                                                                                                                  x.Stacks == 1));
+            SpellQ.ExecuteCastSpell();
+            SpellR.ExecuteCastSpell();
         }
+
+        //internal override void OnCoreMainTick()
+        //{
+        //    Logger.Log($"MainHand: {MainWeapon} - OffHand: {OffHand}");
+        //}
 
         internal bool UseSeverum
         {
-            get => SeverumSettings.GetItem<Switch>("Use Severum").IsOn;
-            set => SeverumSettings.GetItem<Switch>("Use Severum").IsOn = value;
+            get => QSeverumSettings.GetItem<Switch>("Use Severum").IsOn;
+            set => QSeverumSettings.GetItem<Switch>("Use Severum").IsOn = value;
         }
 
         private int SeverumHealthPercentLessThan
         {
-            get => SeverumSettings.GetItem<Counter>("Severum Health percent less than").Value;
-            set => SeverumSettings.GetItem<Counter>("Severum Health percent less than").Value = value;
+            get => QSeverumSettings.GetItem<Counter>("Severum Health percent less than").Value;
+            set => QSeverumSettings.GetItem<Counter>("Severum Health percent less than").Value = value;
         }
 
         internal bool UseInfernum
         {
-            get => InfernumSettings.GetItem<Switch>("Use Infernum").IsOn;
-            set => InfernumSettings.GetItem<Switch>("Use Infernum").IsOn = value;
+            get => QInfernumSettings.GetItem<Switch>("Use Infernum").IsOn;
+            set => QInfernumSettings.GetItem<Switch>("Use Infernum").IsOn = value;
         }
 
         internal Prediction.MenuSelected.HitChance InfernumHitChance
         {
-            get => (Prediction.MenuSelected.HitChance)Enum.Parse(typeof(Prediction.MenuSelected.HitChance), InfernumSettings.GetItem<ModeDisplay>("Infernum HitChance").SelectedModeName);
-            set => InfernumSettings.GetItem<ModeDisplay>("Infernum HitChance").SelectedModeName = value.ToString();
+            get => (Prediction.MenuSelected.HitChance)Enum.Parse(typeof(Prediction.MenuSelected.HitChance), QInfernumSettings.GetItem<ModeDisplay>("Infernum HitChance").SelectedModeName);
+            set => QInfernumSettings.GetItem<ModeDisplay>("Infernum HitChance").SelectedModeName = value.ToString();
         }
 
         internal bool UseCrescendum
         {
-            get => CrescendumSettings.GetItem<Switch>("Use Crescendum").IsOn;
-            set => CrescendumSettings.GetItem<Switch>("Use Crescendum").IsOn = value;
+            get => QCrescendumSettings.GetItem<Switch>("Use Crescendum").IsOn;
+            set => QCrescendumSettings.GetItem<Switch>("Use Crescendum").IsOn = value;
         }
 
         private int CrescendumEnemyIsCloserThan
         {
-            get => CrescendumSettings.GetItem<Counter>("Crescendum enemy is closer than").Value;
-            set => CrescendumSettings.GetItem<Counter>("Crescendum enemy is closer than").Value = value;
+            get => QCrescendumSettings.GetItem<Counter>("Crescendum enemy is closer than").Value;
+            set => QCrescendumSettings.GetItem<Counter>("Crescendum enemy is closer than").Value = value;
         }
 
         internal bool UseCalibrum
         {
-            get => CalibrumSettings.GetItem<Switch>("Use Calibrum").IsOn;
-            set => CalibrumSettings.GetItem<Switch>("Use Calibrum").IsOn = value;
+            get => QCalibrumSettings.GetItem<Switch>("Use Calibrum").IsOn;
+            set => QCalibrumSettings.GetItem<Switch>("Use Calibrum").IsOn = value;
         }
 
         internal Prediction.MenuSelected.HitChance CalibrumHitChance
         {
-            get => (Prediction.MenuSelected.HitChance)Enum.Parse(typeof(Prediction.MenuSelected.HitChance), CalibrumSettings.GetItem<ModeDisplay>("Calibrum HitChance").SelectedModeName);
-            set => CalibrumSettings.GetItem<ModeDisplay>("Calibrum HitChance").SelectedModeName = value.ToString();
+            get => (Prediction.MenuSelected.HitChance)Enum.Parse(typeof(Prediction.MenuSelected.HitChance), QCalibrumSettings.GetItem<ModeDisplay>("Calibrum HitChance").SelectedModeName);
+            set => QCalibrumSettings.GetItem<ModeDisplay>("Calibrum HitChance").SelectedModeName = value.ToString();
         }
 
         private bool CalibrumOnlyOutsideOfAttackRange
         {
-            get => CalibrumSettings.GetItem<Switch>("Calibrum only outside of attack range").IsOn;
-            set => CalibrumSettings.GetItem<Switch>("Calibrum only outside of attack range").IsOn = value;
+            get => QCalibrumSettings.GetItem<Switch>("Calibrum only outside of attack range").IsOn;
+            set => QCalibrumSettings.GetItem<Switch>("Calibrum only outside of attack range").IsOn = value;
         }
 
         internal bool UseGravitum
         {
-            get => GravitumSettings.GetItem<Switch>("Use Gravitum").IsOn;
-            set => GravitumSettings.GetItem<Switch>("Use Gravitum").IsOn = value;
+            get => QGravitumSettings.GetItem<Switch>("Use Gravitum").IsOn;
+            set => QGravitumSettings.GetItem<Switch>("Use Gravitum").IsOn = value;
         }
 
         private int GravitumCanRoot
         {
-            get => GravitumSettings.GetItem<Counter>("Gravitum can root").Value;
-            set => GravitumSettings.GetItem<Counter>("Gravitum can root").Value = value;
+            get => QGravitumSettings.GetItem<Counter>("Gravitum can root").Value;
+            set => QGravitumSettings.GetItem<Counter>("Gravitum can root").Value = value;
         }
 
-        internal Group SeverumSettings => MenuTab.GetGroup("Severum Settings");
-        internal Group InfernumSettings => MenuTab.GetGroup("Infernum Settings");
-        internal Group CrescendumSettings => MenuTab.GetGroup("Crescendum Settings");
-        internal Group CalibrumSettings => MenuTab.GetGroup("Calibrum Settings");
-        internal Group GravitumSettings => MenuTab.GetGroup("Gravitum Settings");
+        internal Group QSeverumSettings => QSettings.GetItem<Group>("Severum Settings");
+        internal Group QInfernumSettings => QSettings.GetItem<Group>("Infernum Settings");
+        internal Group QCrescendumSettings => QSettings.GetItem<Group>("Crescendum Settings");
+        internal Group QCalibrumSettings => QSettings.GetItem<Group>("Calibrum Settings");
+        internal Group QGravitumSettings => QSettings.GetItem<Group>("Gravitum Settings");
+
+        internal Group RSeverumSettings => RSettings.GetItem<Group>("Severum Settings");
+        internal Group RInfernumSettings => RSettings.GetItem<Group>("Infernum Settings");
+        internal Group RCrescendumSettings => RSettings.GetItem<Group>("Crescendum Settings");
+        internal Group RCalibrumSettings => RSettings.GetItem<Group>("Calibrum Settings");
+        internal Group RGravitumSettings => RSettings.GetItem<Group>("Gravitum Settings");
 
         internal override void InitializeMenu()
         {
             MenuManager.AddTab(new Tab($"SIXAIO - {nameof(Aphelios)}"));
-            MenuTab.AddGroup(new Group("Severum Settings"));
-            MenuTab.AddGroup(new Group("Infernum Settings"));
-            MenuTab.AddGroup(new Group("Crescendum Settings"));
-            MenuTab.AddGroup(new Group("Calibrum Settings"));
-            MenuTab.AddGroup(new Group("Gravitum Settings"));
+            MenuTab.AddItem(new Group("Q Settings"));
+            QSettings.AddItem(new Group("Severum Settings"));
+            QSettings.AddItem(new Group("Infernum Settings"));
+            QSettings.AddItem(new Group("Crescendum Settings"));
+            QSettings.AddItem(new Group("Calibrum Settings"));
+            QSettings.AddItem(new Group("Gravitum Settings"));
 
-            SeverumSettings.AddItem(new Switch() { Title = "Use Severum", IsOn = true });
-            SeverumSettings.AddItem(new Counter() { Title = "Severum Health percent less than", MinValue = 0, MaxValue = 100, Value = 50, ValueFrequency = 5 });
+            MenuTab.AddItem(new Group("R Settings"));
+            RSettings.AddItem(new Group("Severum Settings"));
+            RSettings.AddItem(new Group("Infernum Settings"));
+            RSettings.AddItem(new Group("Crescendum Settings"));
+            RSettings.AddItem(new Group("Calibrum Settings"));
+            RSettings.AddItem(new Group("Gravitum Settings"));
 
-
-            InfernumSettings.AddItem(new Switch() { Title = "Use Infernum", IsOn = true });
-            InfernumSettings.AddItem(new ModeDisplay() { Title = "Infernum HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
-
-
-            CrescendumSettings.AddItem(new Switch() { Title = "Use Crescendum", IsOn = true });
-            CrescendumSettings.AddItem(new Counter() { Title = "Crescendum enemy is closer than", MinValue = 0, MaxValue = 900, Value = 500, ValueFrequency = 50 });
-
-
-            CalibrumSettings.AddItem(new Switch() { Title = "Use Calibrum", IsOn = true });
-            CalibrumSettings.AddItem(new ModeDisplay() { Title = "Calibrum HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
-            CalibrumSettings.AddItem(new Switch() { Title = "Calibrum only outside of attack range", IsOn = false });
+            QSeverumSettings.AddItem(new Switch() { Title = "Use Severum", IsOn = true });
+            QSeverumSettings.AddItem(new Counter() { Title = "Severum Health percent less than", MinValue = 0, MaxValue = 100, Value = 50, ValueFrequency = 5 });
 
 
-            GravitumSettings.AddItem(new Switch() { Title = "Use Gravitum", IsOn = true });
-            GravitumSettings.AddItem(new Counter() { Title = "Gravitum can root", MinValue = 0, MaxValue = 5, Value = 2, ValueFrequency = 1 });
+            QInfernumSettings.AddItem(new Switch() { Title = "Use Infernum", IsOn = true });
+            QInfernumSettings.AddItem(new ModeDisplay() { Title = "Infernum HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "VeryHigh" });
 
 
-            MenuTab.AddDrawOptions(SpellSlot.Q);
+            QCrescendumSettings.AddItem(new Switch() { Title = "Use Crescendum", IsOn = true });
+            QCrescendumSettings.AddItem(new Counter() { Title = "Crescendum enemy is closer than", MinValue = 0, MaxValue = 900, Value = 500, ValueFrequency = 50 });
+
+
+            QCalibrumSettings.AddItem(new Switch() { Title = "Use Calibrum", IsOn = true });
+            QCalibrumSettings.AddItem(new ModeDisplay() { Title = "Calibrum HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "VeryHigh" });
+            QCalibrumSettings.AddItem(new Switch() { Title = "Calibrum only outside of attack range", IsOn = false });
+
+
+            QGravitumSettings.AddItem(new Switch() { Title = "Use Gravitum", IsOn = true });
+            QGravitumSettings.AddItem(new Counter() { Title = "Gravitum can root", MinValue = 0, MaxValue = 5, Value = 2, ValueFrequency = 1 });
+
+
+
+
+            RSeverumSettings.AddItem(new Switch() { Title = "Use Moonlight Vigil Severum", IsOn = true });
+            RSeverumSettings.AddItem(new ModeDisplay() { Title = "Moonlight Vigil Severum HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "VeryHigh" });
+            RSeverumSettings.AddItem(new Counter() { Title = "Moonlight Vigil Severum Health Percent Less Than", MinValue = 0, MaxValue = 100, Value = 40, ValueFrequency = 5 });
+            RSeverumSettings.AddItem(new Counter() { Title = "Moonlight Vigil Severum Can Hit", MinValue = 0, MaxValue = 5, Value = 2, ValueFrequency = 1 });
+
+            RInfernumSettings.AddItem(new Switch() { Title = "Use Moonlight Vigil Infernum", IsOn = true });
+            RInfernumSettings.AddItem(new ModeDisplay() { Title = "Moonlight Vigil Infernum HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "VeryHigh" });
+            RInfernumSettings.AddItem(new Counter() { Title = "Moonlight Vigil Infernum Can Hit", MinValue = 0, MaxValue = 5, Value = 2, ValueFrequency = 1 });
+
+            RCrescendumSettings.AddItem(new Switch() { Title = "Use Moonlight Vigil Crescendum", IsOn = true });
+            RCrescendumSettings.AddItem(new ModeDisplay() { Title = "Moonlight Vigil Crescendum HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "VeryHigh" });
+            RCrescendumSettings.AddItem(new Counter() { Title = "Moonlight Vigil Crescendum Can Hit", MinValue = 0, MaxValue = 5, Value = 2, ValueFrequency = 1 });
+
+            RCalibrumSettings.AddItem(new Switch() { Title = "Use Moonlight Vigil Calibrum", IsOn = true });
+            RCalibrumSettings.AddItem(new ModeDisplay() { Title = "Moonlight Vigil Calibrum HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "VeryHigh" });
+            RCalibrumSettings.AddItem(new Counter() { Title = "Moonlight Vigil Calibrum Can Hit", MinValue = 0, MaxValue = 5, Value = 2, ValueFrequency = 1 });
+
+            RGravitumSettings.AddItem(new Switch() { Title = "Use Moonlight Vigil Gravitum", IsOn = true });
+            RGravitumSettings.AddItem(new ModeDisplay() { Title = "Moonlight Vigil Gravitum HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "VeryHigh" });
+            RGravitumSettings.AddItem(new Counter() { Title = "Moonlight Vigil Gravitum Can Hit", MinValue = 0, MaxValue = 5, Value = 2, ValueFrequency = 1 });
+
+
+            MenuTab.AddDrawOptions(SpellSlot.Q, SpellSlot.R);
         }
     }
 }

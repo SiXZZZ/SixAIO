@@ -68,6 +68,7 @@ namespace SixAIO.Champions
                 AllowCancelBasicAttack = () => true,
                 IsTargetted = () => true,
                 IsEnabled = () => UseE,
+                MinimumMana = () => 70f,
                 TargetSelect = (mode) => UseTargetselector
                 ? Oasys.Common.Logic.TargetSelector.GetBestHeroTarget(Orbwalker.SelectedHero, x => x.Distance <= ETargetRange && !x.BuffManager.ActiveBuffs.Any(x => x.Name == "tristanaecharge" && x.Stacks >= 1))
                 : GetPrioritizationTarget(),
@@ -77,6 +78,7 @@ namespace SixAIO.Champions
             {
                 IsTargetted = () => true,
                 IsEnabled = () => UseR,
+                MinimumMana = () => 100f,
                 TargetSelect = (mode) => TargetSelectR()
             };
         }
@@ -106,7 +108,8 @@ namespace SixAIO.Champions
 
         private Hero TargetSelectR()
         {
-            var targets = UnitManager.EnemyChampions.Where(x => !x.IsTargetDummy).Where(x => x.Distance <= UnitManager.MyChampion.TrueAttackRange &&
+            var targets = UnitManager.EnemyChampions.Where(x => !x.IsTargetDummy)
+                                                    .Where(x => x.Distance <= UnitManager.MyChampion.TrueAttackRange &&
                                                                 TargetSelector.IsAttackable(x) &&
                                                                 !TargetSelector.IsInvulnerable(x, Oasys.Common.Logic.DamageType.Magical, false) &&
                                                                 RSettings.GetItem<Switch>("R - " + x.ModelName).IsOn)

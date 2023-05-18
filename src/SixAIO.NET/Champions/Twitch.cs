@@ -39,7 +39,7 @@ namespace SixAIO.Champions
                 Range = () => 950,
                 Speed = () => 1400,
                 Radius = () => 260,
-                IsEnabled = () => UseW,
+                IsEnabled = () => UseW && !UnitManager.MyChampion.BuffManager.ActiveBuffs.Any(x => x.Name == "TwitchFullAutomatic" && x.Stacks >= 1),
                 TargetSelect = (mode) => SpellW.GetTargets(mode).FirstOrDefault()
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)

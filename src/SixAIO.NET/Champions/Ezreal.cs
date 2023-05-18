@@ -37,10 +37,10 @@ namespace SixAIO.Champions
                     if (mode == Orbwalker.OrbWalkingModeType.Combo)
                     {
                         return PrioTargetsWithW
-                                ? SpellQ.GetTargets(mode)
+                                ? SpellQ.GetTargets(mode, x => (!Orbwalker.CanBasicAttack || !TargetSelector.IsInRange(x)))
                                         .OrderByDescending(x => x.BuffManager.ActiveBuffs.Any(buff => buff.IsActive && buff.Stacks >= 1 && buff.Name == "ezrealwattach"))
                                         .FirstOrDefault()
-                                : SpellQ.GetTargets(mode).FirstOrDefault();
+                                : SpellQ.GetTargets(mode, x => (!Orbwalker.CanBasicAttack || !TargetSelector.IsInRange(x))).FirstOrDefault();
                     }
                     else if (mode == Orbwalker.OrbWalkingModeType.LastHit)
                     {

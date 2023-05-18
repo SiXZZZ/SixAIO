@@ -1,4 +1,5 @@
-﻿using Oasys.Common.Enums.GameEnums;
+﻿using Oasys.Common;
+using Oasys.Common.Enums.GameEnums;
 using Oasys.Common.Extensions;
 using Oasys.Common.GameObject;
 using Oasys.Common.Menu;
@@ -10,6 +11,7 @@ using SharpDX;
 using SixAIO.Extensions;
 using SixAIO.Models;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace SixAIO.Champions
@@ -18,6 +20,7 @@ namespace SixAIO.Champions
     {
         public Samira()
         {
+            SDKSpell.OnSpellCast += SDKSpell_OnSpellCast;
             Orbwalker.OnOrbwalkerAfterBasicAttack += Orbwalker_OnOrbwalkerAfterBasicAttack;
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
@@ -33,12 +36,12 @@ namespace SixAIO.Champions
                 Speed = () => 2600,
                 IsEnabled = () => UseQ && !UnitManager.MyChampion.BuffManager.ActiveBuffs.Any(x => x.Name == "SamiraR" && x.Stacks >= 1),
                 MinimumMana = () => QMinMana,
-                TargetSelect = (mode) => SpellQ.GetTargets(mode).FirstOrDefault()
+                TargetSelect = (mode) => SpellQ.GetTargets(mode, x => (!Orbwalker.CanBasicAttack || !TargetSelector.IsInRange(x))).FirstOrDefault()
             };
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
             {
                 IsCharge = () => true,
-                IsEnabled = () => UseW && !UnitManager.MyChampion.BuffManager.ActiveBuffs.Any(x => x.Name == "SamiraR" && x.Stacks >= 1),
+                IsEnabled = () => UseW && Orbwalker.CanMove && !Orbwalker.CanBasicAttack && !UnitManager.MyChampion.BuffManager.ActiveBuffs.Any(x => x.Name == "SamiraR" && x.Stacks >= 1),
                 ShouldCast = (mode, target, spellClass, damage) => UnitManager.EnemyChampions.Any(x => TargetSelector.IsAttackable(x) && x.Distance < 325),
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
@@ -60,6 +63,14 @@ namespace SixAIO.Champions
                 Range = () => 600,
                 ShouldCast = (mode, target, spellClass, damage) => UnitManager.EnemyChampions.Count(x => TargetSelector.IsAttackable(x) && x.Distance < 600) > 0,
             };
+        }
+
+        private void SDKSpell_OnSpellCast(SDKSpell spell, GameObjectBase arg2)
+        {
+            if (spell.SpellSlot == SpellSlot.E)
+            {
+                SpellQ.ExecuteCastSpell();
+            }
         }
 
         private static readonly Vector3 _orderNexusPos = new Vector3(405, 95, 425);
@@ -90,9 +101,22 @@ namespace SixAIO.Champions
             SpellR.DrawRange();
         }
 
+        private static GameObjectBase GetPassiveTarget<T>(List<T> enemies) where T : GameObjectBase
+        {
+            return enemies.FirstOrDefault(enemy =>
+                                TargetSelector.IsAttackable(enemy) &&
+                                TargetSelector.IsInRange(enemy) &&
+                                enemy.BuffManager.ActiveBuffs.Any(buff => (buff.EntryType == BuffType.Knockup || buff.EntryType == BuffType.Knockback) && buff.Stacks >= 1));
+        }
+
         internal override void OnCoreMainInput()
         {
-            if (SpellR.ExecuteCastSpell() || SpellE.ExecuteCastSpell() || SpellQ.ExecuteCastSpell())
+            Orbwalker.SelectedTarget = GetPassiveTarget(UnitManager.EnemyChampions);
+
+            if (SpellR.ExecuteCastSpell() ||
+                SpellW.ExecuteCastSpell() ||
+                SpellE.ExecuteCastSpell() ||
+                SpellQ.ExecuteCastSpell())
             {
                 return;
             }
