@@ -37,7 +37,6 @@ namespace SixAIO.Champions
 
         public Jinx()
         {
-            Orbwalker.OnOrbwalkerAfterBasicAttack += Orbwalker_OnOrbwalkerAfterBasicAttack;
             Oasys.Common.Logic.Orbwalker.OnOrbwalkerBeforeBasicAttack += Orbwalker_OnOrbwalkerBeforeBasicAttack;
             Oasys.SDK.InputProviders.KeyboardProvider.OnKeyPress += KeyboardProvider_OnKeyPress;
             SpellQSimple = new Spell(CastSlot.Q, SpellSlot.Q)
@@ -199,11 +198,6 @@ namespace SixAIO.Champions
                                 spellClass.Charges >= minimumCharges,
                 TargetSelect = (mode) => SpellRKill.GetTargets(mode, RCanKill).FirstOrDefault(),
             };
-        }
-
-        private void Orbwalker_OnOrbwalkerAfterBasicAttack(float gameTime, GameObjectBase target)
-        {
-            SpellW.ExecuteCastSpell();
         }
 
         private bool RCanKill(GameObjectBase target)
