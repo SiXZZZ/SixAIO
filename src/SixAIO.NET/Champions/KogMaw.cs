@@ -23,6 +23,7 @@ namespace SixAIO.Champions
 
         public KogMaw()
         {
+            Orbwalker.OnOrbwalkerBeforeBasicAttack += Orbwalker_OnOrbwalkerBeforeBasicAttack;
             Oasys.SDK.InputProviders.KeyboardProvider.OnKeyPress += KeyboardProvider_OnKeyPress;
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
@@ -42,7 +43,7 @@ namespace SixAIO.Champions
             {
                 IsEnabled = () => UseW && !UnitManager.MyChampion.BuffManager.ActiveBuffs.Any(x => x.Name == "KogMawBioArcaneBarrage" && x.Stacks >= 1),
                 MinimumMana = () => WMinMana,
-                ShouldCast = (mode, target, spellClass, damage) => UnitManager.EnemyChampions.Any(x => x.Distance < GetAttackRangeWithWActive() && TargetSelector.IsAttackable(x))
+                ShouldCast = (mode, target, spellClass, damage) => Orbwalker.CanBasicAttack && UnitManager.EnemyChampions.Any(x => x.Distance < GetAttackRangeWithWActive() && TargetSelector.IsAttackable(x))
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
@@ -84,6 +85,14 @@ namespace SixAIO.Champions
             };
         }
 
+        private void Orbwalker_OnOrbwalkerBeforeBasicAttack(float gameTime, GameObjectBase target)
+        {
+            if (target is not null && target.IsObject(ObjectTypeFlag.AIHeroClient))
+            {
+                SpellW.ExecuteCastSpell();
+            }
+        }
+
         private bool ROnlyOutSideAttackRange(GameObjectBase x)
         {
             return ROnlyOutsideOfAttackRange
@@ -101,7 +110,7 @@ namespace SixAIO.Champions
 
         private static float GetAttackRangeWithWActive()
         {
-            return UnitManager.MyChampion.TrueAttackRange + 110 + (20 * UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot.W).Level);
+            return UnitManager.MyChampion.TrueAttackRange + 100 + (20 * UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot.W).Level);
         }
 
         internal override void OnCoreRender()
@@ -125,10 +134,10 @@ namespace SixAIO.Champions
 
         internal override void OnCoreMainInput()
         {
-            if (SpellW.ExecuteCastSpell() || SpellQ.ExecuteCastSpell() || SpellR.ExecuteCastSpell() || SpellE.ExecuteCastSpell())
-            {
-                return;
-            }
+            SpellE.ExecuteCastSpell();
+            SpellQ.ExecuteCastSpell();
+            SpellR.ExecuteCastSpell();
+            SpellW.ExecuteCastSpell();
         }
 
         private int QMaxRange

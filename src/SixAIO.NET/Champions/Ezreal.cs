@@ -37,10 +37,10 @@ namespace SixAIO.Champions
                     if (mode == Orbwalker.OrbWalkingModeType.Combo)
                     {
                         return PrioTargetsWithW
-                                ? SpellQ.GetTargets(mode, x => (!Orbwalker.CanBasicAttack || !TargetSelector.IsInRange(x)))
+                                ? SpellQ.GetTargets(mode)
                                         .OrderByDescending(x => x.BuffManager.ActiveBuffs.Any(buff => buff.IsActive && buff.Stacks >= 1 && buff.Name == "ezrealwattach"))
                                         .FirstOrDefault()
-                                : SpellQ.GetTargets(mode, x => (!Orbwalker.CanBasicAttack || !TargetSelector.IsInRange(x))).FirstOrDefault();
+                                : SpellQ.GetTargets(mode).FirstOrDefault();
                     }
                     else if (mode == Orbwalker.OrbWalkingModeType.LastHit)
                     {
@@ -48,11 +48,11 @@ namespace SixAIO.Champions
                     }
                     else if (mode == Orbwalker.OrbWalkingModeType.Mixed)
                     {
-                        return SpellQ.GetTargets(mode, x => x.IsObject(ObjectTypeFlag.AIHeroClient) || x.Health <= GetQDamage(x)).FirstOrDefault();
+                        return SpellQ.GetTargets(mode, x => (!Orbwalker.CanBasicAttack || !TargetSelector.IsInRange(x)) && x.IsObject(ObjectTypeFlag.AIHeroClient) || x.Health <= GetQDamage(x)).FirstOrDefault();
                     }
                     else
                     {
-                        var targets = SpellQ.GetTargets(mode);
+                        var targets = SpellQ.GetTargets(mode, x => (!Orbwalker.CanBasicAttack || !TargetSelector.IsInRange(x)));
                         return targets.Count() > 1
                             ? targets.Where(x => x.NetworkID != Orbwalker.LaneClearTarget?.NetworkID).FirstOrDefault()
                             : targets.FirstOrDefault();
