@@ -117,7 +117,7 @@ namespace SixAIO.Champions
                                     UnitManager.MyChampion.UnitStats.TotalAbilityPower * 0.2f;
 
             var additionalSpearDamage = 4 +
-                                        UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot.E).Level * 6 +
+                                        UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot.E).Level * 4 +
                                         UnitManager.MyChampion.UnitStats.TotalAttackDamage * GetAdditionalSpearLevelAttackDamageMod() +
                                         UnitManager.MyChampion.UnitStats.TotalAbilityPower * 0.2f;
             var physicalDamage = firstSpearDaamage + additionalSpearDamage * (kalistaE.Stacks - 1);
@@ -140,11 +140,11 @@ namespace SixAIO.Champions
         {
             return UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot.E).Level switch
             {
-                1 => 0.232f,
-                2 => 0.2755f,
-                3 => 0.319f,
-                4 => 0.3625f,
-                5 => 0.406f,
+                1 => 0.25f,
+                2 => 0.30f,
+                3 => 0.35f,
+                4 => 0.40f,
+                5 => 0.45f,
                 _ => 0,
             };
         }

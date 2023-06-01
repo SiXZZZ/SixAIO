@@ -1,4 +1,5 @@
-﻿using Oasys.Common.Enums.GameEnums;
+﻿using Oasys.Common;
+using Oasys.Common.Enums.GameEnums;
 using Oasys.Common.EventsProvider;
 using Oasys.Common.GameObject.ObjectClass;
 using Oasys.Common.Menu;
@@ -47,7 +48,7 @@ namespace SixAIO.Utilities
                     UnitManager.MyChampion.IsAlive &&
                     TargetSelector.IsAttackable(UnitManager.MyChampion, false) &&
                     DashModeSelected == DashMode.ToMouse &&
-                    UnitManager.EnemyChampions.Any(x => x.IsAlive && x.Distance <= 750 && x.Health <= GetGaleforceDamage(x)))
+                    UnitManager.EnemyChampions.Any(x => x.IsAlive && x.Distance <= 750 && x.DistanceTo(EngineManager.WorldMousePosition) <= 720 && x.Health <= GetGaleforceDamage(x)))
                 {
                     if (UnitManager.MyChampion.Inventory.HasItem(ItemID.Galeforce) &&
                         UnitManager.MyChampion.Inventory.GetItemByID(ItemID.Galeforce)?.IsReady == true)
@@ -65,19 +66,19 @@ namespace SixAIO.Utilities
 
         private static float GetGaleforceDamage(Hero enemy)
         {
-            var magicDamage = (float)(UnitManager.MyChampion.Level <= 9 ? 60 : 60 + (5 * (UnitManager.MyChampion.Level - 9)));
-            magicDamage += UnitManager.MyChampion.UnitStats.BonusAttackDamage * 0.15f;
-            magicDamage *= 3;
+            var physicalDamage = (float)(UnitManager.MyChampion.Level <= 9 ? 50 : 50 + (22.22f * (UnitManager.MyChampion.Level - 9)));
+            physicalDamage += UnitManager.MyChampion.UnitStats.BonusAttackDamage * 0.15f;
+            physicalDamage *= 3;
 
             var missingHealthPercent = 100f - enemy.HealthPercent;
             var dmgMod = missingHealthPercent / 7 * 5 / 100;
             dmgMod = Math.Min(dmgMod, 0.5f);
 
-            magicDamage *= 1f + dmgMod;
+            physicalDamage *= 1f + dmgMod;
 
-            var magicResMod = DamageCalculator.GetMagicResistMod(UnitManager.MyChampion, enemy);
+            var magicResMod = DamageCalculator.GetCombatArmor(UnitManager.MyChampion, enemy);
 
-            var result = (float)(magicDamage * magicResMod - enemy.NeutralShield - enemy.MagicalShield);
+            var result = (float)(physicalDamage * magicResMod - enemy.NeutralShield);
             return result;
         }
     }
