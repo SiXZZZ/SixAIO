@@ -26,7 +26,7 @@ namespace SixAIO
             Oasys.Common.EventsProvider.GameEvents.OnDeleteObject += GameEvents_OnDeleteObject;
 
             //utilities
-            GameEvents.OnGameLoadComplete += ChatCooldownAlerter.GameEvents_OnGameLoadComplete;
+            //GameEvents.OnGameLoadComplete += ChatCooldownAlerter.GameEvents_OnGameLoadComplete;
             GameEvents.OnGameLoadComplete += AntiChat.GameEvents_OnGameLoadComplete;
             GameEvents.OnGameLoadComplete += AntiAFK.GameEvents_OnGameLoadComplete;
             GameEvents.OnGameLoadComplete += AutoComplimenter.GameEvents_OnGameLoadComplete;

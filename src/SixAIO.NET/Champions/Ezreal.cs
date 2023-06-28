@@ -28,9 +28,9 @@ namespace SixAIO.Champions
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
                 MinimumHitChance = () => QHitChance,
                 Range = () => 1100,
-                Radius = () => 100,
+                Radius = () => 120,
                 Speed = () => 2000,
-                IsEnabled = () => UseQ && Orbwalker.CanMove,
+                IsEnabled = () => UseQ,
                 MinimumMana = () => QMinMana,
                 TargetSelect = (mode) =>
                 {
@@ -44,7 +44,7 @@ namespace SixAIO.Champions
                     }
                     else if (mode == Orbwalker.OrbWalkingModeType.LastHit)
                     {
-                        return SpellQ.GetTargets(mode, x => x.Health <= GetQDamage(x)).FirstOrDefault();
+                        return SpellQ.GetTargets(mode, x => (!Orbwalker.CanBasicAttack || !TargetSelector.IsInRange(x)) && x.Health <= GetQDamage(x)).FirstOrDefault();
                     }
                     else if (mode == Orbwalker.OrbWalkingModeType.Mixed)
                     {
@@ -66,7 +66,7 @@ namespace SixAIO.Champions
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
                 MinimumHitChance = () => WHitChance,
                 Range = () => WMaximumRange,
-                Radius = () => 100,
+                Radius = () => 140,
                 Speed = () => 1700,
                 IsEnabled = () => UseW,
                 MinimumMana = () => WMinMana,
@@ -162,18 +162,19 @@ namespace SixAIO.Champions
 
         internal override void OnCoreMainInput()
         {
-            if (SpellW.ExecuteCastSpell() || SpellQ.ExecuteCastSpell() || SpellR.ExecuteCastSpell() || SpellE.ExecuteCastSpell())
-            {
-                return;
-            }
-        }
-
-        internal override void OnCoreMainTick()
-        {
             if (PrioTargetsWithW)
             {
                 Orbwalker.SelectedTarget = UnitManager.EnemyChampions.FirstOrDefault(x => x.BuffManager.ActiveBuffs.Any(buff => buff.IsActive && buff.Stacks >= 1 && buff.Name == "ezrealwattach"));
             }
+
+            if (SpellW.ExecuteCastSpell() || 
+                SpellQ.ExecuteCastSpell() || 
+                SpellR.ExecuteCastSpell() || 
+                SpellE.ExecuteCastSpell())
+            {
+                return;
+            }
+
         }
 
         internal override void OnCoreLaneClearInput()

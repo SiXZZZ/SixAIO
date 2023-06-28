@@ -52,6 +52,7 @@ namespace SixAIO.Champions
             SDKSpell.OnSpellCast += Spell_OnSpellCast;
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
+                MinimumMana = () => 35,
                 IsEnabled = () => UseQ,
                 ShouldCast = (mode, target, spellClass, damage) =>
                 {
@@ -84,6 +85,7 @@ namespace SixAIO.Champions
             };
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
             {
+                MinimumMana = () => 40,
                 Delay = () => 0f,
                 IsEnabled = () => UseW,
                 ShouldCast = (mode, target, spellClass, damage) =>
@@ -110,6 +112,7 @@ namespace SixAIO.Champions
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
+                MinimumMana = () => 50,
                 ShouldDraw = () => DrawERange,
                 DrawColor = () => DrawEColor,
                 IsTargetted = () => true,

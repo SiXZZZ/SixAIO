@@ -28,6 +28,11 @@ namespace SixAIO.Champions
 
         private float GetRDamage(GameObjectBase target)
         {
+            if (target is null)
+            {
+                return 0;
+            }
+
             var eTarget = GetETarget(UnitManager.EnemyChampions);
             var extraDamage = 0f;
             if (eTarget is not null && eTarget.NetworkID == target.NetworkID)

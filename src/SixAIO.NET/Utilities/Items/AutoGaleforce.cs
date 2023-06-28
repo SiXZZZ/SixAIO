@@ -66,7 +66,7 @@ namespace SixAIO.Utilities
 
         private static float GetGaleforceDamage(Hero enemy)
         {
-            var physicalDamage = (float)(UnitManager.MyChampion.Level <= 9 ? 50 : 50 + (22.22f * (UnitManager.MyChampion.Level - 9)));
+            var physicalDamage = (float)(UnitManager.MyChampion.Level <= 7 ? 50 : 50 + (6 * (UnitManager.MyChampion.Level - 7)));
             physicalDamage += UnitManager.MyChampion.UnitStats.BonusAttackDamage * 0.15f;
             physicalDamage *= 3;
 
@@ -76,9 +76,8 @@ namespace SixAIO.Utilities
 
             physicalDamage *= 1f + dmgMod;
 
-            var magicResMod = DamageCalculator.GetCombatArmor(UnitManager.MyChampion, enemy);
-
-            var result = (float)(physicalDamage * magicResMod - enemy.NeutralShield);
+            var finalDamage = DamageCalculator.CalculateActualDamage(UnitManager.MyChampion, enemy, physicalDamage);
+            var result = (float)(finalDamage - enemy.NeutralShield);
             return result;
         }
     }
