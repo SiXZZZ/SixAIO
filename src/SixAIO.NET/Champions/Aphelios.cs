@@ -1,105 +1,211 @@
-﻿using Oasys.Common.Enums.GameEnums;
+﻿using Oasys.Common;
+using Oasys.Common.Enums.GameEnums;
+using Oasys.Common.EventsProvider;
 using Oasys.Common.GameObject;
+using Oasys.Common.GameObject.Clients;
 using Oasys.Common.GameObject.Clients.ExtendedInstances.Spells;
 using Oasys.Common.GameObject.ObjectClass;
 using Oasys.Common.Menu;
 using Oasys.Common.Menu.ItemComponents;
+using Oasys.Common.Tools;
 using Oasys.SDK;
 using Oasys.SDK.Menu;
 using Oasys.SDK.SpellCasting;
-using Oasys.SDK.Tools;
 using SixAIO.Extensions;
 using SixAIO.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace SixAIO.Champions
 {
     internal sealed class Aphelios : Champion
     {
-        public enum GunType
+        internal Spell SpellWR;
+
+        private Storage<GunType, float> QCooldownTracked = new Storage<GunType, float>();
+
+        public GunType MainWeapon => UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot.Q).SpellData.SpellName switch
         {
-            ApheliosSeverumQ,
-            ApheliosInfernumQ,
-            ApheliosCrescendumQ,
-            ApheliosCalibrumQ,
-            ApheliosGravitumQ,
+            "ApheliosSeverumQ" => GunType.ApheliosSeverum,
+            "ApheliosInfernumQ" => GunType.ApheliosInfernum,
+            "ApheliosCrescendumQ" => GunType.ApheliosCrescendum,
+            "ApheliosCalibrumQ" => GunType.ApheliosCalibrum,
+            "ApheliosGravitumQ" => GunType.ApheliosGravitum,
+            _ => GunType.Unknown
+        };
+
+        public GunType OffHand
+        {
+            get
+            {
+                var offHandGunBuff = UnitManager.MyChampion.BuffManager.ActiveBuffs.FirstOrDefault(x => x.Name.Contains("ApheliosOffHandBuff") && x.Stacks >= 1);
+                if (offHandGunBuff is not null)
+                {
+                    return offHandGunBuff.Name switch
+                    {
+                        "ApheliosOffHandBuffCalibrum" => GunType.ApheliosCalibrum,
+                        "ApheliosOffHandBuffSeverum" => GunType.ApheliosSeverum,
+                        "ApheliosOffHandBuffGravitum" => GunType.ApheliosGravitum,
+                        "ApheliosOffHandBuffInfernum" => GunType.ApheliosInfernum,
+                        "ApheliosOffHandBuffCrescendum" => GunType.ApheliosCrescendum,
+                        _ => GunType.Unknown
+                    };
+                }
+
+                return GunType.Unknown;
+            }
         }
 
-        private static GunType GetGunType() => UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot.Q).SpellData.SpellName switch
+        public enum GunType
         {
-            "ApheliosSeverumQ" => GunType.ApheliosSeverumQ,
-            "ApheliosInfernumQ" => GunType.ApheliosInfernumQ,
-            "ApheliosCrescendumQ" => GunType.ApheliosCrescendumQ,
-            "ApheliosCalibrumQ" => GunType.ApheliosCalibrumQ,
-            "ApheliosGravitumQ" => GunType.ApheliosGravitumQ,
-            _ => GunType.ApheliosSeverumQ
-        };
+            Unknown,
+            ApheliosSeverum,
+            ApheliosInfernum,
+            ApheliosCrescendum,
+            ApheliosCalibrum,
+            ApheliosGravitum,
+        }
 
         public Aphelios()
         {
+            QCooldownTracked[GunType.ApheliosSeverum] = 0;
+            QCooldownTracked[GunType.ApheliosInfernum] = 0;
+            QCooldownTracked[GunType.ApheliosCalibrum] = 0;
+            QCooldownTracked[GunType.ApheliosGravitum] = 0;
+            QCooldownTracked[GunType.ApheliosCrescendum] = 0;
+
+            GameEvents.OnGameProcessSpell += GameEvents_OnGameProcessSpell;
             SpellQ = new Spell(CastSlot.Q, SpellSlot.Q)
             {
                 ShouldDraw = () => DrawQRange,
                 DrawColor = () => DrawQColor,
-                AllowCollision = QAllowCollision,
-                PredictionMode = QPredictionMode,
-                MinimumHitChance = GetQHitChance,
-                Range = QRange,
-                Radius = QRadius,
-                Speed = QSpeed,
-                IsEnabled = QIsEnabled,
-                MinimumMana = QMinimumMana,
-                ShouldCast = QShouldCast,
-                TargetSelect = QTargetSelect
+                AllowCollision = (target, collisions) => QAllowCollision(target, collisions, MainWeapon),
+                PredictionMode = () => QPredictionMode(MainWeapon),
+                MinimumHitChance = () => GetQHitChance(MainWeapon),
+                Range = () => QRange(MainWeapon),
+                Radius = () => QRadius(MainWeapon),
+                Speed = () => QSpeed(MainWeapon),
+                IsEnabled = () => QIsEnabled(MainWeapon),
+                MinimumMana = () => QMinimumMana(MainWeapon),
+                ShouldCast = (mode, target, spellClass, damage) => QShouldCast(mode, target, spellClass, damage, MainWeapon, SpellQ.Range()),
+                TargetSelect = (mode) => QTargetSelect(mode, SpellQ.GetTargets(mode), MainWeapon)
+            };
+            SpellW = new Spell(CastSlot.W, SpellSlot.W)
+            {
+                AllowCollision = (target, collisions) => QAllowCollision(target, collisions, OffHand),
+                PredictionMode = () => QPredictionMode(OffHand),
+                MinimumHitChance = () => GetQHitChance(OffHand),
+                Range = () => QRange(OffHand),
+                Radius = () => QRadius(OffHand),
+                Speed = () => QSpeed(OffHand),
+                IsEnabled = () => WIsEnabled(OffHand) && QIsEnabled(OffHand),
+                MinimumMana = () => QMinimumMana(OffHand),
+                ShouldCast = (mode, target, spellClass, damage) => EngineManager.GameTime >= QCooldownTracked[OffHand] && QShouldCast(mode, target, spellClass, damage, OffHand, SpellW.Range()),
+                TargetSelect = (mode) => QTargetSelect(mode, SpellW.GetTargets(mode), OffHand)
+            };
+            SpellWR = new Spell(CastSlot.W, SpellSlot.W)
+            {
+                PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
+                MinimumHitChance = () => GetRHitChance(OffHand),
+                Range = () => 1300,
+                Radius = () => 200,
+                Speed = () => 1000,
+                Delay = () => 0.6f,
+                IsEnabled = () => RIsEnabled(OffHand),
+                MinimumMana = () => 100,
+                TargetSelect = (mode) => RTargetSelect(mode, OffHand)
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
                 ShouldDraw = () => DrawRRange,
                 DrawColor = () => DrawRColor,
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
-                MinimumHitChance = () => GetRHitChance(),
+                MinimumHitChance = () => GetRHitChance(MainWeapon),
                 Range = () => 1300,
                 Radius = () => 200,
                 Speed = () => 1000,
                 Delay = () => 0.6f,
-                IsEnabled = RIsEnabled,
+                IsEnabled = () => RIsEnabled(MainWeapon),
                 MinimumMana = () => 100,
-                TargetSelect = RTargetSelect
+                TargetSelect = (mode) => RTargetSelect(mode, MainWeapon)
             };
         }
 
-        private GameObjectBase QTargetSelect(Orbwalker.OrbWalkingModeType mode)
+        private bool WIsEnabled(GunType gun)
+        {
+            return gun switch
+            {
+                GunType.ApheliosSeverum => CanSwapToSeverum,
+                GunType.ApheliosInfernum => CanSwapToInfernum,
+                GunType.ApheliosCrescendum => CanSwapToCrescendum,
+                GunType.ApheliosCalibrum => CanSwapToCalibrum,
+                GunType.ApheliosGravitum => CanSwapToGravitum,
+                _ => false
+            };
+        }
+
+        private float _lastSpellCast = 0f;
+        private Task GameEvents_OnGameProcessSpell(AIBaseClient caster, SpellActiveEntry spell)
+        {
+            if (caster is not null &&
+                spell is not null &&
+                caster.IsMe &&
+                spell.SpellSlot == SpellSlot.Q &&
+                spell.CastStartTime > _lastSpellCast)
+            {
+                _lastSpellCast = spell.CastStartTime;
+                QCooldownTracked[MainWeapon] = spell.CastEndTime + GetCooldown(MainWeapon);
+            }
+
+            return Task.CompletedTask;
+        }
+
+        private float GetCooldown(GunType gun)
+        {
+            var level = UnitManager.MyChampion.Level;
+            return gun switch
+            {
+                GunType.ApheliosSeverum => Math.Max(8, 10f - (0.3f * (level / 2))),
+                GunType.ApheliosInfernum => Math.Max(6, 9f - (0.5f * (level / 2))),
+                GunType.ApheliosCrescendum => Math.Max(6, 9f - (0.5f * (level / 2))),
+                GunType.ApheliosCalibrum => Math.Max(8, 10f - (0.3f * (level / 2))),
+                GunType.ApheliosGravitum => Math.Max(10, 12f - (0.3f * (level / 2))),
+                _ => Math.Max(8, 10f - (0.3f * (level / 2))),
+            };
+        }
+
+        private GameObjectBase QTargetSelect(Orbwalker.OrbWalkingModeType mode, IEnumerable<GameObjectBase> targets, GunType gun)
         {
             if (mode != Orbwalker.OrbWalkingModeType.Combo)
             {
                 return null;
             }
 
-            return GetGunType() switch
+            return gun switch
             {
-                GunType.ApheliosInfernumQ => SpellQ.GetTargets(mode).FirstOrDefault(),
-                GunType.ApheliosCrescendumQ => SpellQ.GetTargets(mode).FirstOrDefault(),
-                GunType.ApheliosCalibrumQ => SpellQ.GetTargets(mode).FirstOrDefault(),
+                GunType.ApheliosInfernum => targets.FirstOrDefault(),
+                GunType.ApheliosCrescendum => targets.FirstOrDefault(),
+                GunType.ApheliosCalibrum => targets.FirstOrDefault(),
                 _ => null
             };
         }
 
-        private GameObjectBase RTargetSelect(Orbwalker.OrbWalkingModeType mode)
+        private GameObjectBase RTargetSelect(Orbwalker.OrbWalkingModeType mode, GunType gun)
         {
             if (mode != Orbwalker.OrbWalkingModeType.Combo)
             {
                 return null;
             }
 
-            var moonlightVigilCanHit = GetGunType() switch
+            var moonlightVigilCanHit = gun switch
             {
-                GunType.ApheliosSeverumQ => RSeverumSettings.GetItem<Counter>("Moonlight Vigil Severum Can Hit").Value,
-                GunType.ApheliosInfernumQ => RInfernumSettings.GetItem<Counter>("Moonlight Vigil Infernum Can Hit").Value,
-                GunType.ApheliosCrescendumQ => RCrescendumSettings.GetItem<Counter>("Moonlight Vigil Crescendum Can Hit").Value,
-                GunType.ApheliosCalibrumQ => RCalibrumSettings.GetItem<Counter>("Moonlight Vigil Calibrum Can Hit").Value,
-                GunType.ApheliosGravitumQ => RGravitumSettings.GetItem<Counter>("Moonlight Vigil Gravitum Can Hit").Value,
+                GunType.ApheliosSeverum => RSeverumSettings.GetItem<Counter>("Moonlight Vigil Severum Can Hit").Value,
+                GunType.ApheliosInfernum => RInfernumSettings.GetItem<Counter>("Moonlight Vigil Infernum Can Hit").Value,
+                GunType.ApheliosCrescendum => RCrescendumSettings.GetItem<Counter>("Moonlight Vigil Crescendum Can Hit").Value,
+                GunType.ApheliosCalibrum => RCalibrumSettings.GetItem<Counter>("Moonlight Vigil Calibrum Can Hit").Value,
+                GunType.ApheliosGravitum => RGravitumSettings.GetItem<Counter>("Moonlight Vigil Gravitum Can Hit").Value,
                 _ => 5,
             };
 
@@ -107,150 +213,150 @@ namespace SixAIO.Champions
                          .FirstOrDefault();
         }
 
-        private float QMinimumMana()
+        private float QMinimumMana(GunType gun)
         {
-            return GetGunType() switch
+            return gun switch
             {
-                GunType.ApheliosSeverumQ => 60f,
-                GunType.ApheliosInfernumQ => 60f,
-                GunType.ApheliosCrescendumQ => 60f,
-                GunType.ApheliosCalibrumQ => 60f,
-                GunType.ApheliosGravitumQ => 60f,
+                GunType.ApheliosSeverum => 60f,
+                GunType.ApheliosInfernum => 60f,
+                GunType.ApheliosCrescendum => 60f,
+                GunType.ApheliosCalibrum => 60f,
+                GunType.ApheliosGravitum => 60f,
                 _ => 60f
             };
         }
 
-        private bool QIsEnabled()
+        private bool QIsEnabled(GunType gun)
         {
-            return GetGunType() switch
+            return gun switch
             {
-                GunType.ApheliosSeverumQ => UseSeverum && UnitManager.MyChampion.HealthPercent <= SeverumHealthPercentLessThan,
-                GunType.ApheliosInfernumQ => UseInfernum,
-                GunType.ApheliosCrescendumQ => UseCrescendum,
-                GunType.ApheliosCalibrumQ => UseCalibrum,
-                GunType.ApheliosGravitumQ => UseGravitum,
+                GunType.ApheliosSeverum => UseSeverum && UnitManager.MyChampion.HealthPercent <= SeverumHealthPercentLessThan,
+                GunType.ApheliosInfernum => UseInfernum,
+                GunType.ApheliosCrescendum => UseCrescendum,
+                GunType.ApheliosCalibrum => UseCalibrum,
+                GunType.ApheliosGravitum => UseGravitum,
                 _ => false
             };
         }
 
-        private bool RIsEnabled()
+        private bool RIsEnabled(GunType gun)
         {
-            return GetGunType() switch
+            return gun switch
             {
-                GunType.ApheliosSeverumQ => RSeverumSettings.GetItem<Switch>("Use Moonlight Vigil Severum").IsOn &&
+                GunType.ApheliosSeverum => RSeverumSettings.GetItem<Switch>("Use Moonlight Vigil Severum").IsOn &&
                                             UnitManager.MyChampion.HealthPercent <= RSeverumSettings.GetItem<Counter>("Moonlight Vigil Severum Health Percent Less Than").Value,
-                GunType.ApheliosInfernumQ => RInfernumSettings.GetItem<Switch>("Use Moonlight Vigil Infernum").IsOn,
-                GunType.ApheliosCrescendumQ => RCrescendumSettings.GetItem<Switch>("Use Moonlight Vigil Crescendum").IsOn,
-                GunType.ApheliosCalibrumQ => RCalibrumSettings.GetItem<Switch>("Use Moonlight Vigil Calibrum").IsOn,
-                GunType.ApheliosGravitumQ => RGravitumSettings.GetItem<Switch>("Use Moonlight Vigil Gravitum").IsOn,
+                GunType.ApheliosInfernum => RInfernumSettings.GetItem<Switch>("Use Moonlight Vigil Infernum").IsOn,
+                GunType.ApheliosCrescendum => RCrescendumSettings.GetItem<Switch>("Use Moonlight Vigil Crescendum").IsOn,
+                GunType.ApheliosCalibrum => RCalibrumSettings.GetItem<Switch>("Use Moonlight Vigil Calibrum").IsOn,
+                GunType.ApheliosGravitum => RGravitumSettings.GetItem<Switch>("Use Moonlight Vigil Gravitum").IsOn,
                 _ => false
             };
         }
 
-        private float QSpeed()
+        private float QSpeed(GunType gun)
         {
-            return GetGunType() switch
+            return gun switch
             {
-                GunType.ApheliosSeverumQ => 0f,
-                GunType.ApheliosInfernumQ => 1000f,
-                GunType.ApheliosCrescendumQ => 0f,
-                GunType.ApheliosCalibrumQ => 1850f,
-                GunType.ApheliosGravitumQ => 0f,
+                GunType.ApheliosSeverum => 0f,
+                GunType.ApheliosInfernum => 1000f,
+                GunType.ApheliosCrescendum => 0f,
+                GunType.ApheliosCalibrum => 1850f,
+                GunType.ApheliosGravitum => 0f,
                 _ => 0f
             };
         }
 
-        private float QRadius()
+        private float QRadius(GunType gun)
         {
-            return GetGunType() switch
+            return gun switch
             {
-                GunType.ApheliosSeverumQ => 0f,
-                GunType.ApheliosInfernumQ => 40f,
-                GunType.ApheliosCrescendumQ => 475f,
-                GunType.ApheliosCalibrumQ => 120f,
-                GunType.ApheliosGravitumQ => 0f,
+                GunType.ApheliosSeverum => 0f,
+                GunType.ApheliosInfernum => 40f,
+                GunType.ApheliosCrescendum => 475f,
+                GunType.ApheliosCalibrum => 120f,
+                GunType.ApheliosGravitum => 0f,
                 _ => 0f
             };
         }
 
-        private float QRange()
+        private float QRange(GunType gun)
         {
-            return GetGunType() switch
+            return gun switch
             {
-                GunType.ApheliosSeverumQ => 550f,
-                GunType.ApheliosInfernumQ => 650f,
-                GunType.ApheliosCrescendumQ => 475f,
-                GunType.ApheliosCalibrumQ => 1450f,
-                GunType.ApheliosGravitumQ => 30_000f,
+                GunType.ApheliosSeverum => 550f,
+                GunType.ApheliosInfernum => 650f,
+                GunType.ApheliosCrescendum => 475f,
+                GunType.ApheliosCalibrum => 1450f,
+                GunType.ApheliosGravitum => 30_000f,
                 _ => 0f
             };
         }
 
-        private Prediction.MenuSelected.HitChance GetQHitChance()
+        private Prediction.MenuSelected.HitChance GetQHitChance(GunType gun)
         {
-            return GetGunType() switch
+            return gun switch
             {
-                GunType.ApheliosInfernumQ => InfernumHitChance,
-                GunType.ApheliosCalibrumQ => CalibrumHitChance,
+                GunType.ApheliosInfernum => InfernumHitChance,
+                GunType.ApheliosCalibrum => CalibrumHitChance,
                 _ => Prediction.MenuSelected.HitChance.Low
             };
         }
 
-        private Prediction.MenuSelected.HitChance GetRHitChance()
+        private Prediction.MenuSelected.HitChance GetRHitChance(GunType gun)
         {
-            var setting = GetGunType() switch
+            var setting = gun switch
             {
-                GunType.ApheliosSeverumQ => RSeverumSettings.GetItem<ModeDisplay>("Moonlight Vigil Severum HitChance").SelectedModeName,
-                GunType.ApheliosInfernumQ => RInfernumSettings.GetItem<ModeDisplay>("Moonlight Vigil Infernum HitChance").SelectedModeName,
-                GunType.ApheliosCrescendumQ => RCrescendumSettings.GetItem<ModeDisplay>("Moonlight Vigil Crescendum HitChance").SelectedModeName,
-                GunType.ApheliosCalibrumQ => RCalibrumSettings.GetItem<ModeDisplay>("Moonlight Vigil Calibrum HitChance").SelectedModeName,
-                GunType.ApheliosGravitumQ => RGravitumSettings.GetItem<ModeDisplay>("Moonlight Vigil Gravitum HitChance").SelectedModeName,
+                GunType.ApheliosSeverum => RSeverumSettings.GetItem<ModeDisplay>("Moonlight Vigil Severum HitChance").SelectedModeName,
+                GunType.ApheliosInfernum => RInfernumSettings.GetItem<ModeDisplay>("Moonlight Vigil Infernum HitChance").SelectedModeName,
+                GunType.ApheliosCrescendum => RCrescendumSettings.GetItem<ModeDisplay>("Moonlight Vigil Crescendum HitChance").SelectedModeName,
+                GunType.ApheliosCalibrum => RCalibrumSettings.GetItem<ModeDisplay>("Moonlight Vigil Calibrum HitChance").SelectedModeName,
+                GunType.ApheliosGravitum => RGravitumSettings.GetItem<ModeDisplay>("Moonlight Vigil Gravitum HitChance").SelectedModeName,
                 _ => Prediction.MenuSelected.HitChance.Immobile.ToString(),
             };
 
             return (Prediction.MenuSelected.HitChance)Enum.Parse(typeof(Prediction.MenuSelected.HitChance), setting);
         }
 
-        private Prediction.MenuSelected.PredictionType QPredictionMode()
+        private Prediction.MenuSelected.PredictionType QPredictionMode(GunType gun)
         {
-            return GetGunType() switch
+            return gun switch
             {
-                GunType.ApheliosSeverumQ => Prediction.MenuSelected.PredictionType.Circle,
-                GunType.ApheliosInfernumQ => Prediction.MenuSelected.PredictionType.Cone,
-                GunType.ApheliosCrescendumQ => Prediction.MenuSelected.PredictionType.Circle,
-                GunType.ApheliosCalibrumQ => Prediction.MenuSelected.PredictionType.Line,
-                GunType.ApheliosGravitumQ => Prediction.MenuSelected.PredictionType.Circle,
+                GunType.ApheliosSeverum => Prediction.MenuSelected.PredictionType.Circle,
+                GunType.ApheliosInfernum => Prediction.MenuSelected.PredictionType.Cone,
+                GunType.ApheliosCrescendum => Prediction.MenuSelected.PredictionType.Circle,
+                GunType.ApheliosCalibrum => Prediction.MenuSelected.PredictionType.Line,
+                GunType.ApheliosGravitum => Prediction.MenuSelected.PredictionType.Circle,
                 _ => Prediction.MenuSelected.PredictionType.Circle
             };
         }
 
-        private bool QAllowCollision(GameObjectBase target, IEnumerable<GameObjectBase> collisions)
+        private bool QAllowCollision(GameObjectBase target, IEnumerable<GameObjectBase> collisions, GunType gun)
         {
-            return GetGunType() switch
+            return gun switch
             {
-                GunType.ApheliosSeverumQ => true,
-                GunType.ApheliosInfernumQ => true,
-                GunType.ApheliosCrescendumQ => true,
-                GunType.ApheliosCalibrumQ => false,
-                GunType.ApheliosGravitumQ => true,
+                GunType.ApheliosSeverum => true,
+                GunType.ApheliosInfernum => true,
+                GunType.ApheliosCrescendum => true,
+                GunType.ApheliosCalibrum => false,
+                GunType.ApheliosGravitum => true,
                 _ => false
             };
         }
 
-        private bool QShouldCast(Orbwalker.OrbWalkingModeType mode, GameObjectBase target, SpellClass spellClass, float damage)
+        private bool QShouldCast(Orbwalker.OrbWalkingModeType mode, GameObjectBase target, SpellClass spellClass, float damage, GunType gun, float range)
         {
             if (mode != Orbwalker.OrbWalkingModeType.Combo)
             {
                 return false;
             }
 
-            return GetGunType() switch
+            return gun switch
             {
-                GunType.ApheliosSeverumQ => UnitManager.EnemyChampions.Any(enemy => enemy.IsAlive && enemy.Distance <= SpellQ.Range()),
-                GunType.ApheliosInfernumQ => target != null,
-                GunType.ApheliosCrescendumQ => target != null && target.Distance <= CrescendumEnemyIsCloserThan && spellClass.IsSpellReady,
-                GunType.ApheliosCalibrumQ => target != null && (!CalibrumOnlyOutsideOfAttackRange || UnitManager.EnemyChampions.All(x => x.Distance >= UnitManager.MyChampion.TrueAttackRange)) && spellClass.IsSpellReady,
-                GunType.ApheliosGravitumQ => UnitManager.EnemyChampions.Count(HasGravitum) >= GravitumCanRoot,
+                GunType.ApheliosSeverum => UnitManager.EnemyChampions.Any(enemy => enemy.IsAlive && enemy.Distance <= range),
+                GunType.ApheliosInfernum => target != null,
+                GunType.ApheliosCrescendum => target != null && target.Distance <= CrescendumEnemyIsCloserThan && spellClass.IsSpellReady,
+                GunType.ApheliosCalibrum => target != null && (!CalibrumOnlyOutsideOfAttackRange || UnitManager.EnemyChampions.All(x => x.Distance >= UnitManager.MyChampion.TrueAttackRange)) && spellClass.IsSpellReady,
+                GunType.ApheliosGravitum => UnitManager.EnemyChampions.Count(HasGravitum) >= GravitumCanRoot,
                 _ => false
             };
         }
@@ -264,6 +370,23 @@ namespace SixAIO.Champions
         {
             SpellQ.DrawRange();
             SpellR.DrawRange();
+
+            //for (int i = 0; i < Enum.GetValues<GunType>().Length; i++)
+            //{
+            //    var gunType = Enum.GetValues<GunType>()[i];
+            //    var w2s = UnitManager.MyChampion.W2S;
+            //    w2s.X += 100;
+            //    w2s.Y += i * 25;
+            //    RenderFactoryProvider.DrawText($"Gun: {gunType} - Ready: {QCooldownTracked[gunType]} - IsReady:{EngineManager.GameTime > QCooldownTracked[gunType]}", w2s, Color.White, false);
+            //}
+            //var pos = UnitManager.MyChampion.W2S;
+            //pos.X += 100;
+            //pos.Y += 6 * 25;
+            //RenderFactoryProvider.DrawText($"Time: {EngineManager.GameTime} - Main:{MainWeapon} - OffHand:{OffHand}", pos, Color.White, false);
+            //pos.Y += 25;
+            //RenderFactoryProvider.DrawText($"Main: {MainWeapon} - CanCast:{SpellQ.CanExecuteCastSpell()} - Enabled:{SpellQ.IsEnabled()} - ShouldCast:{SpellQ.ShouldCast(Orbwalker.OrbWalkingModeType.Combo, SpellQ.TargetSelect(Orbwalker.OrbWalkingModeType.Combo), SpellQ.SpellClass, 0)} - Target:{SpellQ.TargetSelect(Orbwalker.OrbWalkingModeType.Combo)}", pos, Color.White, false);
+            //pos.Y += 25;
+            //RenderFactoryProvider.DrawText($"OffHand: {OffHand} - CanCast:{SpellW.CanExecuteCastSpell()} - Enabled:{SpellW.IsEnabled()} - ShouldCast:{SpellW.ShouldCast(Orbwalker.OrbWalkingModeType.Combo, SpellW.TargetSelect(Orbwalker.OrbWalkingModeType.Combo), SpellW.SpellClass, 0)} - Target:{SpellW.TargetSelect(Orbwalker.OrbWalkingModeType.Combo)}", pos, Color.White, false);
         }
 
         internal override void OnCoreMainInput()
@@ -274,6 +397,8 @@ namespace SixAIO.Champions
                                                                            enemy.BuffManager.ActiveBuffs.Any(x => x.Name == "aphelioscalibrumbonusrangedebuff" &&
                                                                                                                   x.Stacks == 1));
             SpellQ.ExecuteCastSpell();
+            SpellW.ExecuteCastSpell();
+            //SpellWR.ExecuteCastSpell();
             SpellR.ExecuteCastSpell();
         }
 
@@ -354,6 +479,12 @@ namespace SixAIO.Champions
         internal Group QCalibrumSettings => QSettings.GetItem<Group>("Calibrum Settings");
         internal Group QGravitumSettings => QSettings.GetItem<Group>("Gravitum Settings");
 
+        internal bool CanSwapToSeverum => WSettings.GetItem<Switch>("Can Swap To Severum").IsOn;
+        internal bool CanSwapToInfernum => WSettings.GetItem<Switch>("Can Swap To Infernum").IsOn;
+        internal bool CanSwapToCrescendum => WSettings.GetItem<Switch>("Can Swap To Crescendum").IsOn;
+        internal bool CanSwapToCalibrum => WSettings.GetItem<Switch>("Can Swap To Calibrum").IsOn;
+        internal bool CanSwapToGravitum => WSettings.GetItem<Switch>("Can Swap To Gravitum").IsOn;
+
         internal Group RSeverumSettings => RSettings.GetItem<Group>("Severum Settings");
         internal Group RInfernumSettings => RSettings.GetItem<Group>("Infernum Settings");
         internal Group RCrescendumSettings => RSettings.GetItem<Group>("Crescendum Settings");
@@ -369,6 +500,8 @@ namespace SixAIO.Champions
             QSettings.AddItem(new Group("Crescendum Settings"));
             QSettings.AddItem(new Group("Calibrum Settings"));
             QSettings.AddItem(new Group("Gravitum Settings"));
+
+            MenuTab.AddItem(new Group("W Settings"));
 
             MenuTab.AddItem(new Group("R Settings"));
             RSettings.AddItem(new Group("Severum Settings"));
@@ -398,6 +531,11 @@ namespace SixAIO.Champions
             QGravitumSettings.AddItem(new Counter() { Title = "Gravitum can root", MinValue = 0, MaxValue = 5, Value = 2, ValueFrequency = 1 });
 
 
+            WSettings.AddItem(new Switch() { Title = "Can Swap To Severum", IsOn = true });
+            WSettings.AddItem(new Switch() { Title = "Can Swap To Infernum", IsOn = true });
+            WSettings.AddItem(new Switch() { Title = "Can Swap To Crescendum", IsOn = true });
+            WSettings.AddItem(new Switch() { Title = "Can Swap To Calibrum", IsOn = true });
+            WSettings.AddItem(new Switch() { Title = "Can Swap To Gravitum", IsOn = true });
 
 
             RSeverumSettings.AddItem(new Switch() { Title = "Use Moonlight Vigil Severum", IsOn = true });
