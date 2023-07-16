@@ -333,7 +333,7 @@ namespace SixAIO.Utilities
                     {
                         if (LogSmiteAction)
                         {
-                            Logger.Log($"Target: {jungleTarget.UnitComponentInfo.SkinName} {jungleTarget.Health}HP - Damage: {damage} - GameTime: {EngineManager.GameTime}");
+                            Logger.Log($"Target: {jungleTarget.UnitComponentInfo.SkinName} | {jungleTarget.ModelName} - {jungleTarget.Health}HP - Damage: {damage} - GameTime: {EngineManager.GameTime}");
                         }
 
                         var tempTargetChamps = OrbSettings.TargetChampionsOnly;
@@ -363,7 +363,7 @@ namespace SixAIO.Utilities
                     Krug && enemy.UnitComponentInfo.SkinName.Contains("SRU_Krug", System.StringComparison.OrdinalIgnoreCase) ||
                     Gromp && enemy.UnitComponentInfo.SkinName.Contains("SRU_Gromp", System.StringComparison.OrdinalIgnoreCase) ||
                     MurkWolf && enemy.UnitComponentInfo.SkinName.Equals("SRU_Murkwolf", System.StringComparison.OrdinalIgnoreCase) ||
-                    Razorbeak && enemy.UnitComponentInfo.SkinName.Equals("SRU_Razorbeak", System.StringComparison.OrdinalIgnoreCase)))
+                    Razorbeak && enemy.ModelName.Equals("SRU_Razorbeak", System.StringComparison.OrdinalIgnoreCase)))
                 {
                     return enemy;
                 }
