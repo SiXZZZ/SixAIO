@@ -113,12 +113,14 @@ namespace SixAIO.Champions
 
         private Hero TargetSelectR()
         {
-            var targets = UnitManager.EnemyChampions.Where(x => !x.IsTargetDummy)
+            var targets = UnitManager.EnemyChampions.Where(x => x is not null)
+                                                    .Where(x => !x.IsTargetDummy)
                                                     .Where(x => x.Distance <= UnitManager.MyChampion.TrueAttackRange &&
                                                                 TargetSelector.IsAttackable(x) &&
                                                                 !TargetSelector.IsInvulnerable(x, Oasys.Common.Logic.DamageType.Magical, false) &&
-                                                                RSettings.GetItem<Switch>("R - " + x.ModelName).IsOn)
+                                                                (RSettings?.GetItem<Switch>("R - " + x.ModelName)?.IsOn ?? false))
                                                     .OrderBy(x => x.Health);
+
             if (!targets.Any())
             {
                 targets = UnitManager.EnemyChampions.Where(x => x.Distance <= UnitManager.MyChampion.TrueAttackRange && TargetSelector.IsAttackable(x)).OrderBy(x => x.Health);
@@ -129,6 +131,7 @@ namespace SixAIO.Champions
             {
                 return target;
             }
+
             if (UsePushAway && UnitManager.MyChampion.HealthPercent <= OnlyPushAwayBelowHPPercent)
             {
                 return PushAwayModeSelected switch
