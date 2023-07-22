@@ -57,6 +57,9 @@ namespace SixAIO.Champions
                 IsEnabled = () => UseE,
                 TargetSelect = (mode) =>
                 {
+                    if(UseELasthit && mode == Orbwalker.OrbWalkingModeType.LastHit)
+                        return SpellE.GetTargets(mode, x => x.PredictHealth(150) <= GetEDamage(x, SpellE.SpellClass)).OrderBy(IsPoisoned).ThenBy(x => x.EffectiveMagicHealth).FirstOrDefault();
+
                     var target = SpellE.GetTargets(mode).OrderBy(IsPoisoned).ThenBy(x => x.EffectiveMagicHealth).FirstOrDefault();
                     if (UseELasthit)
                     {
