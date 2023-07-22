@@ -32,7 +32,7 @@ namespace SixAIO.Champions
                 ShouldDraw = () => DrawWRange,
                 DrawColor = () => DrawWColor,
                 IsTargetted = () => true,
-                IsEnabled = () => UseW,
+                IsEnabled = () => UseW && UnitManager.MyChampion.HealthPercent > WSelfHealthPercent,
                 Range = () => 550,
                 TargetSelect = (mode) => UnitManager.AllyChampions.Where(x => !x.IsTargetDummy && !x.IsMe)
                                         .OrderByDescending(x => WSettings.GetItem<Counter>("Heal Ally Prio- " + x?.ModelName)?.Value)
@@ -77,8 +77,8 @@ namespace SixAIO.Champions
 
         private int WHealthPercent
         {
-            get => WSettings.GetItem<Counter>("Heal below health percent").Value;
-            set => WSettings.GetItem<Counter>("Heal below health percent").Value = value;
+            get => WSettings.GetItem<Counter>("Heal allies below health percent").Value;
+            set => WSettings.GetItem<Counter>("Heal allies below health percent").Value = value;
         }
 
         private int RHealthPercent
@@ -93,6 +93,12 @@ namespace SixAIO.Champions
             set => RSettings.GetItem<Counter>("Allies to heal").Value = value;
         }
 
+        private int WSelfHealthPercent
+        {
+            get => WSettings.GetItem<Counter>("Do not heal if self-health below").Value;
+            set => WSettings.GetItem<Counter>("Do not heal if self-health below").Value = value;
+        }
+
         internal override void InitializeMenu()
         {
             MenuManager.AddTab(new Tab($"SIXAIO - {nameof(Soraka)}"));
@@ -104,8 +110,9 @@ namespace SixAIO.Champions
             QSettings.AddItem(new Switch() { Title = "Use Q", IsOn = true });
             QSettings.AddItem(new ModeDisplay() { Title = "Q HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
 
-            WSettings.AddItem(new Switch() { Title = "Use W", IsOn = true });
-            WSettings.AddItem(new Counter() { Title = "Heal below health percent", MinValue = 0, MaxValue = 100, Value = 40, ValueFrequency = 5 });
+            WSettings.AddItem(new Switch() { Title = "Use W", IsOn = true });            
+            WSettings.AddItem(new Counter() { Title = "Do not heal if self-health below", MinValue = 0, MaxValue = 100, Value = 40, ValueFrequency = 5 });
+            WSettings.AddItem(new Counter() { Title = "Heal allies below health percent", MinValue = 0, MaxValue = 100, Value = 40, ValueFrequency = 5 });
             WSettings.AddItem(new InfoDisplay() { Title = "---Allies to heal - 0 to disable---" });
             foreach (var allyChampion in UnitManager.AllyChampions.Where(x => !x.IsTargetDummy && !x.IsMe))
             {
