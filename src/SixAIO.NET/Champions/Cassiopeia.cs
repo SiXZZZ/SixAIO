@@ -97,6 +97,7 @@ namespace SixAIO.Champions
                 TargetSelect = (mode) => {
                     var targets = SpellRSemiAuto.GetTargets(mode, x =>
                                                       x.IsFacing(UnitManager.MyChampion) &&
+                                                      x.IsObject(ObjectTypeFlag.AIHeroClient) &&
                                                       !TargetSelector.IsInvulnerable(x, Oasys.Common.Logic.DamageType.Magical, false));
 
                     return (targets != null && targets.Count() >= RMinimumEnemiesCount) ? targets.FirstOrDefault() : null;
@@ -114,6 +115,7 @@ namespace SixAIO.Champions
                 TargetSelect = (mode) => {
                     var targets = SpellRSemiAuto.GetTargets(mode, x =>
                                                       x.IsFacing(UnitManager.MyChampion) &&
+                                                      x.IsObject(ObjectTypeFlag.AIHeroClient) &&
                                                       !TargetSelector.IsInvulnerable(x, Oasys.Common.Logic.DamageType.Magical, false));
 
                     return (targets != null && targets.Count() >= RMinimumEnemiesCount) ? targets.FirstOrDefault() : null;
