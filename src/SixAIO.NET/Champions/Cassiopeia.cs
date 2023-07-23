@@ -97,7 +97,7 @@ namespace SixAIO.Champions
                 Delay = () => 0.5f,
                 IsEnabled = () => UseR,
                 TargetSelect = (mode) => {
-                    var targets = SpellRSemiAuto.GetTargets(mode, x =>
+                    var targets = SpellR.GetTargets(mode, x =>
                                                       x.IsFacing(UnitManager.MyChampion) &&
                                                       x.IsObject(ObjectTypeFlag.AIHeroClient) &&
                                                       !TargetSelector.IsInvulnerable(x, Oasys.Common.Logic.DamageType.Magical, false));
