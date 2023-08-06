@@ -125,6 +125,7 @@ namespace SixAIO.Utilities
             AutoCleanseGroup.AddItem(new Counter() { Title = "Sleep", Value = 1250, MinValue = 0, MaxValue = 5000, ValueFrequency = 50 });
             AutoCleanseGroup.AddItem(new Counter() { Title = "Asleep", Value = 1250, MinValue = 0, MaxValue = 5000, ValueFrequency = 50 });
             AutoCleanseGroup.AddItem(new Counter() { Title = "Polymorph", Value = 1250, MinValue = 0, MaxValue = 5000, ValueFrequency = 50 });
+            AutoCleanseGroup.AddItem(new Counter() { Title = "Suppression", Value = 500, MinValue = 0, MaxValue = 5000, ValueFrequency = 50 });
 
             return Task.CompletedTask;
         }
