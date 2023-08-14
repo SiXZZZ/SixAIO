@@ -167,14 +167,13 @@ namespace SixAIO.Champions
                 Orbwalker.SelectedTarget = UnitManager.EnemyChampions.FirstOrDefault(x => x.BuffManager.ActiveBuffs.Any(buff => buff.IsActive && buff.Stacks >= 1 && buff.Name == "ezrealwattach"));
             }
 
-            if (SpellW.ExecuteCastSpell() || 
-                SpellQ.ExecuteCastSpell() || 
+            if (SpellQ.ExecuteCastSpell() || 
+                SpellW.ExecuteCastSpell() || 
                 SpellR.ExecuteCastSpell() || 
                 SpellE.ExecuteCastSpell())
             {
                 return;
             }
-
         }
 
         internal override void OnCoreLaneClearInput()
