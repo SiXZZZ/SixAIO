@@ -1,6 +1,5 @@
 ﻿using Oasys.Common.Enums.GameEnums;
 using Oasys.Common.GameObject;
-using Oasys.Common.GameObject.Clients.ExtendedInstances.Spells;
 using Oasys.Common.Menu;
 using Oasys.Common.Menu.ItemComponents;
 using Oasys.SDK;
@@ -44,11 +43,20 @@ namespace SixAIO.Champions
                     }
                     else if (mode == Orbwalker.OrbWalkingModeType.LastHit)
                     {
-                        return SpellQ.GetTargets(mode, x => (!Orbwalker.CanBasicAttack || !TargetSelector.IsInRange(x)) && x.Health <= GetQDamage(x)).FirstOrDefault();
+                        var targets = SpellQ.GetTargets(mode, x => (!Orbwalker.CanBasicAttack || !TargetSelector.IsInRange(x)) && x.Health <= GetQDamage(x));
+                        return targets.Count() > 1
+                            ? targets.Where(x => x.NetworkID != Oasys.Common.Logic.Orbwalker.OrbSettings.LastHitTarget?.NetworkID).FirstOrDefault()
+                            : targets.FirstOrDefault();
                     }
                     else if (mode == Orbwalker.OrbWalkingModeType.Mixed)
                     {
-                        return SpellQ.GetTargets(mode, x => (!Orbwalker.CanBasicAttack || !TargetSelector.IsInRange(x)) && x.IsObject(ObjectTypeFlag.AIHeroClient) || x.Health <= GetQDamage(x)).FirstOrDefault();
+                        var targets = SpellQ.GetTargets(mode, x => (!Orbwalker.CanBasicAttack || !TargetSelector.IsInRange(x)) && x.IsObject(ObjectTypeFlag.AIHeroClient) || x.Health <= GetQDamage(x));
+                        return targets.Count() > 1
+                            ? targets.Where(x =>
+                                        Oasys.Common.Logic.Orbwalker.OrbSettings.MixedTarget?.IsObject(ObjectTypeFlag.AIHeroClient) == true ||
+                                        x.NetworkID != Oasys.Common.Logic.Orbwalker.OrbSettings.MixedTarget?.NetworkID)
+                                     .FirstOrDefault()
+                            : targets.FirstOrDefault();
                     }
                     else
                     {
@@ -167,9 +175,9 @@ namespace SixAIO.Champions
                 Orbwalker.SelectedTarget = UnitManager.EnemyChampions.FirstOrDefault(x => x.BuffManager.ActiveBuffs.Any(buff => buff.IsActive && buff.Stacks >= 1 && buff.Name == "ezrealwattach"));
             }
 
-            if (SpellQ.ExecuteCastSpell() || 
-                SpellW.ExecuteCastSpell() || 
-                SpellR.ExecuteCastSpell() || 
+            if (SpellQ.ExecuteCastSpell() ||
+                SpellW.ExecuteCastSpell() ||
+                SpellR.ExecuteCastSpell() ||
                 SpellE.ExecuteCastSpell())
             {
                 return;
