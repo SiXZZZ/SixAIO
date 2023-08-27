@@ -102,7 +102,7 @@ namespace SixAIO.Utilities
             }
 
             Tab.AddGroup(new Group("Auto Cleanse"));
-            AutoCleanseGroup.AddItem(new Switch() { Title = "Log Cleanse Buff", IsOn = false });
+            AutoCleanseGroup.AddItem(new Switch() { Title = "Log Cleanse Buff", IsOn = true });
             AutoCleanseGroup.AddItem(new Switch() { Title = "Use Cleanse", IsOn = true });
             AutoCleanseGroup.AddItem(new Switch() { Title = "Use Items", IsOn = true });
             AutoCleanseGroup.AddItem(new Switch() { Title = "Cleanse On Combo", IsOn = true });
