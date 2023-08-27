@@ -118,12 +118,12 @@ namespace SixAIO.Champions
                 if (ally.IsAlive && ally.IsCastingSpell)
                 {
                     var spell = ally.GetCurrentCastingSpell();
-                    if (spell != null && (spell.SpellSlot == SpellSlot.BasicAttack))
+                    if (spell != null)
                     {
                         var target = spell.Targets.FirstOrDefault(x => x.IsAlive && x.IsVisible && x.IsTargetable);
                         if (target != null)
                         {
-                            return (spell.SpellSlot == SpellSlot.BasicAttack && target.IsAlive && UnitManager.EnemyChampions.Any(x => x.IsAlive && x.NetworkID == target.NetworkID)) ||
+                            return (target.IsAlive && UnitManager.EnemyChampions.Any(x => x.IsAlive && x.NetworkID == target.NetworkID)) ||
                                    (ally.ModelName == "Zeri" && spell.SpellSlot == SpellSlot.Q);
                         }
                     }

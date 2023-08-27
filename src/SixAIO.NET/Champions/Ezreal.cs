@@ -23,7 +23,7 @@ namespace SixAIO.Champions
             {
                 ShouldDraw = () => DrawQRange,
                 DrawColor = () => DrawQColor,
-                AllowCollision = (target, collisions) => !collisions.Any(),
+                AllowCollision = (target, collisions) => false,
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
                 MinimumHitChance = () => QHitChance,
                 Range = () => 1100,
@@ -46,7 +46,9 @@ namespace SixAIO.Champions
                         var targets = SpellQ.GetTargets(mode, x => (!Orbwalker.CanBasicAttack || !TargetSelector.IsInRange(x)) && x.Health <= GetQDamage(x));
                         return targets.Count() > 1
                             ? targets.Where(x => x.NetworkID != Oasys.Common.Logic.Orbwalker.OrbSettings.LastHitTarget?.NetworkID).FirstOrDefault()
-                            : targets.FirstOrDefault();
+                            : GameEngine.GameTime > Oasys.Common.Logic.Orbwalker.OrbSettings.LastBasicAttack + 0.5f
+                              ? targets.FirstOrDefault()
+                              : null;
                     }
                     else if (mode == Orbwalker.OrbWalkingModeType.Mixed)
                     {
@@ -56,14 +58,18 @@ namespace SixAIO.Champions
                                         Oasys.Common.Logic.Orbwalker.OrbSettings.MixedTarget?.IsObject(ObjectTypeFlag.AIHeroClient) == true ||
                                         x.NetworkID != Oasys.Common.Logic.Orbwalker.OrbSettings.MixedTarget?.NetworkID)
                                      .FirstOrDefault()
-                            : targets.FirstOrDefault();
+                            : GameEngine.GameTime > Oasys.Common.Logic.Orbwalker.OrbSettings.LastBasicAttack + 0.5f
+                              ? targets.FirstOrDefault()
+                              : null;
                     }
                     else
                     {
                         var targets = SpellQ.GetTargets(mode, x => (!Orbwalker.CanBasicAttack || !TargetSelector.IsInRange(x)));
                         return targets.Count() > 1
                             ? targets.Where(x => x.NetworkID != Orbwalker.LaneClearTarget?.NetworkID).FirstOrDefault()
-                            : targets.FirstOrDefault();
+                            : GameEngine.GameTime > Oasys.Common.Logic.Orbwalker.OrbSettings.LastBasicAttack + 0.5f
+                              ? targets.FirstOrDefault()
+                              : null;
                     }
                 }
             };

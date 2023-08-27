@@ -41,7 +41,7 @@ namespace SixAIO.Champions
                 Speed = () => 1750,
                 Delay = () => 0.4f,
                 IsEnabled = () => UseW,
-                TargetSelect = (mode) => SpellW.GetTargets(mode, x => (!Orbwalker.CanBasicAttack || !TargetSelector.IsInRange(x))).FirstOrDefault()
+                TargetSelect = (mode) => SpellW.GetTargets(mode).FirstOrDefault()
             };
         }
 
