@@ -30,7 +30,7 @@ namespace SixAIO.Champions
                                             : 0
                                         : QStartChargeRange,
                 Radius = () => 140,
-                Speed = () => 1900,
+                Speed = () => 5000,
                 IsEnabled = () => UseQ && !UnitManager.MyChampion.BuffManager.ActiveBuffs.Any(x => x.Name == "XerathLocusOfPower2" && x.Stacks >= 1),
                 MinimumMana = () => 120,
                 IsSpellReady = (spellClass, minMana, minCharges) => SpellQ.ChargeTimer.IsRunning || UnitManager.MyChampion.Mana > minMana,
@@ -45,7 +45,8 @@ namespace SixAIO.Champions
                 MinimumHitChance = () => WHitChance,
                 Range = () => 1000,
                 Radius = () => 250,
-                Speed = () => 2500,
+                Speed = () => 5000,
+                Delay = () => 0.778f,
                 IsEnabled = () => UseW && !UnitManager.MyChampion.BuffManager.ActiveBuffs.Any(x => x.Name == "XerathLocusOfPower2" && x.Stacks >= 1),
                 TargetSelect = (mode) => SpellW.GetTargets(mode).FirstOrDefault()
             };
@@ -87,7 +88,7 @@ namespace SixAIO.Champions
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Circle,
                 MinimumHitChance = () => SemiAutoRHitChance,
                 Range = () => 5000,
-                Radius = () => 200,
+                Radius = () => 180,
                 Speed = () => RSpeed,
                 Delay = () => (float)((float)((float)RDelay) / 1000f),
                 IsEnabled = () => UseSemiAutoR && UnitManager.MyChampion.BuffManager.ActiveBuffs.Any(x => x.Name == "xerathrshots" && x.Stacks >= 1),
@@ -116,7 +117,12 @@ namespace SixAIO.Champions
 
         internal override void OnCoreMainInput()
         {
-            if (SpellW.ExecuteCastSpell() || SpellE.ExecuteCastSpell() || SpellQ.ExecuteCastSpell() || SpellR.ExecuteCastSpell())
+            if (SpellR.ExecuteCastSpell())
+            {
+                return;
+            }
+
+            if (SpellW.ExecuteCastSpell() || SpellE.ExecuteCastSpell() || SpellQ.ExecuteCastSpell())
             {
                 return;
             }

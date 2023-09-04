@@ -110,10 +110,6 @@ namespace SixAIO.Champions
             }
             if (keyBeingPressed == YellowCardKey && pressState == Oasys.Common.Tools.Devices.Keyboard.KeyPressState.Down)
             {
-                _castRed = false;
-                _castYellow = false;
-                _castBlue = false;
-
                 if (ManualCard.ExecuteCastSpell())
                 {
                     _castYellow = true;
@@ -121,10 +117,6 @@ namespace SixAIO.Champions
             }
             if (keyBeingPressed == RedCardKey && pressState == Oasys.Common.Tools.Devices.Keyboard.KeyPressState.Down)
             {
-                _castRed = false;
-                _castYellow = false;
-                _castBlue = false;
-
                 if (ManualCard.ExecuteCastSpell())
                 {
                     _castRed = true;
@@ -132,10 +124,6 @@ namespace SixAIO.Champions
             }
             if (keyBeingPressed == BlueCardKey && pressState == Oasys.Common.Tools.Devices.Keyboard.KeyPressState.Down)
             {
-                _castRed = false;
-                _castYellow = false;
-                _castBlue = false;
-
                 if (ManualCard.ExecuteCastSpell())
                 {
                     _castBlue = true;

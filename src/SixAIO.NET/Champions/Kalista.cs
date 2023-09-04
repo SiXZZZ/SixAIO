@@ -105,7 +105,7 @@ namespace SixAIO.Champions
 
         internal static float GetEDamage(GameObjectBase enemy)
         {
-            var kalistaE = enemy.BuffManager.GetActiveBuff("kalistaexpungemarker");
+            var kalistaE = enemy.BuffManager.ActiveBuffs.FirstOrDefault(x => x.Name == "kalistaexpungemarker" && x.Stacks >= 1);
             if (!enemy.IsAlive || kalistaE == null || !kalistaE.IsActive)
             {
                 return 0;

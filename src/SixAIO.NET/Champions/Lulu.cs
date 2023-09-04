@@ -10,6 +10,7 @@ using SixAIO.Extensions;
 using SixAIO.Models;
 using System;
 using System.Linq;
+using static Oasys.Common.Logic.Orbwalker;
 
 namespace SixAIO.Champions
 {
@@ -219,11 +220,14 @@ namespace SixAIO.Champions
 
         internal override void OnCoreMainInput()
         {
+            var tempTargetChamps = OrbSettings.TargetChampionsOnly;
+            OrbSettings.TargetChampionsOnly = true;
             SpellR.ExecuteCastSpell();
             SpellE.ExecuteCastSpell();
             SpellW.ExecuteCastSpell();
             SpellQ.ExecuteCastSpell();
             SpellQPix.ExecuteCastSpell();
+            OrbSettings.TargetChampionsOnly = tempTargetChamps;
         }
 
         internal override void OnCoreMainTick()
