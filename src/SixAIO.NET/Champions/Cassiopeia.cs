@@ -57,7 +57,7 @@ namespace SixAIO.Champions
                 IsEnabled = () => UseE,
                 TargetSelect = (mode) =>
                 {
-                    if(UseELasthit && mode == Orbwalker.OrbWalkingModeType.LastHit)
+                    if (UseELasthit && mode == Orbwalker.OrbWalkingModeType.LastHit)
                     {
                         return SpellE.GetTargets(mode, x => x.PredictHealth(150) <= GetEDamage(x, SpellE.SpellClass)).OrderBy(IsPoisoned).ThenBy(x => x.EffectiveMagicHealth).FirstOrDefault();
                     }
@@ -96,10 +96,15 @@ namespace SixAIO.Champions
                 Radius = () => 80,
                 Delay = () => 0.5f,
                 IsEnabled = () => UseR,
-                TargetSelect = (mode) => SpellR.GetTargets(mode, x =>
+                TargetSelect = (mode) =>
+                {
+                    var targets = SpellR.GetTargets(mode, x =>
                                                       x.IsFacing(UnitManager.MyChampion) &&
-                                                      !TargetSelector.IsInvulnerable(x, Oasys.Common.Logic.DamageType.Magical, false))
-                                                .FirstOrDefault()
+                                                      x.IsObject(ObjectTypeFlag.AIHeroClient) &&
+                                                      !TargetSelector.IsInvulnerable(x, Oasys.Common.Logic.DamageType.Magical, false));
+
+                    return (targets != null && targets.Count() >= RMinimumEnemiesCount) ? targets.FirstOrDefault() : null;
+                }
             };
             SpellRSemiAuto = new Spell(CastSlot.R, SpellSlot.R)
             {
@@ -110,10 +115,15 @@ namespace SixAIO.Champions
                 Radius = () => 80,
                 Delay = () => 0.5f,
                 IsEnabled = () => UseSemiAutoR,
-                TargetSelect = (mode) => SpellRSemiAuto.GetTargets(mode, x =>
+                TargetSelect = (mode) =>
+                {
+                    var targets = SpellRSemiAuto.GetTargets(mode, x =>
                                                       x.IsFacing(UnitManager.MyChampion) &&
-                                                      !TargetSelector.IsInvulnerable(x, Oasys.Common.Logic.DamageType.Magical, false))
-                                                .FirstOrDefault()
+                                                      x.IsObject(ObjectTypeFlag.AIHeroClient) &&
+                                                      !TargetSelector.IsInvulnerable(x, Oasys.Common.Logic.DamageType.Magical, false));
+
+                    return (targets != null && targets.Count() >= SemiAutoRMinimumEnemiesCount) ? targets.FirstOrDefault() : null;
+                }
             };
         }
 
@@ -211,6 +221,10 @@ namespace SixAIO.Champions
 
         public Keys DisableAAKey => MenuTab.GetItem<KeyBinding>("Disable AA Key").SelectedKey;
 
+        private int RMinimumEnemiesCount => RSettings.GetItem<Counter>("Minimum enemies facing for R").Value;
+
+        private int SemiAutoRMinimumEnemiesCount => RSettings.GetItem<Counter>("Minimum enemies facing for semi auto R").Value;
+
         internal override void InitializeMenu()
         {
             MenuManager.AddTab(new Tab($"SIXAIO - {nameof(Cassiopeia)}"));
@@ -234,12 +248,13 @@ namespace SixAIO.Champions
             ESettings.AddItem(new Switch() { Title = "Use E Harass", IsOn = true });
 
             RSettings.AddItem(new Switch() { Title = "Use R", IsOn = true });
-            RSettings.AddItem(new ModeDisplay() { Title = "R HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
+            RSettings.AddItem(new ModeDisplay() { Title = "R HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "VeryHigh" });
+            RSettings.AddItem(new Counter() { Title = "Minimum enemies facing for R", MinValue = 1, MaxValue = 5, Value = 3 });
 
             RSettings.AddItem(new Switch() { Title = "Use Semi Auto R", IsOn = true });
             RSettings.AddItem(new KeyBinding() { Title = "Semi Auto R Key", SelectedKey = Keys.T });
-            RSettings.AddItem(new ModeDisplay() { Title = "Semi Auto R HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
-
+            RSettings.AddItem(new ModeDisplay() { Title = "Semi Auto R HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "VeryHigh" });
+            RSettings.AddItem(new Counter() { Title = "Minimum enemies facing for semi auto R", MinValue = 1, MaxValue = 5, Value = 1 });
 
             MenuTab.AddDrawOptions(SpellSlot.Q, SpellSlot.W, SpellSlot.E, SpellSlot.R);
 
