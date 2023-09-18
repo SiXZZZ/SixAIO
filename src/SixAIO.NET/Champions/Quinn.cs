@@ -33,9 +33,9 @@ namespace SixAIO.Champions
                 ShouldDraw = () => DrawERange,
                 DrawColor = () => DrawEColor,
                 IsTargetted = () => true,
-                Range = () => 600,
+                Range = () => ERange + 150,
                 IsEnabled = () => UseE,
-                TargetSelect = (mode) => Orbwalker.TargetHero
+                TargetSelect = (mode) => SpellE.GetTargets(mode, x => x.Distance <= ERange + x.BoundingRadius).FirstOrDefault()
             };
         }
 
@@ -53,6 +53,8 @@ namespace SixAIO.Champions
             }
         }
 
+        private int ERange => ESettings.GetItem<Counter>("Range").Value;
+
         internal override void InitializeMenu()
         {
             MenuManager.AddTab(new Tab($"SIXAIO - {nameof(Quinn)}"));
@@ -63,6 +65,7 @@ namespace SixAIO.Champions
             QSettings.AddItem(new ModeDisplay() { Title = "Q HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
 
             ESettings.AddItem(new Switch() { Title = "Use E", IsOn = true });
+            ESettings.AddItem(new Counter() { Title = "Range", MinValue = 50, MaxValue = 600, Value = 600, ValueFrequency = 25 });
 
 
             MenuTab.AddDrawOptions(SpellSlot.Q, SpellSlot.E);
