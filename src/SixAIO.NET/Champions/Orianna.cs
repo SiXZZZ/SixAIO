@@ -36,7 +36,6 @@ namespace SixAIO.Champions
                 DrawColor = () => DrawQColor,
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
                 MinimumHitChance = () => QHitChance,
-                //From = GetBallPosition,
                 Delay = () => 0.1f,
                 Range = () => 800,
                 Speed = () => 1400,
