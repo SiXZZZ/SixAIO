@@ -1,4 +1,5 @@
-﻿using Oasys.Common.Enums.GameEnums;
+﻿using Oasys.Common;
+using Oasys.Common.Enums.GameEnums;
 using Oasys.Common.GameObject;
 using Oasys.Common.Menu;
 using Oasys.Common.Menu.ItemComponents;
@@ -22,9 +23,9 @@ namespace SixAIO.Champions
                 IsEnabled = () => UseQ,
                 ShouldCast = (mode, target, spellClass, damage) =>
                 {
-                    var champs = UnitManager.EnemyChampions.Count(x => x.Distance <= 600 && TargetSelector.IsAttackable(x));
-                    var minions = UnitManager.EnemyMinions.Count(x => x.Distance <= 600 && TargetSelector.IsAttackable(x));
-                    var jungleMobs = UnitManager.EnemyJungleMobs.Count(x => x.Distance <= 600 && TargetSelector.IsAttackable(x));
+                    var champs = UnitManager.EnemyChampions.Count(x => x.Distance <= 600 + x.BoundingRadius && TargetSelector.IsAttackable(x));
+                    var minions = UnitManager.EnemyMinions.Count(x => x.Distance <= 600 + x.BoundingRadius && TargetSelector.IsAttackable(x));
+                    var jungleMobs = UnitManager.EnemyJungleMobs.Count(x => x.Distance <= 600 + x.BoundingRadius && TargetSelector.IsAttackable(x));
                     return champs > 0 && minions < 1 && jungleMobs < 1;
                 }
             };
