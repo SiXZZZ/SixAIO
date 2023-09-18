@@ -1,4 +1,5 @@
-﻿using Oasys.Common.Enums.GameEnums;
+﻿using Oasys.Common;
+using Oasys.Common.Enums.GameEnums;
 using Oasys.Common.Menu;
 using Oasys.Common.Menu.ItemComponents;
 using Oasys.SDK;
@@ -14,6 +15,8 @@ namespace SixAIO.Champions
 {
     internal sealed class Xerath : Champion
     {
+        private float _lastRCast;
+
         public Xerath()
         {
             Oasys.SDK.InputProviders.KeyboardProvider.OnKeyPress += KeyboardProvider_OnKeyPress;
@@ -76,7 +79,8 @@ namespace SixAIO.Champions
                 Speed = () => RSpeed,
                 Delay = () => (float)((float)((float)RDelay) / 1000f),
                 IsEnabled = () => UseR && UnitManager.MyChampion.BuffManager.ActiveBuffs.Any(x => x.Name == "xerathrshots" && x.Stacks >= 1),
-                IsSpellReady = (spellClass, minMana, minCharges) => UnitManager.MyChampion.BuffManager.ActiveBuffs.Any(x => x.Name == "XerathLocusOfPower2" && x.Stacks >= 1) && spellClass.Charges > minCharges || UnitManager.MyChampion.Mana > minMana,
+                IsSpellReady = (spellClass, minMana, minCharges) 
+                            => _lastRCast + 0.5f < EngineManager.GameTime && UnitManager.MyChampion.BuffManager.ActiveBuffs.Any(x => x.Name == "XerathLocusOfPower2" && x.Stacks >= 1) && spellClass.Charges > minCharges || UnitManager.MyChampion.Mana > minMana,
                 TargetSelect = (mode) => RTargetClosestToMouse
                                         ? SpellR.GetTargets(mode).OrderBy(x => x.DistanceTo(GameEngine.WorldMousePosition)).FirstOrDefault()
                                         : SpellR.GetTargets(mode).FirstOrDefault()
@@ -92,7 +96,8 @@ namespace SixAIO.Champions
                 Speed = () => RSpeed,
                 Delay = () => (float)((float)((float)RDelay) / 1000f),
                 IsEnabled = () => UseSemiAutoR && UnitManager.MyChampion.BuffManager.ActiveBuffs.Any(x => x.Name == "xerathrshots" && x.Stacks >= 1),
-                IsSpellReady = (spellClass, minMana, minCharges) => UnitManager.MyChampion.BuffManager.ActiveBuffs.Any(x => x.Name == "XerathLocusOfPower2" && x.Stacks >= 1) && spellClass.Charges > minCharges || UnitManager.MyChampion.Mana > minMana,
+                IsSpellReady = (spellClass, minMana, minCharges) 
+                            => _lastRCast + 0.5f < EngineManager.GameTime && UnitManager.MyChampion.BuffManager.ActiveBuffs.Any(x => x.Name == "XerathLocusOfPower2" && x.Stacks >= 1) && spellClass.Charges > minCharges || UnitManager.MyChampion.Mana > minMana,
                 TargetSelect = (mode) => RTargetClosestToMouse
                                         ? SpellRSemiAuto.GetTargets(mode).OrderBy(x => x.DistanceTo(GameEngine.WorldMousePosition)).FirstOrDefault()
                                         : SpellRSemiAuto.GetTargets(mode).FirstOrDefault()
@@ -103,7 +108,11 @@ namespace SixAIO.Champions
         {
             if (keyBeingPressed == SemiAutoRKey && pressState == Oasys.Common.Tools.Devices.Keyboard.KeyPressState.Down)
             {
-                SpellRSemiAuto.ExecuteCastSpell();
+                if (SpellRSemiAuto.ExecuteCastSpell())
+                {
+                    _lastRCast = EngineManager.GameTime;
+                }
+
             }
         }
 
@@ -119,6 +128,7 @@ namespace SixAIO.Champions
         {
             if (SpellR.ExecuteCastSpell())
             {
+                _lastRCast = EngineManager.GameTime;
                 return;
             }
 
