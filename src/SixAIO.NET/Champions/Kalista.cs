@@ -103,35 +103,37 @@ namespace SixAIO.Champions
             return target.Distance <= 1100 && TargetSelector.IsAttackable(target) && target.Health <= GetEDamage(target);
         }
 
-        internal static float GetEDamage(GameObjectBase enemy)
+        internal static float GetEDamage(GameObjectBase target)
         {
-            var kalistaE = enemy.BuffManager.ActiveBuffs.FirstOrDefault(x => x.Name == "kalistaexpungemarker" && x.Stacks >= 1);
-            if (!enemy.IsAlive || kalistaE == null || !kalistaE.IsActive)
+            var kalistaE = target.BuffManager.ActiveBuffs.FirstOrDefault(x => x.Name == "kalistaexpungemarker" && x.Stacks >= 1);
+            if (!target.IsAlive || kalistaE == null || !kalistaE.IsActive)
             {
                 return 0;
             }
-            var armorMod = DamageCalculator.GetArmorMod(UnitManager.MyChampion, enemy);
-            var firstSpearDaamage = 10 +
-                                    (UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot.E).Level * 10) +
-                                    UnitManager.MyChampion.UnitStats.TotalAttackDamage * 0.7 +
+            var firstSpearDaamage = 10f +
+                                    (UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot.E).Level * 10f) +
+                                    UnitManager.MyChampion.UnitStats.TotalAttackDamage * 0.7f +
                                     UnitManager.MyChampion.UnitStats.TotalAbilityPower * 0.2f;
 
-            var additionalSpearDamage = 4 +
-                                        UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot.E).Level * 4 +
+            var additionalSpearDamage = 4f +
+                                        UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot.E).Level * 4f +
                                         UnitManager.MyChampion.UnitStats.TotalAttackDamage * GetAdditionalSpearLevelAttackDamageMod() +
                                         UnitManager.MyChampion.UnitStats.TotalAbilityPower * 0.2f;
+
             var physicalDamage = firstSpearDaamage + additionalSpearDamage * (kalistaE.Stacks - 1);
-            var skin = enemy.UnitComponentInfo.SkinName.ToLower();
+
+            var skin = target.UnitComponentInfo.SkinName.ToLower();
             if (skin.Contains("dragon") ||
                 skin.Contains("baron") ||
                 skin.Contains("herald"))
             {
-                physicalDamage *= 0.5;
+                physicalDamage *= 0.5f;                
             }
-            physicalDamage *= armorMod;
-            var result = (float)(physicalDamage - enemy.NeutralShield - enemy.PhysicalShield);
+
+            var result = (float)(physicalDamage - target.NeutralShield - target.PhysicalShield);
+            var dmgfromcalc = DamageCalculator.CalculateActualDamage(UnitManager.MyChampion, target, result);
             //Logger.Log($"Kalista dmg on {enemy.UnitComponentInfo.SkinName}: {result}");
-            return result;
+            return dmgfromcalc;
         }
 
         private static bool IsSpecialMinion(GameObjectBase minion) => minion.IsObject(ObjectTypeFlag.AIMinionClient) && (minion.UnitComponentInfo.SkinName.Contains("MinionSiege", StringComparison.OrdinalIgnoreCase) || minion.UnitComponentInfo.SkinName.Contains("MinionSuper", StringComparison.OrdinalIgnoreCase));
@@ -145,7 +147,7 @@ namespace SixAIO.Champions
                 3 => 0.35f,
                 4 => 0.40f,
                 5 => 0.45f,
-                _ => 0,
+                _ => 0f,
             };
         }
 
@@ -161,21 +163,36 @@ namespace SixAIO.Champions
                 {
                     foreach (var enemy in UnitManager.EnemyChampions.ToList().Where(x => x.IsAlive && x.Distance <= 2000 && x.W2S.IsValid()).ToList())
                     {
-                        RenderFactory.DrawHPBarDamage(enemy, GetEDamage(enemy), EDamageColor);
+                        var dmg = GetEDamage(enemy);
+                        if (dmg > 0)
+                        {
+                            RenderFactory.DrawHPBarDamage(enemy, dmg, EDamageColor);
+                            //RenderFactory.DrawText(dmg.ToString(), enemy.W2S, Color.White);
+                        }
                     }
                 }
                 if (DrawEDamageMinions)
                 {
                     foreach (var enemy in UnitManager.EnemyMinions.ToList().Where(x => x.IsAlive && x.Distance <= 2000 && x.W2S.IsValid()).ToList())
                     {
-                        RenderFactory.DrawHPBarDamage(enemy, GetEDamage(enemy), EDamageColor);
+                        var dmg = GetEDamage(enemy);
+                        if (dmg > 0)
+                        {
+                            RenderFactory.DrawHPBarDamage(enemy, dmg, EDamageColor);
+                            //RenderFactory.DrawText(dmg.ToString(), enemy.W2S, Color.White);
+                        }
                     }
                 }
                 if (DrawEDamageMonsters)
                 {
                     foreach (var enemy in UnitManager.EnemyJungleMobs.ToList().Where(x => x.IsAlive && x.Distance <= 2000 && x.W2S.IsValid()).ToList())
                     {
-                        RenderFactory.DrawHPBarDamage(enemy, GetEDamage(enemy), EDamageColor);
+                        var dmg = GetEDamage(enemy);
+                        if (dmg > 0)
+                        {
+                            RenderFactory.DrawHPBarDamage(enemy, dmg, EDamageColor);
+                            //RenderFactory.DrawText(dmg.ToString(), enemy.W2S, Color.White);
+                        }
                     }
                 }
             }
