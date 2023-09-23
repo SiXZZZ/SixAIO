@@ -59,30 +59,29 @@ namespace SixAIO.Champions
                 {
                     if (UseELasthit && mode == Orbwalker.OrbWalkingModeType.LastHit)
                     {
-                        return SpellE.GetTargets(mode, x => x.PredictHealth(150) <= GetEDamage(x, SpellE.SpellClass)).OrderBy(IsPoisoned).ThenBy(x => x.EffectiveMagicHealth).FirstOrDefault();
+                        return SpellE.GetTargets(mode, x => x.PredictHealth(150) <= GetEDamage(x)).OrderBy(IsPoisoned).ThenBy(x => x.EffectiveMagicHealth).FirstOrDefault();
                     }
 
-                    var target = SpellE.GetTargets(mode).OrderBy(IsPoisoned).ThenBy(x => x.EffectiveMagicHealth).FirstOrDefault();
+                    var target = SpellE.GetTargets(mode, x => !OnlyEOnChampionsWithPoison || IsPoisoned(x)).OrderBy(IsPoisoned).ThenBy(x => x.EffectiveMagicHealth).FirstOrDefault();
+
                     if (UseELasthit)
                     {
-                        target = SpellE.GetTargets(mode, x => x.PredictHealth(150) <= GetEDamage(x, SpellE.SpellClass)).OrderBy(IsPoisoned).ThenBy(x => x.EffectiveMagicHealth).FirstOrDefault();
+                        target = SpellE.GetTargets(mode, x => x.PredictHealth(150) <= GetEDamage(x)).OrderBy(IsPoisoned).ThenBy(x => x.EffectiveMagicHealth).FirstOrDefault();
                     }
+
                     if (UseEHarass && mode == Orbwalker.OrbWalkingModeType.Mixed)
                     {
-                        target = SpellE.GetTargets(mode, x => x.PredictHealth(150) <= GetEDamage(x, SpellE.SpellClass)).OrderBy(IsPoisoned).ThenBy(x => x.EffectiveMagicHealth).FirstOrDefault();
+                        target = SpellE.GetTargets(mode, x => x.PredictHealth(150) <= GetEDamage(x)).OrderBy(IsPoisoned).ThenBy(x => x.EffectiveMagicHealth).FirstOrDefault();
                     }
+
                     if (target is null && !UseELaneclear && mode == Orbwalker.OrbWalkingModeType.LaneClear)
                     {
                         return null;
                     }
-                    if (target is not null)
-                    {
-                        return target;
-                    }
-                    else
-                    {
-                        return SpellE.GetTargets(mode).OrderBy(IsPoisoned).ThenBy(x => x.EffectiveMagicHealth).FirstOrDefault();
-                    }
+
+                    return target is not null
+                        ? target
+                        : SpellE.GetTargets(mode, x => !OnlyEOnChampionsWithPoison || IsPoisoned(x)).OrderBy(IsPoisoned).ThenBy(x => x.EffectiveMagicHealth).FirstOrDefault();
                 }
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
@@ -139,9 +138,9 @@ namespace SixAIO.Champions
             }
         }
 
-        internal static float GetEDamage(GameObjectBase enemy, SpellClass spellClass)
+        internal float GetEDamage(GameObjectBase enemy)
         {
-            if (enemy == null || spellClass == null)
+            if (enemy == null)
             {
                 return 0;
             }
@@ -151,7 +150,7 @@ namespace SixAIO.Champions
 
             if (IsPoisoned(enemy))
             {
-                magicDamage += (20 * spellClass.Level) +
+                magicDamage += (20 * SpellE.SpellClass.Level) +
                                 UnitManager.MyChampion.UnitStats.TotalAbilityPower * 0.6f;
             }
 
@@ -160,7 +159,7 @@ namespace SixAIO.Champions
 
         private static bool IsPoisoned(GameObjectBase target)
         {
-            return target.BuffManager.GetBuffList().Any(buff => buff != null && buff.IsActive && buff.OwnerObjectIndex == UnitManager.MyChampion.Index && buff.Stacks >= 1 &&
+            return target.BuffManager.ActiveBuffs.Any(buff => buff.Stacks >= 1 &&
                     (buff.Name.Contains("cassiopeiaqdebuff", StringComparison.OrdinalIgnoreCase) || buff.Name.Contains("cassiopeiawpoison", StringComparison.OrdinalIgnoreCase)));
         }
 
@@ -221,6 +220,8 @@ namespace SixAIO.Champions
 
         public Keys DisableAAKey => MenuTab.GetItem<KeyBinding>("Disable AA Key").SelectedKey;
 
+        private bool OnlyEOnChampionsWithPoison => ESettings.GetItem<Switch>("Only E On Champions With Poison").IsOn;
+
         private int RMinimumEnemiesCount => RSettings.GetItem<Counter>("Minimum enemies facing for R").Value;
 
         private int SemiAutoRMinimumEnemiesCount => RSettings.GetItem<Counter>("Minimum enemies facing for semi auto R").Value;
@@ -246,6 +247,7 @@ namespace SixAIO.Champions
             ESettings.AddItem(new Switch() { Title = "Use E Laneclear", IsOn = true });
             ESettings.AddItem(new Switch() { Title = "Use E Lasthit", IsOn = true });
             ESettings.AddItem(new Switch() { Title = "Use E Harass", IsOn = true });
+            ESettings.AddItem(new Switch() { Title = "Only E On Champions With Poison", IsOn = false });
 
             RSettings.AddItem(new Switch() { Title = "Use R", IsOn = true });
             RSettings.AddItem(new ModeDisplay() { Title = "R HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "VeryHigh" });
