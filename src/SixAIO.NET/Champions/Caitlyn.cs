@@ -1,7 +1,6 @@
 ﻿using Oasys.Common;
 using Oasys.Common.Enums.GameEnums;
 using Oasys.Common.GameObject;
-using Oasys.Common.GameObject.Clients.ExtendedInstances.Spells;
 using Oasys.Common.Menu;
 using Oasys.Common.Menu.ItemComponents;
 using Oasys.SDK;
@@ -47,7 +46,7 @@ namespace SixAIO.Champions
                 Delay = () => 0.625f,
                 IsEnabled = () => UseQ,
                 TargetSelect = (mode) => QOnlyOnHeadshotTargets
-                        ? SpellQ.GetTargets(mode, x => x.BuffManager.ActiveBuffs.Any(b => b.Stacks >= 1 && b.Name == "CaitlynWSnare" || b.Name == "CaitlynEMissile")).FirstOrDefault()
+                        ? SpellQ.GetTargets(mode, t => t.BuffManager.ActiveBuffs.Any(b => b.Name == "CaitlynWSnare" || b.Name == "CaitlynEMissile" && b.Stacks >= 1)).FirstOrDefault()
                         : SpellQ.GetTargets(mode).FirstOrDefault()
             };
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
@@ -56,10 +55,10 @@ namespace SixAIO.Champions
                 DrawColor = () => DrawWColor,
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Circle,
                 MinimumHitChance = () => WHitChance,
-                Range = () => 780,
+                Range = () => 785,
                 Radius = () => 15,
-                Speed = () => 5000,
-                Delay = () => 0.4f,
+                Speed = () => 2200,
+                Delay = () => 0.25f,
                 IsEnabled = () => UseW && _lastWCast + 1 <= EngineManager.GameTime,
                 MinimumCharges = () => 1,
                 TargetSelect = (mode) => SpellW.GetTargets(mode).FirstOrDefault()
@@ -67,24 +66,13 @@ namespace SixAIO.Champions
             SpellWTargetted = new Spell(CastSlot.W, SpellSlot.W)
             {
                 IsTargetted = () => true,
-                Range = () => 780,
+                Range = () => 785,
+                Radius = () => 15,
+                Speed = () => 2200,
+                Delay = () => 0.25f,
                 IsEnabled = () => UseW && _lastWCast + 1 <= EngineManager.GameTime,
                 MinimumCharges = () => 1,
-                TargetSelect = (mode) =>
-                {
-                    GameObjectBase target = null;
-
-                    if (target is null)
-                    {
-                        target = UnitManager.EnemyChampions.FirstOrDefault(x => x.Distance <= SpellW.Range() && TargetSelector.IsAttackable(x) && x.IsChanneling);
-                    }
-                    if (target is null)
-                    {
-                        target = UnitManager.EnemyChampions.FirstOrDefault(x => x.Distance <= SpellW.Range() && x.BuffManager.ActiveBuffs.Any(buff => buff.Name == "ZhonyasRingShield" && buff.Stacks >= 1));
-                    }
-
-                    return target;
-                }
+                TargetSelect = (mode) => UnitManager.EnemyChampions.FirstOrDefault(c => c.Distance <= SpellW.Range() && (c.IsChanneling || c.BuffManager.ActiveBuffs.Any(b => b.Name == "ZhonyasRingShield" && b.Stacks >= 1)))
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
             {
@@ -93,11 +81,12 @@ namespace SixAIO.Champions
                 AllowCollision = (target, collisions) => !collisions.Any(),
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
                 MinimumHitChance = () => EHitChance,
-                Range = () => 750,
+                Range = () => 740,
                 Radius = () => 140,
                 Speed = () => 1600,
-                IsEnabled = () => UseE && (OnlyEWithQ ? SpellQ.SpellClass.IsSpellReady : true),
-                TargetSelect = (mode) => SpellE.GetTargets(mode, x => x.Distance <= EMaximumRange).FirstOrDefault()
+                Delay = () => 0.15f,
+                IsEnabled = () => UseE && (!OnlyEWithQ || SpellQ.SpellClass.IsSpellReady),
+                TargetSelect = (mode) => SpellE.GetTargets(mode, t => t.Distance <= EMaximumRange).FirstOrDefault()
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
             {
@@ -105,11 +94,11 @@ namespace SixAIO.Champions
                 DrawColor = () => DrawRColor,
                 AllowCastOnMap = () => AllowRCastOnMinimap,
                 IsTargetted = () => true,
-                Delay = () => 1f,
                 Range = () => 3500f,
+                Delay = () => 1.375f,
                 IsEnabled = () => UseR,
                 IsSpellReady = (spellClass, minimumMana, minimumCharges) => spellClass.IsSpellReady && UnitManager.MyChampion.Mana >= spellClass.SpellData.ResourceCost && !UnitManager.EnemyChampions.Any(x => x.Distance < RSafeRange),
-                TargetSelect = (mode) => SpellR.GetTargets(mode, x => x.Health <= GetRDamage(x)).FirstOrDefault()
+                TargetSelect = (mode) => SpellR.GetTargets(mode, t => t.Health <= GetRDamage(t)).FirstOrDefault()
             };
         }
 
@@ -117,7 +106,7 @@ namespace SixAIO.Champions
         {
             return target != null
                 ? DamageCalculator.GetArmorMod(UnitManager.MyChampion, target) *
-                ((75 + SpellR.SpellClass.Level * 225) +
+                (75 + SpellR.SpellClass.Level * 225 +
                 (UnitManager.MyChampion.UnitStats.BonusAttackDamage * 2f))
                 : 0;
         }
@@ -141,16 +130,11 @@ namespace SixAIO.Champions
 
         internal override void OnCoreMainInput()
         {
-            Orbwalker.SelectedTarget = null;
-            if (UnitManager.EnemyChampions.Any(x => TargetSelector.IsAttackable(x) &&
-                                                    (x.BuffManager.ActiveBuffs.Any(x => (x.Name == "CaitlynWSnare" || x.Name == "CaitlynEMissile") && x.Stacks >= 1) &&
-                                                    x.Distance <= 1300)))
-            {
-                Orbwalker.SelectedTarget = UnitManager.EnemyChampions
-                                                    .FirstOrDefault(x => TargetSelector.IsAttackable(x) &&
-                                                                        (x.BuffManager.ActiveBuffs.Any(x => (x.Name == "CaitlynWSnare" || x.Name == "CaitlynEMissile") && x.Stacks >= 1) &&
-                                                                        x.Distance <= 1300));
-            }
+            Orbwalker.SelectedTarget = UnitManager.EnemyChampions.FirstOrDefault(
+                c => TargetSelector.IsAttackable(c) && c.BuffManager.ActiveBuffs.Any(
+                    b => (b.Name == "CaitlynWSnare" || b.Name == "CaitlynEMissile") && b.Stacks >= 1) &&
+                    c.Distance <= 1300
+                );
 
             if (SpellWTargetted.ExecuteCastSpell() || SpellW.ExecuteCastSpell())
             {
