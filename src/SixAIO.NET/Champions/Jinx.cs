@@ -45,6 +45,13 @@ namespace SixAIO.Champions
                 IsEnabled = () => UseQ && UseSimpleQOnly && Orbwalker.CanMove,
                 ShouldCast = (mode, target, spellClass, damage) =>
                 {
+                    if ((!UseQLaneclear && mode == Orbwalker.OrbWalkingModeType.LaneClear) ||
+                        (!UseQLasthit && mode == Orbwalker.OrbWalkingModeType.LastHit) ||
+                        (!UseQHarass && mode == Orbwalker.OrbWalkingModeType.Mixed))
+                    {
+                        return false;
+                    }
+
                     var usingRockets = IsQActive();
                     var usingMinigun = !usingRockets;
                     var extraRange = 50 + (30 * UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot.Q).Level);
@@ -227,6 +234,13 @@ namespace SixAIO.Champions
 
         private bool ShouldSwapGun(Orbwalker.OrbWalkingModeType mode, GameObjectBase target)
         {
+            if ((!UseQLaneclear && mode == Orbwalker.OrbWalkingModeType.LaneClear) ||
+                (!UseQLasthit && mode == Orbwalker.OrbWalkingModeType.LastHit) ||
+                (!UseQHarass && mode == Orbwalker.OrbWalkingModeType.Mixed))
+            {
+                return false;
+            }
+
             if (target is null)
             {
                 return false;
@@ -324,7 +338,7 @@ namespace SixAIO.Champions
 
         internal override void OnCoreLaneClearInput()
         {
-            if (SpellQ.ExecuteCastSpell(Orbwalker.OrbWalkingModeType.LaneClear))
+            if (SpellQSimple.ExecuteCastSpell(Orbwalker.OrbWalkingModeType.LaneClear) || SpellQ.ExecuteCastSpell(Orbwalker.OrbWalkingModeType.LaneClear))
             {
                 return;
             }
@@ -332,7 +346,7 @@ namespace SixAIO.Champions
 
         internal override void OnCoreLastHitInput()
         {
-            if (SpellQ.ExecuteCastSpell(Orbwalker.OrbWalkingModeType.LastHit))
+            if (SpellQSimple.ExecuteCastSpell(Orbwalker.OrbWalkingModeType.LastHit) || SpellQ.ExecuteCastSpell(Orbwalker.OrbWalkingModeType.LastHit))
             {
                 return;
             }
@@ -340,7 +354,7 @@ namespace SixAIO.Champions
 
         internal override void OnCoreHarassInput()
         {
-            if (SpellQ.ExecuteCastSpell(Orbwalker.OrbWalkingModeType.Mixed))
+            if (SpellQSimple.ExecuteCastSpell(Orbwalker.OrbWalkingModeType.Mixed) || SpellQ.ExecuteCastSpell(Orbwalker.OrbWalkingModeType.Mixed))
             {
                 return;
             }

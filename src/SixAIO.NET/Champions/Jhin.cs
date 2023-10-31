@@ -37,6 +37,7 @@ namespace SixAIO.Champions
                 Range = () => 2500,
                 Radius = () => 90,
                 Speed = () => 2500,
+                Delay = () => 0.75f,
                 IsEnabled = () => UseW && (!WOnlyOutsideOfAttackRange || !UnitManager.EnemyChampions.Any(TargetSelector.IsInRange)) && (UnitManager.EnemyChampions.All(x => x.Distance >= WMinimumRange || !TargetSelector.IsAttackable(x))),
                 TargetSelect = (mode) => SpellW.GetTargets(mode, x => x.BuffManager.ActiveBuffs.Any(buff => buff.Name == "jhinespotteddebuff" && buff.Stacks >= 1)).FirstOrDefault()
             };
