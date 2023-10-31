@@ -156,7 +156,7 @@ namespace SixAIO.Champions
                 MinimumHitChance = () => RHitChance,
                 Range = () => RMaximumRange,
                 Radius = () => 280,
-                Speed = () => 2000,
+                Speed = () => CalculateRocketSpeed(GetUltimateTarget(SpellR, Orbwalker.OrbWalkingModeType.Combo)),
                 Delay = () => 0.6f,
                 MinimumMana = () => 100,
                 IsEnabled = () => UseR,
@@ -166,7 +166,7 @@ namespace SixAIO.Champions
                                 UnitManager.MyChampion.Mana >= minimumMana &&
                                 spellClass.Charges >= minimumCharges &&
                                 !ROnlyOutsideOfAttackRange || !UnitManager.EnemyChampions.Any(TargetSelector.IsInRange),
-                TargetSelect = (mode) => SpellR.GetTargets(mode, x => x.HealthPercent <= RTargetMaxHPPercent && x.Distance > RMinimumRange && x.Distance <= RMaximumRange && (!Orbwalker.CanBasicAttack || !TargetSelector.IsInRange(x))).FirstOrDefault()
+                TargetSelect = (mode) => GetUltimateTarget(SpellR, mode)
             };
             SpellRSemiAuto = new Spell(CastSlot.R, SpellSlot.R)
             {
@@ -175,11 +175,11 @@ namespace SixAIO.Champions
                 MinimumHitChance = () => SemiAutoRHitChance,
                 Range = () => 30000,
                 Radius = () => 280,
-                Speed = () => 2000,
+                Speed = () => CalculateRocketSpeed(GetUltimateTarget(SpellRSemiAuto, Orbwalker.OrbWalkingModeType.Combo)),
                 Delay = () => 0.6f,
                 MinimumMana = () => 100,
                 IsEnabled = () => UseSemiAutoR,
-                TargetSelect = (mode) => SpellRSemiAuto.GetTargets(mode, x => x.Distance > RMinimumRange && x.Distance <= RMaximumRange).FirstOrDefault()
+                TargetSelect = (mode) => GetUltimateTarget(SpellRSemiAuto, mode)
             };
             SpellRKill = new Spell(CastSlot.R, SpellSlot.R)
             {
@@ -187,7 +187,7 @@ namespace SixAIO.Champions
                 MinimumHitChance = () => RHitChance,
                 Range = () => RMaximumRange,
                 Radius = () => 280,
-                Speed = () => 2000,
+                Speed = () => CalculateRocketSpeed(GetUltimateTarget(SpellRKill, Orbwalker.OrbWalkingModeType.Combo)),
                 Delay = () => 0.6f,
                 MinimumMana = () => 100,
                 IsEnabled = () => RIfTargetKillable,
@@ -196,8 +196,25 @@ namespace SixAIO.Champions
                                 UnitManager.MyChampion.Mana >= spellClass.SpellData.ResourceCost &&
                                 UnitManager.MyChampion.Mana >= minimumMana &&
                                 spellClass.Charges >= minimumCharges,
-                TargetSelect = (mode) => SpellRKill.GetTargets(mode, RCanKill).FirstOrDefault(),
+                TargetSelect = (mode) => GetUltimateTarget(SpellRKill, mode)
             };
+        }
+
+        private static float CalculateRocketSpeed(GameObjectBase targetObject) =>
+            targetObject.Distance <= 1350f ? 1700 : -675000 / targetObject.Distance + 2200; // Equal to: MinSpeed (1700) * 1350 / target.Distance + MaxSpeed (2200) * (distance - 1350) / target.Distance
+
+        private GameObjectBase GetUltimateTarget(Spell spell, Orbwalker.OrbWalkingModeType orbwalkingMode)
+        {
+            if (spell == SpellR)
+                return SpellR.GetTargets(orbwalkingMode, t => t.HealthPercent <= RTargetMaxHPPercent && t.Distance > RMinimumRange && t.Distance <= RMaximumRange && (!Orbwalker.CanBasicAttack || !TargetSelector.IsInRange(t))).FirstOrDefault();
+
+            if (spell == SpellRSemiAuto)
+                return SpellRSemiAuto.GetTargets(orbwalkingMode, t => t.Distance > RMinimumRange && t.Distance <= RMaximumRange).FirstOrDefault();
+
+            if (spell == SpellRKill)
+                return SpellRKill.GetTargets(orbwalkingMode, RCanKill).FirstOrDefault();
+
+            return null;
         }
 
         private bool RCanKill(GameObjectBase target)
