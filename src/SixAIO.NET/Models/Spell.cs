@@ -7,7 +7,7 @@ using System;
 
 namespace SixAIO.Models
 {
-    public sealed class Spell : SDKSpell
+    public class Spell : SDKSpell
     {
         public Spell(CastSlot castSlot, SpellSlot spellSlot) : base(castSlot, spellSlot)
         {

@@ -15,6 +15,24 @@ namespace SixAIO.Champions
 {
     internal sealed class Jinx : Champion
     {
+        internal sealed class JinxRSpell : Spell
+        {
+            public JinxRSpell(CastSlot castSlot, SpellSlot spellSlot) : base(castSlot, spellSlot)
+            {
+            }
+
+            public override Prediction.MenuSelected.PredictionOutput GetPrediction(GameObjectBase target)
+            {
+                if (target is null)
+                {
+                    return null;
+                }
+
+                var rSpeed = Math.Min(2200, 1700f + ((500f / 1350f) * target.Distance));
+                return Prediction.MenuSelected.GetPrediction(PredictionMode(), target, Range(), Radius(), Delay(), rSpeed, From());
+            }
+        }
+
         internal Spell SpellQSimple;
         internal Spell SpellRKill;
 
@@ -154,7 +172,7 @@ namespace SixAIO.Champions
                                             ? null
                                             : SpellE.GetTargets(mode).FirstOrDefault()
             };
-            SpellR = new Spell(CastSlot.R, SpellSlot.R)
+            SpellR = new JinxRSpell(CastSlot.R, SpellSlot.R)
             {
                 ShouldDraw = () => DrawRRange,
                 DrawColor = () => DrawRColor,
@@ -163,7 +181,6 @@ namespace SixAIO.Champions
                 MinimumHitChance = () => RHitChance,
                 Range = () => RMaximumRange,
                 Radius = () => 280,
-                Speed = () => 2000,
                 Delay = () => 0.6f,
                 MinimumMana = () => 100,
                 IsEnabled = () => UseR,
@@ -175,26 +192,24 @@ namespace SixAIO.Champions
                                 !ROnlyOutsideOfAttackRange || !UnitManager.EnemyChampions.Any(TargetSelector.IsInRange),
                 TargetSelect = (mode) => SpellR.GetTargets(mode, x => x.HealthPercent <= RTargetMaxHPPercent && x.Distance > RMinimumRange && x.Distance <= RMaximumRange && (!Orbwalker.CanBasicAttack || !TargetSelector.IsInRange(x))).FirstOrDefault()
             };
-            SpellRSemiAuto = new Spell(CastSlot.R, SpellSlot.R)
+            SpellRSemiAuto = new JinxRSpell(CastSlot.R, SpellSlot.R)
             {
                 AllowCastOnMap = () => AllowRCastOnMinimap,
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
                 MinimumHitChance = () => SemiAutoRHitChance,
                 Range = () => 30000,
                 Radius = () => 280,
-                Speed = () => 2000,
                 Delay = () => 0.6f,
                 MinimumMana = () => 100,
                 IsEnabled = () => UseSemiAutoR,
                 TargetSelect = (mode) => SpellRSemiAuto.GetTargets(mode, x => x.Distance > RMinimumRange && x.Distance <= RMaximumRange).FirstOrDefault()
             };
-            SpellRKill = new Spell(CastSlot.R, SpellSlot.R)
+            SpellRKill = new JinxRSpell(CastSlot.R, SpellSlot.R)
             {
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
                 MinimumHitChance = () => RHitChance,
                 Range = () => RMaximumRange,
                 Radius = () => 280,
-                Speed = () => 2000,
                 Delay = () => 0.6f,
                 MinimumMana = () => 100,
                 IsEnabled = () => RIfTargetKillable,
