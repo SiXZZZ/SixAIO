@@ -89,7 +89,7 @@ namespace SixAIO.Champions
                 Radius = () => 140,
                 Speed = () => 1600,
                 Delay = () => 0.15f,
-                IsEnabled = () => UseE && (OnlyEWithQ ? SpellQ.SpellClass.IsSpellReady : true),
+                IsEnabled = () => UseE && (!OnlyEWithQ || SpellQ.SpellClass.IsSpellReady),
                 TargetSelect = (mode) => SpellE.GetTargets(mode, x => x.Distance <= EMaximumRange).FirstOrDefault()
             };
             SpellR = new Spell(CastSlot.R, SpellSlot.R)
