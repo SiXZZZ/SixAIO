@@ -125,7 +125,7 @@ namespace SixAIO.Champions
                 Range = () => 1500,
                 Radius = () => 120,
                 Speed = () => 3300,
-                Delay = () => 0.4f,
+                Delay = () => 0.6f - (float)Math.Min(Math.Floor(UnitManager.MyChampion.UnitStats.BonusAttackSpeed * 4), 10) * 0.02f,
                 MinimumMana = () => 90,
                 IsEnabled = () => UseW && (!WOnlyOutsideOfAttackRange || !UnitManager.EnemyChampions.Any(TargetSelector.IsInRange)),
                 TargetSelect = (mode) => SpellW.GetTargets(mode, x => x.Distance > WMinimumRange && (!Orbwalker.CanBasicAttack || !TargetSelector.IsInRange(x))).FirstOrDefault()
