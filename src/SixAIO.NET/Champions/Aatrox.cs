@@ -38,28 +38,24 @@ namespace SixAIO.Champions
                     _ => Prediction.MenuSelected.PredictionType.Line,
                 },
                 Delay = () => 0.6f,
-                Speed = () => 10000,
                 Range = () => QVersion switch
                 {
                     1 => 625,
                     2 => 475,
-                    3 => 300,
+                    3 => 200,
                     _ => 625,
                 },
                 Radius = () => QVersion switch
                 {
                     1 => 180,
-                    2 => 350,
+                    2 => Math.Min(500, (7700 / 23) + (GetQTarget(Orbwalker.OrbWalkingModeType.Combo).Distance * 8 / 23)), // Equal to: 300 + (100 * 200 / 575) + (distance * 200 / 575)
                     3 => 300,
                     _ => 180,
                 },
+                Speed = () => 10000,
                 IsSpellReady = (spellClass, minMana, minCharges) => spellClass.IsSpellReady,
                 IsEnabled = () => UseQ,
-                TargetSelect = (mode) => SpellQ.GetTargets(mode,
-                                                    x => OnlyQOnKnockedUpTargets
-                                                    ? x.BuffManager.ActiveBuffs.Any(buff => buff.EntryType == BuffType.Knockup || buff.EntryType == BuffType.Knockback)
-                                                    : true)
-                                                .FirstOrDefault()
+                TargetSelect = GetQTarget
             };
             SpellW = new Spell(CastSlot.W, SpellSlot.W)
             {
@@ -67,15 +63,15 @@ namespace SixAIO.Champions
                 DrawColor = () => DrawWColor,
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Line,
                 MinimumHitChance = () => WHitChance,
+                Delay = () => 0.25f,
                 Range = () => 765,
                 Radius = () => 160,
                 Speed = () => 1800,
                 IsEnabled = () => UseW,
                 IsSpellReady = (spellClass, minMana, minCharges) => spellClass.IsSpellReady,
                 TargetSelect = (mode) => SpellW.GetTargets(mode,
-                                                    x => OnlyWOnKnockedUpTargets
-                                                    ? x.BuffManager.ActiveBuffs.Any(buff => buff.EntryType == BuffType.Knockup || buff.EntryType == BuffType.Knockback)
-                                                    : true)
+                                                    t => !OnlyWOnKnockedUpTargets
+                                                    || t.BuffManager.ActiveBuffs.Any(b => b.EntryType == BuffType.Knockup || b.EntryType == BuffType.Knockback))
                                                 .FirstOrDefault()
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
@@ -84,7 +80,7 @@ namespace SixAIO.Champions
                 IsTargetted = () => true,
                 IsEnabled = () => UseE,
                 ShouldCast = (mode, target, spellClass, damage) => target is not null && TargetSelector.IsAttackable(target) && !TargetSelector.IsInRange(target),
-                TargetSelect = (mode) => UnitManager.EnemyChampions.FirstOrDefault(x => x.Distance <= x.TrueAttackRange + 300 && x.IsAlive && TargetSelector.IsAttackable(x))
+                TargetSelect = (mode) => UnitManager.EnemyChampions.Find(c => c.IsAlive && c.Distance <= c.TrueAttackRange + 300 && TargetSelector.IsAttackable(c))
             };
         }
 
@@ -141,5 +137,11 @@ namespace SixAIO.Champions
 
             MenuTab.AddDrawOptions(SpellSlot.Q, SpellSlot.W);
         }
+
+        private GameObjectBase GetQTarget(Orbwalker.OrbWalkingModeType orbWalkingMode) =>
+            SpellQ.GetTargets(orbWalkingMode,
+                    t => !OnlyQOnKnockedUpTargets
+                    || t.BuffManager.ActiveBuffs.Any(b => b.EntryType == BuffType.Knockup || b.EntryType == BuffType.Knockback))
+                .FirstOrDefault();
     }
 }
