@@ -28,7 +28,7 @@ namespace SixAIO.Champions
                     return null;
                 }
 
-                var rSpeed = Math.Min(2200, 1700f + ((500f / 1350f) * target.Distance));
+                var rSpeed = Math.Min(2200f, Math.Max(1700f, (-675000 / target.Distance) + 2200f));
                 return Prediction.MenuSelected.GetPrediction(PredictionMode(), target, Range(), Radius(), Delay(), rSpeed, From());
             }
         }
