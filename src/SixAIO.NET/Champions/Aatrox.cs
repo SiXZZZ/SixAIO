@@ -14,6 +14,29 @@ namespace SixAIO.Champions
 {
     internal sealed class Aatrox : Champion
     {
+        internal sealed class AatroxQSpell : Spell
+        {
+            public AatroxQSpell(CastSlot castSlot, SpellSlot spellSlot) : base(castSlot, spellSlot)
+            {
+            }
+
+            public override Prediction.MenuSelected.PredictionOutput GetPrediction(GameObjectBase target)
+            {
+                if (target is null)
+                {
+                    return null;
+                }
+
+                var radius = Radius();
+                if (radius == -1)
+                {
+                    radius = Math.Min(500, (7700 / 23) + (target.Distance * 8 / 23)); // Equal to: 300 + (100 * 200 / 575) + (distance * 200 / 575)
+                }
+
+                return Prediction.MenuSelected.GetPrediction(PredictionMode(), target, Range(), radius, Delay(), Speed(), From());
+            }
+        }
+
         public int QVersion => SpellQ.SpellClass.SpellData.SpellName switch
         {
             "AatroxQ" => 1,
@@ -43,13 +66,13 @@ namespace SixAIO.Champions
                 {
                     1 => 625,
                     2 => 475,
-                    3 => 300,
+                    3 => 200,
                     _ => 625,
                 },
                 Radius = () => QVersion switch
                 {
                     1 => 180,
-                    2 => 350,
+                    2 => -1,//will be set in the actual cast when predicting for a specific target
                     3 => 300,
                     _ => 180,
                 },
@@ -84,7 +107,7 @@ namespace SixAIO.Champions
                 IsTargetted = () => true,
                 IsEnabled = () => UseE,
                 ShouldCast = (mode, target, spellClass, damage) => target is not null && TargetSelector.IsAttackable(target) && !TargetSelector.IsInRange(target),
-                TargetSelect = (mode) => UnitManager.EnemyChampions.FirstOrDefault(x => x.Distance <= x.TrueAttackRange + 300 && x.IsAlive && TargetSelector.IsAttackable(x))
+                TargetSelect = (mode) => UnitManager.EnemyChampions.Find(x => x.IsAlive && x.Distance <= x.TrueAttackRange + 300 && TargetSelector.IsAttackable(x))
             };
         }
 
