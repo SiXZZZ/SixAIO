@@ -1,5 +1,6 @@
 ﻿using Oasys.Common.Enums.GameEnums;
 using Oasys.Common.GameObject;
+using Oasys.Common.GameObject.ObjectClass;
 using Oasys.Common.Menu;
 using Oasys.Common.Menu.ItemComponents;
 using Oasys.SDK;
@@ -34,7 +35,7 @@ namespace SixAIO.Champions
                 IsSpellReady = (spellClass, minMana, minCharges) => spellClass.IsSpellReady,
                 TargetSelect = (mode) =>
                 {
-                    var target = SpellQ.GetTargets(mode).FirstOrDefault();
+                    var target = SpellQ.GetTargets(mode, x => TargetSelector.ShouldAttackMinion(x)).FirstOrDefault();
                     if (mode != Orbwalker.OrbWalkingModeType.Combo)
                     {
                         if (target is null)
@@ -232,7 +233,7 @@ namespace SixAIO.Champions
             QSettings.AddItem(new Switch() { Title = "Use Q Harass", IsOn = true });
             QSettings.AddItem(new Switch() { Title = "Use Q Lasthit", IsOn = true });
             QSettings.AddItem(new ModeDisplay() { Title = "Q HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
-            
+
             WSettings.AddItem(new Switch() { Title = "Use W", IsOn = true });
             WSettings.AddItem(new ModeDisplay() { Title = "W HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
 
