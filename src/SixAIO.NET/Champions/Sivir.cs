@@ -4,6 +4,7 @@ using Oasys.Common.Menu.ItemComponents;
 using Oasys.SDK;
 using Oasys.SDK.Menu;
 using Oasys.SDK.SpellCasting;
+using Oasys.SDK.Tools;
 using SixAIO.Extensions;
 using SixAIO.Models;
 using System;
@@ -25,6 +26,7 @@ namespace SixAIO.Champions
                 Range = () => 1250,
                 Radius = () => 180,
                 Speed = () => 1400,
+                Delay = () => 0.25f * (1 - (0.5f * Math.Min(1.20f, UnitManager.MyChampion.UnitStats.BonusAttackSpeed))),
                 IsEnabled = () => UseQ,
                 TargetSelect = (mode) => SpellQ.GetTargets(mode).FirstOrDefault()
             };
