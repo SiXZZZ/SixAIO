@@ -42,6 +42,9 @@ namespace SixAIO.Champions
                 MinimumHitChance = () => QHitChance,
                 Speed = () => 1200,
                 Radius = () => GetQState() == 3 ? 180 : 80,
+                Delay = () => GetQState() == 3
+                            ? 0.35f - (0.035f * (Math.Min(1.20f, UnitManager.MyChampion.UnitStats.BonusAttackSpeed) * 100f / 24f))
+                            : 0.35f - (0.035f * (Math.Min(0.48f, UnitManager.MyChampion.UnitStats.BonusAttackSpeed) * 100f / 24f)),
                 Range = () => UnitManager.MyChampion.AIManager.IsDashing ? 250 : GetQState() == 3 ? 1150 : 450,
                 From = () => UnitManager.MyChampion.AIManager.IsDashing ? UnitManager.MyChampion.AIManager.NavEndPosition : UnitManager.MyChampion.AIManager.ServerPosition,
                 IsEnabled = () => UseQ,
@@ -259,7 +262,7 @@ namespace SixAIO.Champions
                 }
             }
 
-            if (SpellR.ExecuteCastSpell() || SpellQ.ExecuteCastSpell())
+            if (SpellQ.ExecuteCastSpell() || SpellR.ExecuteCastSpell())
             {
                 return;
             }
