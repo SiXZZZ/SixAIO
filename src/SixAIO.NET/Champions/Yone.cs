@@ -4,6 +4,7 @@ using Oasys.Common.Menu.ItemComponents;
 using Oasys.SDK;
 using Oasys.SDK.Menu;
 using Oasys.SDK.SpellCasting;
+using Oasys.SDK.Tools;
 using SixAIO.Extensions;
 using SixAIO.Models;
 using System;
@@ -34,6 +35,7 @@ namespace SixAIO.Champions
                 Speed = () => 1500,
                 Radius = () => GetQState() == 3 ? 160 : 80,
                 Range = () => GetQState() == 3 ? 1050 : 450,
+                Delay = () => 0.35f - (0.035f * (Math.Min(1.20f, UnitManager.MyChampion.UnitStats.BonusAttackSpeed) * 100f / 24f)),
                 IsEnabled = () => UseQ,
                 ShouldCast = (mode, target, spellClass, damage) => target != null && (target.IsObject(ObjectTypeFlag.AIHeroClient) || GetQState() < 3),
                 TargetSelect = (mode) =>
@@ -71,6 +73,7 @@ namespace SixAIO.Champions
                 Range = () => 600,
                 Radius = () => 80f,
                 Speed = () => 10000,
+                Delay = () => 0.5f * (1 - (0.01f * (Math.Min(1.05f, UnitManager.MyChampion.UnitStats.BonusAttackSpeed) * 100 / 1.68f))),
                 IsEnabled = () => UseW,
                 TargetSelect = (mode) => SpellW.GetTargets(mode).FirstOrDefault()
             };
