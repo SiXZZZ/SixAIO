@@ -29,6 +29,7 @@ namespace SixAIO.Champions
                 Range = () => 575,
                 Radius = () => 150,
                 Speed = () => 2600,
+                Delay = () => 0.35f - (0.035f * (Math.Min(0.48f, UnitManager.MyChampion.UnitStats.BonusAttackSpeed) * 100f / 24f)),
                 IsEnabled = () => UseQ,
                 TargetSelect = (mode) => SpellQ.GetTargets(mode).FirstOrDefault()
             };
