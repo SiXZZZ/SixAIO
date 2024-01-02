@@ -26,7 +26,7 @@ namespace SixAIO.Champions
 
         private static bool IsOrb(AIBaseClient obj)
         {
-            return obj is not null && obj.Distance <= 2000 && obj.IsAlive && obj.Position.IsValid() &&
+            return obj is not null && obj.Distance <= 2000 && obj.Position.IsValid() &&
                    obj.Name.Contains("Syndra_", StringComparison.OrdinalIgnoreCase) &&
                    obj.Name.Contains("_Q_", StringComparison.OrdinalIgnoreCase);
         }
@@ -41,6 +41,7 @@ namespace SixAIO.Champions
                 DrawColor = () => DrawQColor,
                 PredictionMode = () => Prediction.MenuSelected.PredictionType.Circle,
                 MinimumHitChance = () => QHitChance,
+                MinimumCharges = () => 1,
                 Range = () => 800,
                 Speed = () => 1000,
                 Radius = () => 180,
@@ -74,7 +75,7 @@ namespace SixAIO.Champions
 
                     foreach (var target in targets)
                     {
-                        var targetOrb = GetOrbsBetweenMeAndEnemy(target, 180);
+                        var targetOrb = GetOrbsBetweenMeAndEnemy(target, (int)target.UnitComponentInfo.UnitBoundingRadius);
                         if (targetOrb != null && targetOrb.Any())
                         {
                             return targetOrb.FirstOrDefault();
