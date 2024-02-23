@@ -108,6 +108,12 @@ namespace SixAIO.Models
             set => WSettings.GetItem<Switch>("Use W Laneclear").IsOn = value;
         }
 
+        internal bool UseWHarass
+        {
+            get => WSettings.GetItem<Switch>("Use W Harass").IsOn;
+            set => WSettings.GetItem<Switch>("Use W Harass").IsOn = value;
+        }
+
         internal Oasys.SDK.Prediction.MenuSelected.HitChance WHitChance
         {
             get => (Oasys.SDK.Prediction.MenuSelected.HitChance)Enum.Parse(typeof(Oasys.SDK.Prediction.MenuSelected.HitChance), WSettings.GetItem<ModeDisplay>("W HitChance").SelectedModeName);

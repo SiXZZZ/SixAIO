@@ -79,7 +79,7 @@ namespace SixAIO.Champions
                 Speed = () => RSpeed,
                 Delay = () => (float)((float)((float)RDelay) / 1000f),
                 IsEnabled = () => UseR && UnitManager.MyChampion.BuffManager.ActiveBuffs.Any(x => x.Name == "xerathrshots" && x.Stacks >= 1),
-                IsSpellReady = (spellClass, minMana, minCharges) 
+                IsSpellReady = (spellClass, minMana, minCharges)
                             => _lastRCast + 0.5f < EngineManager.GameTime && UnitManager.MyChampion.BuffManager.ActiveBuffs.Any(x => x.Name == "XerathLocusOfPower2" && x.Stacks >= 1) && spellClass.Charges > minCharges || UnitManager.MyChampion.Mana > minMana,
                 TargetSelect = (mode) => RTargetClosestToMouse
                                         ? SpellR.GetTargets(mode).OrderBy(x => x.DistanceTo(GameEngine.WorldMousePosition)).FirstOrDefault()
@@ -96,7 +96,7 @@ namespace SixAIO.Champions
                 Speed = () => RSpeed,
                 Delay = () => (float)((float)((float)RDelay) / 1000f),
                 IsEnabled = () => UseSemiAutoR && UnitManager.MyChampion.BuffManager.ActiveBuffs.Any(x => x.Name == "xerathrshots" && x.Stacks >= 1),
-                IsSpellReady = (spellClass, minMana, minCharges) 
+                IsSpellReady = (spellClass, minMana, minCharges)
                             => _lastRCast + 0.5f < EngineManager.GameTime && UnitManager.MyChampion.BuffManager.ActiveBuffs.Any(x => x.Name == "XerathLocusOfPower2" && x.Stacks >= 1) && spellClass.Charges > minCharges || UnitManager.MyChampion.Mana > minMana,
                 TargetSelect = (mode) => RTargetClosestToMouse
                                         ? SpellRSemiAuto.GetTargets(mode).OrderBy(x => x.DistanceTo(GameEngine.WorldMousePosition)).FirstOrDefault()
@@ -112,7 +112,6 @@ namespace SixAIO.Champions
                 {
                     _lastRCast = EngineManager.GameTime;
                 }
-
             }
         }
 
@@ -140,7 +139,15 @@ namespace SixAIO.Champions
 
         internal override void OnCoreHarassInput()
         {
-            if (SpellW.ExecuteCastSpell() || SpellQ.ExecuteCastSpell())
+            if (UseWHarass && SpellW.ExecuteCastSpell())
+            {
+                return;
+            }
+            if (UseEHarass && SpellE.ExecuteCastSpell())
+            {
+                return;
+            }
+            if (UseQHarass && SpellQ.ExecuteCastSpell())
             {
                 return;
             }
@@ -185,13 +192,16 @@ namespace SixAIO.Champions
             MenuTab.AddGroup(new Group("R Settings"));
 
             QSettings.AddItem(new Switch() { Title = "Use Q", IsOn = true });
+            QSettings.AddItem(new Switch() { Title = "Use Q Harass", IsOn = true });
             QSettings.AddItem(new ModeDisplay() { Title = "Q HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
             QSettings.AddItem(new Counter() { Title = "Q start charge range", MinValue = 0, MaxValue = 2000, Value = 1450, ValueFrequency = 50 });
 
             WSettings.AddItem(new Switch() { Title = "Use W", IsOn = true });
+            WSettings.AddItem(new Switch() { Title = "Use W Harass", IsOn = true });
             WSettings.AddItem(new ModeDisplay() { Title = "W HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
 
             ESettings.AddItem(new Switch() { Title = "Use E", IsOn = true });
+            ESettings.AddItem(new Switch() { Title = "Use E Harass", IsOn = true });
             ESettings.AddItem(new ModeDisplay() { Title = "E HitChance", ModeNames = Enum.GetNames(typeof(Prediction.MenuSelected.HitChance)).ToList(), SelectedModeName = "High" });
             ESettings.AddItem(new Counter() { Title = "E maximum range", MinValue = 0, MaxValue = 1125, Value = 1100, ValueFrequency = 25 });
 

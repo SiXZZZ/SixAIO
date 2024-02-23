@@ -38,6 +38,10 @@ namespace SixAIO.Champions
             if (eTarget is not null && eTarget.NetworkID == target.NetworkID)
             {
                 var bombBuff = target.BuffManager.ActiveBuffs.FirstOrDefault(x => x.Name == "tristanaecharge" && x.Stacks >= 1);
+                if (bombBuff is null)
+                {
+                    return 0;
+                }
                 //Logger.Log(bombBuff);
                 var damage = 60f + 10f * SpellE.SpellClass.Level;
                 damage += 0.5f * UnitManager.MyChampion.UnitStats.TotalAbilityPower;
@@ -177,7 +181,7 @@ namespace SixAIO.Champions
 
         private static GameObjectBase GetETarget<T>(List<T> enemies) where T : GameObjectBase
         {
-            return enemies.FirstOrDefault(enemy =>
+            return enemies?.FirstOrDefault(enemy =>
                                 TargetSelector.IsAttackable(enemy) &&
                                 TargetSelector.IsInRange(enemy) &&
                                 enemy.BuffManager.ActiveBuffs.Any(buff => buff.Name == "tristanaecharge" && buff.Stacks >= 1));

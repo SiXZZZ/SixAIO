@@ -1,4 +1,5 @@
-﻿using Oasys.Common.Enums.GameEnums;
+﻿using Oasys.Common;
+using Oasys.Common.Enums.GameEnums;
 using Oasys.Common.Extensions;
 using Oasys.Common.GameObject;
 using Oasys.Common.GameObject.Clients;
@@ -78,7 +79,9 @@ namespace SixAIO.Champions
                         return jungleReset;
                     }
 
-                    return null;
+                    return EngineManager.MissionInfo.GameType == GameTypes.SoulFighterArena
+                            ? UnitManager.EnemyChampions.FirstOrDefault(x => x.Distance <= SpellQ.Range() && TargetSelector.IsAttackable(x))
+                            : null;
                 }
             };
             SpellE = new Spell(CastSlot.E, SpellSlot.E)
@@ -174,7 +177,8 @@ namespace SixAIO.Champions
         private bool CanQResetOnTarget(GameObjectBase target)
         {
             return target != null && target.IsAlive && target.Distance <= 600 && TargetSelector.IsAttackable(target)
-                  ? HasIreliaMark(target) || target.Health <= GetQDamage(target, UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot.Q))
+                  ? HasIreliaMark(target) ||
+                    target.Health <= GetQDamage(target, UnitManager.MyChampion.GetSpellBook().GetSpellClass(SpellSlot.Q))
                   : false;
         }
 
